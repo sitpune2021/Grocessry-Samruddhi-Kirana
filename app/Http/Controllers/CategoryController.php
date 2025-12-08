@@ -56,10 +56,45 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
+public function show(string $id)
+{
+    try {
+        // Log request
+        Log::info('Category Show Request Received', ['id' => $id]);
+
+        // Fetch category
+        $category = Category::find($id);
+
+        if (!$category) {
+            Log::warning("Category Not Found", ['id' => $id]);
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'Category not found'
+            ], 404);
+        }
+
+        Log::info('Category Found', ['category' => $category]);
+
+        // Return response
+        return response()->json([
+            'status'  => true,
+            'message' => 'Category fetched successfully',
+            'data'    => $category
+        ], 200);
+
+    } catch (\Throwable $e) {
+
+        Log::error('Category Show Error', ['error' => $e->getMessage()]);
+
+        return response()->json([
+            'status'  => false,
+            'message' => 'Something went wrong',
+            'error'   => $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Show the form for editing the specified resource.
@@ -86,7 +121,7 @@ class CategoryController extends Controller
 
         $category->update([
             'name' => $request->name,
-            'slug' => \Str::slug($request->name),
+            'slug' =>Str::slug($request->name),
         ]);
 
         Log::info('Category Updated Successfully', ['category' => $category]);
@@ -102,8 +137,45 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
+   public function destroy(string $id)
+{
+    // Log request
+    Log::info('Delete Category Request', [
+        'id' => $id
+    ]);
+
+    // Find category
+    $category = Category::find($id);
+
+    if (!$category) {
+        Log::warning("Category not found for delete", [
+            'id' => $id
+        ]);
+
+        return response()->json([
+            'status'  => false,
+            'message' => 'Category not found'
+        ], 404);
     }
+
+    // Log before delete
+    Log::info('Category Found for Delete', [
+        'category' => $category
+    ]);
+
+    // Perform soft delete
+    $category->delete();
+
+    // Log after delete
+    Log::info('Category Soft Deleted Successfully', [
+        'id' => $id,
+        'deleted_at' => now()->toDateTimeString()
+    ]);
+
+    // JSON response
+    return response()->json([
+        'status'  => true,
+        'message' => 'Category deleted successfully (soft deleted)'
+    ], 200);
+}
 }
