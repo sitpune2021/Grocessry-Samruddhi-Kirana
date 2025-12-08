@@ -9,22 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up()
-{
-    Schema::create('master_warehouses', function (Blueprint $table) {
-        $table->id();
-        $table->string('name');
-        $table->string('location')->nullable();
-        $table->timestamps();
-    });
-}
-
+    public function up(): void
+    {
+        Schema::create('categories', function (Blueprint $table) {
+    $table->id(); // BIGINT UNSIGNED
+    $table->string('name')->unique();
+    $table->string('slug')->unique()->nullable();
+    $table->timestamps();
+});
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_warehouses');
+        Schema::dropIfExists('categories');
     }
 };
