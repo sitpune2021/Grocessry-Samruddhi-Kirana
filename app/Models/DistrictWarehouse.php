@@ -1,12 +1,17 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 
 class DistrictWarehouse extends Model
 {
-    protected $fillable = ['master_warehouse_id', 'name', 'location'];
+    protected $fillable =
+    [
+        'state_id',
+        'name',
+    ];
 
     public function master()
     {

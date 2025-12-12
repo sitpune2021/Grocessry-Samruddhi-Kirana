@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,6 +31,5 @@ Route::apiResource('/district-warehouses', DistrictWarehouseController::class);
 Route::apiResource('/taluka-warehouses', TalukaWarehouseController::class);
 Route::apiResource('/store', CategoryController::class);
 
-Route::apiResource('productstore', ProductController::class);
- 
- 
+Route::apiResource('/productstore', ProductController::class);
+Route::apiResource('/users', UserController::class);
