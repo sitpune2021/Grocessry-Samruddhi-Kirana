@@ -5,6 +5,7 @@ use App\Http\Controllers\MasterWarehouseController;
 use App\Http\Controllers\TalukaWarehouseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
@@ -17,7 +18,13 @@ Route::get('/', function () {
 
 
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:sanctum');;
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:sanctum');
+
+
+Route::post('/send-otp', [LoginController::class, 'sendOtp']);
+Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
+Route::post('/logout', [LoginController::class, 'verifyOtp']);
+
 Route::apiResource('/master-warehouses', MasterWarehouseController::class);
 Route::apiResource('/district-warehouses', DistrictWarehouseController::class);
 Route::apiResource('/taluka-warehouses', TalukaWarehouseController::class);
