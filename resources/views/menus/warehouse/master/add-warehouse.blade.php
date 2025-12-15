@@ -19,90 +19,153 @@
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row g-6">
-
-                            <!-- Form controls -->
-                            <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-xxl-12">
                                 <div class="card">
-                                    <h4 class="card-header">
-                                        @if($mode === 'add')
-                                        Add Warehouse
-                                        @elseif($mode === 'edit')
-                                        Edit Warehouse
-                                        @else
-                                        View Warehouse
-                                        @endif
-                                    </h4>
+                                    <div class="card-header d-flex align-items-center">
+                                        <h4 class="mb-0 flex-grow-1">
+                                            @if($mode === 'add')
+                                            Add Warehouse
+                                            @elseif($mode === 'edit')
+                                            Edit Warehouse
+                                            @else
+                                            View Warehouse
+                                            @endif
+                                        </h4>
+                                    </div>
+
                                     <div class="card-body">
                                         <form action="{{ route('warehouse.store') }}" method="POST">
                                             @csrf
 
-                                            <div class="form-floating mb-3">
-                                                <input type="text" name="name" class="form-control" placeholder="Warehouse Name" required>
-                                                <label>Warehouse Name</label>
-                                            </div>
+                                            <div class="row">
 
-                                            <div class="form-floating mb-3">
-                                                <select name="type" class="form-select" id="warehouseType" required>
-                                                    <option value="">Select Type</option>
-                                                    <option value="master">Master</option>
-                                                    <option value="district">District</option>
-                                                    <option value="taluka">Taluka</option>
-                                                </select>
-                                                <label>Warehouse Type</label>
-                                            </div>
+                                                {{-- Warehouse Name --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Warehouse Name <span class="mandatory">*</span></label>
+                                                        <input type="text" name="name"
+                                                            class="form-control"
+                                                            placeholder="Warehouse Name"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    </div>
+                                                </div>
 
-                                            <div class="form-floating mb-3" id="parentDiv">
-                                                <select name="parent_id" class="form-select">
-                                                    <option value="">Select Parent Warehouse</option>
-                                                    @foreach($warehouses as $w)
-                                                    <option value="{{ $w->id }}">{{ $w->name }} ({{ ucfirst($w->type) }})</option>
-                                                    @endforeach
-                                                </select>
-                                                <label>Parent Warehouse</label>
-                                            </div>
+                                                {{-- Warehouse Type --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Warehouse Type <span class="mandatory">*</span></label>
+                                                        <select name="type"
+                                                            class="form-select"
+                                                            id="warehouseType"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Type</option>
+                                                            <option value="master">Master</option>
+                                                            <option value="district">District</option>
+                                                            <option value="taluka">Taluka</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                                            <div class="form-floating mb-3">
-                                                <input type="text" name="address" class="form-control" placeholder="Address">
-                                                <label>Address</label>
-                                            </div>
+                                                {{-- Parent Warehouse --}}
+                                                <div class="col-md-4" id="parentDiv">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Parent Warehouse</label>
+                                                        <select name="parent_id"
+                                                            class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Parent Warehouse</option>
+                                                            @foreach($warehouses as $w)
+                                                            <option value="{{ $w->id }}">
+                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
 
-                                            <div class="form-floating mb-3">
-                                                <input type="text" name="contact_person" class="form-control" placeholder="Contact Person">
-                                                <label>Contact Person</label>
-                                            </div>
+                                                {{-- Address --}}
+                                                <div class="col-md-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Address</label>
+                                                        <textarea name="address"
+                                                            class="form-control"
+                                                            rows="2"
+                                                            placeholder="Address"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}></textarea>
+                                                    </div>
+                                                </div>
 
-                                            <div class="form-floating mb-3">
-                                                <input type="text" name="mobile" class="form-control" placeholder="Mobile">
-                                                <label>Mobile</label>
-                                            </div>
+                                                {{-- Contact Person --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Contact Person</label>
+                                                        <input type="text" name="contact_person"
+                                                            class="form-control"
+                                                            placeholder="Contact Person"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    </div>
+                                                </div>
 
-                                            <!-- <h5>User Login (Optional)</h5> -->
-                                            <div class="form-floating mb-3">
-                                                <input type="text" name="user_name" class="form-control" placeholder="User Name">
-                                                <label>User Name</label>
-                                            </div>
-                                            <div class="form-floating mb-3">
-                                                <input type="email" name="user_email" class="form-control" placeholder="Email">
-                                                <label>Email</label>
-                                            </div>
-                                            <!-- <div class="form-floating mb-3">
-                                                <input type="password" name="user_password" class="form-control" placeholder="Password">
-                                                <label>Password</label>
-                                            </div> -->
+                                                {{-- Mobile --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Mobile</label>
+                                                        <input type="text" name="mobile"
+                                                            class="form-control"
+                                                            maxlength="10"
+                                                            placeholder="Mobile"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    </div>
+                                                </div>
 
-                                            <button type="submit" class="btn btn-primary">Create Warehouse</button>
+                                                {{-- User Name --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">User Name</label>
+                                                        <input type="text" name="user_name"
+                                                            class="form-control"
+                                                            placeholder="User Name"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    </div>
+                                                </div>
+
+                                                {{-- User Email --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Email</label>
+                                                        <input type="email" name="user_email"
+                                                            class="form-control"
+                                                            placeholder="Email"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Buttons --}}
+                                                <div class="col-lg-12">
+                                                    <div class="text-end">
+                                                        <a href="{{ route('warehouse.index') }}" class="btn btn-info">Cancel</a>
+
+                                                        @if($mode !== 'view')
+                                                        <button type="submit" class="btn btn-primary">
+                                                            {{ $mode === 'edit' ? 'Update' : 'Submit' }}
+                                                        </button>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- / Content -->
+
                     @include('layouts.footer')
                 </div>
+
                 <!-- Content wrapper -->
             </div>
             <!-- / Layout page -->
