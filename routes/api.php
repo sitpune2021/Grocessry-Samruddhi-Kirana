@@ -13,15 +13,6 @@ use App\Http\Controllers\UserController;
 Route::get('/', function () {
     return view('welcome');
 });
-
-// Route::get('/login', [AdminAuthController::class, 'login']);
-//Route::post('/admin/login', [AdminAuthController::class, 'login']);
-
-
-Route::post('/admin/login', [AdminAuthController::class, 'login']);
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:sanctum');
-
-
 Route::post('/send-otp', [LoginController::class, 'sendOtp']);
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 Route::post('/logout', [LoginController::class, 'verifyOtp']);

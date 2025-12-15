@@ -14,7 +14,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categories=Category::paginate(10);
+        return view('menus.category.index',compact('categories'));
     }
 
     /**
@@ -22,7 +23,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        return view('menus.category.add-category');
     }
 
     /**
@@ -32,68 +33,99 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Category request data:', $request->all());
-        // Validation
-        $validated = $request->validate([
-            'name' => 'required|unique:categories,name',
+        Log::info('Category store request received', [
+            'request_data' => $request->all(),
+            'ip'           => $request->ip(),
+            'user_id'      => auth()->id(),
         ]);
 
-        // Create category
-        $category = Category::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-        ]);
+        try {
+            // Validation
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:categories,name',
+                'slug' => 'required|string|max:255',
+            ]);
 
-        // Return JSON response
-        return response()->json([
-            'status'  => true,
-            'message' => 'Category created successfully',
-            'data'    => $category
-        ], 200);
+            // Create category
+            $category = Category::create([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+            ]);
+
+            Log::info('Category created successfully', [
+                'category_id' => $category->id,
+                'name'        => $category->name,
+                'slug'        => $category->slug,
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Category added successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            // Validation error log
+            Log::warning('Category validation failed', [
+                'errors' => $e->errors(),
+            ]);
+
+            throw $e; // Important: rethrow so Laravel can handle it
+
+        } catch (\Exception $e) {
+
+            // Any other error
+            Log::error('Error while creating category', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
+        }
     }
-
 
     /**
      * Display the specified resource.
      */
-public function show(string $id)
-{
-    try {
-        // Log request
-        Log::info('Category Show Request Received', ['id' => $id]);
+    public function show(string $id)
+    {
+        try {
+            // Log request
+            Log::info('Category Show Request Received', ['id' => $id]);
 
-        // Fetch category
-        $category = Category::find($id);
+            // Fetch category
+            $category = Category::find($id);
 
-        if (!$category) {
-            Log::warning("Category Not Found", ['id' => $id]);
+            if (!$category) {
+                Log::warning("Category Not Found", ['id' => $id]);
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Category not found'
+                ], 404);
+            }
+
+            Log::info('Category Found', ['category' => $category]);
+
+            // Return response
+            return response()->json([
+                'status'  => true,
+                'message' => 'Category fetched successfully',
+                'data'    => $category
+            ], 200);
+        } catch (\Throwable $e) {
+
+            Log::error('Category Show Error', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'status'  => false,
-                'message' => 'Category not found'
-            ], 404);
+                'message' => 'Something went wrong',
+                'error'   => $e->getMessage()
+            ], 500);
         }
-
-        Log::info('Category Found', ['category' => $category]);
-
-        // Return response
-        return response()->json([
-            'status'  => true,
-            'message' => 'Category fetched successfully',
-            'data'    => $category
-        ], 200);
-
-    } catch (\Throwable $e) {
-
-        Log::error('Category Show Error', ['error' => $e->getMessage()]);
-
-        return response()->json([
-            'status'  => false,
-            'message' => 'Something went wrong',
-            'error'   => $e->getMessage()
-        ], 500);
     }
-}
 
 
     /**
@@ -121,7 +153,7 @@ public function show(string $id)
 
         $category->update([
             'name' => $request->name,
-            'slug' =>Str::slug($request->name),
+            'slug' => Str::slug($request->name),
         ]);
 
         Log::info('Category Updated Successfully', ['category' => $category]);
@@ -137,45 +169,45 @@ public function show(string $id)
     /**
      * Remove the specified resource from storage.
      */
-   public function destroy(string $id)
-{
-    // Log request
-    Log::info('Delete Category Request', [
-        'id' => $id
-    ]);
-
-    // Find category
-    $category = Category::find($id);
-
-    if (!$category) {
-        Log::warning("Category not found for delete", [
+    public function destroy(string $id)
+    {
+        // Log request
+        Log::info('Delete Category Request', [
             'id' => $id
         ]);
 
+        // Find category
+        $category = Category::find($id);
+
+        if (!$category) {
+            Log::warning("Category not found for delete", [
+                'id' => $id
+            ]);
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'Category not found'
+            ], 404);
+        }
+
+        // Log before delete
+        Log::info('Category Found for Delete', [
+            'category' => $category
+        ]);
+
+        // Perform soft delete
+        $category->delete();
+
+        // Log after delete
+        Log::info('Category Soft Deleted Successfully', [
+            'id' => $id,
+            'deleted_at' => now()->toDateTimeString()
+        ]);
+
+        // JSON response
         return response()->json([
-            'status'  => false,
-            'message' => 'Category not found'
-        ], 404);
+            'status'  => true,
+            'message' => 'Category deleted successfully (soft deleted)'
+        ], 200);
     }
-
-    // Log before delete
-    Log::info('Category Found for Delete', [
-        'category' => $category
-    ]);
-
-    // Perform soft delete
-    $category->delete();
-
-    // Log after delete
-    Log::info('Category Soft Deleted Successfully', [
-        'id' => $id,
-        'deleted_at' => now()->toDateTimeString()
-    ]);
-
-    // JSON response
-    return response()->json([
-        'status'  => true,
-        'message' => 'Category deleted successfully (soft deleted)'
-    ], 200);
-}
 }
