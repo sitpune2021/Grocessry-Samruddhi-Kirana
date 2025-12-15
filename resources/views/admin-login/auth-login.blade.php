@@ -1,3 +1,5 @@
+@include('layouts.header')
+
 <body>
   <!-- Content -->
 
@@ -9,7 +11,7 @@
           <div class="card-body">
             <!-- Logo -->
             <div class="app-brand justify-content-center">
-              <a href="index.html" class="app-brand-link gap-1">
+              <a href="{{route('login.form')}}" class="app-brand-link gap-1">
                 <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}" alt="Samruddhi Kirana" height="200px" width="200px">
               </a>
             </div>
