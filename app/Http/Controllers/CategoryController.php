@@ -14,8 +14,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories=Category::paginate(10);
-        return view('menus.category.index',compact('categories'));
+        $categories = Category::paginate(10);
+
+        return view('menus.category.index', compact('categories'));
     }
 
     /**
@@ -23,7 +24,8 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return view('menus.category.add-category');
+        $mode = 'add';
+        return view('menus.category.add-category', compact('mode'));
     }
 
     /**
@@ -59,7 +61,7 @@ class CategoryController extends Controller
             ]);
 
             return redirect()
-                ->back()
+                ->route('menus.category.index')
                 ->with('success', 'Category added successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
 
@@ -80,9 +82,8 @@ class CategoryController extends Controller
             ]);
 
             return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Something went wrong. Please try again.');
+                ->route('category.index')
+                ->with('error', 'Category not stored.');
         }
     }
 
@@ -93,6 +94,7 @@ class CategoryController extends Controller
     {
         try {
             // Log request
+            $mode = 'show';
             Log::info('Category Show Request Received', ['id' => $id]);
 
             // Fetch category
@@ -101,29 +103,20 @@ class CategoryController extends Controller
             if (!$category) {
                 Log::warning("Category Not Found", ['id' => $id]);
 
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Category not found'
-                ], 404);
+                return redirect()->route('category.index')
+                    ->with('error', 'Category not found');
             }
 
             Log::info('Category Found', ['category' => $category]);
 
             // Return response
-            return response()->json([
-                'status'  => true,
-                'message' => 'Category fetched successfully',
-                'data'    => $category
-            ], 200);
+            return view('menus.category.add-category', compact('category', 'mode'));
         } catch (\Throwable $e) {
 
             Log::error('Category Show Error', ['error' => $e->getMessage()]);
 
-            return response()->json([
-                'status'  => false,
-                'message' => 'Something went wrong',
-                'error'   => $e->getMessage()
-            ], 500);
+            return redirect()->route('menus.category.index')
+                ->with('error', 'Category not found');
         }
     }
 
@@ -131,38 +124,96 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id) {}
+    public function edit($id)
+    {
+
+        Log::info('Category Edit Request Received', ['id' => $id]);
+
+        try {
+            $category = Category::find($id);
+            $mode = 'edit';
+
+            if (!$category) {
+                Log::warning('Category Not Found for Edit', ['id' => $id]);
+
+                return redirect()->route('category.index')
+                    ->with('error', 'Category not found');
+            }
+
+            Log::info('Category Loaded for Edit', [
+                'category_id' => $category->id,
+                'name'        => $category->name,
+            ]);
+
+            return view('menus.category.add-category', compact('category', 'mode'));
+        } catch (\Throwable $e) {
+
+            Log::error('Category Edit Error', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+            return redirect()->route('category.index')
+                ->with('error', 'Something went wrong');
+        }
+    }
+
 
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        Log::info('Update Category Request', ['id' => $id, 'request' => $request->all()]);
-
-        $category = Category::find($id);
-
-        if (!$category) {
-            Log::warning("Category not found for ID: $id");
-            return response()->json([
-                'status'  => false,
-                'message' => 'Category not found'
-            ], 404);
-        }
-
-        $category->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
+        Log::info('Category Update Request Received', [
+            'id'      => $id,
+            'request' => $request->all(),
+            'user_id' => auth()->id(),
         ]);
 
-        Log::info('Category Updated Successfully', ['category' => $category]);
+        try {
+            $category = Category::find($id);
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'Category updated successfully',
-            'data'    => $category
-        ], 200);
+            if (!$category) {
+                Log::warning('Category Not Found for Update', ['id' => $id]);
+
+                return redirect()->route('menus.category.index')
+                    ->with('error', 'Category not found');
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+                'slug' => 'required|string|max:255',
+            ]);
+
+            $category->update($validated);
+
+            Log::info('Category Updated Successfully', [
+                'category_id' => $category->id,
+                'name'        => $category->name,
+            ]);
+
+            return redirect()->route('category.index')
+                ->with('success', 'Category updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Category Update Validation Failed', [
+                'errors' => $e->errors(),
+            ]);
+
+            throw $e;
+        } catch (\Throwable $e) {
+
+            Log::error('Category Update Error', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
+        }
     }
 
 
@@ -205,9 +256,7 @@ class CategoryController extends Controller
         ]);
 
         // JSON response
-        return response()->json([
-            'status'  => true,
-            'message' => 'Category deleted successfully (soft deleted)'
-        ], 200);
+        return redirect()->route('category.index')
+            ->with('success', 'Category deleted successfully');
     }
 }

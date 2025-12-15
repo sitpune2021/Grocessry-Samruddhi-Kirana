@@ -37,11 +37,19 @@
     </li>
     <li class="menu-item">
         <a
-            href=""
-            target="_blank"
+            href="{{route('product.index')}}"
             class="menu-link">
             <i class="menu-icon tf-icons bx bx-package"></i>
             <div class="text-truncate" data-i18n="Product">Product</div>
+
+        </a>
+    </li>
+    <li class="menu-item">
+        <a
+            href="{{route('warehouse.index')}}"
+            class="menu-link">
+            <i class="menu-icon tf-icons bx bx-package"></i>
+            <div class="text-truncate" data-i18n="Warehouse">Warehouse</div>
 
         </a>
     </li>

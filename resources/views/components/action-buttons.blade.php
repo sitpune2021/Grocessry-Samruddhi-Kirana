@@ -1,5 +1,3 @@
-<td class="d-flex align-items-center gap-2">
-
     {{-- View --}}
     @if($viewUrl)
     <a href="{{ $viewUrl }}"
@@ -31,5 +29,3 @@
         </button>
     </form>
     @endif
-
-</td>

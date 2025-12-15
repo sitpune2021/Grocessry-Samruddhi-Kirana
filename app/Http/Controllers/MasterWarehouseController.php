@@ -11,7 +11,15 @@ class MasterWarehouseController extends Controller
 {
     public function index()
     {
-        return Warehouse::with('districtWarehouses')->get();
+        $warehouses = Warehouse::paginate(10);
+        return view('menus.warehouse.master.index', compact('warehouses'));
+    }
+
+    public function create()
+    {
+        $mode = 'add';
+        $warehouses = Warehouse::all();
+        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -23,6 +31,7 @@ class MasterWarehouseController extends Controller
                 'address'         => 'nullable|string|max:500',
                 'contact_person'  => 'nullable|string|max:255',
                 'mobile'          => 'nullable|string|max:15',
+                'email'          => 'nullable|string|max:15',
 
                 'master_id'              => 'required_if:type,district|nullable|integer',
                 'district_id'            => 'required_if:type,district,required_if:type,taluka|nullable|integer',
@@ -47,6 +56,7 @@ class MasterWarehouseController extends Controller
                 'address'         => $request->address,
                 'contact_person'  => $request->contact_person,
                 'mobile'          => $request->mobile,
+                'email'          => $request->email,
                 'status'          => 'active',
             ];
 
@@ -72,7 +82,7 @@ class MasterWarehouseController extends Controller
 
             Log::info('Warehouse Created Successfully:', $warehouse->toArray());
 
-            return back()->with('success', 'Warehouse created successfully.');
+            return redirect()->route('warehouse.index')->with('success', 'Warehouse created successfully.');
         } catch (\Exception $e) {
 
             Log::error('Warehouse Store Error:', [
@@ -84,7 +94,6 @@ class MasterWarehouseController extends Controller
             return back()->with('error', 'Something went wrong, please try again.');
         }
     }
-
 
     public function show($id)
     {

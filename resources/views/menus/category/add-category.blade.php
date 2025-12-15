@@ -26,10 +26,24 @@
                             <!-- Form controls -->
                             <div class="col-md-6">
                                 <div class="card">
-                                    <h5 class="card-header">Add Category</h5>
+                                    <h4 class="card-header">
+                                        @if($mode === 'add')
+                                        Add Category
+                                        @elseif($mode === 'edit')
+                                        Edit Category
+                                        @else
+                                        View Category
+                                        @endif
+                                    </h4>
                                     <div class="card-body">
-                                        <form action="{{ route('category.store') }}" method="POST">
+                                        <!-- <form action="{{ route('category.store') }}" method="POST"> -->
+                                        <form
+                                            action="{{ isset($category) ? route('category.update', $category->id) : route('category.store') }}"
+                                            method="POST">
                                             @csrf
+                                            @if(isset($category))
+                                            @method('PUT')
+                                            @endif
                                             <!-- Category Name -->
                                             <div class="form-floating mb-4">
                                                 <input
@@ -37,6 +51,7 @@
                                                     name="name"
                                                     class="form-control @error('name') is-invalid @enderror"
                                                     id="categoryName"
+                                                    value="{{ old('name', $category->name ?? '') }}"
                                                     placeholder="Category Name">
                                                 <label for="categoryName">Category Name</label>
                                                 @error('name')
@@ -53,6 +68,7 @@
                                                     name="slug"
                                                     class="form-control @error('slug') is-invalid @enderror"
                                                     id="categorySlug"
+                                                    value="{{ old('slug', $category->slug ?? '') }}"
                                                     placeholder="Category Slug">
                                                 <label for="categorySlug">Category Slug</label>
                                                 @error('slug')
@@ -64,9 +80,22 @@
 
                                             <!-- Submit Button -->
                                             <div class="text-end">
+                                                {{-- Back Button (Always visible) --}}
+                                                <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
+                                                    Back
+                                                </a>
+
+                                                {{-- Save / Update Button --}}
+                                                @if($mode === 'add')
                                                 <button type="submit" class="btn btn-outline-primary">
                                                     Save Category
                                                 </button>
+
+                                                @elseif($mode === 'edit')
+                                                <button type="submit" class="btn btn-outline-primary">
+                                                    Update Category
+                                                </button>
+                                                @endif
                                             </div>
                                         </form>
                                     </div>
@@ -86,5 +115,3 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
-
-</html>
