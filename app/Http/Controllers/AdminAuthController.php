@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class AdminAuthController extends Controller
 {
+
+    public function loginForm()
+    {
+        return view('admin-login.auth-login');
+    }
+
     public function login(Request $request)
     {
         try {
@@ -29,22 +35,12 @@ class AdminAuthController extends Controller
 
             $token = $admin->createToken('adminToken')->plainTextToken;
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Login successful',
-                'token' => $token,
-                'admin' => $admin
-            ], 200);
-
+            return back()->with('success', 'Successfully logged in!');
         } catch (\Exception $e) {
 
             Log::error("LOGIN ERROR : " . $e->getMessage());
 
-            return response()->json([
-                'status' => false,
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
-            ], 500);
+            return back()->with('error', 'Invalid details!');
         }
     }
 
@@ -59,7 +55,6 @@ class AdminAuthController extends Controller
                 'status' => true,
                 'message' => 'Logout successfully'
             ]);
-
         } catch (\Exception $e) {
 
             Log::error("LOGOUT ERROR : " . $e->getMessage());

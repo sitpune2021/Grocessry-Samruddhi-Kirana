@@ -21,4 +21,14 @@ class Product extends Model
         'stock',
         'product_images'
     ];
+
+    protected $casts = [
+        'product_images' => 'array',
+    ];
+
+  
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 }

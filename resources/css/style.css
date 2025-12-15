@@ -1,0 +1,4 @@
+.action-icon:hover {
+    transform: scale(1.15);
+    transition: 0.2s ease-in-out;
+}
