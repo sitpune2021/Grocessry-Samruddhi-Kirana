@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BatchController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,3 +27,6 @@ Route::apiResource('/store', CategoryController::class);
 
 Route::apiResource('/productstore', ProductController::class);
 Route::apiResource('/users', UserController::class);
+
+
+Route::apiResource('/batch', BatchController::class);
