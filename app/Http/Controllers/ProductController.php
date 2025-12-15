@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
