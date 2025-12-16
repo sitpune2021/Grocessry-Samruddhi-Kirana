@@ -32,10 +32,11 @@ Route::get('/get-products/{category_id}',
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
     
+    
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
-Route::post('/sale', [StockController::class, 'store']);
+Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
 Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
 

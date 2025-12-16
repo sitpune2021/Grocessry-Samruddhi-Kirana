@@ -34,8 +34,20 @@
                                     </h4>
                                     <div class="card-body">
 
-                                        <form method="POST" action="/sale">
+                                        <form method="POST" action="{{ route('sale.store') }}">
                                             @csrf
+
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                <label for="warehouse_id" class="form-label">Select Warehouse</label>
+                                                <select name="warehouse_id" id="warehouse_id" class="form-select">
+                                                    <option value="">-- Select Warehouse --</option>
+                                                    @foreach($warehouses as $w)
+                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                </div>
+                                            </div>
 
                                             <!-- Row 1: Product & Quantity -->
                                             <!-- Category Dropdown -->
@@ -68,6 +80,7 @@
                                                     @enderror
                                                 </div>
                                             </div>
+                                    
 
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-12">
