@@ -10,17 +10,29 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
 use DB;
+use App\Models\Category;
+
 
 class StockController extends Controller
 {
+    
 
     public function create($productId = null)
     {
-        $products = Product::all();
+        $categories = Category::all(); // For category dropdown
+        $products = Product::all(); // All products by default
         $selectedProduct = $productId;
 
-        return view('sale.create', compact('products', 'selectedProduct'));
+        return view('sale.create', compact('categories', 'products', 'selectedProduct'));
     }
+
+    // AJAX function to return products by category
+    public function getProductsByCategory($categoryId)
+    {
+        $products = Product::where('category_id', $categoryId)->get();
+        return response()->json($products);
+    }
+
 
     public function store(Request $request)
     {

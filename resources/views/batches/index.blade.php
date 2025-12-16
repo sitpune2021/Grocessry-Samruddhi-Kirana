@@ -19,11 +19,7 @@
                 </div>
             </div>
 
-            <!-- Search -->
-            <x-datatable-search />
-
-            <table class="table table-bordered">
-
+            <table id="batchTable" class="table table-bordered table-striped mt-4 mb-5">
                 <thead>
                     <tr>
                         <th>Product</th>
@@ -34,8 +30,6 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-                
-
                 <tbody>
                     @foreach($batches as $batch)
                         <tr>
@@ -47,7 +41,7 @@
                             <td align="center">
                                 @if($batch->quantity > 0)
                                     <a href="/sale/{{ $batch->product_id }}" title="Sell Product">
-                                        🛒 SEll PRODUCT
+                                        🛒 Sell Product
                                     </a>
                                 @else
                                     ❌
@@ -56,8 +50,6 @@
                         </tr>
                     @endforeach
                 </tbody>
-                
-
             </table>
 
         </div>
@@ -66,5 +58,39 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+    <!-- DataTables CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <style>
+    /* Table wrapper spacing */
+    #batchTable_wrapper {
+        margin-top: 20px;
+        margin-bottom: 40px;
+    }
+
+    /* Search input spacing */
+    .dataTables_filter {
+        margin-bottom: 20px;
+    }
+
+    /* Table cell padding */
+    #batchTable th, #batchTable td {
+        padding: 12px 15px;
+    }
+    </style>
+
+    <script>
+    $(document).ready(function() {
+        $('#batchTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [[0, 'asc']], // Sort by Product name ascending by default
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search batches..."
+            }
+        });
+    });
+    </script>
 @endpush

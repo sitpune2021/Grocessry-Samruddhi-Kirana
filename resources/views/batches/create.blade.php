@@ -20,120 +20,95 @@
                 <!-- / Navbar -->
 
                 <!-- Content wrapper -->
-                <div class="content-wrapper">
-                    <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row g-6">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <div class="row justify-content-center">
+                        <!-- Form card -->
+                        <div class="col-12">
+                            <div class="card mb-4" style="max-width: 1200px; margin:auto;">
+                                <h4 class="card-header text-center">
+                                    Add Batch
+                                </h4>
+                                <div class="card-body">
+                                    <form method="POST" action="/batches">
+                                        @csrf
 
-                            <!-- Form controls -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <h4 class="card-header">                                       
-                                        Add Batch                                    
-                                    </h4>
-                                    <div class="card-body">
-
-
-                                        <form method="POST" action="/batches">
-                                            @csrf
-
-                                            
-                                            <label for="product_id">Product</label>
-                                            <div class="form-floating mb-4">  
-                                                <select name="product_id" 
-                                                    class="form-control @error('product_id') is-invalid @enderror"
-                                                    id="product_id">
-                                                    <option value="">-- Select Product --</option>
-                                                    @foreach($products as $product)
-                                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                        <!-- Row 1: Category & Product -->
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label for="category_id" class="form-label">Category</label>
+                                                <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                                                    <option value="">-- Select Category --</option>
+                                                    @foreach($categories as $category)
+                                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                                                     @endforeach
                                                 </select>
+                                                @error('category_id')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label for="product_id" class="form-label">Product</label>
+                                                <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
+                                                    <option value="">-- Select Product --</option>
+                                                </select>
                                                 @error('product_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
+                                        </div>
 
-                                            
-                                            <!-- Batch Number -->
-                                            <label for="batch_no">Batch Number</label>
-                                            <div class="form-floating mb-4">                        
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    class="form-control @error('batch_no') is-invalid @enderror"
-                                                    id="batch_no"
-                                                    value=""
-                                                    placeholder="Batch Number">                                                
+                                        <!-- Row 2: Batch Number & Quantity -->
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label for="batch_no" class="form-label">Batch Number</label>
+                                                <input type="text" name="batch_no" id="batch_no" class="form-control @error('batch_no') is-invalid @enderror" placeholder="Batch Number">
                                                 @error('batch_no')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
-                                            <label for="mfg_date">MFG Date</label>
-                                            <div class="form-floating mb-4"> 
-                                                <input type="date" class="form-control @error('mfg_date') is-invalid @enderror"
-                                                        id="mfg_date"
-                                                        value="" name="mfg_date">
-                                                    @error('mfg_date')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
+                                            <div class="col-md-6">
+                                                <label for="quantity" class="form-label">Quantity</label>
+                                                <input type="number" name="quantity" id="quantity" min="1" class="form-control @error('quantity') is-invalid @enderror">
+                                                @error('quantity')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <!-- Row 3: MFG & Expiry -->
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label for="mfg_date" class="form-label">MFG Date</label>
+                                                <input type="date" name="mfg_date" id="mfg_date" class="form-control @error('mfg_date') is-invalid @enderror">
+                                                @error('mfg_date')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
 
-                                            <label for="expiry_date">Expiry Date</label>
-                                            <div class="form-floating mb-4"> 
-                                                <input type="date" class="form-control @error('expiry_date') is-invalid @enderror"
-                                                    id="expiry_date"
-                                                    value="" name="expiry_date">
+                                            <div class="col-md-6">
+                                                <label for="expiry_date" class="form-label">Expiry Date</label>
+                                                <input type="date" name="expiry_date" id="expiry_date" class="form-control @error('expiry_date') is-invalid @enderror">
                                                 @error('expiry_date')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
+                                        </div>
 
-                                            <label for="quantity">Quantity</label>
-                                            <div class="form-floating mb-4"> 
-                                                <input type="number" class="form-control @error('quantity') is-invalid @enderror"
-                                                    id="quantity"
-                                                    value="" name="quantity" min="1">
-                                                    @error('quantity')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                            </div>
+                                        <!-- Buttons -->
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">Back</a>
+                                            <button type="submit" class="btn btn-primary">Save Batch</button>
+                                        </div>
 
-                                            
-                                            <!-- Submit Button -->
-                                            <div class="text-end">
-                                                {{-- Back Button (Always visible) --}}
-                                                <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">
-                                                    Back
-                                                </a>
-
-                                                <button type="submit" class="btn btn-outline-primary">
-                                                    Save Batch
-                                                </button>                                                       
-                                            </div>
-                                        </form>
-
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
-                    <!-- / Content -->
-                    @include('layouts.footer')
-
                 </div>
+
 
                 <!-- Content wrapper -->
             </div>
@@ -144,3 +119,29 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $('#category_id').change(function () {
+        let categoryId = $(this).val();
+        $('#product_id').html('<option value="">Loading...</option>');
+
+        if (categoryId) {
+            $.ajax({
+                url: '/get-products/' + categoryId,
+                type: 'GET',
+                success: function (products) {
+                    let options = '<option value="">-- Select Product --</option>';
+                    products.forEach(function (product) {
+                        options += `<option value="${product.id}">${product.name}</option>`;
+                    });
+                    $('#product_id').html(options);
+                }
+            });
+        } else {
+            $('#product_id').html('<option value="">-- Select Product --</option>');
+        }
+    });
+</script>

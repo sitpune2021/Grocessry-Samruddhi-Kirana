@@ -206,12 +206,15 @@
                                                     <div class="text-end">
                                                         <a href="{{ route('warehouse.index') }}" class="btn btn-info">Cancel</a>
 
-                                                        @if($mode !== 'view')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            {{ $mode === 'edit' ? 'Update' : 'Submit' }}
-                                                        </button>
-                                                        @endif
-                                                    </div>
+                                                    @if($mode === 'add')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Save Category
+                                                    </button>
+                                                    @elseif($mode === 'edit')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Update Category
+                                                    </button>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </form>

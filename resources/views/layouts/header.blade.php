@@ -14,10 +14,13 @@
 
   <title>Samruddhi Kirana</title>
 
+  <link rel="icon" type="image/ico" href="{{ asset('admin/assets/img/icon.ico') }}">
+
   <meta name="description" content="" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="{{asset('admin/asset/img/logo/samrudhi-kirana')}}" />
+  <!-- <link rel="icon" type="image/x-icon" href="{{ asset('admin/asset/img/logo/samrudhi-kirana.ico') }}"> -->
+
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,20 +30,21 @@
     rel="stylesheet" />
 
   <!-- Icons -->
-<link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css') }}" />
+  <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css') }}" />
 
-<!-- Core CSS -->
-<link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css') }}" />
-<link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}" />
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css') }}" />
+  <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css') }}" />
 
-<!-- Vendor CSS -->
-<link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-<link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+  <!-- Vendor CSS -->
+  <link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+  <link rel="stylesheet" href="{{ asset('admin/assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 
-<!-- Helpers -->
-<script src="{{ asset('admin/assets/vendor/js/helpers.js') }}"></script>
+  <!-- Helpers -->
+  <script src="{{ asset('admin/assets/vendor/js/helpers.js') }}"></script>
 
-<!-- Theme Config -->
-<script src="{{ asset('admin/assets/js/config.js') }}"></script>
+  <!-- Theme Config -->
+  <script src="{{ asset('admin/assets/js/config.js') }}"></script>
+
 
 </head>

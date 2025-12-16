@@ -113,75 +113,117 @@
 }
 
 
-/* Page Background */
-.login-page {
-  min-height: 100vh;
-  background: #f5f7fb;
-  display: flex;
-  align-items: center;
-}
+  /* Sidebar Container */
+    .sidebar {
+        width: 250px;
+        min-height: 100vh;
+        background: #1e1e2d;
+        position: fixed;
+        left: 0;
+        top: 0;
+        overflow-y: auto;
+    }
 
-/* Card Styling */
-.login-card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  padding: 10px;
-}
+    /* Logo Section */
+    .sidebar-logo {
+        padding: 18px;
+        text-align: center;
+        background: #282833ff;
+        border-bottom: 1px solid #e3e3e9ff;
+    }
 
-/* Logo */
-.login-logo {
-  height: 120px;
-  width: auto;
-}
+    .sidebar-logo img {
+        max-height: 90px;
+        max-width: 320px;
+    }
 
-/* Form */
-.form-label {
-  font-weight: 500;
-  color: #333;
-}
+    /* Menu */
+    .sidebar ul {
+        list-style: none;
+        padding: 10px;
+        margin: 0;
+    }
 
-.form-control {
-  height: 45px;
-  border-radius: 8px;
-}
+    .menu-item {
+        margin-bottom: 6px;
+    }
 
-/* Button */
-.btn-primary {
-  height: 45px;
-  border-radius: 8px;
-  font-weight: 600;
-  background-color: #4e73df;
-  border: none;
-}
+    /* MAIN MENU LINK */
+    .menu-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        color: #f6f4f4ff;
+        /* ✅ White text */
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
 
-.btn-primary:hover {
-  background-color: #2e59d9;
-}
-
-/* Forgot Password */
-.forgot-link {
-  font-size: 14px;
-  text-decoration: none;
-  color: #4e73df;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
+    .menu-link i {
+        font-size: 18px;
+        color: #ffffff;
+    }
 
 
-.card-header {
-    font-size: 16px;
-}
 
-.form-control {
-    border-radius: 8px;
-    height: 44px;
-}
+    /* Menu Header */
+    .menu-header {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #f5f6f8ff;
+        /* Soft white */
+        margin: 15px 10px 5px;
+    }
 
-.btn {
-    border-radius: 8px;
-    padding: 8px 18px;
-}
+    /* Submenu */
+    .submenu {
+        display: none;
+        padding-left: 35px;
+    }
 
+    .submenu li a {
+        display: block;
+        padding: 8px 10px;
+        font-size: 14px;
+        color: #f6f6f6ff;
+        /* ✅ White submenu text */
+        text-decoration: none;
+        border-radius: 5px;
+        transition: 0.3s;
+    }
+
+
+    /* Arrow */
+    .arrow {
+        color: #ffffff;
+        transition: transform 0.3s ease;
+    }
+
+    .arrow.rotate {
+        transform: rotate(90deg);
+    }
+
+    /* Hover effect for main menu (a + div both) */
+    .menu-link:hover {
+        background: #0a0a92;
+        /* Dark blue hover */
+        color: #ffffff;
+    }
+
+    /* Icon + text white on hover */
+    .menu-link:hover span,
+    .menu-link:hover i {
+        color: #121111ff;
+    }
+
+    /* Submenu hover */
+    .submenu li a:hover {
+        background: #2b2b40;
+        color: #ffffff;
+    }
+
+    
