@@ -15,6 +15,14 @@ Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    // show reset page
+    Route::get('/forgot-password', function () {
+        return view('admin-login.password.reset');
+    })->name('forgot.password');
+
+    // submit reset form
+    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+        ->name('reset.password');
 });
 // Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 // Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -36,4 +44,3 @@ Route::get('/sale/{product}', [StockController::class, 'create'])->name('sale.cr
 Route::post('/sale', [StockController::class, 'store']);
 
 Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
-

@@ -26,29 +26,36 @@ class AdminAuthController extends Controller
 
             Log::info('Login attempt for email: ' . $request->email);
 
-            // Check credentials
-            $credentials = $request->only('email', 'password');
+            // Check if user exists
+            $user = User::where('email', $request->email)->first();
 
-            if (Auth::attempt($credentials)) {
-                // Successful login
-                $request->session()->regenerate();
-                Log::info('Successful login for email: ' . $request->email);
-
-                return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
+            if (!$user) {
+                // Email not found, but let's check if password matches any user for combined error
+                $passwordExists = User::where('password', Hash::make($request->password))->exists(); // optional, usually not secure to check
+                return redirect()->back()->withErrors([
+                    'email' => ' Incorrect email',
+                    'password' => $passwordExists ? null : 'Incorrect password'
+                ])->withInput();
             }
 
-            // Invalid login
-            Log::warning('Failed login attempt for email: ' . $request->email);
-            return redirect()->back()->withErrors([
-                'email' => 'Invalid email or password',
-            ]);
+            // If email exists but password wrong
+            if (!Hash::check($request->password, $user->password)) {
+                return redirect()->back()->withErrors([
+                    'password' => 'Incorrect password'
+                ])->withInput();
+            }
+
+            // Successful login
+            Auth::login($user);
+            $request->session()->regenerate();
+            Log::info('Successful login for email: ' . $request->email);
+
+            return redirect()->route('dashboard')->with('success', 'Successfully logged in!');
         } catch (\Exception $e) {
             Log::error('LOGIN ERROR: ' . $e->getMessage());
             return back()->with('error', 'Something went wrong!');
         }
     }
-
-    // Handle logout
     public function logout(Request $request)
     {
         try {
@@ -65,6 +72,47 @@ class AdminAuthController extends Controller
             return back()->with('error', 'Something went wrong!');
         }
     }
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->with('error', 'Email not found');
+        }
+
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Redirect to login page with success message
+        return redirect()->route('login.form')
+            ->with('success', 'Password reset successfully. Please login.');
+    }
+    // public function resetPassword(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email|exists:users,email',
+    //         'password' => 'required|min:6|confirmed',
+    //     ]);
+
+    //     $user = User::where('email', $request->email)->first();
+
+    //     if (! $user) {
+    //         return back()->with('error', 'User not found');
+    //     }
+
+    //     $user->password = Hash::make($request->password);
+    //     $user->save();
+
+    //     return redirect()->route('login.form')
+    //         ->with('success', 'Password reset successfully. Please login.');
+    // }
+
     // public function login(Request $request)
     // {
     //     try {
