@@ -12,10 +12,25 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\WarehouseTransferController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login');
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('logout');
+    // show reset page
+    Route::get('/forgot-password', function () {
+        return view('admin-login.password.reset');
+    })->name('forgot.password');
+
+    // submit reset form
+    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+        ->name('reset.password');
+});
+// Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+// Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+// Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('logout');
+// Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/product', ProductController::class);
