@@ -47,7 +47,7 @@
                 <li><a href="{{route('batches.index')}}">Batch Management</a></li>
                 <li>
                     <a href="{{ route('sale.create') }}">
-                        Sell Management
+                        FIFO Management
                     </a>
                 </li>
                 <li><a href="/expiry-alerts">Expiry Alerts</a></li>

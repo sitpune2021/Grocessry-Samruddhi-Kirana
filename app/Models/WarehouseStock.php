@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class WarehouseStock extends Model
 {
+    use HasFactory;
+
     protected $table = 'warehouse_stock';
 
     protected $fillable = [
@@ -15,5 +19,21 @@ class WarehouseStock extends Model
         'batch_id',
         'quantity',
     ];
-}
 
+    public function batch()
+    {
+        return $this->belongsTo(ProductBatch::class, 'batch_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+    
+
+}

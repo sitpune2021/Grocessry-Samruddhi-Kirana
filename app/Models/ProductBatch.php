@@ -25,4 +25,8 @@ class ProductBatch extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function category() {
+        return $this->belongsTo(Category::class);
+    }
+
 }

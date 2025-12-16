@@ -29,37 +29,32 @@
                                         {{ isset($category) ? 'Edit Batch' : 'Add Batch' }}
                                     </h4>
 
-                                </div>
-                                <div class="card-body">
-                                    <form method="POST" action="/sale">
-                                        @csrf
+                                        <form method="POST" action="{{ route('sale.store') }}">
+                                            @csrf
 
-                                        <!-- Row 1: Category & Product -->
-                                        <div class="row g-3 mb-3">
-                                            <div class="col-md-4">
-                                                <label for="category_id" class="form-label">Category</label>
-                                                <select name="category_id" id="category_id" class="form-select">
-                                                    <option value="">Select Category</option>
-                                                    @foreach($categories as $category)
-                                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                <label for="warehouse_id" class="form-label">Select Warehouse</label>
+                                                <select name="warehouse_id" id="warehouse_id" class="form-select">
+                                                    <option value="">-- Select Warehouse --</option>
+                                                    @foreach($warehouses as $w)
+                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
                                                     @endforeach
                                                 </select>
+                                                </div>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                     <label for="product_id" class="form-label">Product Name</label>
-                                                <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
-                                                    <option value="">Select Product</option>
-                                                    @foreach($products as $product)
-                                                    <option value="{{ $product->id }}" {{ ($selectedProduct == $product->id) ? 'selected' : '' }}>
-                                                        {{ $product->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('product_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                            <!-- Row 1: Product & Quantity -->
+                                            <!-- Category Dropdown -->
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                    <label for="category_id" class="form-label">Category</label>
+                                                    <select name="category_id" id="category_id" class="form-select">
+                                                        <option value="">-- Select Category --</option>
+                                                        @foreach($categories as $category)
+                                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
                                             </div>
 
@@ -75,6 +70,7 @@
                                                 @enderror
                                                 </div>
                                             </div>
+                                    
 
                                              
 
