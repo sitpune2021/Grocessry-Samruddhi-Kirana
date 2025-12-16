@@ -173,23 +173,22 @@
                                                     @endif
                                                 </div>
 
-                                                {{-- Buttons --}}
+                                                <!-- Buttons (Right Aligned) -->
+                                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                                <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
+                                                    <i class="bx bx-arrow-back"></i> Back
+                                                </a>
 
-                                                <div class="col-lg-12">
-                                                    <div class="text-end">
-                                                        <button type="submit" class="btn btn-primary">
-                                                            {{ isset($product) ? 'Update' : 'Submit' }}
-                                                        </button>
-                                                        &nbsp;
-                                                        @if(isset($product))
-                                                        <a href="{{ route('product.index') }}" class="btn btn-info">Cancel</a>
-
-                                                        @else
-                                                        <button type="reset" class="btn btn-info">Reset</button>
-                                                        @endif
-
-                                                    </div>
-                                                </div>
+                                                @if($mode === 'add')
+                                                <button type="submit" class="btn btn-primary">
+                                                     Save Category
+                                                </button>
+                                                @elseif($mode === 'edit')
+                                                <button type="submit" class="btn btn-primary">
+                                                     Update Category
+                                                </button>
+                                                @endif
+                                            </div>
 
                                             </div>
                                         </form>

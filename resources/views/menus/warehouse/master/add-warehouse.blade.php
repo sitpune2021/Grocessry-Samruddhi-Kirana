@@ -142,17 +142,21 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Buttons --}}
-                                                <div class="col-lg-12">
-                                                    <div class="text-end">
-                                                        <a href="{{ route('warehouse.index') }}" class="btn btn-info">Cancel</a>
+                                                <!-- Buttons (Right Aligned) -->
+                                                <div class="mt-4 d-flex justify-content-end gap-2">
+                                                    <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
+                                                        <i class="bx bx-arrow-back"></i> Back
+                                                    </a>
 
-                                                        @if($mode !== 'view')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            {{ $mode === 'edit' ? 'Update' : 'Submit' }}
-                                                        </button>
-                                                        @endif
-                                                    </div>
+                                                    @if($mode === 'add')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Save Category
+                                                    </button>
+                                                    @elseif($mode === 'edit')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Update Category
+                                                    </button>
+                                                    @endif
                                                 </div>
 
                                             </div>
