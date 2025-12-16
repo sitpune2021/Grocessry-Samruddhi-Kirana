@@ -39,12 +39,30 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
-                <li><a href="{{ route('category.index') }}">Category</a></li>
-                <li><a href="{{ route('product.index') }}">Products</a></li>
-                <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
-                <li><a href="{{ url('/expiry-alerts') }}">Expiry Alerts</a></li>
+                <li><a href="{{route('category.index')}}">Category</a></li>
+                <li><a href="{{route('product.index')}}">Products</a></li>
+                <li><a href="{{route('batches.index')}}">Batch Management</a></li>
+                <li>
+                    <a href="{{ route('sale.create') }}">
+                        Sell Management
+                    </a>
+                </li>
+                <li><a href="/expiry-alerts">Expiry Alerts</a></li>
             </ul>
         </li>
+
+        
+        
+           <li class="menu-item">
+            <a
+                href="{{route('transfer.index')}}"
+                class="menu-link">
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div class="text-truncate" data-i18n="Warehouse">Warehouse Transfers</div>
+
+            </a>
+        </li>     
+        
 
     </ul>
 </div>

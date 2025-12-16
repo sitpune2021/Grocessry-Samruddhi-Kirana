@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use App\Models\Category;
 
 
 class ProductBatchController extends Controller
@@ -20,19 +21,30 @@ class ProductBatchController extends Controller
         return view('batches.index', compact('batches'));
     }
 
+
     public function create()
     {
-        $products = Product::all();
-        return view('batches.create', compact('products'));
+        $categories = Category::all();  
+        return view('batches.create', compact('categories'));
+    } 
+
+
+    public function getProductsByCategory($category_id)
+    {
+        $products = Product::where('category_id', $category_id)->get();
+
+        return response()->json($products);
     }
+
 
 
     public function store(Request $request)
     {
         try {
 
-            // ✅ Validation
+            // Validation
             $validated = $request->validate([
+                'category_id' => 'required|exists:categories,id',
                 'product_id'  => 'required|exists:products,id',
                 'batch_no'    => 'required',
                 'mfg_date'    => 'nullable|date',
@@ -40,8 +52,9 @@ class ProductBatchController extends Controller
                 'quantity'    => 'required|integer|min:1',
             ]);
 
-            // ✅ Create Product Batch
+            // Create Product Batch
             $batch = ProductBatch::create([
+                'category_id' => $validated['category_id'], 
                 'product_id'  => $validated['product_id'],
                 'batch_no'    => $validated['batch_no'],
                 'mfg_date'    => $validated['mfg_date'] ?? null,
@@ -49,36 +62,33 @@ class ProductBatchController extends Controller
                 'quantity'    => $validated['quantity'],
             ]);
 
-            // ✅ Stock Movement Entry
+            // Stock Movement Entry
             StockMovement::create([
                 'product_batch_id' => $batch->id,
                 'type'             => 'in',
                 'quantity'         => $validated['quantity'],
             ]);
 
-            // ✅ Success log (optional but useful)
             Log::info('Product batch created successfully', [
-                'batch_id'  => $batch->id,
-                'product_id'=> $validated['product_id'],
-                'quantity'  => $validated['quantity'],
+                'batch_id'   => $batch->id,
+                'category_id'=> $validated['category_id'],
+                'product_id' => $validated['product_id'],
+                'quantity'   => $validated['quantity'],
             ]);
 
             return redirect('/batches')->with('success', 'Batch added successfully');
 
-        }
-        catch (ValidationException $e) {
+        } catch (ValidationException $e) {
 
-            // ❌ Validation error log
             Log::warning('Product batch validation failed', [
                 'errors' => $e->errors(),
                 'input'  => $request->all(),
             ]);
 
-            throw $e; // Laravel ko validation error handle karne do
-        }
-        catch (Exception $e) {
+            throw $e;
 
-            // ❌ Any other error (DB, logic, etc.)
+        } catch (Exception $e) {
+
             Log::error('Error while creating product batch', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
@@ -89,6 +99,7 @@ class ProductBatchController extends Controller
             return back()->with('error', 'Something went wrong while saving batch');
         }
     }
+
 
 
     public function expiryAlerts()
