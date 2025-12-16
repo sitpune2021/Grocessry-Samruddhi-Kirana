@@ -85,14 +85,12 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
-                                                @php
-                                                dd($warehouse)
-                                                @endphp
+
                                                 {{-- Country --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Country</label>
                                                     <select name="country_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         <option value="">Select Country</option>
                                                         @foreach($countries as $country)
                                                         <option value="{{ $country->id }}"
@@ -105,21 +103,6 @@
 
                                                 {{-- State --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">State</label>
-                                                    <select name="state_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if(isset($warehouse->state))
-                                                        <option value="{{ $warehouse->state_id }}" selected>
-                                                            {{ $warehouse->state->name }}
-                                                        </option>
-                                                        @else
-                                                        <option value="">Select State</option>
-                                                        @endif
-                                                    </select>
-                                                </div>
-
-                                                {{-- District --}}
-                                                <div class="col-md-3 mb-3">
                                                     <label class="form-label">District</label>
                                                     <select name="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -129,6 +112,20 @@
                                                         </option>
                                                         @else
                                                         <option value="">Select District</option>
+                                                        @endif
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">Taluka</label>
+                                                    <select name="taluka_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        @if(isset($warehouse->taluka))
+                                                        <option value="{{ $warehouse->taluka_id }}" selected>
+                                                            {{ $warehouse->taluka->name }}
+                                                        </option>
+                                                        @else
+                                                        <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                 </div>
@@ -206,17 +203,17 @@
                                                     <div class="text-end">
                                                         <a href="{{ route('warehouse.index') }}" class="btn btn-info">Cancel</a>
 
-                                                    @if($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Save Category
-                                                    </button>
-                                                    @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Update Category
-                                                    </button>
-                                                    @endif
+                                                        @if($mode === 'add')
+                                                        <button type="submit" class="btn btn-primary">
+                                                            Save Category
+                                                        </button>
+                                                        @elseif($mode === 'edit')
+                                                        <button type="submit" class="btn btn-primary">
+                                                            Update Category
+                                                        </button>
+                                                        @endif
+                                                    </div>
                                                 </div>
-                                            </div>
                                         </form>
                                     </div>
                                 </div>
