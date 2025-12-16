@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -283,5 +285,13 @@ class ProductController extends Controller
             return redirect()->route('product.index')
                 ->with('error', 'Something went wrong while deleting product');
         }
+    }
+
+    //get product by category
+    public function getProductsByCategory($category_id)
+    {
+        $products = Product::where('category_id', $category_id)->get();
+
+        return response()->json($products);
     }
 }

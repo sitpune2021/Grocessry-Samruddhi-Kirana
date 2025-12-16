@@ -24,9 +24,12 @@
                         <div class="row g-6">
 
                             <!-- Form controls -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <h4 class="card-header">
+                            <div class="col-12">
+                                <div class="card shadow-sm border-0 rounded-3">
+
+                                    <!-- Card Header -->
+                                    <div class="card-header bg-white fw-semibold">
+                                        <i class="bx bx-category me-1"></i>
                                         @if($mode === 'add')
                                         Add Category
                                         @elseif($mode === 'edit')
@@ -34,9 +37,9 @@
                                         @else
                                         View Category
                                         @endif
-                                    </h4>
+                                    </div>
+
                                     <div class="card-body">
-                                        <!-- <form action="{{ route('category.store') }}" method="POST"> -->
                                         <form
                                             action="{{ isset($category) ? route('category.update', $category->id) : route('category.store') }}"
                                             method="POST">
@@ -44,64 +47,65 @@
                                             @if(isset($category))
                                             @method('PUT')
                                             @endif
-                                            <!-- Category Name -->
-                                            <div class="form-floating mb-4">
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    class="form-control @error('name') is-invalid @enderror"
-                                                    id="categoryName"
-                                                    value="{{ old('name', $category->name ?? '') }}"
-                                                    placeholder="Category Name">
-                                                <label for="categoryName">Category Name</label>
-                                                @error('name')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
+
+                                            <!-- Inputs side by side -->
+                                            <div class="row g-3">
+
+                                                <!-- Category Name -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Category Name</label>
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        class="form-control @error('name') is-invalid @enderror"
+                                                        value="{{ old('name', $category->name ?? '') }}"
+                                                        placeholder="Enter category name"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('name')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
-                                                @enderror
+
+                                                <!-- Category Slug -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Category Slug</label>
+                                                    <input
+                                                        type="text"
+                                                        name="slug"
+                                                        class="form-control @error('slug') is-invalid @enderror"
+                                                        value="{{ old('slug', $category->slug ?? '') }}"
+                                                        placeholder="auto-generated or manual"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('slug')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
                                             </div>
 
-                                            <!-- Category Slug / Code (optional second field) -->
-                                            <div class="form-floating mb-4">
-                                                <input
-                                                    type="text"
-                                                    name="slug"
-                                                    class="form-control @error('slug') is-invalid @enderror"
-                                                    id="categorySlug"
-                                                    value="{{ old('slug', $category->slug ?? '') }}"
-                                                    placeholder="Category Slug">
-                                                <label for="categorySlug">Category Slug</label>
-                                                @error('slug')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Submit Button -->
-                                            <div class="text-end">
-                                                {{-- Back Button (Always visible) --}}
+                                            <!-- Buttons (Right Aligned) -->
+                                            <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
-                                                    Back
+                                                    <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
-                                                {{-- Save / Update Button --}}
                                                 @if($mode === 'add')
-                                                <button type="submit" class="btn btn-outline-primary">
-                                                    Save Category
+                                                <button type="submit" class="btn btn-primary">
+                                                     Save Category
                                                 </button>
-
                                                 @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-outline-primary">
-                                                    Update Category
+                                                <button type="submit" class="btn btn-primary">
+                                                     Update Category
                                                 </button>
                                                 @endif
                                             </div>
+
                                         </form>
                                     </div>
-
                                 </div>
                             </div>
+
+
                         </div>
                     </div>
                     <!-- / Content -->
