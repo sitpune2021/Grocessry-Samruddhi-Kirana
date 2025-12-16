@@ -29,7 +29,7 @@
             <a href="{{ route('warehouse.index') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i> Warehouse</span>
             </a>
-            <a href="{{ route('warehouse.index') }}" class="menu-link text-white">
+            <a href="{{ route('warehouse.addStock') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i>Add Stock in Warehouse</span>
             </a>
         </li>
