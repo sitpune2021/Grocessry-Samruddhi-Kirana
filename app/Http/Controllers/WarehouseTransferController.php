@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Models\Product;
+use App\Models\Warehouse;
+use App\Models\WarehouseStock;
+use App\Models\WarehouseTransfer;
+use App\Models\ProductBatch;
+use App\Models\StockMovement;
+use App\Models\Category;
+
+
+class WarehouseTransferController extends Controller
+{
+    
+
+
+    public function index()
+    {
+        // Eager load related models for display
+        $transfers = WarehouseTransfer::with([
+            'fromWarehouse', 
+            'toWarehouse', 
+            'category', 
+            'product', 
+            'batch'
+        ])->orderBy('created_at', 'desc')->get();
+
+        return view('warehouse.index', compact('transfers'));
+    }
+
+
+    public function create()
+    {
+        return view('warehouse.transfer', [
+            'warehouses' => Warehouse::where('status', 'active')->get(),
+            'categories' => Category::all(),
+        ]);
+    }
+
+    
+    public function getProductsByCategory($category_id)
+    {
+        return Product::where('category_id', $category_id)->get();
+    }
+
+    public function getBatchesByProduct($product_id)
+    {
+        return ProductBatch::where('product_id', $product_id)->get();
+    }
+
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'from_warehouse_id' => 'required|different:to_warehouse_id|exists:warehouses,id',
+            'to_warehouse_id'   => 'required|exists:warehouses,id',
+            'category_id'       => 'required|exists:categories,id',
+            'product_id'        => 'required|exists:products,id',
+            'batch_id'          => 'required|exists:product_batches,id',
+            'quantity'          => 'required|integer|min:1',
+        ]);
+
+        // ✅ Check available stock on server side
+        $fromStock = WarehouseStock::where([
+            'warehouse_id' => $data['from_warehouse_id'],
+            'batch_id'     => $data['batch_id'],
+        ])->first();
+
+        if (!$fromStock || $fromStock->quantity < $data['quantity']) {
+            return back()->withInput()->withErrors([
+                'quantity' => "Cannot transfer more than available stock (" . ($fromStock ? $fromStock->quantity : 0) . ")"
+            ]);
+        }
+
+        DB::transaction(function () use ($data) {
+
+            // FROM warehouse reduce
+            WarehouseStock::where([
+                'warehouse_id' => $data['from_warehouse_id'],
+                'batch_id'     => $data['batch_id'],
+            ])->decrement('quantity', $data['quantity']);
+
+            // TO warehouse add
+            WarehouseStock::updateOrCreate(
+                [
+                    'warehouse_id' => $data['to_warehouse_id'],
+                    'batch_id'     => $data['batch_id'],
+                ],
+                [
+                    'category_id' => $data['category_id'],
+                    'product_id'  => $data['product_id'],
+                    'quantity'    => DB::raw('quantity + '.$data['quantity']),
+                ]
+            );
+
+            // Warehouse transfer record
+            WarehouseTransfer::create($data);
+
+            // Stock movement record
+            StockMovement::create([
+                'type'             => 'transfer',
+                'quantity'         => $data['quantity'],
+                'product_batch_id' => $data['batch_id'],
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Warehouse transfer completed');
+    }
+
+
+    public function getWarehouseStock($warehouse_id, $batch_id)
+    {
+        $stock = WarehouseStock::where([
+            'warehouse_id' => $warehouse_id,
+            'batch_id'     => $batch_id,
+        ])->first();
+
+        return response()->json([
+            'quantity' => $stock ? $stock->quantity : 0
+        ]);
+    }
+
+
+
+
+
+}

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProductBatch extends Model
 {
      protected $fillable = [
+        'category_id',
         'product_id',
         'batch_no',
         'expiry_date',
