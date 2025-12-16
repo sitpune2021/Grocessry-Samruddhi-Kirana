@@ -1,6 +1,6 @@
 @include('layouts.header')
 
- 
+
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -29,6 +29,9 @@
             <a href="{{ route('warehouse.index') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i> Warehouse</span>
             </a>
+            <a href="{{ route('warehouse.index') }}" class="menu-link text-white">
+                <span><i class="bx bx-store me-2"></i>Add Stock in Warehouse</span>
+            </a>
         </li>
 
         <!-- Inventory Dropdown -->
@@ -51,9 +54,7 @@
             </ul>
         </li>
 
-        
-        
-           <li class="menu-item">
+        <li class="menu-item">
             <a
                 href="{{route('transfer.index')}}"
                 class="menu-link">
@@ -61,8 +62,8 @@
                 <div class="text-truncate" data-i18n="Warehouse">Warehouse Transfers</div>
 
             </a>
-        </li>     
-        
+        </li>
+
 
     </ul>
 </div>

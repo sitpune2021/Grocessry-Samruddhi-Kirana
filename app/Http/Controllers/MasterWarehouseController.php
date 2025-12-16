@@ -39,6 +39,7 @@ class MasterWarehouseController extends Controller
                 'mobile'         => 'nullable|string|max:15',
                 'email'          => 'nullable|email',
 
+
                 'parent_id'  => 'required_if:type,district,required_if:type,taluka|nullable|integer',
                 'district_id' => 'required_if:type,district,required_if:type,taluka|nullable|integer',
                 'taluka_id'  => 'required_if:type,taluka|nullable|integer',
@@ -48,27 +49,6 @@ class MasterWarehouseController extends Controller
                 'district_id.required_if' => 'District is required.',
                 'taluka_id.required_if'   => 'Taluka is required.',
             ];
-
-            // $rules = [
-            //     'name'            => 'required|string|max:255',
-            //     'type'            => 'required|in:master,district,taluka',
-            //     'address'         => 'nullable|string|max:500',
-            //     'contact_person'  => 'nullable|string|max:255',
-            //     'mobile'          => 'nullable|string|max:15',
-            //     'email'          => 'nullable|string',
-
-            //     'master_id'              => 'required_if:type,district|nullable|integer',
-            //     'district_id'            => 'required_if:type,district,required_if:type,taluka|nullable|integer',
-            //     'district_warehouse_id'  => 'required_if:type,taluka|nullable|integer',
-            //     'taluka_id'              => 'required_if:type,taluka|nullable|integer',
-            // ];
-
-            // $messages = [
-            //     'master_id.required_if'             => 'Master warehouse is required for district warehouse.',
-            //     'district_id.required_if'           => 'District is required.',
-            //     'district_warehouse_id.required_if' => 'District warehouse is required for taluka warehouse.',
-            //     'taluka_id.required_if'             => 'Taluka is required.',
-            // ];
 
             $validated = $request->validate($rules, $messages);
 
@@ -81,6 +61,8 @@ class MasterWarehouseController extends Controller
                 'contact_person'  => $request->contact_person,
                 'contact_number'  => $request->mobile,
                 'email'          => $request->email,
+                'country_id'          => $request->country_id,
+                'state_id'          => $request->state_id,
                 'status'          => 'active',
             ];
 
@@ -162,7 +144,7 @@ class MasterWarehouseController extends Controller
             $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])->findOrFail($id);
             $countries = Country::all();
 
-            return view('warehouse.form', [
+            return view('menus.warehouse.master.add-warehouse', [
                 'mode' => 'edit', // edit mode
                 'warehouse' => $warehouse,
                 'countries' => $countries,
@@ -217,6 +199,40 @@ class MasterWarehouseController extends Controller
 
     public function destroy($id)
     {
-        return Warehouse::destroy($id);
+        try {
+            $warehouse = Warehouse::find($id);
+
+            if (!$warehouse) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Warehouse not found.');
+            }
+
+            $hasChildren = Warehouse::where('parent_id', $id)->exists();
+
+            if ($hasChildren) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Cannot delete warehouse. Child warehouses exist.');
+            }
+
+            $warehouse->delete();
+
+            return redirect()
+                ->route('warehouse.index')
+                ->with('success', 'Warehouse deleted successfully.');
+        } catch (\Exception $e) {
+
+            Log::error('Warehouse Delete Error', [
+                'warehouse_id' => $id,
+                'message'      => $e->getMessage(),
+                'file'         => $e->getFile(),
+                'line'         => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Something went wrong while deleting warehouse.');
+        }
     }
 }
