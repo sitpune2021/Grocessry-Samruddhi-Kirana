@@ -85,12 +85,22 @@
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-12">
                                                     <label for="quantity" class="form-label">Product Quantity</label>
-                                                    <input type="number" name="quantity" id="quantity" min="1" class="form-control @error('quantity') is-invalid @enderror">
+                                                    <input type="number" 
+                                                        name="quantity" 
+                                                        id="quantity" 
+                                                        min="1" 
+                                                        max="{{ $availableStock }}" 
+                                                        class="form-control @error('quantity') is-invalid @enderror"
+                                                        placeholder="Max available: {{ $availableStock }}">
                                                     @error('quantity')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
+                                                    <small id="stock-info" class="text-muted">
+                                                        Max available in selected warehouse: {{ $availableStock }}
+                                                    </small>
                                                 </div>
                                             </div>
+
 
                                             <!-- Buttons -->
                                             <div class="d-flex justify-content-between">
@@ -138,4 +148,24 @@
                 });
             });
     });
+</script>
+
+<script>
+    document.getElementById('product_id').addEventListener('change', function() {
+    let productId = this.value;
+    let warehouseId = document.getElementById('warehouse_id').value;
+    let quantityInput = document.getElementById('quantity');
+    let stockInfo = document.getElementById('stock-info');
+
+    if (!warehouseId || !productId) return;
+
+    fetch(`/get-stock/${warehouseId}/${productId}`)
+        .then(res => res.json())
+        .then(data => {
+            let stock = data.stock;
+            quantityInput.max = stock;
+            stockInfo.textContent = `Max available in selected warehouse: ${stock}`;
+        });
+});
+
 </script>

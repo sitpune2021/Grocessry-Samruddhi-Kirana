@@ -19,30 +19,24 @@ class StockController extends Controller
 {
     
 
-    // public function create($productId = null)
-    // {
-    //     $categories = Category::all(); // For category dropdown
-    //     $products = Product::all(); // All products by default
-    //     $selectedProduct = $productId;
-
-    //     return view('sale.create', compact('categories', 'products', 'selectedProduct'));
-    // }
-
-    public function create($productId = null)
+    public function create()
     {
+        $warehouses = Warehouse::all();
         $categories = Category::all();
         $products = Product::all();
-        $warehouses = Warehouse::all();   // ✅ ADD THIS
-        $selectedProduct = $productId;
+
+        // Default selected product
+        $selectedProduct = null;
+        $availableStock = 0;
 
         return view('sale.create', compact(
-            'categories',
-            'products',
-            'warehouses',   // ✅ PASS TO VIEW
-            'selectedProduct'
+            'warehouses', 
+            'categories', 
+            'products', 
+            'selectedProduct', 
+            'availableStock'
         ));
     }
-
 
     // AJAX function to return products by category
     public function getProductsByCategory($categoryId)
@@ -51,82 +45,72 @@ class StockController extends Controller
         return response()->json($products);
     }
 
-
-  public function store(Request $request)
-{
-    try {
-        $validated = $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'product_id'   => 'required|exists:products,id',
-            'quantity'     => 'required|integer|min:1',
-        ]);
-
-        $qty = $validated['quantity'];
-        $warehouseId = $validated['warehouse_id'];
-        $productId = $validated['product_id'];
-
-        // Fetch batches for this warehouse & product
-        $batches = WarehouseStock::with('batch')
-            ->where('warehouse_id', $warehouseId)
-            ->where('product_id', $productId)
-            ->where('quantity', '>', 0)
-            ->get();
-
-        if ($batches->isEmpty()) {
-            return back()->with('error', 'No stock available in selected warehouse');
-        }
-
-        DB::beginTransaction();
-
-        foreach ($batches as $stock) {
-            if ($qty <= 0) break;
-
-            $deduct = min($stock->quantity, $qty);
-
-            // Log before deduct
-            Log::info('Before Deduct', [
-                'warehouse_stock_id' => $stock->id,
-                'batch_qty' => $stock->batch ? $stock->batch->quantity : 'NULL',
-                'warehouse_qty' => $stock->quantity,
-                'deduct' => $deduct
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'warehouse_id' => 'required|exists:warehouses,id',
+                'product_id'   => 'required|exists:products,id',
+                'quantity'     => 'required|integer|min:1',
             ]);
 
-            // Deduct from warehouse stock
-            $stock->decrement('quantity', $deduct);
+            $qty = $validated['quantity'];
+            $warehouseId = $validated['warehouse_id'];
+            $productId = $validated['product_id'];
 
-            // Deduct from batch if exists
-            if ($stock->batch) {
-                $stock->batch->decrement('quantity', $deduct);
+            // 1️⃣ Get total stock in warehouse for this product
+            $totalWarehouseStock = WarehouseStock::where('warehouse_id', $warehouseId)
+                ->where('product_id', $productId)
+                ->sum('quantity');
+
+            // 2️⃣ Check if requested quantity exceeds available warehouse stock
+            if ($qty > $totalWarehouseStock) {
+                return back()->with('error', "Insufficient stock! Only {$totalWarehouseStock} available in selected warehouse.");
             }
 
-            // Stock movement log
-            StockMovement::create([
-                'product_batch_id' => $stock->batch_id,
-                'warehouse_id' => $warehouseId,
-                'type' => 'out',
-                'quantity' => $deduct,
-            ]);
+            // Fetch batches for this warehouse & product (FIFO)
+            $batches = WarehouseStock::with('batch')
+                ->where('warehouse_id', $warehouseId)
+                ->where('product_id', $productId)
+                ->where('quantity', '>', 0)
+                ->get();
 
-            $qty -= $deduct;
-        }
+            DB::beginTransaction();
 
-        if ($qty > 0) {
+            foreach ($batches as $stock) {
+                if ($qty <= 0) break;
+
+                $deduct = min($stock->quantity, $qty);
+
+                // Deduct from warehouse stock
+                $stock->decrement('quantity', $deduct);
+
+                // Deduct from batch if exists
+                if ($stock->batch) {
+                    $stock->batch->decrement('quantity', $deduct);
+                }
+
+                // Record stock movement
+                StockMovement::create([
+                    'product_batch_id' => $stock->batch_id,
+                    'warehouse_id'     => $warehouseId,
+                    'type'             => 'out',
+                    'quantity'         => $deduct,
+                ]);
+
+                $qty -= $deduct;
+            }
+
+            DB::commit();
+            Log::info('Sale completed successfully');
+
+            return back()->with('success', 'Sale completed successfully');
+
+        } catch (Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Insufficient stock');
+            Log::error('Sale error', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Something went wrong during sale');
         }
-
-        DB::commit();
-        Log::info('Sale completed successfully');
-
-        return back()->with('success', 'Sale completed successfully');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Sale error', ['error' => $e->getMessage()]);
-        return back()->with('error', 'Something went wrong during sale');
     }
-}
-
-
 
 }

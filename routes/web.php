@@ -40,6 +40,12 @@ Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
 Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
 
+Route::get('/get-stock/{warehouse}/{product}', function($warehouseId, $productId) {
+    $stock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
+        ->where('product_id', $productId)
+        ->sum('quantity');
+    return response()->json(['stock' => $stock]);
+});
 
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
