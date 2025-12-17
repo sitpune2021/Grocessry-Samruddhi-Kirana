@@ -1,6 +1,6 @@
 @include('layouts.header')
 
- 
+
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -51,18 +51,18 @@
             </ul>
         </li>
 
-        
-        
-           <li class="menu-item">
+
+
+        <li class="menu-item ">
             <a
                 href="{{route('transfer.index')}}"
-                class="menu-link">
+                class="menu-link text-white">
                 <i class="menu-icon tf-icons bx bx-package"></i>
-                <div class="text-truncate" data-i18n="Warehouse">Warehouse Transfers</div>
+                <div class=" " data-i18n="Warehouse ">Warehouse Transfers</div>
 
             </a>
-        </li>     
-        
+        </li>
+
 
     </ul>
 </div>

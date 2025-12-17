@@ -27,7 +27,7 @@
 
             <!-- Table -->
             <div class="table-responsive mt-5">
-                <table class="table table-bordered table-hover align-middle mb-0">
+                <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
