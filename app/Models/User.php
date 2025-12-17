@@ -24,8 +24,16 @@ class User extends Authenticatable
         'last_name',
         'email',
         'mobile',
-        'role',
+        'role_id',
         'password',
+        'profile_photo',
+        'email_verified_at',
+        'remember_token',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'status',
+        'last_login_at'
     ];
 
     /**
@@ -49,5 +57,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+        public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }
