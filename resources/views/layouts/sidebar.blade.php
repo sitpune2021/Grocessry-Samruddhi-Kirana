@@ -8,7 +8,7 @@
     <!-- Logo -->
     <div class="sidebar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}"
+            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}"
                 alt="Samruddhi Kirana">
         </a>
     </div>
@@ -53,15 +53,13 @@
 
 
 
-        <li class="menu-item ">
-            <a
-                href="{{route('transfer.index')}}"
-                class="menu-link text-white">
-                <i class="menu-icon tf-icons bx bx-package"></i>
-                <div class=" " data-i18n="Warehouse ">Warehouse Transfers</div>
-
-            </a>
-        </li>
+        <li class="menu-item">
+    <a href="{{ route('transfer.index') }}"
+       class="menu-link text-white flex items-center">
+        <i class="menu-icon tf-icons bx bx-package" ></i>
+        <span class="m-0 p-0">Warehouse Transfers</span>
+    </a>
+</li>
 
 
     </ul>
