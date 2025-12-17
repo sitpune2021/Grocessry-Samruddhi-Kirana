@@ -62,12 +62,21 @@
 
 
         <li class="menu-item">
+<<<<<<< HEAD
     <a href="{{ route('transfer.index') }}"
        class="menu-link text-white flex items-center">
         <i class="menu-icon tf-icons bx bx-package" ></i>
         <span class="m-0 p-0">Warehouse Transfers</span>
     </a>
 </li>
+=======
+            <a href="{{ route('transfer.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-package"></i>
+                <div class=" " data-i18n="Warehouse ">Warehouse Transfers</div>
+
+            </a>
+        </li>
+>>>>>>> c0516e2df30525db0483d71a4e999d3b237df265
 
 
     </ul>

@@ -24,7 +24,7 @@
             <!-- Table -->
              <div class="table-responsive mt-5">
            <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Sr No</th>
                         <th>Category</th>
