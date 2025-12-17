@@ -381,12 +381,14 @@ class MasterWarehouseController extends Controller
         ));
     }
 
-    public function updateStock(Request $request)
+    public function updateStock(Request $request, $id)
     {
-        Log::info('Update Stock Request', $request->all());
+        Log::info('Update Stock Request', array_merge(
+            $request->all(),
+            ['id' => $id]
+        ));
 
         $request->validate([
-            'id'           => 'required|exists:warehouse_stocks,id',
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
             'product_id'   => 'required|exists:products,id',
@@ -397,15 +399,7 @@ class MasterWarehouseController extends Controller
         DB::beginTransaction();
 
         try {
-            $stock = WarehouseStock::findOrFail($request->id);
-
-            $oldData = $stock->only([
-                'warehouse_id',
-                'category_id',
-                'product_id',
-                'batch_id',
-                'quantity',
-            ]);
+            $stock = WarehouseStock::where('id', $id)->firstOrFail();
 
             $stock->update([
                 'warehouse_id' => $request->warehouse_id,
@@ -417,38 +411,23 @@ class MasterWarehouseController extends Controller
 
             DB::commit();
 
-            Log::info('Stock updated successfully', [
-                'stock_id' => $stock->id,
-                'before'   => $oldData,
-                'after'    => $stock->fresh()->toArray(),
-            ]);
-
             return redirect()
                 ->route('index.addStock.warehouse')
                 ->with('success', 'Stock updated successfully');
         } catch (\Throwable $e) {
             DB::rollBack();
-
-            Log::error('Update stock failed', [
-                'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-            ]);
-
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Something went wrong while updating stock');
+            return back()->with('error', 'Update failed');
         }
     }
 
-    public function destroyStock(Request $request)
+    public function destroyStock(Request $request,$id)
     {
-        $request->validate([
-            'id' => 'required|exists:warehouse_stocks,id',
-        ]);
-
+       
+        Log::info('Delete Stock Request', $request->all());
+       
         try {
-            $stock = WarehouseStock::findOrFail($request->id);
+            
+            $stock = WarehouseStock::findOrFail($id);
 
             $stock->delete();
 

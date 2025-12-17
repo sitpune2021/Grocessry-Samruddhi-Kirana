@@ -147,6 +147,8 @@
                                                     </div>
                                                 </div>
 
+                                               
+
                                                 <!-- Buttons (Right Aligned) -->
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
                                                     <a href="{{ route('index.addStock.warehouse') }}" class="btn btn-outline-secondary">
@@ -187,25 +189,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-$('#category_id').on('change', function () {
-    let categoryId = $(this).val();
-    $('#product_id').html('<option value="">Loading...</option>');
+    $('#category_id').on('change', function() {
+        let categoryId = $(this).val();
+        $('#product_id').html('<option value="">Loading...</option>');
 
-    if (!categoryId) {
-        $('#product_id').html('<option value="">-- Select Product --</option>');
-        return;
-    }
-
-    $.ajax({
-        url: '/get-products/' + categoryId,
-        type: 'GET',
-        success: function (products) {
-            let options = '<option value="">-- Select Product --</option>';
-            products.forEach(product => {
-                options += `<option value="${product.id}">${product.name}</option>`;
-            });
-            $('#product_id').html(options);
+        if (!categoryId) {
+            $('#product_id').html('<option value="">-- Select Product --</option>');
+            return;
         }
+
+        $.ajax({
+            url: '/get-products/' + categoryId,
+            type: 'GET',
+            success: function(products) {
+                let options = '<option value="">-- Select Product --</option>';
+                products.forEach(product => {
+                    options += `<option value="${product.id}">${product.name}</option>`;
+                });
+                $('#product_id').html(options);
+            }
+        });
     });
-});
 </script>
