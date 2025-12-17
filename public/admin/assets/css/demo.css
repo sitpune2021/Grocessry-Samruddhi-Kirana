@@ -151,13 +151,13 @@
 .sidebar-logo {
   padding: 18px;
   text-align: center;
-  background: #282833ff;
+  background: rgb(255, 255, 255);
   border-bottom: 1px solid #e3e3e9ff;
 }
 
 .sidebar-logo img {
-  max-height: 90px;
-  max-width: 320px;
+  max-height: 110px;
+  max-width: 350px;
 }
 
 /* side bar Menu */
