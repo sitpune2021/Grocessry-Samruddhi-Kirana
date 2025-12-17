@@ -3,8 +3,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -15,101 +18,165 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        Log::info('Product Index Page Loaded', [
+            'user_id' => auth()->id(),
+        ]);
+
+        try {
+            $products = Product::with('category')->latest()->paginate(10);
+
+            return view('menus.product.index', compact('products'));
+        } catch (\Throwable $e) {
+
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
     }
+
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        //
+        try {
+            Log::info('Product Create Page Loaded');
+
+            $mode = 'add';
+            $categories = Category::select('id', 'name')->get();
+
+            return view('menus.product.add-product', compact('mode', 'categories'));
+        } catch (\Throwable $e) {
+
+            Log::error('Product Create Page Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('error', 'Unable to load product form');
+        }
     }
+
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        Log::info('Product Store Request', ['request' => $request->all()]);
-
-        // Validation
-        $validated = $request->validate([
-            'category_id'     => 'required|exists:categories,id',
-            'name'            => 'required|string|max:255',
-            'sku'             => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
-            'base_price'      => 'required|numeric',
-            'retailer_price'  => 'required|numeric',
-            'mrp'             => 'required|numeric',
-            'gst_percentage'  => 'required|numeric',
-            'stock'           => 'required|integer',
-
-            // NEW: Validate product_images array (NO file upload)
-            'product_images'      => 'nullable|array',
-            'product_images.*'    => 'nullable|string'
+        Log::info('Product Store Request', [
+            'request' => $request->all(),
+            'user_id' => auth()->id(),
         ]);
 
-        // Save product_images JSON
-        $validated['product_images'] = json_encode($request->product_images);
+        try {
+            $validated = $request->validate([
+                'category_id'     => 'required|exists:categories,id',
+                'name'            => 'required|string|max:255',
+                'sku'             => 'nullable|string|max:255',
+                'description'     => 'nullable|string',
+                'base_price'      => 'required|numeric',
+                'retailer_price'  => 'required|numeric',
+                'mrp'             => 'required|numeric',
+                'gst_percentage'  => 'required|numeric',
+                'stock'           => 'required|integer',
+                'product_images'   => 'nullable|array',
+                'product_images.*' => 'nullable|string',
+            ]);
 
-        $product = Product::create($validated);
+            // Save images as JSON
+            $validated['product_images'] = $request->product_images
+                ? json_encode($request->product_images)
+                : null;
 
-        Log::info('Product Created Successfully', ['product' => $product]);
+            $product = Product::create($validated);
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'Product created successfully',
-            'data'    => $product
-        ], 201);
+            Log::info('Product Created Successfully', [
+                'product_id' => $product->id
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('success', 'Product created successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Product Store Validation Failed', [
+                'errors' => $e->errors()
+            ]);
+
+            throw $e;
+        } catch (\Throwable $e) {
+
+            Log::error('Product Store Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Something went wrong while saving product');
+        }
     }
-
-
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
         try {
-            // Log incoming request
-            Log::info('Product Show Request Received', ['id' => $id]);
+            Log::info('Product View Request', ['id' => $id]);
 
-            // Find product
             $product = Product::find($id);
+
             if (!$product) {
-                Log::warning("Product not found", ['id' => $id]);
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Product not found'
-                ], 404);
+                Log::warning('Product Not Found', ['id' => $id]);
+                return redirect()->route('product.index')
+                    ->with('error', 'Product not found');
             }
 
-            Log::info('Product Found', ['product' => $product]);
+            $mode = 'view'; // important for form disabling
+            $categories = Category::select('id', 'name')->get();
 
-            // Return JSON response
-            return response()->json([
-                'status'  => true,
-                'message' => 'Product fetched successfully',
-                'data'    => $product
-            ], 200);
+            return view('menus.product.add-product', compact('product', 'mode', 'categories'));
         } catch (\Throwable $e) {
-            Log::error('Product Show Error', ['error' => $e->getMessage()]);
-            return response()->json([
-                'status'  => false,
-                'message' => 'Something went wrong',
-                'error'   => $e->getMessage()
-            ], 500);
+            Log::error('Product View Error', ['message' => $e->getMessage()]);
+            return redirect()->route('product.index')
+                ->with('error', 'Unable to view product');
         }
     }
-
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        try {
+            Log::info('Product Edit Request', ['id' => $id]);
+
+            $product = Product::find($id);
+
+            if (!$product) {
+                Log::warning('Product Not Found for Edit', ['id' => $id]);
+                return redirect()->route('product.index')
+                    ->with('error', 'Product not found');
+            }
+
+            $mode = 'edit';
+            $categories = Category::select('id', 'name')->get();
+
+            return view('menus.product.add-product', compact('product', 'mode', 'categories'));
+        } catch (\Throwable $e) {
+
+            Log::error('Product Edit Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('error', 'Unable to edit product');
+        }
     }
 
     /**
@@ -117,121 +184,114 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            // Log incoming request
-            Log::info('Product Update Request Received', [
-                'id' => $id,
-                'request' => $request->all()
-            ]);
+        Log::info('Product Update Request', [
+            'id' => $id,
+            'request' => $request->all(),
+        ]);
 
-            // Find product
+        try {
             $product = Product::find($id);
+
             if (!$product) {
-                Log::warning("Product not found", ['id' => $id]);
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Product not found'
-                ], 404);
+                Log::warning('Product Not Found for Update', ['id' => $id]);
+                return redirect()->route('product.index')
+                    ->with('error', 'Product not found');
             }
 
-            Log::info('Product Found', ['product_before_update' => $product]);
-
-            // Validation
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
                 'description'     => 'nullable|string',
-                'base_price'      => 'required|numeric|min:0',
-                'retailer_price'  => 'required|numeric|min:0',
-                'mrp'             => 'required|numeric|min:0',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
-                'stock'           => 'required|integer|min:0',
-                'product_images'  => 'nullable|array',
-                'product_images.*' => 'nullable|string'
+                'base_price'      => 'required|numeric',
+                'retailer_price'  => 'required|numeric',
+                'mrp'             => 'required|numeric',
+                'gst_percentage'  => 'required|numeric',
+                'stock'           => 'required|integer',
+                'product_images'   => 'nullable|array',
+                'product_images.*' => 'nullable|string',
             ]);
 
-            // Convert product_images to JSON if provided
-            if ($request->has('product_images')) {
-                $validated['product_images'] = json_encode($request->product_images);
-                Log::info('Product Images Updated', ['images' => $validated['product_images']]);
-            }
+            $validated['product_images'] = $request->product_images
+                ? json_encode($request->product_images)
+                : null;
 
-            // Update product in DB
             $product->update($validated);
 
             Log::info('Product Updated Successfully', [
-                'product_after_update' => $product
+                'product_id' => $product->id
             ]);
 
-            // Return proper JSON response
-            return response()->json([
-                'status'  => true,
-                'message' => 'Product updated successfully',
-                'data'    => $product
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $ve) {
-            // Validation errors
-            Log::error('Validation Failed', ['errors' => $ve->errors()]);
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $ve->errors()
-            ], 422);
+            return redirect()->route('product.index')
+                ->with('success', 'Product updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Product Update Validation Failed', [
+                'errors' => $e->errors()
+            ]);
+
+            throw $e;
         } catch (\Throwable $e) {
-            // Other errors
-            Log::error('Product Update Error', ['error' => $e->getMessage()]);
-            return response()->json([
-                'status' => false,
-                'message' => 'Something went wrong',
-                'error'  => $e->getMessage()
-            ], 500);
+
+            Log::error('Product Update Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Something went wrong while updating product');
         }
     }
-
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        // Log request
-        Log::info('Delete Product Request', [
-            'id' => $id
+        Log::info('Product Delete Request', [
+            'product_id' => $id,
+            'user_id'    => auth()->id(),
         ]);
 
-        // Find Product
-        $product = Product::find($id);
+        try {
+            $product = Product::find($id);
 
-        if (!$product) {
-            Log::warning("Product not found for delete", [
-                'id' => $id
+            if (!$product) {
+                Log::warning('Product Not Found for Delete', [
+                    'product_id' => $id
+                ]);
+
+                return redirect()->route('product.index')
+                    ->with('error', 'Product not found');
+            }
+
+            $product->delete();
+
+            Log::info('Product Deleted Successfully', [
+                'product_id' => $id
             ]);
 
-            return response()->json([
-                'status'  => false,
-                'message' => 'product not found'
-            ], 404);
+            return redirect()->route('product.index')
+                ->with('success', 'Product deleted successfully');
+        } catch (\Throwable $e) {
+
+            Log::error('Product Delete Error', [
+                'product_id' => $id,
+                'message'    => $e->getMessage(),
+                'file'       => $e->getFile(),
+                'line'       => $e->getLine(),
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('error', 'Something went wrong while deleting product');
         }
+    }
 
-        // Log before delete
-        Log::info('product Found for Delete', [
-            'product' => $product
-        ]);
+    //get product by category
+    public function getProductsByCategory($category_id)
+    {
+        $products = Product::where('category_id', $category_id)->get();
 
-        // Perform soft delete
-        $product->delete();
-
-        // Log after delete
-        Log::info('Product Soft Deleted Successfully', [
-            'id' => $id,
-            'deleted_at' => now()->toDateTimeString()
-        ]);
-
-        // JSON response
-        return response()->json([
-            'status'  => true,
-            'message' => 'Product deleted successfully (soft deleted)'
-        ], 200);
+        return response()->json($products);
     }
 }

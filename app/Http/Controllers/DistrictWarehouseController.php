@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DistrictWarehouse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DistrictWarehouseController extends Controller
 {
@@ -12,18 +13,32 @@ class DistrictWarehouseController extends Controller
         return DistrictWarehouse::with('talukaWarehouses')->get();
     }
 
-    public function store(Request $request)
-    {
-        // return DistrictWarehouse::create($request->all());
+ public function store(Request $request)
+{
+    // Log request data
+    Log::info('District Warehouse Store Request', $request->all());
 
-        $validated = $request->validate([
-        'master_warehouse_id' => 'required|exists:master_warehouses,id',
-        'name' => 'required|string',
-        'location' => 'required|string'
+    // Validate input
+    $validated = $request->validate([
+        'state_id' => 'required|exists:states,id',
+        'name'     => 'required|string|max:255',
     ]);
 
-    return DistrictWarehouse::create($validated);
-    }
+    // Create record
+    $data = DistrictWarehouse::create($validated);
+
+    // Log created data
+    Log::info('District Warehouse Created', $data->toArray());
+
+    // Return response
+    return response()->json([
+        'status'  => true,
+        'message' => 'District warehouse created successfully',
+        'data'    => $data
+    ], 201);
+}
+
+
 
     public function show($id)
     {

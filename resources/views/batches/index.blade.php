@@ -1,0 +1,92 @@
+@extends('layouts.app')
+
+@section('content')
+
+<div class="container-xxl flex-grow-1 container-p-y">
+
+    <div class="card">
+        <div class="card-datatable text-nowrap">
+
+            <!-- Header -->
+            <div class="row card-header flex-column flex-md-row pb-0">
+                <div class="col-md-auto me-auto">
+                    <h5 class="card-title">Batch List</h5>
+                </div>
+                <div class="col-md-auto ms-auto">
+                    <a href="/batches/create" class="btn btn-primary">
+                        <i class="bx bx-plus"></i> Add New Batch
+                    </a>
+                </div>
+            </div>
+            <x-datatable-search />
+
+            <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>MFG</th>
+                        <th>Expiry</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($batches as $batch)
+                    <tr>
+                        <td>{{ $batch->product->name }}</td>
+                        <td>{{ $batch->batch_no }}</td>
+                        <td>{{ $batch->quantity }}</td>
+                        <td>{{ $batch->mfg_date }}</td>
+                        <td>{{ $batch->expiry_date }}</td>
+
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+
+                                <a href="{{ route('batches.show', $batch->id) }}">
+                                    View
+                                </a>
+
+
+                                <!-- SELL -->
+                                @if($batch->quantity > 0)
+                                    <a href="/sale/{{ $batch->product_id }}" 
+                                    class="btn btn-sm btn-success" title="Sell">
+                                        🛒
+                                    </a>
+                                @endif
+
+                                <!-- EDIT -->
+                                <a href="{{ route('batches.edit', $batch->id) }}" 
+                                class="btn btn-sm btn-primary" title="Edit">
+                                    ✏️
+                                </a>
+
+                                <!-- DELETE -->
+                                <form action="{{ route('batches.destroy', $batch->id) }}" 
+                                    method="POST" 
+                                    onsubmit="return confirm('Are you sure?')" 
+                                    style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger" title="Delete">
+                                        🗑️
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+@endsection
