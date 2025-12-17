@@ -32,20 +32,48 @@
                         <th>Batch</th>
                         <th>Quantity</th>
                         <th>Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($transfers as $t)
-                    <tr>
-                        <td>{{ $t->id }}</td>
-                        <td>{{ $t->fromWarehouse->name }}</td>
-                        <td>{{ $t->toWarehouse->name }}</td>
-                        <td>{{ $t->category->name }}</td>
-                        <td>{{ $t->product->name }}</td>
-                        <td>{{ $t->batch->batch_no }}</td>
-                        <td>{{ $t->quantity }}</td>
-                        <td>{{ $t->created_at->format('d-m-Y H:i') }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ $t->id }}</td>
+                            <td>{{ $t->fromWarehouse->name }}</td>
+                            <td>{{ $t->toWarehouse->name }}</td>
+                            <td>{{ $t->category->name }}</td>
+                            <td>{{ $t->product->name }}</td>
+                            <td>{{ $t->batch->batch_no }}</td>
+                            <td>{{ $t->quantity }}</td>
+                            <td>{{ $t->created_at->format('d-m-Y') }}</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+
+                                   <a href="{{ route('transfer.show', $t->id) }}">
+                                        View
+                                    </a>
+
+                                    <!-- EDIT -->
+                                    <a href="{{ route('transfer.edit', $t->id) }}" 
+                                    class="btn btn-sm btn-primary" title="Edit">
+                                        ✏️
+                                    </a>
+
+                                    <!-- DELETE -->
+                                    <form action="{{ route('transfer.destroy', $t->id) }}" 
+                                        method="POST" 
+                                        onsubmit="return confirm('Are you sure?')" 
+                                        style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger" title="Delete">
+                                            🗑️
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
                     @empty
                     <tr>
                         <td colspan="8" class="text-center">No transfers found</td>
