@@ -25,7 +25,7 @@
                         <!-- Form card -->
                         <div class="col-12">
                             <div class="card mb-4" style="max-width: 1200px; margin:auto;">
-                                <h4 class="card-header text-center">
+                                <h4 class="card-header">
                                     Add Batch
                                 </h4>
                                 <div class="card-body">

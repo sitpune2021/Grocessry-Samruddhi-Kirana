@@ -1,18 +1,20 @@
+<div class="d-flex align-items-center gap-2">
+
     {{-- View --}}
     @if($viewUrl)
     <a href="{{ $viewUrl }}"
-        class="btn btn-icon btn-lg text-primary"
+        class="btn btn-sm btn-outline-primary action-btn"
         title="View">
-        <i class="bx bx-show bx-md"></i>
+        <i class="ri-eye-fill"></i>
     </a>
     @endif
 
     {{-- Edit --}}
     @if($editUrl)
     <a href="{{ $editUrl }}"
-        class="btn btn-icon btn-lg text-secondary"
+        class="btn btn-sm btn-outline-secondary action-btn"
         title="Edit">
-        <i class="bx bx-edit bx-md"></i>
+        <i class="ri-pencil-fill"></i>
     </a>
     @endif
 
@@ -22,10 +24,12 @@
         @csrf
         @method('DELETE')
         <button type="submit"
-            class="btn btn-icon btn-lg text-danger"
+            class="btn btn-sm btn-outline-danger action-btn"
             title="Delete"
             onclick="return confirm('Are you sure?')">
-            <i class="bx bx-trash bx-md"></i>
+            <i class="ri-delete-bin-fill"></i>
         </button>
     </form>
     @endif
+
+</div>

@@ -61,7 +61,7 @@
                                                 {{-- <div class="col-md-4 mb-3">
                                                     <label class="form-label">Warehouse Type *</label>
                                                     <select name="type" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         <option value="">Select Type</option>
                                                         <option value="master" {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>Master</option>
                                                         <option value="district" {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>District</option>
@@ -123,7 +123,7 @@
                                                 {{-- Country --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Country</label>
-                                                    <select name="country_id" class="form-select"
+                                                    <select name="country_id" id="country_id" class="form-select"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         <option value="">Select Country</option>
                                                         @foreach ($countries as $country)
@@ -137,8 +137,22 @@
 
                                                 {{-- State --}}
                                                 <div class="col-md-3 mb-3">
+                                                    <label class="form-label">State</label>
+                                                    <select name="state_id" id="state_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                        @if(isset($warehouse->state))
+                                                        <option value="{{ $warehouse->state_id }}" selected>
+                                                            {{ $warehouse->state->name }}
+                                                        </option>
+                                                        @else
+                                                        <option value="">Select State</option>
+                                                        @endif
+                                                    </select>
+                                                </div>
+                                                {{-- District --}}
+                                                <div class="col-md-3 mb-3">
                                                     <label class="form-label">District</label>
-                                                    <select name="district_id" class="form-select"
+                                                    <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->district))
                                                             <option value="{{ $warehouse->district_id }}" selected>
@@ -152,7 +166,7 @@
 
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Taluka</label>
-                                                    <select name="taluka_id" class="form-select"
+                                                    <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->taluka))
                                                             <option value="{{ $warehouse->taluka_id }}" selected>
@@ -165,7 +179,7 @@
                                                 </div>
 
                                                 {{-- Taluka --}}
-                                                <div class="col-md-3 mb-3">
+                                                <!-- <div class="col-md-3 mb-3">
                                                     <label class="form-label">Taluka</label>
                                                     <select name="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -177,7 +191,7 @@
                                                             <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
-                                                </div>
+                                                </div> -->
 
 
 
@@ -212,7 +226,7 @@
                                                         <label class="form-label">User Name</label>
                                                         <input type="text" name="user_name" class="form-control"
                                                             placeholder="User Name"
-                                                            value="{{ $warehouse->user_name ?? '' }}"
+                                                            value="{{ $warehouse->contact_person  ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
                                                 </div>
@@ -234,11 +248,11 @@
 
                                                         @if ($mode === 'add')
                                                             <button type="submit" class="btn btn-primary">
-                                                                Save Category
+                                                                Save Warehouse
                                                             </button>
                                                         @elseif($mode === 'edit')
                                                             <button type="submit" class="btn btn-primary">
-                                                                Update Category
+                                                                Update Warehouse
                                                             </button>
                                                         @endif
                                                     </div>
@@ -310,48 +324,55 @@
 </script>
 
 <script>
-    document.getElementById('country_id').addEventListener('change', function() {
-        let countryId = this.value;
+    document.addEventListener('DOMContentLoaded', function() {
 
-        fetch(`/get-states/${countryId}`)
-            .then(res => res.json())
-            .then(data => {
-                let state = document.getElementById('state_id');
-                state.innerHTML = '<option value="">Select State</option>';
+        document.getElementById('country_id')?.addEventListener('change', function() {
+            let countryId = this.value;
 
-                data.forEach(item => {
-                    state.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+            if (!countryId) return;
+
+            fetch(`/get-states/${countryId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let state = document.getElementById('state_id');
+                    state.innerHTML = '<option value="">Select State</option>';
+
+                    data.forEach(item => {
+                        state.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
                 });
-            });
-    });
+        });
 
-    document.getElementById('state_id').addEventListener('change', function() {
-        let stateId = this.value;
+        document.getElementById('state_id')?.addEventListener('change', function() {
+            let stateId = this.value;
+            alert(stateId);
 
-        fetch(`/get-districts/${stateId}`)
-            .then(res => res.json())
-            .then(data => {
-                let district = document.getElementById('district_id');
-                district.innerHTML = '<option value="">Select District</option>';
+            fetch(`/get-districts/${stateId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let district = document.getElementById('district_id');
+                    district.innerHTML = '<option value="">Select District</option>';
 
-                data.forEach(item => {
-                    district.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    data.forEach(item => {
+                        district.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
                 });
-            });
-    });
+        });
 
-    document.getElementById('district_id').addEventListener('change', function() {
-        let districtId = this.value;
+        document.getElementById('district_id')?.addEventListener('change', function() {
+            let districtId = this.value;
 
-        fetch(`/get-talukas/${districtId}`)
-            .then(res => res.json())
-            .then(data => {
-                let taluka = document.getElementById('taluka_id');
-                taluka.innerHTML = '<option value="">Select Taluka</option>';
+            fetch(`/get-talukas/${districtId}`)
+                .then(res => res.json())
+                .then(data => {
+                    let taluka = document.getElementById('taluka_id');
+                    taluka.innerHTML = '<option value="">Select Taluka</option>';
 
-                data.forEach(item => {
-                    taluka.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    data.forEach(item => {
+                        taluka.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+                    });
                 });
-            });
+        });
+
     });
 </script>

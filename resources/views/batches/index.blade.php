@@ -18,16 +18,17 @@
                     </a>
                 </div>
             </div>
+            <x-datatable-search />
 
-            <table id="batchTable" class="table table-bordered table-striped mt-4 mb-5">
-                <thead>
+            <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
+                <thead class="table-light">
                     <tr>
                         <th>Product</th>
                         <th>Batch</th>
                         <th>Qty</th>
                         <th>MFG</th>
                         <th>Expiry</th>
-                        <th>Action</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,11 @@
 
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
+
+                                <a href="{{ route('batches.show', $batch->id) }}">
+                                    View
+                                </a>
+
 
                                 <!-- SELL -->
                                 @if($batch->quantity > 0)
@@ -70,50 +76,17 @@
 
                             </div>
                         </td>
+
                     </tr>
                     @endforeach
                 </tbody>
             </table>
 
+
         </div>
     </div>
 </div>
+
+
+
 @endsection
-
-@push('scripts')
-    <!-- DataTables CSS & JS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-    <style>
-    /* Table wrapper spacing */
-    #batchTable_wrapper {
-        margin-top: 20px;
-        margin-bottom: 40px;
-    }
-
-    /* Search input spacing */
-    .dataTables_filter {
-        margin-bottom: 20px;
-    }
-
-    /* Table cell padding */
-    #batchTable th, #batchTable td {
-        padding: 12px 15px;
-    }
-    </style>
-
-    <script>
-    $(document).ready(function() {
-        $('#batchTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            order: [[0, 'asc']], // Sort by Product name ascending by default
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search batches..."
-            }
-        });
-    });
-    </script>
-@endpush

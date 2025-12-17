@@ -11,10 +11,10 @@
     <title>Samruddhi Kirana</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <meta name="description" content="" />
+  <link rel="icon" type="image/ico" href="{{ asset('admin/assets/img/Icon2.ico') }}">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('admin/asset/img/logo/samrudhi-kirana') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('admin/asset/img/Icon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,6 +25,7 @@
 
     <!-- Icons -->
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
 
     <!-- Core CSS -->
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css') }}" />
@@ -39,6 +40,26 @@
 
     <!-- Theme Config -->
     <script src="{{ asset('admin/assets/js/config.js') }}"></script>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <script>
+        $(document).ready(function() {
+            $('#batchTable').DataTable({
+                responsive: true,
+                lengthMenu: [7, 10, 25, 50, 100],
+                pageLength: 7,
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search records..."
+                }
+            });
+        });
+    </script>
+
+
 
 
 </head>

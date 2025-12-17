@@ -127,3 +127,6 @@ document.addEventListener('DOMContentLoaded', function () {
 function isMacOS() {
   return /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 }
+
+
+

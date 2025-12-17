@@ -22,9 +22,9 @@
                 <x-datatable-search />
 
                 <!-- Table -->
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle">
-                        <thead>
+                <div class="table-responsive mt-3">
+                    <table id="batchTable" class="table table-bordered table-striped">
+                        <thead class="">
                             <tr>
                                 <th>Sr No</th>
                                 <th>User Name</th>

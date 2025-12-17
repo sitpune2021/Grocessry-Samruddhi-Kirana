@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Warehouse extends Model
 {
     protected $fillable = [
+        'country_id',
+        'state_id',
+        'type',
         'parent_id',
         'district_id',
         'taluka_id',
