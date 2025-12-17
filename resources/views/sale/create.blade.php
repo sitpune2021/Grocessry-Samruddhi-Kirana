@@ -39,7 +39,7 @@
 
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-12">
-                                                <label for="warehouse_id" class="form-label">Select Warehouse</label>
+                                                <label for="warehouse_id" class="form-label">Warehouse</label>
                                                 <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                     <option value="">-- Select Warehouse --</option>
                                                     @foreach($warehouses as $w)
