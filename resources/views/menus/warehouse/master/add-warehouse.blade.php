@@ -25,34 +25,32 @@
                                 <div class="card">
                                     <div class="card-header d-flex align-items-center">
                                         <h4 class="mb-0 flex-grow-1">
-                                            @if($mode === 'add')
-                                            Add Warehouse
+                                            @if ($mode === 'add')
+                                                Add Warehouse
                                             @elseif($mode === 'edit')
-                                            Edit Warehouse
+                                                Edit Warehouse
                                             @else
-                                            View Warehouse
+                                                View Warehouse
                                             @endif
                                         </h4>
                                     </div>
 
                                     <div class="card-body">
                                         <form
-                                            action="{{ $mode === 'edit'
-                                            ? route('warehouse.update', $warehouse->id)
-                                            : route('warehouse.store') }}"
+                                            action="{{ $mode === 'edit' ? route('warehouse.update', $warehouse->id) : route('warehouse.store') }}"
                                             method="POST">
                                             @csrf
-                                            @if($mode === 'edit')
-                                            @method('PUT')
+                                            @if ($mode === 'edit')
+                                                @method('PUT')
                                             @endif
                                             <div class="row">
 
                                                 {{-- Warehouse Name --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Warehouse Name <span class="mandatory">*</span></label>
-                                                        <input type="text" name="name"
-                                                            class="form-control"
+                                                        <label class="form-label">Warehouse Name <span
+                                                                class="mandatory">*</span></label>
+                                                        <input type="text" name="name" class="form-control"
                                                             value="{{ old('name', $warehouse->name ?? '') }}"
                                                             placeholder="Warehouse Name"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -60,7 +58,7 @@
                                                 </div>
 
                                                 {{-- Warehouse Type --}}
-                                                <div class="col-md-4 mb-3">
+                                                {{-- <div class="col-md-4 mb-3">
                                                     <label class="form-label">Warehouse Type *</label>
                                                     <select name="type" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -69,22 +67,58 @@
                                                         <option value="district" {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>District</option>
                                                         <option value="taluka" {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>Taluka</option>
                                                     </select>
+                                                </div> --}}
+                                                {{-- Warehouse Type --}}
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Warehouse Type *</label>
+                                                    <select name="type" id="warehouseType" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                        <option value="">Select Type</option>
+                                                        <option value="master"
+                                                            {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>
+                                                            Master
+                                                        </option>
+                                                        <option value="district"
+                                                            {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>
+                                                            District
+                                                        </option>
+                                                        <option value="taluka"
+                                                            {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>
+                                                            Taluka
+                                                        </option>
+                                                    </select>
                                                 </div>
 
+
                                                 {{-- Parent Warehouse --}}
-                                                <div class="col-md-4 mb-3">
+                                                {{-- <div class="col-md-4 mb-3">
                                                     <label class="form-label">Parent Warehouse</label>
                                                     <select name="parent_id" class="form-select"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         <option value="">Select Parent</option>
-                                                        @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}"
-                                                            {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
-                                                            {{ $w->name }} ({{ ucfirst($w->type) }})
-                                                        </option>
+                                                        @foreach ($warehouses as $w)
+                                                            <option value="{{ $w->id }}"
+                                                                {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div> --}}
+                                                <div class="col-md-4 mb-3" id="parentDiv">
+                                                    <label class="form-label">Parent Warehouse</label>
+
+                                                    <select name="parent_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Parent</option>
+                                                        @foreach ($warehouses as $w)
+                                                            <option value="{{ $w->id }}">
+                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
+
 
                                                 {{-- Country --}}
                                                 <div class="col-md-3 mb-3">
@@ -92,11 +126,11 @@
                                                     <select name="country_id" class="form-select"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         <option value="">Select Country</option>
-                                                        @foreach($countries as $country)
-                                                        <option value="{{ $country->id }}"
-                                                            {{ ($warehouse->country_id ?? '') == $country->id ? 'selected' : '' }}>
-                                                            {{ $country->name }}
-                                                        </option>
+                                                        @foreach ($countries as $country)
+                                                            <option value="{{ $country->id }}"
+                                                                {{ ($warehouse->country_id ?? '') == $country->id ? 'selected' : '' }}>
+                                                                {{ $country->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -106,12 +140,12 @@
                                                     <label class="form-label">District</label>
                                                     <select name="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if(isset($warehouse->district))
-                                                        <option value="{{ $warehouse->district_id }}" selected>
-                                                            {{ $warehouse->district->name }}
-                                                        </option>
+                                                        @if (isset($warehouse->district))
+                                                            <option value="{{ $warehouse->district_id }}" selected>
+                                                                {{ $warehouse->district->name }}
+                                                            </option>
                                                         @else
-                                                        <option value="">Select District</option>
+                                                            <option value="">Select District</option>
                                                         @endif
                                                     </select>
                                                 </div>
@@ -120,12 +154,12 @@
                                                     <label class="form-label">Taluka</label>
                                                     <select name="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if(isset($warehouse->taluka))
-                                                        <option value="{{ $warehouse->taluka_id }}" selected>
-                                                            {{ $warehouse->taluka->name }}
-                                                        </option>
+                                                        @if (isset($warehouse->taluka))
+                                                            <option value="{{ $warehouse->taluka_id }}" selected>
+                                                                {{ $warehouse->taluka->name }}
+                                                            </option>
                                                         @else
-                                                        <option value="">Select Taluka</option>
+                                                            <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                 </div>
@@ -135,12 +169,12 @@
                                                     <label class="form-label">Taluka</label>
                                                     <select name="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if(isset($warehouse->taluka))
-                                                        <option value="{{ $warehouse->taluka_id }}" selected>
-                                                            {{ $warehouse->taluka->name }}
-                                                        </option>
+                                                        @if (isset($warehouse->taluka))
+                                                            <option value="{{ $warehouse->taluka_id }}" selected>
+                                                                {{ $warehouse->taluka->name }}
+                                                            </option>
                                                         @else
-                                                        <option value="">Select Taluka</option>
+                                                            <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                 </div>
@@ -150,8 +184,7 @@
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
                                                     <label class="form-label">Address</label>
-                                                    <textarea name="address" class="form-control" rows="2"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
+                                                    <textarea name="address" class="form-control" rows="2" {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
                                                 </div>
 
                                                 {{-- Contact Person --}}
@@ -166,10 +199,8 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Mobile</label>
-                                                        <input type="text" name="mobile"
-                                                            class="form-control"
-                                                            maxlength="10"
-                                                            value="{{ $warehouse->mobile ?? '' }}"
+                                                        <input type="text" name="mobile" class="form-control"
+                                                            maxlength="10" value="{{ $warehouse->mobile ?? '' }}"
                                                             placeholder="Mobile"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
@@ -179,8 +210,7 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">User Name</label>
-                                                        <input type="text" name="user_name"
-                                                            class="form-control"
+                                                        <input type="text" name="user_name" class="form-control"
                                                             placeholder="User Name"
                                                             value="{{ $warehouse->user_name ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -191,26 +221,25 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Email</label>
-                                                        <input type="email" name="email"
-                                                            class="form-control"
-                                                            placeholder="Email"
-                                                            value="{{ $warehouse->email ?? '' }}"
+                                                        <input type="email" name="email" class="form-control"
+                                                            placeholder="Email" value="{{ $warehouse->email ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
                                                 </div>
                                                 {{-- Buttons --}}
                                                 <div class="col-lg-12">
                                                     <div class="text-end">
-                                                        <a href="{{ route('warehouse.index') }}" class="btn btn-info">Cancel</a>
+                                                        <a href="{{ route('warehouse.index') }}"
+                                                            class="btn btn-info">Cancel</a>
 
-                                                        @if($mode === 'add')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Save Category
-                                                        </button>
+                                                        @if ($mode === 'add')
+                                                            <button type="submit" class="btn btn-primary">
+                                                                Save Category
+                                                            </button>
                                                         @elseif($mode === 'edit')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Update Category
-                                                        </button>
+                                                            <button type="submit" class="btn btn-primary">
+                                                                Update Category
+                                                            </button>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -233,44 +262,53 @@
     <!-- / Layout wrapper -->
 </body>
 <script>
-    const typeSelect = document.getElementById('warehouseType');
-    const parentDiv = document.getElementById('parentDiv');
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('warehouseType');
+        const parentDiv = document.getElementById('parentDiv');
 
-    function toggleParent() {
-        if (typeSelect.value === 'master') {
-            parentDiv.style.display = 'none';
-        } else {
-            parentDiv.style.display = 'block';
+        function toggleParent() {
+            if (typeSelect.value === 'master') {
+                parentDiv.style.display = 'none';
+            } else {
+                parentDiv.style.display = 'block';
+            }
         }
-    }
 
-    typeSelect.addEventListener('change', toggleParent);
-    toggleParent();
+        typeSelect.addEventListener('change', toggleParent);
+        toggleParent(); // edit mode support
+    });
 </script>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    $('#category_id').change(function() {
-        let categoryId = $(this).val();
-        $('#product_id').html('<option value="">Loading...</option>');
+    document.addEventListener('DOMContentLoaded', function() {
 
-        if (categoryId) {
-            $.ajax({
-                url: '/get-products/' + categoryId,
-                type: 'GET',
-                success: function(products) {
-                    let options = '<option value="">-- Select Product --</option>';
-                    products.forEach(function(product) {
-                        options += `<option value="${product.id}">${product.name}</option>`;
-                    });
-                    $('#product_id').html(options);
-                }
-            });
-        } else {
-            $('#product_id').html('<option value="">-- Select Product --</option>');
+        const typeSelect = document.getElementById('warehouseType');
+        const parentDiv = document.getElementById('parentDiv');
+
+        // Safety check
+        if (!typeSelect || !parentDiv) {
+            console.log('Warehouse JS elements not found');
+            return;
         }
+
+        function toggleParent() {
+            if (typeSelect.value === 'master') {
+                parentDiv.style.display = 'none';
+            } else {
+                parentDiv.style.display = 'block';
+            }
+        }
+
+        // Change event
+        typeSelect.addEventListener('change', toggleParent);
+
+        // Run on page load (THIS FIXES YOUR ISSUE)
+        toggleParent();
     });
 </script>
+
 <script>
     document.getElementById('country_id').addEventListener('change', function() {
         let countryId = this.value;

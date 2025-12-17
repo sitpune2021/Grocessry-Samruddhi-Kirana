@@ -1,21 +1,21 @@
 @include('layouts.header')
 
 <body>
-    <div class="container-xxl">
-        <div class="authentication-wrapper authentication-basic container-p-y">
+    <div class="container">
+        <div class="authentication-wrapper authentication-basic ">
             <div class="authentication-inner">
                 <div class="card px-sm-6 px-0">
                     <div class="login-page">
-                        <div class="container">
+                        <div class="">
                             <div class="row justify-content-center">
                                 <div class="col-md-5 col-lg-4">
                                     <div class="card login-card">
                                         <div class="card-body">
                                             <!-- Logo -->
-                                            <div class="app-brand text-center mb-4">
-                                                <a href="{{ route('login.form') }}">
+                                            <div class="app-brand text-center mb-4  mx-auto" >
+                                                <a href="{{ route('login.form') }}" class="text-center">
                                                     <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}"
-                                                        alt="Samruddhi Kirana" class="login-logo">
+                                                        alt="Samruddhi Kirana" class="login-logo" style="height: 140px ; width:300px;">
                                                 </a>
                                             </div>
                                             <!-- /Logo -->
