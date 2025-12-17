@@ -22,7 +22,7 @@
             <x-datatable-search />
             
             <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>ID</th>
                         <th>From Warehouse</th>
