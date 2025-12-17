@@ -12,10 +12,11 @@
                                     <div class="card login-card">
                                         <div class="card-body">
                                             <!-- Logo -->
-                                            <div class="app-brand text-center mb-4  mx-auto" >
+                                            <div class="app-brand text-center mb-4  mx-auto">
                                                 <a href="{{ route('login.form') }}" class="text-center">
                                                     <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}"
-                                                        alt="Samruddhi Kirana" class="login-logo" style="height: 140px ; width:300px;">
+                                                        alt="Samruddhi Kirana" class="login-logo"
+                                                        style="height: 140px ; width:300px;">
                                                 </a>
                                             </div>
                                             <!-- /Logo -->

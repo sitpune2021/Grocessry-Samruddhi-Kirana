@@ -13,10 +13,10 @@ use App\Http\Controllers\WarehouseTransferController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('logout');
     Route::get('/forgot-password', function () {
         return view('admin-login.password.reset');
     })->name('forgot.password');
@@ -49,7 +49,8 @@ Route::get('/get-talukas/{district}', [LocationController::class, 'getTalukas'])
 Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
 Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
 Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
-Route::get('/get-products/{category_id}', 
+Route::get(
+    '/get-products/{category_id}',
     [ProductBatchController::class, 'getProductsByCategory']
 );
 
@@ -65,13 +66,13 @@ Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name
 
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
-    ->name('sale.create');   
+    ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
-   
+
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
-Route::get('/get-stock/{warehouse}/{product}', function($warehouseId, $productId) {
+Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productId) {
     $stock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
         ->where('product_id', $productId)
         ->sum('quantity');
@@ -87,10 +88,12 @@ Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index']
 Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create']);
 Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store']);
 
-Route::get('/get-products-by-category/{category_id}', 
+Route::get(
+    '/get-products-by-category/{category_id}',
     [WarehouseTransferController::class, 'getProductsByCategory']
 );
-Route::get('/get-batches-by-product/{product_id}', 
+Route::get(
+    '/get-batches-by-product/{product_id}',
     [WarehouseTransferController::class, 'getBatchesByProduct']
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);

@@ -26,46 +26,6 @@ class AdminAuthController extends Controller
 
         return view('userProfile.add-user', compact('mode', 'user', 'roles'));
     }
-
-
-    // public function store(Request $request)
-    // {
-    //     // Validation
-    //     $validated = $request->validate([
-    //         'first_name'     => 'required|string|max:100',
-    //         'last_name'      => 'required|string|max:100',
-    //         'email'          => 'nullable|email|unique:users,email',
-    //         'mobile'         => 'required|digits:10|unique:users,mobile',
-    //         'role_id'        => 'required|exists:roles,id',
-    //         'status'         => 'required|boolean',
-    //         'profile_photo'  => 'nullable|image',
-    //     ]);
-
-    //     try {
-    //         // Profile photo upload
-    //         $photoPath = null;
-    //         if ($request->hasFile('profile_photo')) {
-    //             $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
-    //         }
-
-    //         // Create user
-    //         $user = User::create([
-    //             'first_name'    => $request->first_name,
-    //             'last_name'     => $request->last_name,
-    //             'email'         => $request->email,
-    //             'mobile'        => $request->mobile,
-    //             'role_id'       => $request->role_id,
-    //             'status'        => $request->status,
-    //             'profile_photo' => $photoPath,
-    //             'password'      => Hash::make('pass@123'),
-    //         ]);
-
-    //         return redirect()->route('user.profile')->with('success', 'User created successfully');
-    //     } catch (\Exception $e) {
-    //         return back()->withInput()->with('error', 'Something went wrong while creating user');
-    //     }
-    // }
-
     public function store(Request $request)
     {
         // dd($request->all());
@@ -124,7 +84,6 @@ class AdminAuthController extends Controller
             return back()->withInput()->with('error', 'Something went wrong while creating user');
         }
     }
-
 
     public function show($id)
     {
@@ -262,19 +221,41 @@ class AdminAuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            $user = Auth::user();
+
+            Log::info('🔐 Logout initiated', [
+                'user_id' => $user->id ?? null,
+                'email'   => $user->email ?? null,
+                'ip'      => $request->ip(),
+                'time'    => now()->toDateTimeString(),
+            ]);
+
             Auth::logout();
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            Log::info('User logged out');
+            Log::info('✅ User logged out successfully', [
+                'user_id' => $user->id ?? null,
+                'ip'      => $request->ip(),
+                'time'    => now()->toDateTimeString(),
+            ]);
 
-            return redirect()->route('login.form')->with('success', 'Logged out successfully!');
+            return redirect()->route('login.form')
+                ->with('success', 'Logged out successfully!');
         } catch (\Exception $e) {
-            Log::error("LOGOUT ERROR: " . $e->getMessage());
+
+            Log::error('❌ Logout failed', [
+                'error_message' => $e->getMessage(),
+                'line'          => $e->getLine(),
+                'file'          => $e->getFile(),
+                'ip'            => $request->ip(),
+            ]);
+
             return back()->with('error', 'Something went wrong!');
         }
     }
+
     public function resetPassword(Request $request)
     {
         $request->validate([
