@@ -113,68 +113,6 @@
 }
 
 
-
-/* Page Background */
-.login-page {
-  min-height: 100vh;
-  background: #f5f7fb;
-  display: flex;
-  align-items: center;
-}
-
-/* Card Styling */
-.login-card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  padding: 10px;
-}
-
-/* Logo */
-.login-logo {
-  height: 120px;
-  width: auto;
-}
-
-/* Form */
-.form-label {
-  font-weight: 500;
-  color: #333;
-}
-
-.form-control {
-  height: 45px;
-  border-radius: 8px;
-}
-
-/* Button */
-.btn-primary {
-  height: 45px;
-  border-radius: 8px;
-  font-weight: 600;
-  background-color: #4e73df;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: #2e59d9;
-}
-
-/* Forgot Password */
-.forgot-link {
-  font-size: 14px;
-  text-decoration: none;
-  color: #4e73df;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-
-
-
-
   /* Sidebar Container */
     .sidebar {
         width: 250px;

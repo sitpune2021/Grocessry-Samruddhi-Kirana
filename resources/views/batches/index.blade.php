@@ -36,23 +36,40 @@
                     <tr>
                         <td>{{ $batch->product->name }}</td>
                         <td>{{ $batch->batch_no }}</td>
-                        <td>
-                            <span class="{{ $batch->quantity > 0 ? 'success' : 'danger' }}">
-                                {{ $batch->quantity }}
-                            </span>
-                        </td>
-                        <td>{{ \Carbon\Carbon::parse($batch->mfg_date)->format('d-m-Y') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($batch->expiry_date)->format('d-m-Y') }}</td>
+                        <td>{{ $batch->quantity }}</td>
+                        <td>{{ $batch->mfg_date }}</td>
+                        <td>{{ $batch->expiry_date }}</td>
+
                         <td class="text-center">
-                            @if($batch->quantity > 0)
-                            <a href="/sale/{{ $batch->product_id }}"
-                                class="btn btn-sm btn-primary"
-                                title="Sell Product">
-                                <i class="bx bx-cart"></i> Sell
-                            </a>
-                            @else
-                            <span class="text-danger fw-bold">Out of Stock</span>
-                            @endif
+                            <div class="d-flex justify-content-center gap-2">
+
+                                <!-- SELL -->
+                                @if($batch->quantity > 0)
+                                    <a href="/sale/{{ $batch->product_id }}" 
+                                    class="btn btn-sm btn-success" title="Sell">
+                                        🛒
+                                    </a>
+                                @endif
+
+                                <!-- EDIT -->
+                                <a href="{{ route('batches.edit', $batch->id) }}" 
+                                class="btn btn-sm btn-primary" title="Edit">
+                                    ✏️
+                                </a>
+
+                                <!-- DELETE -->
+                                <form action="{{ route('batches.destroy', $batch->id) }}" 
+                                    method="POST" 
+                                    onsubmit="return confirm('Are you sure?')" 
+                                    style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-danger" title="Delete">
+                                        🗑️
+                                    </button>
+                                </form>
+
+                            </div>
                         </td>
                     </tr>
                     @endforeach

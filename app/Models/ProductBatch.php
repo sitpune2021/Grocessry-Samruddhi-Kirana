@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductBatch extends Model
 {
+    use SoftDeletes;
+    
      protected $fillable = [
         'category_id',
         'product_id',
@@ -25,4 +28,11 @@ class ProductBatch extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    public function category() {
+        return $this->belongsTo(Category::class);
+    }
+
 }
+
+
+

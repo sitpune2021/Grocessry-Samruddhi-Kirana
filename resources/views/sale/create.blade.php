@@ -19,89 +19,118 @@
                 @include('layouts.navbar')
                 <!-- / Navbar -->
 
-                <div class="container-xxl flex-grow-1 container-p-y">
-                    <div class="row justify-content-center">
-                        <!-- Form card -->
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header align-items-center d-flex">
-                                    <h4 class="mb-0 flex-grow-1">
-                                        {{ isset($category) ? 'Edit Batch' : 'Add Batch' }}
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="row justify-content-center">
+
+                            <!-- Form card -->
+                            <div class="col-12 col-md-10 col-lg-8">
+                                <div class="card mb-4" style="max-width: 900px; margin:auto;">
+                                    <h4 class="card-header text-center">
+                                        Sell Product
                                     </h4>
+                                    <div class="card-body">
 
-                                </div>
-                                <div class="card-body">
-                                    <form method="POST" action="/sale">
-                                        @csrf
+                                        <form method="POST" action="{{ route('sale.store') }}">
+                                            @csrf
 
-                                        <!-- Row 1: Category & Product -->
-                                        <div class="row g-3 mb-3">
-                                            <div class="col-md-4">
-                                                <label for="category_id" class="form-label">Category</label>
-                                                <select name="category_id" id="category_id" class="form-select">
-                                                    <option value="">Select Category</option>
-                                                    @foreach($categories as $category)
-                                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                <label for="warehouse_id" class="form-label">Warehouse</label>
+                                                <select name="warehouse_id" id="warehouse_id" class="form-select">
+                                                    <option value="">-- Select Warehouse --</option>
+                                                    @foreach($warehouses as $w)
+                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
                                                     @endforeach
                                                 </select>
+                                                </div>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                     <label for="product_id" class="form-label">Product Name</label>
-                                                <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
-                                                    <option value="">Select Product</option>
-                                                    @foreach($products as $product)
-                                                    <option value="{{ $product->id }}" {{ ($selectedProduct == $product->id) ? 'selected' : '' }}>
-                                                        {{ $product->name }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('product_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                            <!-- Row 1: Product & Quantity -->
+                                            <!-- Category Dropdown -->
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                    <label for="category_id" class="form-label">Category</label>
+                                                    <select name="category_id" id="category_id" class="form-select">
+                                                        <option value="">-- Select Category --</option>
+                                                        @foreach($categories as $category)
+                                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <!-- Product Dropdown -->
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                    <label for="product_id" class="form-label">Product Name</label>
+                                                    <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
+                                                        <option value="">-- Select Product --</option>
+                                                        @foreach($products as $product)
+                                                            <option value="{{ $product->id }}" {{ ($selectedProduct == $product->id) ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('product_id')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                    
+
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-12">
+                                                    <label for="quantity" class="form-label">Product Quantity</label>
+                                                    <input type="number" 
+                                                        name="quantity" 
+                                                        id="quantity" 
+                                                        min="1" 
+                                                        max="{{ $availableStock }}" 
+                                                        class="form-control @error('quantity') is-invalid @enderror"
+                                                        placeholder="Max available: {{ $availableStock }}">
+                                                    @error('quantity')
+                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
+                                                    <small id="stock-info" class="text-muted">
+                                                        Max available in selected warehouse: {{ $availableStock }}
+                                                    </small>
                                                 </div>
                                             </div>
 
 
-                                            <!-- Row 2: Batch Number & Quantity -->
-
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                   <label for="quantity" class="form-label">Product Quantity</label>
-                                                <input type="number" name="quantity" id="quantity" min="1" placeholder="Product Quantity" class="form-control @error('quantity') is-invalid @enderror">
-                                                @error('quantity')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                                </div>
+                                            <!-- Buttons -->
+                                            <div class="d-flex justify-content-between">
+                                                <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">Back</a>
+                                                <button type="submit" class="btn btn-primary">Product Sell</button>
                                             </div>
 
-                                             
+                                        </form>
 
-                                        <!-- Buttons -->
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('batches.index') }}" class="btn btn-outline-info">Back</a>
-                                            <button type="submit" class="btn btn-primary">Save Batch</button>
-                                        </div>
-
-
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
+
+                    <!-- / Content -->
+                    @include('layouts.footer')
                 </div>
 
 
                 <!-- Content wrapper -->
             </div>
-
+            
             <!-- / Layout page -->
         </div>
 
     </div>
     <!-- / Layout wrapper -->
-</body>
+</body> 
 
 <script>
     document.getElementById('category_id').addEventListener('change', function() {
@@ -119,4 +148,24 @@
                 });
             });
     });
+</script>
+
+<script>
+    document.getElementById('product_id').addEventListener('change', function() {
+    let productId = this.value;
+    let warehouseId = document.getElementById('warehouse_id').value;
+    let quantityInput = document.getElementById('quantity');
+    let stockInfo = document.getElementById('stock-info');
+
+    if (!warehouseId || !productId) return;
+
+    fetch(`/get-stock/${warehouseId}/${productId}`)
+        .then(res => res.json())
+        .then(data => {
+            let stock = data.stock;
+            quantityInput.max = stock;
+            stockInfo.textContent = `Max available in selected warehouse: ${stock}`;
+        });
+});
+
 </script>
