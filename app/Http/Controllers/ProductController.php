@@ -286,4 +286,12 @@ class ProductController extends Controller
                 ->with('error', 'Something went wrong while deleting product');
         }
     }
+
+    //get product by category
+    public function getProductsByCategory($category_id)
+    {
+        $products = Product::where('category_id', $category_id)->get();
+
+        return response()->json($products);
+    }
 }
