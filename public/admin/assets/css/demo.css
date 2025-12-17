@@ -147,20 +147,6 @@
   overflow-y: auto;
 }
 
-<<<<<<< HEAD
-    /* Logo Section */
-    .sidebar-logo {
-        padding: 2px;
-        text-align: center;
-        background: rgb(255, 255, 255);
-        padding-bottom: 10px;
-    }
-
-    .sidebar-logo img {
-        max-height: 110px;
-        max-width: 500px;
-    }
-=======
 /* Logo Section */
 .sidebar-logo {
   padding: 18px;
@@ -173,7 +159,6 @@
   max-height: 90px;
   max-width: 320px;
 }
->>>>>>> c0516e2df30525db0483d71a4e999d3b237df265
 
 /* side bar Menu */
 .sidebar ul {
@@ -207,16 +192,6 @@
 }
 
 
-<<<<<<< HEAD
-    /* Menu Header */
-    .menu-header {
-        font-size: 12px;
-        text-transform: uppercase;
-        color: #f5f6f8ff;
-        /* Soft white */
-        margin: 15px 10px 5px;
-    }
-=======
 
 /* Menu Header */
 .menu-header {
@@ -226,7 +201,6 @@
   /* Soft white */
   margin: 15px 10px 5px;
 }
->>>>>>> c0516e2df30525db0483d71a4e999d3b237df265
 
 /* Submenu */
 .submenu {
@@ -276,9 +250,6 @@
 }
 
 
-<<<<<<< HEAD
-   
-=======
 .action-btn {
   width: 30px;
   height: 30px;
@@ -297,4 +268,3 @@
   transform: scale(1.05);
   transition: all 0.2s ease-in-out;
 }
->>>>>>> c0516e2df30525db0483d71a4e999d3b237df265

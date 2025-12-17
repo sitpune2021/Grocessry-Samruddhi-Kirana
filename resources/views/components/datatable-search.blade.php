@@ -9,10 +9,6 @@
                 </select>entries</label></div>
     </div>
     <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
-<<<<<<< HEAD
-        <div class="dt-search mt-0 mt-md-6"><label for="dt-search-1">Search:</label><input type="search" class="form-control ms-4 mb-5" id="dt-search-1" placeholder="" aria-controls="DataTables_Table_1"></div>
-=======
         <div class="dt-search mt-0 mt-md-6"><label  >Search:</label><input type="search" class="form-control ms-4" id="dt-search-1" placeholder="" aria-controls="DataTables_Table_1"></div>
->>>>>>> c0516e2df30525db0483d71a4e999d3b237df265
     </div>
 </div>

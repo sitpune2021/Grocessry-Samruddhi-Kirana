@@ -11,11 +11,7 @@
     <title>Samruddhi Kirana</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<<<<<<< HEAD
   <link rel="icon" type="image/ico" href="{{ asset('admin/assets/img/Icon2.ico') }}">
-=======
-    <meta name="description" content="" />
->>>>>>> c0516e2df30525db0483d71a4e999d3b237df265
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('admin/asset/img/Icon.ico') }}" />
