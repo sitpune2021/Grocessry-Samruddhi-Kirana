@@ -2,7 +2,7 @@
 * demo.css
 * File include item demo only specific css only
 ******************************************************************************/
-
+    
 .menu .app-brand.demo {
   height: 64px;
   margin-top: 12px;
@@ -16,6 +16,21 @@
 .app-brand-text.demo {
   font-size: 1.75rem;
   letter-spacing: -0.5px;
+}
+
+/* login
+ ******************************************************/
+.login-card {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.login-logo {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
 }
 
 /* ! For .layout-navbar-fixed added fix padding top to .layout-page */

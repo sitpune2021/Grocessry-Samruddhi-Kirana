@@ -8,7 +8,8 @@
     <!-- Logo -->
     <div class="sidebar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}" alt="Samruddhi Kirana">
+            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}"
+                alt="Samruddhi Kirana">
         </a>
     </div>
 
@@ -16,7 +17,7 @@
 
         <!-- Dashboard -->
         <li class="menu-item">
-            <a href="{{ route('dashboard') }}" class="menu-link active text-white">
+            <a href="" class="menu-link active text-white">
                 <span><i class="bx bx-home-smile me-2"></i> Dashboard</span>
             </a>
         </li>
@@ -32,6 +33,9 @@
         <li class="menu-item">
             <a href="{{ route('warehouse.index') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i> Warehouse</span>
+            </a>
+            <a href="{{ route('index.addStock.warehouse') }}" class="menu-link text-white">
+                <span><i class="bx bx-store me-2"></i>Add Stock in Warehouse</span>
             </a>
         </li>
 

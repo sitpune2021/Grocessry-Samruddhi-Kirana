@@ -13,6 +13,7 @@ class LocationController extends Controller
 
     public function getStates($countryId)
     {
+      
         return response()->json(
             State::where('country_id', $countryId)->get()
         );
