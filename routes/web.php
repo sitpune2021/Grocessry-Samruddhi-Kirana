@@ -59,8 +59,12 @@ Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
 
-Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create']);
-Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store']);
+Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create'])->name('transfer.create');
+Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
+Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
+Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
+// Soft delete
+Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
 
 Route::get('/get-products-by-category/{category_id}', 
     [WarehouseTransferController::class, 'getProductsByCategory']
@@ -69,6 +73,9 @@ Route::get('/get-batches-by-product/{product_id}',
     [WarehouseTransferController::class, 'getBatchesByProduct']
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+
+
+
 
 
 
