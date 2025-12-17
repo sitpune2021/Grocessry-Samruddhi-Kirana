@@ -60,7 +60,7 @@
                                                             <option value="">Select Warehouse</option>
                                                             @foreach($warehouses as $warehouse)
                                                             <option value="{{ $warehouse->id }}"
-                                                                {{ old('warehouse_id', $warehouse->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                                {{ old('warehouse_id',$warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
                                                                 {{ $warehouse->name }}
                                                             </option>
                                                             @endforeach
@@ -79,7 +79,7 @@
                                                             <option value="">Select Category</option>
                                                             @foreach($categories as $category)
                                                             <option value="{{ $category->id }}"
-                                                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                                {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
                                                                 {{ $category->name }}
                                                             </option>
                                                             @endforeach
@@ -91,12 +91,32 @@
                                                 {{-- Product Name --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label for="product_id">Product</label>
-                                                        <select name="product_id" id="product_id" class="form-control">
+                                                        <label for="product_id">Product <span class="mandatory">*</span></label>
+
+                                                        <select name="product_id"
+                                                            id="product_id"
+                                                            class="form-select @error('product_id') is-invalid @enderror"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                                             <option value="">-- Select Product --</option>
+
+                                                            {{-- Edit / View mode: preload products --}}
+                                                            @if(in_array($mode, ['edit', 'view']))
+                                                            @foreach($products as $product)
+                                                            <option value="{{ $product->id }}"
+                                                                {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
+                                                            @endforeach
+                                                            @endif
                                                         </select>
+
+                                                        @error('product_id')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
+
                                                 {{-- Batch --}}
 
                                                 <div class="col-md-4">
@@ -167,24 +187,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    $('#category_id').change(function() {
-        let categoryId = $(this).val();
-        $('#product_id').html('<option value="">Loading...</option>');
+$('#category_id').on('change', function () {
+    let categoryId = $(this).val();
+    $('#product_id').html('<option value="">Loading...</option>');
 
-        if (categoryId) {
-            $.ajax({
-                url: '/get-products/' + categoryId,
-                type: 'GET',
-                success: function(products) {
-                    let options = '<option value="">-- Select Product --</option>';
-                    products.forEach(function(product) {
-                        options += `<option value="${product.id}">${product.name}</option>`;
-                    });
-                    $('#product_id').html(options);
-                }
+    if (!categoryId) {
+        $('#product_id').html('<option value="">-- Select Product --</option>');
+        return;
+    }
+
+    $.ajax({
+        url: '/get-products/' + categoryId,
+        type: 'GET',
+        success: function (products) {
+            let options = '<option value="">-- Select Product --</option>';
+            products.forEach(product => {
+                options += `<option value="${product.id}">${product.name}</option>`;
             });
-        } else {
-            $('#product_id').html('<option value="">-- Select Product --</option>');
+            $('#product_id').html(options);
         }
     });
+});
 </script>
