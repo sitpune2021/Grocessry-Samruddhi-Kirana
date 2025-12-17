@@ -35,7 +35,18 @@ Route::middleware(['auth'])->group(function () {
 Route::resource('/category', CategoryController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
-Route::get('/add-stock-warehouse',[ MasterWarehouseController::class,'addStock'])->name('warehouse.addStock');
+
+Route::get('/index-warehouse', [MasterWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
+Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
+Route::post('/add-stock-warehouse', [MasterWarehouseController::class, 'addStock'])->name('warehouse.addStock');
+Route::get('/view-stock-warehouse/{id}', [MasterWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
+Route::get('/edit-stock-warehouse/{id}', [MasterWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
+Route::put('/stock/{id}', [MasterWarehouseController::class, 'updateStock'])
+    ->name('stock.update');
+Route::delete('/stock/{id}', [MasterWarehouseController::class, 'destroyStock'])
+    ->name('stock.delete');
+
+
 
 Route::get('/get-states/{country}', [LocationController::class, 'getStates']);
 Route::get('/get-districts/{state}', [LocationController::class, 'getDistricts']);
@@ -51,8 +62,8 @@ Route::get(
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
-    
-    
+
+
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
