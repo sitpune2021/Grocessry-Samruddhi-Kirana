@@ -32,7 +32,9 @@
                                              </div>
                                          </div>
                                          <div class="flex-grow-1">
-                                             <h6 class="mb-0">{{ Auth::user() }}</h6>
+                                             {{-- <h6 class="mb-0">{{ Auth::user() }}</h6> --}}
+                                             <h6 class="mb-0">{{ Auth::user()?->name ?? 'Guest' }}</h6>
+
                                              <small class="text-body-secondary">Admin</small>
                                          </div>
                                      </div>
@@ -55,7 +57,7 @@
                                  <div class="dropdown-divider my-1"></div>
                              </li>
                              <li>
-                                 <a class="dropdown-item" href="javascript:void(0);">
+                                 <a class="dropdown-item" href="{{route('logout')}}">
                                      <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
                                  </a>
                              </li>

@@ -22,65 +22,47 @@
             <x-datatable-search />
 
             <!-- Table -->
-             <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Sr No</th>
-                        <th>Category</th>
-                        <th>Warehouse Name</th>
-                        <th>SKU</th>
-                        <th>Description</th>
-                        <th>Base Price</th>
-                        <th>Retailer Price</th>
-                        <th>MRP</th>
-                        <th>GST (%)</th>
-                        <th>Stock</th>
-                        <th>Image</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>Sr No</th>
+                            <th>Warehouse Name</th>
+                            <th>Address</th>
+                            <th>Contact Person</th>
+                            <th>Contact Number</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    @forelse ($warehouses as $index => $warehouse)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
+                    <tbody>
+                        @forelse ($warehouses as $warehouse)
 
-                        {{-- warehouse Name --}}
-                        <td></td>
-
-                        <td>{{ $warehouse->name }}</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-
-                      
-                        <td>
-                           
-                        </td>
-
-                        {{-- Actions --}}
-                        <td>
-                            <x-action-buttons
-                                :view-url="route('warehouse.show', $warehouse->id)"
-                                :edit-url="route('warehouse.edit', $warehouse->id)"
-                                :delete-url="route('warehouse.destroy', $warehouse->id)" />
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="12" class="text-center text-muted">
-                            No Products found
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-             </div>
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $warehouse->name }}</td>
+                            <td>{{ $warehouse->address ?? '-' }}</td>
+                            <td>{{ $warehouse->contact_person ?? '-' }}</td>
+                            <td>{{ $warehouse->contact_number ?? '-'}}</td>
+                            <td>{{ $warehouse->email ?? '-'}}</td>
+                            <td>{{$warehouse->status ?? '-'}}</td>
+                            <td>
+                                <x-action-buttons
+                                    :view-url="route('warehouse.show', $warehouse->id)"
+                                    :edit-url="route('warehouse.edit', $warehouse->id)"
+                                    :delete-url="route('warehouse.destroy', $warehouse->id)" />
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">No Warehouse found</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
             <!-- Pagination -->
             <x-pagination
