@@ -19,7 +19,6 @@ class WarehouseTransferController extends Controller
 {
     
 
-
     public function index()
     {
         // Eager load related models for display
@@ -98,13 +97,28 @@ class WarehouseTransferController extends Controller
             );
 
             // Warehouse transfer record
-            WarehouseTransfer::create($data);
+            $transfer = WarehouseTransfer::create($data);
 
             // Stock movement record
             StockMovement::create([
                 'type'             => 'transfer',
                 'quantity'         => $data['quantity'],
                 'product_batch_id' => $data['batch_id'],
+            ]);
+
+            // -----------------------------
+            // Logging the transfer
+            // -----------------------------
+            Log::info('Warehouse transfer created', [
+                'transfer_id'       => $transfer->id,
+                'from_warehouse_id' => $data['from_warehouse_id'],
+                'to_warehouse_id'   => $data['to_warehouse_id'],
+                'category_id'       => $data['category_id'],
+                'product_id'        => $data['product_id'],
+                'batch_id'          => $data['batch_id'],
+                'quantity'          => $data['quantity'],
+                'created_by'        => auth()->id(), // current logged-in user
+                'timestamp'         => now(),
             ]);
         });
 
@@ -140,7 +154,6 @@ class WarehouseTransferController extends Controller
         ]);
     }
 
-
     // Update Method
     public function update(Request $request, $id)
     {
@@ -157,11 +170,25 @@ class WarehouseTransferController extends Controller
 
         $transfer->update($validated);
 
+        // -----------------------------
+        // Logging the update action
+        // -----------------------------
+        Log::info('Warehouse transfer updated', [
+            'transfer_id'       => $transfer->id,
+            'from_warehouse_id' => $validated['from_warehouse_id'],
+            'to_warehouse_id'   => $validated['to_warehouse_id'],
+            'category_id'       => $validated['category_id'],
+            'product_id'        => $validated['product_id'],
+            'batch_id'          => $validated['batch_id'],
+            'quantity'          => $validated['quantity'],
+            'updated_by'        => auth()->id(), // current logged-in user
+            'timestamp'         => now(),
+        ]);
+
         return redirect()
             ->route('transfer.index')
             ->with('success', 'Warehouse transfer updated successfully');
     }
-
 
     public function destroy($id)
     {
