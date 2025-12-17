@@ -24,9 +24,13 @@ class ProductBatchController extends Controller
 
     public function create()
     {
-        $categories = Category::all();  
-        return view('batches.create', compact('categories'));
-    } 
+        $categories = Category::all();
+        $products = collect(); // empty collection for products initially
+        $batch = null; // no batch in create mode
+
+        return view('batches.create', compact('categories', 'products', 'batch'));
+    }
+
 
 
     public function getProductsByCategory($category_id)
@@ -35,7 +39,6 @@ class ProductBatchController extends Controller
 
         return response()->json($products);
     }
-
 
 
     public function store(Request $request)
@@ -101,7 +104,6 @@ class ProductBatchController extends Controller
     }
 
 
-
     public function expiryAlerts()
     {
         $batches = ProductBatch::where('quantity', '>', 0)
@@ -111,5 +113,46 @@ class ProductBatchController extends Controller
 
         return view('batches.expiry', compact('batches'));
     }
+
+    // ProductBatchController.php
+
+    
+    // Edit Method
+    public function edit($id)
+    {
+        $batch = ProductBatch::findOrFail($id);
+        $categories = Category::all();
+        $products = Product::where('category_id', $batch->category_id)->get();
+
+        return view('batches.create', compact('categories', 'products', 'batch'));
+    }
+
+    // Update Method
+    public function update(Request $request, $id)
+    {
+        $batch = ProductBatch::findOrFail($id);
+
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'product_id'  => 'required|exists:products,id',
+            'batch_no'    => 'required',
+            'mfg_date'    => 'nullable|date',
+            'expiry_date' => 'nullable|date|after:mfg_date',
+            'quantity'    => 'required|integer|min:1',
+        ]);
+
+        $batch->update($validated);
+
+        return redirect()->route('batches.index')->with('success', 'Batch updated successfully');
+    }
+
+
+    public function destroy($id)
+    {
+        $batch = ProductBatch::findOrFail($id);
+        $batch->delete(); // soft delete
+        return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
+    }
+
 
 }
