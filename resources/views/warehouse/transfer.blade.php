@@ -30,9 +30,17 @@
                                     Warehouse-to-Warehouse Stock Transfer
                                 </h4>
                                 <div class="card-body">
+                                    
+                                    <form id="transferForm" method="POST"
+                                        action="{{ isset($transfer) 
+                                            ? route('transfer.update', $transfer->id) 
+                                            : route('transfer.store') }}">
 
-                                    <form id="transferForm" method="POST" action="/warehouse-transfer">
                                         @csrf
+                                        @if(isset($transfer))
+                                            @method('PUT')
+                                        @endif
+
 
                                         <!-- Row 1: FROM & TO -->
                                         <div class="row g-3 mb-3">
@@ -41,7 +49,10 @@
                                                 <select name="from_warehouse_id" id="from_warehouse_id" class="form-select @error('from_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                                        <option value="{{ $w->id }}"
+                                                            {{ (isset($transfer) && $transfer->from_warehouse_id == $w->id) ? 'selected' : '' }}>
+                                                            {{ $w->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('from_warehouse_id')
@@ -54,7 +65,9 @@
                                                 <select name="to_warehouse_id" id="to_warehouse_id" class="form-select @error('to_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                                        <option value="{{ $w->id }}"
+                                                        {{ (isset($transfer) && $transfer->to_warehouse_id == $w->id) ? 'selected' : '' }}>
+                                                        {{ $w->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('to_warehouse_id')
@@ -70,7 +83,10 @@
                                                 <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror">
                                                     <option value="">Select Category</option>
                                                     @foreach($categories as $c)
-                                                        <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                                        <option value="{{ $c->id }}"
+                                                            {{ (isset($transfer) && $transfer->category_id == $c->id) ? 'selected' : '' }}>
+                                                            {{ $c->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
@@ -80,9 +96,19 @@
 
                                             <div class="col-md-6">
                                                 <label for="product_id" class="form-label">Product</label>
-                                                <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
+                                                <select name="product_id" id="product_id" class="form-select">
                                                     <option value="">Select Product</option>
+
+                                                    @if(isset($products))
+                                                        @foreach($products as $p)
+                                                            <option value="{{ $p->id }}"
+                                                                {{ (isset($transfer) && $transfer->product_id == $p->id) ? 'selected' : '' }}>
+                                                                {{ $p->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
+
                                                 @error('product_id')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
@@ -93,9 +119,19 @@
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <label for="batch_id" class="form-label">Batch</label>
-                                                <select name="batch_id" id="batch_id" class="form-select @error('batch_id') is-invalid @enderror">
+                                                <select name="batch_id" id="batch_id" class="form-select">
                                                     <option value="">Select Batch</option>
+
+                                                    @if(isset($batches))
+                                                        @foreach($batches as $b)
+                                                            <option value="{{ $b->id }}"
+                                                                {{ (isset($transfer) && $transfer->batch_id == $b->id) ? 'selected' : '' }}>
+                                                                {{ $b->batch_no }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
+
                                                 @error('batch_id')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
@@ -103,13 +139,23 @@
 
                                             <div class="col-md-6">
                                                 <label for="quantity" class="form-label">Quantity</label>
-                                                <input type="number" name="quantity" id="quantity" min="1" value="{{ old('quantity') }}" class="form-control @error('quantity') is-invalid @enderror">
+                                                <input type="number"
+                                                name="quantity"
+                                                id="quantity"
+                                                min="1"
+                                                value="{{ old('quantity', $transfer->quantity ?? '') }}"
+                                                class="form-control @error('quantity') is-invalid @enderror">
+
                                                 @if($errors->has('quantity'))
                                                     <small class="text-danger">{{ $errors->first('quantity') }}</small>
                                                 @endif
                                                 <small id="qtyError" class="text-danger" style="display:none;"></small>
                                             </div>
                                         </div>
+
+                                        @if(isset($transfer))
+                                            <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
+                                        @endif
 
                                         <!-- Buttons -->
                                         <div class="d-flex justify-content-between">
@@ -137,6 +183,8 @@
 </body>
 
 
+
+
 <!-- get category wise product list and batch number -->
 <script>
 document.getElementById('category_id').addEventListener('change', function () {
@@ -160,6 +208,7 @@ document.getElementById('category_id').addEventListener('change', function () {
 document.getElementById('product_id').addEventListener('change', function () {
     let productId = this.value;
     let batch = document.getElementById('batch_id');
+    let oldBatchId = document.getElementById('old_batch_id')?.value;
 
     batch.innerHTML = '<option>Loading...</option>';
 
@@ -167,14 +216,19 @@ document.getElementById('product_id').addEventListener('change', function () {
         .then(res => res.json())
         .then(data => {
             batch.innerHTML = '<option value="">Select Batch</option>';
+
             data.forEach(b => {
+                let selected = (oldBatchId && oldBatchId == b.id) ? 'selected' : '';
+
                 batch.innerHTML += `
-                    <option value="${b.id}">
-                        ${b.batch_no} | Exp: ${b.expiry_date ?? 'N/A'}
-                    </option>`;
+                    <option value="${b.id}" ${selected}>
+                        ${b.batch_no}
+                    </option>
+                `;
             });
         });
 });
+
 </script>
 
 <!-- validation error massage qut. -->

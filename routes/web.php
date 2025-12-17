@@ -75,6 +75,9 @@ Route::put('/batches/{id}', [ProductBatchController::class, 'update'])->name('ba
 // Soft delete
 Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name('batches.destroy');
 
+Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
+    ->name('batches.show');
+
 
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
@@ -97,10 +100,14 @@ Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
 
-Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create']);
-Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store']);
-Route::get(
-    '/get-products-by-category/{category_id}',
+Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create'])->name('transfer.create');
+Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
+Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
+Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
+// Soft delete
+Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
+
+Route::get('/get-products-by-category/{category_id}', 
     [WarehouseTransferController::class, 'getProductsByCategory']
 );
 Route::get(
@@ -108,3 +115,10 @@ Route::get(
     [WarehouseTransferController::class, 'getBatchesByProduct']
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+
+Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
+    ->name('transfer.show');
+
+
+
+

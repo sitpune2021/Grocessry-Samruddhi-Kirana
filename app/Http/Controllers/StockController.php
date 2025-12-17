@@ -90,6 +90,15 @@ class StockController extends Controller
                     $stock->batch->decrement('quantity', $deduct);
                 }
 
+                $batch = ProductBatch::findOrFail($stock['batch_id']);
+
+                if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
+                    return back()->withInput()->withErrors([
+                        'batch_id' => "Cannot transfer expired or blocked batch ({$batch->batch_no})"
+                    ]);
+                }
+
+
                 // Record stock movement
                 StockMovement::create([
                     'product_batch_id' => $stock->batch_id,
