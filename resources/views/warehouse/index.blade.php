@@ -47,6 +47,10 @@
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
 
+                                   <a href="{{ route('transfer.show', $t->id) }}">
+                                        View
+                                    </a>
+
                                     <!-- EDIT -->
                                     <a href="{{ route('transfer.edit', $t->id) }}" 
                                     class="btn btn-sm btn-primary" title="Edit">

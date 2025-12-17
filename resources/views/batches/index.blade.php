@@ -42,6 +42,11 @@
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
 
+                                <a href="{{ route('batches.show', $batch->id) }}">
+                                    View
+                                </a>
+
+
                                 <!-- SELL -->
                                 @if($batch->quantity > 0)
                                     <a href="/sale/{{ $batch->product_id }}" 

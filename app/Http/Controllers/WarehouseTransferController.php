@@ -63,7 +63,7 @@ class WarehouseTransferController extends Controller
             'quantity'          => 'required|integer|min:1',
         ]);
 
-        // ✅ Check available stock on server side
+        // Check available stock on server side
         $fromStock = WarehouseStock::where([
             'warehouse_id' => $data['from_warehouse_id'],
             'batch_id'     => $data['batch_id'],
@@ -95,6 +95,15 @@ class WarehouseTransferController extends Controller
                     'quantity'    => DB::raw('quantity + '.$data['quantity']),
                 ]
             );
+
+            $batch = ProductBatch::findOrFail($data['batch_id']);
+
+            if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
+                return back()->withInput()->withErrors([
+                    'batch_id' => "Cannot transfer expired or blocked batch ({$batch->batch_no})"
+                ]);
+            }
+
 
             // Warehouse transfer record
             $transfer = WarehouseTransfer::create($data);
@@ -197,6 +206,17 @@ class WarehouseTransferController extends Controller
         return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
     }
 
+    public function show($id)
+    {
+        $transfer = WarehouseTransfer::with([
+            'product',
+            'batch',
+            'fromWarehouse',
+            'toWarehouse'
+        ])->findOrFail($id);
+
+        return view('warehouse.show', compact('transfer'));
+    }
 
 
 }

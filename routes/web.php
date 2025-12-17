@@ -37,6 +37,9 @@ Route::put('/batches/{id}', [ProductBatchController::class, 'update'])->name('ba
 // Soft delete
 Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name('batches.destroy');
 
+Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
+    ->name('batches.show');
+
 
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
@@ -74,7 +77,8 @@ Route::get('/get-batches-by-product/{product_id}',
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
-
+Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
+    ->name('transfer.show');
 
 
 
