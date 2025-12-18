@@ -175,17 +175,17 @@
 
                                                 <!-- Buttons (Right Aligned) -->
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('product.index') }}" class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
                                                 @if($mode === 'add')
                                                 <button type="submit" class="btn btn-primary">
-                                                     Save Category
+                                                     Save Product
                                                 </button>
                                                 @elseif($mode === 'edit')
                                                 <button type="submit" class="btn btn-primary">
-                                                     Update Category
+                                                     Update Product
                                                 </button>
                                                 @endif
                                             </div>

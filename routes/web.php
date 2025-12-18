@@ -14,14 +14,14 @@ use App\Http\Controllers\WarehouseTransferController;
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
-
+  Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+            ->name('reset.password');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/forgot-password', function () {
         return view('admin-login.password.reset');
     })->name('forgot.password');
-    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
-        ->name('reset.password');
+      
 });
 
 // User Profile 

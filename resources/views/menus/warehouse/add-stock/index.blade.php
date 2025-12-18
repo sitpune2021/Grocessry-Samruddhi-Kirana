@@ -77,13 +77,7 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <x-pagination
-                :from="$stocks->firstItem()"
-                :to="$stocks->lastItem()"
-                :total="$stocks->total()" />
-
-        </div>
+    
     </div>
 </div>
 @endsection
