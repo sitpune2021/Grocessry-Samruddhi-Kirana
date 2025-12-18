@@ -29,6 +29,7 @@
                                 <h4 class="card-header text-center">
                                     Warehouse-to-Warehouse Stock Transfer
                                 </h4>
+                               
                                 <div class="card-body">
                                     
                                     <form id="transferForm" method="POST"

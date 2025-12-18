@@ -26,6 +26,7 @@
                             <th>Qty</th>
                             <th>MFG</th>
                             <th>Expiry</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -44,6 +45,16 @@
                             <td>{{ $batch->quantity }}</td>
                             <td>{{ $batch->mfg_date }}</td>
                             <td>{{ $batch->expiry_date }}</td>
+                            {{-- STATUS COLUMN --}}
+                            <td class="text-center">
+                                @if($batch->expiry_date < now())
+                                    <span class="badge bg-danger">Expired</span>
+                                @elseif($batch->expiry_date <= now()->addDays(7))
+                                    <span class="badge bg-warning text-dark">Expiring Soon</span>
+                                @else
+                                    <span class="badge bg-success">Normal</span>
+                                @endif
+                            </td>
 
                             <td align="center">
                                 @if($batch->quantity > 0 && $batch->expiry_date >= now()->toDateString())
@@ -53,7 +64,9 @@
                                 @else
                                     ❌
                                 @endif
-                            </td>
+                                
+                            </td>                         
+
                         </tr>
                     @endforeach
                     </tbody>

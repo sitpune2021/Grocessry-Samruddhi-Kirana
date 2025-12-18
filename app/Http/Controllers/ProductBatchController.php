@@ -52,14 +52,34 @@ class ProductBatchController extends Controller
             ]);
 
             // Create Product Batch
+            // $batch = ProductBatch::create([
+            //     'category_id' => $validated['category_id'], 
+            //     'product_id'  => $validated['product_id'],
+            //     'batch_no'    => $validated['batch_no'],
+            //     'mfg_date'    => $validated['mfg_date'] ?? null,
+            //     'expiry_date' => $validated['expiry_date'] ?? null,
+            //     'quantity'    => $validated['quantity'],
+            // ]);
+
+            $product = Product::findOrFail($validated['product_id']);
+
+            $expiryDate = $validated['expiry_date'] ?? (
+                $validated['mfg_date'] && $product->expiry_days
+                    ? \Carbon\Carbon::parse($validated['mfg_date'])
+                        ->addDays($product->expiry_days)
+                    : null
+            );
+
+
             $batch = ProductBatch::create([
-                'category_id' => $validated['category_id'], 
+                'category_id' => $validated['category_id'],
                 'product_id'  => $validated['product_id'],
                 'batch_no'    => $validated['batch_no'],
-                'mfg_date'    => $validated['mfg_date'] ?? null,
-                'expiry_date' => $validated['expiry_date'] ?? null,
+                'mfg_date'    => $validated['mfg_date'],
+                'expiry_date' => $expiryDate,
                 'quantity'    => $validated['quantity'],
             ]);
+
 
             // Stock Movement Entry
             StockMovement::create([
