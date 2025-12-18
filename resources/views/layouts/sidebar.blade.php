@@ -17,7 +17,7 @@
 
         <!-- Dashboard -->
         <li class="menu-item">
-            <a href="" class="menu-link active text-white">
+            <a href="/dashboard" class="menu-link active text-white">
                 <span><i class="bx bx-home-smile me-2"></i> Dashboard</span>
             </a>
         </li>

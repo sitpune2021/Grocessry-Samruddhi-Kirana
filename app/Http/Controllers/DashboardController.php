@@ -3,6 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Batch;
+use App\Models\User;
+use App\Models\WarehouseStock;
+use App\Models\Warehouse;
+use App\Models\WarehouseTransfer;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -12,7 +19,26 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('dashboard.dashboard');
+        $categoryCount = Category::count();
+        $ProductCount = Product::count();
+        $BatchCount = Batch::count();
+        $WarehouseCount = Warehouse::count();
+        $StockMovementCount = WarehouseStock::count();
+        $WarehouseTransferCount = WarehouseTransfer::count();
+        $UserCount = User::count();
+
+        return view(
+            'dashboard.dashboard',
+            compact(
+                'categoryCount',
+                'ProductCount',
+                'BatchCount',
+                'WarehouseCount',
+                'StockMovementCount',
+                'WarehouseTransferCount',
+                'UserCount'
+            )
+        );
     }
 
     /**
