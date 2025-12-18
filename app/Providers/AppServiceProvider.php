@@ -9,21 +9,19 @@ use App\Models\Product;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-         View::composer('layouts.sidebar', function ($view) {
-        $view->with('products', Product::all());
-    });
+        // ✅ THIS MUST BE HERE (GLOBAL)
+        Schema::defaultStringLength(191);
+
+        // Sidebar products
+        View::composer('layouts.sidebar', function ($view) {
+            $view->with('products', Product::all());
+        });
     }
 }

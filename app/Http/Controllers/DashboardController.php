@@ -4,16 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\ProductBatch;
 
 class DashboardController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    // public function index()
+    // {
+    //     return view('dashboard.dashboard');
+    // }
+
     public function index()
     {
-        return view('dashboard.dashboard');
+        $expiredCount = ProductBatch::where('quantity', '>', 0)
+            ->whereDate('expiry_date', '<', now())
+            ->count();
+
+        $expiringSoonCount = ProductBatch::where('quantity', '>', 0)
+            ->whereBetween('expiry_date', [
+                now(),
+                now()->addDays(7)
+            ])->count();
+
+        return view('dashboard.dashboard', compact(
+            'expiredCount',
+            'expiringSoonCount'
+        ));
     }
+
 
     /**
      * Show the form for creating a new resource.

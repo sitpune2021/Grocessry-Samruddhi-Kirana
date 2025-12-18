@@ -157,6 +157,17 @@
                                             <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
                                         @endif
 
+                                        @if(isset($transfer))
+                                            <input type="hidden" id="old_category_id" value="{{ $transfer->category_id }}">
+                                            <input type="hidden" id="old_product_id" value="{{ $transfer->product_id }}">
+                                            <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
+                                        @endif
+                                        
+                                        @if(isset($transfer))
+                                            <input type="hidden" id="old_to_warehouse_id" value="{{ $transfer->to_warehouse_id }}">
+                                        @endif
+
+
                                         <!-- Buttons -->
                                         <div class="d-flex justify-content-between">
                                             <a href="{{ route('transfer.index') }}" class="btn btn-outline-secondary">Back</a>
@@ -183,28 +194,41 @@
 </body>
 
 
-
-
-<!-- get category wise product list and batch number -->
 <script>
 document.getElementById('category_id').addEventListener('change', function () {
     let categoryId = this.value;
     let product = document.getElementById('product_id');
     let batch = document.getElementById('batch_id');
 
+    const oldProductId = document.getElementById('old_product_id')?.value;
+
     product.innerHTML = '<option>Loading...</option>';
     batch.innerHTML = '<option>Select Batch</option>';
+
+    if (!categoryId) return;
 
     fetch(`/get-products-by-category/${categoryId}`)
         .then(res => res.json())
         .then(data => {
             product.innerHTML = '<option value="">Select Product</option>';
+
             data.forEach(p => {
-                product.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                const selected = oldProductId == p.id ? 'selected' : '';
+                product.innerHTML += `
+                    <option value="${p.id}" ${selected}>${p.name}</option>
+                `;
             });
+
+            // 🔥 auto trigger batch load
+            if (oldProductId) {
+                product.dispatchEvent(new Event('change'));
+            }
         });
 });
+</script>
 
+<!-- get category wise product list and batch number -->
+<script>
 document.getElementById('product_id').addEventListener('change', function () {
     let productId = this.value;
     let batch = document.getElementById('batch_id');
@@ -282,6 +306,115 @@ form.addEventListener('submit', function(e) {
     if (!validateQty()) {
         e.preventDefault();
         alert('Please fix the quantity before submitting.');
+    }
+});
+</script>
+
+<!-- batch expired validation -->
+<script>
+batchSelect.addEventListener('change', function () {
+    const batchId = this.value;
+
+    if (!batchId) return;
+
+    fetch(`/check-batch-validity/${batchId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.valid) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = data.message;
+
+                quantityInput.value = '';
+                quantityInput.disabled = true;
+            } else {
+                errorEl.style.display = 'none';
+                quantityInput.disabled = false;
+
+                // stock bhi fetch karo
+                fetchStock();
+            }
+        });
+});
+</script>
+
+<!-- get warehouse wise category -->
+<script>
+document.getElementById('from_warehouse_id').addEventListener('change', function () {
+    const warehouseId = this.value;
+
+    const categorySelect = document.getElementById('category_id');
+    const productSelect  = document.getElementById('product_id');
+    const batchSelect    = document.getElementById('batch_id');
+
+    const oldCategoryId = document.getElementById('old_category_id')?.value;
+
+    categorySelect.innerHTML = '<option value="">Loading categories...</option>';
+    productSelect.innerHTML  = '<option value="">Select Product</option>';
+    batchSelect.innerHTML    = '<option value="">Select Batch</option>';
+
+    if (!warehouseId) return;
+
+    fetch(`/get-categories-by-warehouse/${warehouseId}`)
+        .then(res => res.json())
+        .then(data => {
+            categorySelect.innerHTML = '<option value="">Select Category</option>';
+
+            data.forEach(c => {
+                const selected = oldCategoryId == c.id ? 'selected' : '';
+                categorySelect.innerHTML += `
+                    <option value="${c.id}" ${selected}>${c.name}</option>
+                `;
+            });
+
+            // 🔥 auto trigger product load in edit
+            if (oldCategoryId) {
+                categorySelect.dispatchEvent(new Event('change'));
+            }
+        });
+});
+</script>
+
+<!-- same warehouse not selected in from and to warehouse dropdown -->
+<script>
+const fromWarehouse = document.getElementById('from_warehouse_id');
+const toWarehouse   = document.getElementById('to_warehouse_id');
+const oldToWarehouse = document.getElementById('old_to_warehouse_id')?.value;
+
+fromWarehouse.addEventListener('change', function () {
+    const selectedFrom = this.value;
+
+    Array.from(toWarehouse.options).forEach(option => {
+        if (!option.value) return;
+
+        // same warehouse hide
+        if (option.value === selectedFrom) {
+            option.disabled = true;
+            option.style.display = 'none';
+        } else {
+            option.disabled = false;
+            option.style.display = 'block';
+        }
+    });
+
+    // ✅ Edit mode → restore selection
+    if (oldToWarehouse && selectedFrom !== oldToWarehouse) {
+        toWarehouse.value = oldToWarehouse;
+    }
+
+    // ✅ Create mode safety
+    if (!oldToWarehouse && toWarehouse.value === selectedFrom) {
+        toWarehouse.value = '';
+    }
+});
+</script>
+
+<!-- edit mode get warehouse wise category -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fromWarehouse = document.getElementById('from_warehouse_id');
+
+    if (fromWarehouse.value) {
+        fromWarehouse.dispatchEvent(new Event('change'));
     }
 });
 </script>
