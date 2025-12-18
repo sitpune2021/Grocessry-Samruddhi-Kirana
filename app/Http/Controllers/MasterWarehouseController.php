@@ -288,6 +288,7 @@ class MasterWarehouseController extends Controller
 
             $stock = WarehouseStock::where([
                 'warehouse_id' => $request->warehouse_id,
+                'category_id'  => $request->category_id,
                 'product_id'   => $request->product_id,
                 'batch_id'     => $request->batch_id,
             ])->first();
@@ -329,7 +330,6 @@ class MasterWarehouseController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // 🔴 Error log
             Log::error('Add stock failed', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
@@ -346,23 +346,6 @@ class MasterWarehouseController extends Controller
     public function showStockForm($id)
     {
         $mode = 'view';
-        $warehouses = WarehouseStock::with(['warehouse', 'category', 'product', 'batch'])->findOrFail($id);
-        // $warehouses = Warehouse::all();
-        $categories = Category::all();
-        $products = Product::where('category_id', $warehouses->category_id)->get();
-        $product_batches = ProductBatch::where('product_id', $warehouses->product_id)->get();
-
-        return view('menus.warehouse.add-stock.add-stock', compact(
-            'mode',
-            'warehouses',
-            'categories',
-            'products',
-            'product_batches'
-        ));
-    }
-
-    public function editStockForm(Request $request,$id) {
-         $mode = 'edit';
         $warehouse_stock = WarehouseStock::with(['warehouse', 'category', 'product', 'batch'])->findOrFail($id);
         $warehouses = Warehouse::all();
         $categories = Category::all();
@@ -379,6 +362,93 @@ class MasterWarehouseController extends Controller
         ));
     }
 
-    public function updateStock(Request $request) {}
-    public function destroyStock(Request $request) {}
+    public function editStockForm(Request $request, $id)
+    {
+        $mode = 'edit';
+        $warehouse_stock = WarehouseStock::with(['warehouse', 'category', 'product', 'batch'])->findOrFail($id);
+        $warehouses = Warehouse::all();
+        $categories = Category::all();
+        $products = Product::where('category_id', $warehouse_stock->category_id)->get();
+        $product_batches = ProductBatch::where('product_id', $warehouse_stock->product_id)->get();
+
+        return view('menus.warehouse.add-stock.add-stock', compact(
+            'mode',
+            'warehouse_stock',
+            'warehouses',
+            'categories',
+            'products',
+            'product_batches'
+        ));
+    }
+
+    public function updateStock(Request $request, $id)
+    {
+        Log::info('Update Stock Request', array_merge(
+            $request->all(),
+            ['id' => $id]
+        ));
+
+        $request->validate([
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'category_id'  => 'required|exists:categories,id',
+            'product_id'   => 'required|exists:products,id',
+            'batch_id'     => 'required|exists:product_batches,id',
+            'quantity'     => 'required|numeric|min:0.01',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $stock = WarehouseStock::where('id', $id)->firstOrFail();
+
+            $stock->update([
+                'warehouse_id' => $request->warehouse_id,
+                'category_id'  => $request->category_id,
+                'product_id'   => $request->product_id,
+                'batch_id'     => $request->batch_id,
+                'quantity'     => $request->quantity,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('index.addStock.warehouse')
+                ->with('success', 'Stock updated successfully');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Update failed');
+        }
+    }
+
+    public function destroyStock(Request $request,$id)
+    {
+       
+        Log::info('Delete Stock Request', $request->all());
+       
+        try {
+            
+            $stock = WarehouseStock::findOrFail($id);
+
+            $stock->delete();
+
+            Log::info('Warehouse stock soft deleted', [
+                'stock_id' => $stock->id,
+                'warehouse_id' => $stock->warehouse_id,
+                'product_id' => $stock->product_id,
+                'batch_id' => $stock->batch_id,
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Stock deleted successfully');
+        } catch (\Throwable $e) {
+            Log::error('Failed to delete stock', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Unable to delete stock');
+        }
+    }
 }

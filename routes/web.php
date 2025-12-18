@@ -48,9 +48,9 @@ Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockF
 Route::post('/add-stock-warehouse', [MasterWarehouseController::class, 'addStock'])->name('warehouse.addStock');
 Route::get('/view-stock-warehouse/{id}', [MasterWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
 Route::get('/edit-stock-warehouse/{id}', [MasterWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
-Route::put('/stock/{id}', [MasterWarehouseController::class, 'updateStock'])
+Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock'])
     ->name('stock.update');
-Route::delete('/stock/{id}', [MasterWarehouseController::class, 'destroyStock'])
+Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
 
