@@ -41,7 +41,6 @@
                 <li><a href="{{ route('category.index') }}">Category</a></li>
                 <li><a href="{{ route('product.index') }}">Products</a></li>
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
-                <li><a href="{{ route('sale.create') }}">FIFO Management</a></li>
                 <li><a href="/expiry-alerts">Expiry Alerts</a></li>
             </ul>
         </li>
@@ -55,39 +54,40 @@
             <ul class="submenu" id="warehouseMenu">
                 <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
                 <li><a href="{{ route('index.addStock.warehouse') }}">Add Stock</a></li>
+                <li><a href="{{ route('sale.create') }}">FIFO Management</a></li>
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.submenu').forEach(menu => {
-        menu.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.submenu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+
+        document.querySelectorAll('.arrow').forEach(arrow => {
+            arrow.classList.remove('rotate');
+        });
     });
 
-    document.querySelectorAll('.arrow').forEach(arrow => {
-        arrow.classList.remove('rotate');
-    });
-});
+    function toggleMenu(menuId, arrowId) {
+        const currentMenu = document.getElementById(menuId);
+        const currentArrow = document.getElementById(arrowId);
 
-function toggleMenu(menuId, arrowId) {
-    const currentMenu = document.getElementById(menuId);
-    const currentArrow = document.getElementById(arrowId);
+        const isOpen = currentMenu.style.display === 'block';
 
-    const isOpen = currentMenu.style.display === 'block';
+        document.querySelectorAll('.submenu').forEach(menu => {
+            menu.style.display = 'none';
+        });
 
-    document.querySelectorAll('.submenu').forEach(menu => {
-        menu.style.display = 'none';
-    });
+        document.querySelectorAll('.arrow').forEach(arrow => {
+            arrow.classList.remove('rotate');
+        });
 
-    document.querySelectorAll('.arrow').forEach(arrow => {
-        arrow.classList.remove('rotate');
-    });
-
-    if (!isOpen) {
-        currentMenu.style.display = 'block';
-        currentArrow.classList.add('rotate');
+        if (!isOpen) {
+            currentMenu.style.display = 'block';
+            currentArrow.classList.add('rotate');
+        }
     }
-}
 </script>
