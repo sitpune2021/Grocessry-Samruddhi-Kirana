@@ -17,7 +17,7 @@
 
         <!-- Dashboard -->
         <li class="menu-item">
-            <a href="" class="menu-link active text-white">
+            <a href="/dashboard" class="menu-link active text-white">
                 <span><i class="bx bx-home-smile me-2"></i> Dashboard</span>
             </a>
         </li>
@@ -43,6 +43,7 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
+                <li><a href="{{ route('brands.index') }}">Brand</a></li>
                 <li><a href="{{ route('category.index') }}">Category</a></li>
                 <li><a href="{{ route('product.index') }}">Products</a></li>
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>

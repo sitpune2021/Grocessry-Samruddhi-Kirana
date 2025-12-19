@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Product;
@@ -49,8 +50,11 @@ class ProductController extends Controller
 
             $mode = 'add';
             $categories = Category::select('id', 'name')->get();
+            $brands = Brand::where('status', 1)
+                ->orderBy('name')
+                ->get();
 
-            return view('menus.product.add-product', compact('mode', 'categories'));
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -76,8 +80,11 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
+                'brand_id'        => 'required',
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
+                'effective_date'  => 'required|date',
+                'expiry_date'     => 'required|date|after_or_equal:effective_date',
                 'description'     => 'nullable|string',
                 'base_price'      => 'required|numeric',
                 'retailer_price'  => 'required|numeric',
@@ -85,13 +92,27 @@ class ProductController extends Controller
                 'gst_percentage'  => 'required|numeric',
                 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
-                'product_images.*' => 'nullable|string',
+                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
-            // Save images as JSON
-            $validated['product_images'] = $request->product_images
-                ? json_encode($request->product_images)
-                : null;
+            if ($request->hasFile('product_images')) {
+
+                $imageNames = [];
+
+                foreach ($request->file('product_images') as $image) {
+
+                    $originalName = $image->getClientOriginalName();
+                    $fileName = time() . '_' . uniqid() . '_' . $originalName;
+
+                    $image->storeAs('products', $fileName, 'public');
+
+                    $imageNames[] = $fileName;
+                }
+
+                // store as JSON in DB
+                $validated['product_images'] = json_encode($imageNames);
+            }
+
 
             $product = Product::create($validated);
 
@@ -139,8 +160,11 @@ class ProductController extends Controller
 
             $mode = 'view'; // important for form disabling
             $categories = Category::select('id', 'name')->get();
+            $brands = Brand::where('status', 1)
+                ->orderBy('name')
+                ->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands'));
         } catch (\Throwable $e) {
             Log::error('Product View Error', ['message' => $e->getMessage()]);
             return redirect()->route('product.index')
@@ -166,8 +190,11 @@ class ProductController extends Controller
 
             $mode = 'edit';
             $categories = Category::select('id', 'name')->get();
+            $brands = Brand::where('status', 1)
+                ->orderBy('name')
+                ->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -209,12 +236,26 @@ class ProductController extends Controller
                 'gst_percentage'  => 'required|numeric',
                 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
-                'product_images.*' => 'nullable|string',
+                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
-            $validated['product_images'] = $request->product_images
-                ? json_encode($request->product_images)
-                : null;
+            if ($request->hasFile('product_images')) {
+
+                $imageNames = [];
+
+                foreach ($request->file('product_images') as $image) {
+
+                    $originalName = $image->getClientOriginalName();
+                    $fileName = time() . '_' . uniqid() . '_' . $originalName;
+
+                    $image->storeAs('products', $fileName, 'public');
+
+                    $imageNames[] = $fileName;
+                }
+
+                // store as JSON in DB
+                $validated['product_images'] = json_encode($imageNames);
+            }
 
             $product->update($validated);
 
