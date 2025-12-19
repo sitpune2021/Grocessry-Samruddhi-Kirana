@@ -24,7 +24,7 @@
                 <!-- Table -->
                 <div class="table-responsive mt-3">
                     <table id="batchTable" class="table table-bordered table-striped">
-                        <thead class="">
+                        <thead class="table-light">
                             <tr>
                                 <th>Sr No</th>
                                 <th>User Name</th>
@@ -67,6 +67,4 @@
     </div>
 @endsection
 
-@push('scripts')
-    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-@endpush
+

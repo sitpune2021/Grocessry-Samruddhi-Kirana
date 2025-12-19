@@ -91,11 +91,11 @@
 
                                                 @if($mode === 'add')
                                                 <button type="submit" class="btn btn-primary">
-                                                     Save Category
+                                                    Save Category
                                                 </button>
                                                 @elseif($mode === 'edit')
                                                 <button type="submit" class="btn btn-primary">
-                                                     Update Category
+                                                    Update Category
                                                 </button>
                                                 @endif
                                             </div>
@@ -119,3 +119,29 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.querySelector('input[name="name"]');
+        const slugInput = document.querySelector('input[name="slug"]');
+
+        nameInput.addEventListener('keyup', function() {
+            if (!slugInput.dataset.manual) {
+                slugInput.value = generateSlug(this.value);
+            }
+        });
+
+        slugInput.addEventListener('input', function() {
+            this.dataset.manual = true;
+        });
+
+        function generateSlug(text) {
+            return text
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+        }
+    });
+</script>
