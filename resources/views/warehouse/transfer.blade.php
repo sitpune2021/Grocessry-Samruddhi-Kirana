@@ -172,7 +172,35 @@
                                         <!-- Buttons -->
                                         <div class="d-flex justify-content-between">
                                             <a href="{{ route('transfer.index') }}" class="btn btn-outline-secondary">Back</a>
-                                            <button type="submit" class="btn btn-primary">Transfer Warehouse</button>
+                                            <button type="button" class="btn btn-primary" id="addItemBtn">
+                                                Add
+                                            </button>
+                                        </div>
+
+                                        <!-- Table -->
+                                        <div class="table-responsive mt-4" id="workOrderTableWrapper" style="display: none;">
+                                            <table class="table table-bordered" id="workOrderTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>From Warehouse</th>
+                                                        <th>To Warehouse</th>
+                                                        <th>Category</th>
+                                                        <th>Product</th>
+                                                        <th>Batch</th>
+                                                        <th>Quantity</th>                                
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                            <div id="itemsContainer"></div>
+
+                                            <div class="text-end mt-3">
+                                                <button type="submit" class="btn btn-success">
+                                                    Product Transfer
+                                                </button>
+
+                                            </div>
                                         </div>
 
                                     </form>
@@ -419,3 +447,210 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+
+<!-- multiple product Transfer with edit-->
+<script>
+let index = 0;
+let editingIndex = null;
+
+// cache elements
+const fromWarehouseEl = document.getElementById('from_warehouse_id');
+const toWarehouseEl   = document.getElementById('to_warehouse_id');
+const categoryEl      = document.getElementById('category_id');
+const productEl       = document.getElementById('product_id');
+const batchEl         = document.getElementById('batch_id');
+const qtyEl           = document.getElementById('quantity');
+const tableWrapper    = document.getElementById('workOrderTableWrapper');
+const tableBody       = document.querySelector('#workOrderTable tbody');
+const itemsContainer  = document.getElementById('itemsContainer');
+
+document.getElementById('addItemBtn').addEventListener('click', function () {
+
+    const fromWarehouse = fromWarehouseEl.value;
+    const toWarehouse   = toWarehouseEl.value;
+    const categoryId    = categoryEl.value;
+    const productId     = productEl.value;
+    const batchId       = batchEl.value;
+    const quantity      = qtyEl.value;
+
+    if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
+        alert('Please fill all fields');
+        return;
+    }
+
+    if (!validateQty()) return;
+
+    const rowIndex = editingIndex !== null ? editingIndex : index;
+
+    if (editingIndex !== null) {
+        removeRow(editingIndex);
+        editingIndex = null;
+    }
+
+    const row = `
+        <tr id="row_${rowIndex}">
+            <td>${fromWarehouseEl.options[fromWarehouseEl.selectedIndex].text}</td>
+            <td>${toWarehouseEl.options[toWarehouseEl.selectedIndex].text}</td>
+            <td>${categoryEl.options[categoryEl.selectedIndex].text}</td>
+            <td>${productEl.options[productEl.selectedIndex].text}</td>
+            <td>${batchEl.options[batchEl.selectedIndex].text}</td>
+            <td>${quantity}</td>
+            <td>
+                <button type="button" class="btn btn-warning btn-sm me-1" onclick="editRow(${rowIndex})">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${rowIndex})">Remove</button>
+            </td>
+        </tr>
+    `;
+
+    tableWrapper.style.display = 'block';
+    tableBody.insertAdjacentHTML('beforeend', row);
+
+    itemsContainer.insertAdjacentHTML('beforeend', `
+        <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
+        <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
+        <input type="hidden" name="items[${rowIndex}][category_id]" value="${categoryId}">
+        <input type="hidden" name="items[${rowIndex}][product_id]" value="${productId}">
+        <input type="hidden" name="items[${rowIndex}][batch_id]" value="${batchId}">
+        <input type="hidden" name="items[${rowIndex}][quantity]" value="${quantity}">
+    `);
+
+    if (rowIndex === index) index++;
+
+    resetFullForm();
+});
+
+/* ================= EDIT ================= */
+
+async function editRow(i) {
+    editingIndex = i;
+
+    const getVal = name =>
+        document.querySelector(`[name="items[${i}][${name}]"]`)?.value;
+
+    fromWarehouseEl.value = getVal('from_warehouse_id');
+    toWarehouseEl.value   = getVal('to_warehouse_id');
+
+    // trigger warehouse → category
+    fromWarehouseEl.dispatchEvent(new Event('change'));
+
+    await waitForOptions(categoryEl, getVal('category_id'));
+    categoryEl.value = getVal('category_id');
+    categoryEl.dispatchEvent(new Event('change'));
+
+    await waitForOptions(productEl, getVal('product_id'));
+    productEl.value = getVal('product_id');
+    productEl.dispatchEvent(new Event('change'));
+
+    await waitForOptions(batchEl, getVal('batch_id'));
+    batchEl.value = getVal('batch_id');
+
+    qtyEl.value = getVal('quantity');
+    fetchStock();
+
+    removeRow(i);
+}
+
+/* ================= HELPERS ================= */
+
+function removeRow(i) {
+    document.getElementById(`row_${i}`)?.remove();
+    document.querySelectorAll(`[name^="items[${i}]"]`).forEach(el => el.remove());
+}
+
+function resetFullForm() {
+    productEl.innerHTML = '<option value="">Select Product</option>';
+    batchEl.innerHTML   = '<option value="">Select Batch</option>';
+    qtyEl.value         = '';
+    categoryEl.value    = '';
+    fromWarehouseEl.value = '';
+    toWarehouseEl.value   = '';
+}
+
+/* wait till dropdown options are loaded */
+function waitForOptions(selectEl, value) {
+    return new Promise(resolve => {
+        const interval = setInterval(() => {
+            if ([...selectEl.options].some(o => o.value == value)) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 100);
+    });
+}
+</script>
+
+
+<!-- multiple product Transfer without edit-->
+<!-- <script>
+let index = 0;
+
+// cache all required elements
+const fromWarehouseEl = document.getElementById('from_warehouse_id');
+const toWarehouseEl   = document.getElementById('to_warehouse_id');
+const categoryEl      = document.getElementById('category_id');
+const productEl       = document.getElementById('product_id');
+const batchEl         = document.getElementById('batch_id');
+const qtyEl           = document.getElementById('quantity');
+const tableWrapper    = document.getElementById('workOrderTableWrapper');
+const tableBody       = document.querySelector('#workOrderTable tbody');
+const itemsContainer  = document.getElementById('itemsContainer');
+
+document.getElementById('addItemBtn').addEventListener('click', function () {
+
+    const fromWarehouse = fromWarehouseEl.value;
+    const toWarehouse   = toWarehouseEl.value;
+    const categoryId    = categoryEl.value;
+    const productId     = productEl.value;
+    const batchId       = batchEl.value;
+    const quantity      = qtyEl.value;
+
+    if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
+        alert('Please fill all fields');
+        return;
+    }
+
+    if (!validateQty()) return;
+
+    const row = `
+        <tr id="row_${index}">
+            <td>${fromWarehouseEl.options[fromWarehouseEl.selectedIndex].text}</td>
+            <td>${toWarehouseEl.options[toWarehouseEl.selectedIndex].text}</td>
+            <td>${categoryEl.options[categoryEl.selectedIndex].text}</td>
+            <td>${productEl.options[productEl.selectedIndex].text}</td>
+            <td>${batchEl.options[batchEl.selectedIndex].text}</td>
+            <td>${quantity}</td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${index})">
+                    Remove
+                </button>
+            </td>
+        </tr>
+    `;
+
+    tableWrapper.style.display = 'block';
+    tableBody.insertAdjacentHTML('beforeend', row);
+
+    itemsContainer.insertAdjacentHTML('beforeend', `
+        <input type="hidden" name="items[${index}][from_warehouse_id]" value="${fromWarehouse}">
+        <input type="hidden" name="items[${index}][to_warehouse_id]" value="${toWarehouse}">
+        <input type="hidden" name="items[${index}][category_id]" value="${categoryId}">
+        <input type="hidden" name="items[${index}][product_id]" value="${productId}">
+        <input type="hidden" name="items[${index}][batch_id]" value="${batchId}">
+        <input type="hidden" name="items[${index}][quantity]" value="${quantity}">
+    `);
+
+    index++;
+
+    // reset product fields only
+    productEl.value = '';
+    batchEl.value   = '';
+    qtyEl.value     = '';
+});
+
+function removeRow(i) {
+    document.getElementById(`row_${i}`)?.remove();
+    document.querySelectorAll(`[name^="items[${i}]"]`).forEach(el => el.remove());
+}
+</script> -->
+
+
