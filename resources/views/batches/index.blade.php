@@ -23,6 +23,7 @@
             <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
                 <thead class="table-light">
                     <tr>
+                        <th>Sr.no</th>
                         <th>Product</th>
                         <th>Batch</th>
                         <th>Qty</th>
@@ -34,47 +35,17 @@
                 <tbody>
                     @foreach($batches as $batch)
                     <tr>
+                        <td style="width: 30px;">{{ $loop->iteration }}</td>
                         <td>{{ $batch->product->name }}</td>
                         <td>{{ $batch->batch_no }}</td>
                         <td>{{ $batch->quantity }}</td>
                         <td>{{ $batch->mfg_date }}</td>
                         <td>{{ $batch->expiry_date }}</td>
 
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-2">
-
-                                <a href="{{ route('batches.show', $batch->id) }}">
-                                    View
-                                </a>
-
-
-                                <!-- SELL -->
-                                @if($batch->quantity > 0)
-                                    <a href="/sale/{{ $batch->product_id }}" 
-                                    class="btn btn-sm btn-success" title="Sell">
-                                        🛒
-                                    </a>
-                                @endif
-
-                                <!-- EDIT -->
-                                <a href="{{ route('batches.edit', $batch->id) }}" 
-                                class="btn btn-sm btn-primary" title="Edit">
-                                    ✏️
-                                </a>
-
-                                <!-- DELETE -->
-                                <form action="{{ route('batches.destroy', $batch->id) }}" 
-                                    method="POST" 
-                                    onsubmit="return confirm('Are you sure?')" 
-                                    style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm btn-danger" title="Delete">
-                                        🗑️
-                                    </button>
-                                </form>
-
-                            </div>
+                        <td class="text-center"> <x-action-buttons
+                                :view-url="route('batches.show', $batch->id)"
+                                :edit-url="route('batches.edit', $batch->id)"
+                                :delete-url="route('batches.destroy', $batch->id)" />
                         </td>
 
                     </tr>

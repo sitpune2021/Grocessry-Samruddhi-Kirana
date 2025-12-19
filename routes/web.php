@@ -15,14 +15,13 @@ use App\Http\Controllers\WarehouseTransferController;
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
-
+Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+    ->name('reset.password');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/forgot-password', function () {
         return view('admin-login.password.reset');
     })->name('forgot.password');
-    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
-        ->name('reset.password');
 });
 
 // User Profile 
@@ -109,7 +108,8 @@ Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'upd
 // Soft delete
 Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
 
-Route::get('/get-products-by-category/{category_id}', 
+Route::get(
+    '/get-products-by-category/{category_id}',
     [WarehouseTransferController::class, 'getProductsByCategory']
 );
 Route::get(
@@ -120,7 +120,3 @@ Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferC
 
 Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
     ->name('transfer.show');
-
-
-
-
