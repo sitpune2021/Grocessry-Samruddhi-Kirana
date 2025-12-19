@@ -38,6 +38,7 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
+                <li><a href="{{ route('brands.index') }}">Brand</a></li>
                 <li><a href="{{ route('category.index') }}">Category</a></li>
                 <li><a href="{{ route('product.index') }}">Products</a></li>
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
