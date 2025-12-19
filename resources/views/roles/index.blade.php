@@ -28,7 +28,8 @@
 
             <!-- Table -->
             <div class="table-responsive mt-3">
-                <table id="batchTable" class="table table-bordered table-striped">
+               <table id="batchTable" class="table table-bordered table-striped">
+
                     <thead class="">
                         <tr>
                             <th>Sr No</th>
@@ -46,7 +47,10 @@
                             <td>{{ $role->description ?? '-' }}</td>
 
                             <td>
-                                <x-action-buttons :view-url="route('roles.show', $role->id)" :edit-url="route('roles.edit', $role->id)" :delete-url="route('roles.destroy', $role->id)" />
+                                <x-action-buttons 
+                                :view-url="route('roles.show', $role->id)" 
+                                :edit-url="route('roles.edit', $role->id)" 
+                                :delete-url="route('roles.destroy', $role->id)" />
                             </td>
                         </tr>
                         @empty
@@ -66,6 +70,37 @@
 </div>
 @endsection
 
+<!-- table search box script -->
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("dt-search-1");
+    const table = document.getElementById("batchTable");
+
+    if (!searchInput || !table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("keyup", function () {
+        const value = this.value.toLowerCase().trim();
+
+        rows.forEach(row => {
+
+            // Skip "No role found" row
+            if (row.cells.length === 1) return;
+
+            row.style.display = row.textContent
+                .toLowerCase()
+                .includes(value)
+                ? ""
+                : "none";
+        });
+    });
+
+});
+</script>
+
+
 @endpush
