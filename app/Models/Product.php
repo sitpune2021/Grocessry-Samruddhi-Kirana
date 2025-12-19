@@ -11,9 +11,12 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'brand_id',
         'name',
         'sku',
         'description',
+        'effective_date',
+        'expiry_date',
         'base_price',
         'retailer_price',
         'mrp',
@@ -26,7 +29,7 @@ class Product extends Model
         'product_images' => 'array',
     ];
 
-  
+
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
@@ -35,6 +38,4 @@ class Product extends Model
     {
         return $this->hasMany(ProductBatch::class);
     }
-    
-
 }
