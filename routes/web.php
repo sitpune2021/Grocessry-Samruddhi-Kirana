@@ -10,6 +10,9 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductBatchController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\WarehouseTransferController;
+use App\Http\Controllers\RoleController;
+
+
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -119,6 +122,23 @@ Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferC
 Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
     ->name('transfer.show');
 
+Route::get('/roles/index', [RoleController::class, 'index'])
+    ->name('roles.index');
+Route::get('/roles/create', [RoleController::class, 'create'])
+    ->name('roles.create');
 
+Route::post('/roles/store', [RoleController::class, 'store'])
+    ->name('roles.store');
 
+Route::get('/roles/{id}', [RoleController::class, 'show'])
+    ->name('roles.show');
 
+Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
+->name('roles.edit');
+
+Route::put('/roles/update/{id}',[RoleController::class, 'update'])->name('roles.update');
+
+Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
+    ->name('roles.destroy');
+
+    

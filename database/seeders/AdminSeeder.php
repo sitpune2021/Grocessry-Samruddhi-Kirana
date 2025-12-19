@@ -16,7 +16,7 @@ class AdminSeeder extends Seeder
             'last_name' => 'Jamdade',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('Admin@123'),
-            'role'=> 'Super Admin',
+            'role_id'=> '1',
             'mobile'=>9503654539
              
 

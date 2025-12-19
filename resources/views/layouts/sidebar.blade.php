@@ -23,6 +23,11 @@
         </li>
 
         <li class="menu-header">Management</li>
+        <li class="menu-item">
+            <a href="{{ route('roles.index') }}" class="menu-link text-white">
+                <span><i class="bx bx-store me-2"></i> Role </span>
+            </a>
+        </li>
 
         <li class="menu-item">
             <a href="{{ route('user.profile') }}" class="menu-link text-white">

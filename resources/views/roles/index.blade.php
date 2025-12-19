@@ -9,7 +9,7 @@
               <!-- Header -->
 <div class="row card-header flex-column flex-md-row pb-0">
     <div class="col-md-auto me-auto">
-        <h5 class="card-title">User</h5>
+        <h5 class="card-title">Role</h5>
     </div>
 
     <div class="col-md-auto ms-auto d-flex gap-2">
@@ -22,7 +22,7 @@
 
 
 
-        <!-- Add User Button -->
+        <!-- Add user Button -->
         <a href="{{ route('user.create') }}" class="btn btn-primary">
             <i class="bx bx-plus"></i> Add User
         </a>
@@ -39,32 +39,26 @@
                         <thead class="">
                             <tr>
                                 <th>Sr No</th>
-                                <th>User Name</th>
-                                <th>Contact</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
+                                <th>Role Name</th>
+                                <th>Description</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            @forelse ($users as $user)
+                            @forelse ($roles as $role)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $user->first_name }}</td>
-                                    <td>{{ $user->mobile ?? '-' }}</td>
-                                    <td>{{ $user->email ?? '-' }}</td>
-                                    <td>{{ $user->role->name ?? '-' }}</td>
-
-                                    <td class= "text-primary">{{ $user->status == 1 ? 'Yes' : 'No' }}</td>
+                                    <td>{{ $role->name }}</td>
+                                    <td>{{ $role->description ?? '-' }}</td>
+                                   
                                     <td>
-                                        <x-action-buttons :view-url="route('user.show', $user->id)" :edit-url="route('user.edit', $user->id)" :delete-url="route('user.destroy', $user->id)" />
+                                        <x-action-buttons :view-url="route('roles.show', $role->id)" :edit-url="route('roles.edit', $role->id)" :delete-url="route('roles.destroy', $role->id)" />
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="12" class="text-center text-muted">No user found</td>
+                                    <td colspan="12" class="text-center text-muted">No role found</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -72,7 +66,7 @@
                 </div>
 
                 <!-- Pagination -->
-                <x-pagination :from="$users->firstItem()" :to="$users->lastItem()" :total="$users->total()" />
+                <x-pagination :from="$roles->firstItem()" :to="$roles->lastItem()" :total="$roles->total()" />
 
             </div>
         </div>
