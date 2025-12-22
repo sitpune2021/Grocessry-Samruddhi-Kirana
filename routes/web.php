@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryAgentController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MasterWarehouseController;
 use App\Http\Controllers\ProductController;
@@ -103,7 +104,8 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 
 
 //Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
-Route::get('/expiry-alerts', 
+Route::get(
+    '/expiry-alerts',
     [ProductBatchController::class, 'expiryAlerts']
 )->name('batches.expiry');
 
@@ -141,12 +143,8 @@ Route::post('/roles/store', [RoleController::class, 'store'])
 Route::get('/roles/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
-Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
-->name('roles.edit');
+Route::resource('/delivery-agents', DeliveryAgentController::class);
 
-Route::put('/roles/update/{id}',[RoleController::class, 'update'])->name('roles.update');
-
-Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
-    ->name('roles.destroy');
-
-    
+// Deliveries List
+Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+    ->name('deliveries.index');
