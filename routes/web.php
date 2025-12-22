@@ -16,6 +16,7 @@ use App\Http\Controllers\RoleController;
 
 
 
+
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
@@ -101,7 +102,10 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 });
 
 
-Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
+//Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
+Route::get('/expiry-alerts', 
+    [ProductBatchController::class, 'expiryAlerts']
+)->name('batches.expiry');
 
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
