@@ -29,6 +29,8 @@ class MasterWarehouseController extends Controller
         $warehouses = Warehouse::all();
         $categories = Category::all();
         $countries = Country::all();
+
+
         return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries'));
     }
 
@@ -420,13 +422,13 @@ class MasterWarehouseController extends Controller
         }
     }
 
-    public function destroyStock(Request $request,$id)
+    public function destroyStock(Request $request, $id)
     {
-       
+
         Log::info('Delete Stock Request', $request->all());
-       
+
         try {
-            
+
             $stock = WarehouseStock::findOrFail($id);
 
             $stock->delete();
@@ -450,5 +452,12 @@ class MasterWarehouseController extends Controller
                 ->back()
                 ->with('error', 'Unable to delete stock');
         }
+    }
+    
+    public function getCategories($warehouseId)
+    {
+        $categories = Category::where('warehouse_id', $warehouseId)->get();
+
+        return response()->json($categories);
     }
 }
