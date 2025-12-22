@@ -9,12 +9,12 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Category</h5>
+                    <h5 class="card-title mb-0">Brands</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('category.create') }}"
+                    <a href="{{ route('brands.create') }}"
                         class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Category
+                        <i class="bx bx-plus"></i> Add Brands
                     </a>
                 </div>
 
@@ -31,36 +31,68 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
-                            <th style="width: 30%;">Category Name</th>
+                            <th style="width: 15%;">Logo</th>
+                            <th style="width: 30%;">Brand Name</th>
                             <th style="width: 40%;">Slug</th>
+                            <th class="text-center" style="width: 120px;">Status</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($categories as $index => $category)
+                        @forelse ($brands as $index => $brand)
                         <tr>
+
+                            {{-- Sr No --}}
                             <td class="text-center fw-semibold">
-                                {{ $categories->firstItem() + $index }}
+                                {{ $brands->firstItem() + $index }}
                             </td>
 
+                            {{-- Logo --}}
+                            <td class="text-center">
+                                @if($brand->logo)
+                                <img src="{{ asset('storage/brands/'.$brand->logo) }}"
+                                    alt="{{ $brand->name }}"
+                                    width="50"
+                                    height="50"
+                                    class="rounded border">
+                                @else
+                                <span class="text-muted">—</span>
+                                @endif
+                            </td>
+
+                            {{-- Brand Name --}}
                             <td>
-                                <span class="fw-medium">{{ $category->name }}</span>
+                                <span class="fw-medium">{{ $brand->name }}</span>
                             </td>
 
+                            {{-- Slug --}}
                             <td class="text-muted">
-                                {{ $category->slug }}
+                                {{ $brand->slug }}
                             </td>
-                            <td class="text-center"> <x-action-buttons
-                                    :view-url="route('category.show', $category->id)"
-                                    :edit-url="route('category.edit', $category->id)"
-                                    :delete-url="route('category.destroy', $category->id)" />
+
+                            {{-- Status --}}
+                            <td class="text-center">
+                                @if($brand->status)
+                                <span class="badge bg-success">Active</span>
+                                @else
+                                <span class="badge bg-danger">Inactive</span>
+                                @endif
                             </td>
+
+                            {{-- Actions --}}
+                            <td class="text-center">
+                                <x-action-buttons
+                                    :view-url="route('brands.show', $brand->id)"
+                                    :edit-url="route('brands.edit', $brand->id)"
+                                    :delete-url="route('brands.destroy', $brand->id)" />
+                            </td>
+
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
-                                No categories found
+                            <td colspan="6" class="text-center text-muted py-4">
+                                No brands found
                             </td>
                         </tr>
                         @endforelse
@@ -71,9 +103,9 @@
             <!-- Pagination -->
             <div class="px-3 py-2">
                 <x-pagination
-                    :from="$categories->firstItem()"
-                    :to="$categories->lastItem()"
-                    :total="$categories->total()" />
+                    :from="$brands->firstItem()"
+                    :to="$brands->lastItem()"
+                    :total="$brands->total()" />
             </div>
 
         </div>
@@ -86,7 +118,7 @@
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
 <!-- table search box script -->
- 
+
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
@@ -119,3 +151,4 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 @endpush
+

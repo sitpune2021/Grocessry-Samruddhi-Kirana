@@ -6,17 +6,24 @@
         <div class="card">
             <div class="card-datatable text-nowrap">
 
-                <!-- Header -->
-                <div class="row card-header flex-column flex-md-row pb-0">
-                    <div class="col-md-auto me-auto">
-                        <h5 class="card-title">User</h5>
-                    </div>
-                    <div class="col-md-auto ms-auto">
-                        <a href="{{ route('user.create') }}" class="btn btn-primary">
-                            <i class="bx bx-plus"></i> Add User
-                        </a>
-                    </div>
-                </div>
+              <!-- Header -->
+<div class="row card-header flex-column flex-md-row pb-0">
+    <div class="col-md-auto me-auto">
+        <h5 class="card-title">User</h5>
+    </div>
+
+    <div class="col-md-auto ms-auto d-flex gap-2">
+       <div class="col-md-auto ms-auto d-flex gap-2">
+   
+
+
+        <!-- Add User Button -->
+        <a href="{{ route('user.create') }}" class="btn btn-primary">
+            <i class="bx bx-plus"></i> Add User
+        </a>
+    </div>
+</div>
+
 
                 <!-- Search -->
                 <x-datatable-search />
@@ -66,5 +73,71 @@
         </div>
     </div>
 @endsection
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("dt-search-1");
+    const table = document.getElementById("batchTable");
+
+    if (!searchInput || !table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("keyup", function () {
+        const value = this.value.toLowerCase().trim();
+
+        rows.forEach(row => {
+
+            // Skip "No role found" row
+            if (row.cells.length === 1) return;
+
+            row.style.display = row.textContent
+                .toLowerCase()
+                .includes(value)
+                ? ""
+                : "none";
+        });
+    });
+
+});
+</script>
+
+<!-- table search box script -->
+
+@push('scripts')
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("dt-search-1");
+    const table = document.getElementById("batchTable");
+
+    if (!searchInput || !table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("keyup", function () {
+        const value = this.value.toLowerCase().trim();
+
+        rows.forEach(row => {
+
+            // Skip "No role found" row
+            if (row.cells.length === 1) return;
+
+            row.style.display = row.textContent
+                .toLowerCase()
+                .includes(value)
+                ? ""
+                : "none";
+        });
+    });
+
+});
+</script>
+
+@endpush
+
+
 
 

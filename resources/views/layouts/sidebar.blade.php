@@ -23,6 +23,11 @@
         </li>
 
         <li class="menu-header">Management</li>
+        <li class="menu-item">
+            <a href="{{ route('roles.index') }}" class="menu-link text-white">
+                <span><i class="bx bx-store me-2"></i> Role </span>
+            </a>
+        </li>
 
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('roleMenu','inventoryArrow')">
@@ -46,6 +51,7 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
+                <li><a href="{{ route('brands.index') }}">Brand</a></li>
                 <li><a href="{{ route('category.index') }}">Category</a></li>
                 <li><a href="{{ route('product.index') }}">Products</a></li>
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
