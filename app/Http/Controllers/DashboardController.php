@@ -3,6 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\Batch;
+use App\Models\User;
+use App\Models\WarehouseStock;
+use App\Models\Warehouse;
+use App\Models\WarehouseTransfer;
 use Illuminate\Http\Request;
 use App\Models\ProductBatch;
 
@@ -16,23 +23,43 @@ class DashboardController extends Controller
     //     return view('dashboard.dashboard');
     // }
 
-    public function index()
+       public function index()
     {
+        $categoryCount = Category::count();
+        $ProductCount = Product::count();
+        $BatchCount = Batch::count();
+        $WarehouseCount = Warehouse::count();
+        $StockMovementCount = WarehouseStock::count();
+        $WarehouseTransferCount = WarehouseTransfer::count();
+        $UserCount = User::count();
+ 
         $expiredCount = ProductBatch::where('quantity', '>', 0)
             ->whereDate('expiry_date', '<', now())
             ->count();
-
+ 
         $expiringSoonCount = ProductBatch::where('quantity', '>', 0)
             ->whereBetween('expiry_date', [
                 now(),
                 now()->addDays(7)
             ])->count();
-
-        return view('dashboard.dashboard', compact(
-            'expiredCount',
-            'expiringSoonCount'
-        ));
+ 
+        return view(
+            'dashboard.dashboard',
+            compact(
+                'categoryCount',
+                'ProductCount',
+                'BatchCount',
+                'WarehouseCount',
+                'StockMovementCount',
+                'WarehouseTransferCount',
+                'UserCount',
+                'expiredCount',
+                'expiringSoonCount'
+            )
+        );
     }
+ 
+ 
 
 
     /**

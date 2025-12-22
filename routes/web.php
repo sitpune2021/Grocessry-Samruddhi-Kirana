@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocationController;
@@ -15,14 +16,13 @@ use App\Http\Controllers\WarehouseTransferController;
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
-
+Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
+    ->name('reset.password');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/forgot-password', function () {
         return view('admin-login.password.reset');
     })->name('forgot.password');
-    Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
-        ->name('reset.password');
 });
 
 // User Profile 
@@ -42,6 +42,7 @@ Route::delete('/user/{id}', [AdminAuthController::class, 'destroy'])
 Route::resource('/category', CategoryController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
+Route::resource('brands', BrandController::class);
 
 Route::get('/index-warehouse', [MasterWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
 Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
@@ -111,7 +112,8 @@ Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'upd
 // Soft delete
 Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
 
-Route::get('/get-products-by-category/{category_id}', 
+Route::get(
+    '/get-products-by-category/{category_id}',
     [WarehouseTransferController::class, 'getProductsByCategory']
 );
 Route::get(

@@ -17,61 +17,55 @@
             <!-- Search -->
             <x-datatable-search />
 
-                <table class="table table-bordered">
-                    
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Batch</th>
-                            <th>Qty</th>
-                            <th>MFG</th>
-                            <th>Expiry</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+            <table class="table table-bordered">
 
-                    <tbody>
+                <thead class="table-light">
+                    <tr>
+                        <th>Sr No</th>
+                        <th>Product</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>MFG</th>
+                        <th>Expiry</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
                     @foreach($batches as $batch)
-                        <tr 
-                            @if($batch->expiry_date < now()->toDateString())
-                                style="background-color:#f8d7da"  {{-- expired --}}
+                    <tr
+                        @if($batch->expiry_date < now()->toDateString())
+                            style="background-color:#f8d7da" {{-- expired --}}
                             @elseif($batch->expiry_date <= now()->addDays(7)->toDateString())
-                                style="background-color:#fff3cd"  {{-- expiring soon --}}
-                            @endif
-                        >
-                            <td>{{ $batch->product->name }}</td>
-                            <td>{{ $batch->batch_no }}</td>
-                            <td>{{ $batch->quantity }}</td>
-                            <td>{{ $batch->mfg_date }}</td>
-                            <td>{{ $batch->expiry_date }}</td>
-                            {{-- STATUS COLUMN --}}
-                            <td class="text-center">
-                                @if($batch->expiry_date < now())
-                                    <span class="badge bg-danger">Expired</span>
-                                @elseif($batch->expiry_date <= now()->addDays(7))
-                                    <span class="badge bg-warning text-dark">Expiring Soon</span>
-                                @else
-                                    <span class="badge bg-success">Normal</span>
+                                style="background-color:#fff3cd" {{-- expiring soon --}}
                                 @endif
-                            </td>
+                                >
+                                <td style="width: 30px;">{{ $loop->iteration }}</td>
+                                <td>{{ $batch->product->name }}</td>
+                                <td>{{ $batch->batch_no }}</td>
+                                <td>{{ $batch->quantity }}</td>
+                                <td style="width: 50px;">
+                                    {{ $batch->mfg_date ? \Carbon\Carbon::parse($batch->mfg_date)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td style="width: 50px;">
+                                    {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
+                                </td>
 
-                            <td align="center">
-                                @if($batch->quantity > 0 && $batch->expiry_date >= now()->toDateString())
+
+                                <td align="center">
+                                    @if($batch->quantity > 0 && $batch->expiry_date >= now()->toDateString())
                                     <a href="/sale/{{ $batch->product_id }}" title="Sell Product">
-                                        🛒 Sell 
+                                        🛒 Sell
                                     </a>
-                                @else
+                                    @else
                                     ❌
-                                @endif
-                                
-                            </td>                         
-
-                        </tr>
+                                    @endif
+                                </td>
+                    </tr>
                     @endforeach
-                    </tbody>
+                </tbody>
 
-                </table>
+            </table>
 
         </div>
     </div>
@@ -81,5 +75,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 @endpush
