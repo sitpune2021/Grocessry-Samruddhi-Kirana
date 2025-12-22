@@ -15,6 +15,7 @@ use App\Http\Controllers\WarehouseTransferController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RetailerController;
 use App\Http\Controllers\RetailerPricingController;
+use App\Http\Controllers\RetailerOrderController;
 
 
 
@@ -197,4 +198,30 @@ Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () 
         [RetailerPricingController::class, 'getProductsByCategory']);
 
 });
+
+Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
+
+    Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
+
+    Route::get('/create', [RetailerOrderController::class, 'create'])->name('create');
+
+    Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
+
+    // 🔥 Auto price fetch
+    Route::get('/get-retailer-price/{retailer}/{product}',
+        [RetailerOrderController::class, 'getRetailerPrice']
+    )->name('get.price');
+
+    Route::get(
+        '/get-categories-by-retailer/{retailer}',
+        [RetailerOrderController::class, 'getCategoriesByRetailer']
+    )->name('get.categories');
+
+    Route::get(
+        '/get-products-by-retailer/{retailer}/{category}',
+        [RetailerOrderController::class, 'getProductsByRetailerCategory']
+    )->name('get.products');
+
+});
+
 

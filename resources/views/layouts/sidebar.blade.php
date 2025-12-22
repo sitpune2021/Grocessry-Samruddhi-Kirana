@@ -82,6 +82,7 @@
             <ul class="submenu" id="retailerMenu">
                 <li><a href="{{ route('retailers.index') }}">Retailer profile</a></li>
                 <li><a href="{{ route('retailer-pricing.index') }}">Retailer pricing</a></li>
+                <li><a href="{{ route('retailer-orders.create') }}">Retailer Order price Lock</a></li>
             </ul>
         </li>
 </div>
