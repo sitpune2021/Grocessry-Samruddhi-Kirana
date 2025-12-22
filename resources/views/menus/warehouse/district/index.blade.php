@@ -75,7 +75,7 @@
                         </td>
 
                         {{-- Actions --}}
-                        <td>
+                        <td class="action-column" style="white-space:nowrap;">
                             <x-action-buttons
                                 :view-url="route('product.show', $product->id)"
                                 :edit-url="route('product.edit', $product->id)"
@@ -107,3 +107,36 @@
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 @endpush
+
+<!-- table search box script -->
+
+@push('scripts')
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("dt-search-1");
+    const table = document.getElementById("batchTable");
+
+    if (!searchInput || !table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    searchInput.addEventListener("keyup", function () {
+        const value = this.value.toLowerCase().trim();
+
+        rows.forEach(row => {
+
+            // Skip "No role found" row
+            if (row.cells.length === 1) return;
+
+            row.style.display = row.textContent
+                .toLowerCase()
+                .includes(value)
+                ? ""
+                : "none";
+        });
+    });
+
+});
+</script>

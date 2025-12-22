@@ -15,13 +15,7 @@ use App\Models\ProductBatch;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     return view('dashboard.dashboard');
-    // }
+
 
     public function index()
     {
@@ -58,7 +52,6 @@ class DashboardController extends Controller
             )
         );
     }
-
 
     /**
      * Show the form for creating a new resource.

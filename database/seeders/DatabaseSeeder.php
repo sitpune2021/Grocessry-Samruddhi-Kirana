@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // AdminSeeder::class,
             // RolesTableSeeder::class,
-            CountrySeeder::class,
-            StateSeeder::class,  // if you have states
+            // CountrySeeder::class,
+            // StateSeeder::class,  // if you have states
             DistrictSeeder::class,
-            // TalukaSeeder::class,
+            TalukaSeeder::class,
 
         ]);
     }

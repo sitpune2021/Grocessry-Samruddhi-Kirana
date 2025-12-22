@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('talukas', function (Blueprint $table) {
-            DB::statement('ALTER TABLE talukas MODIFY district_id BIGINT UNSIGNED NULL');
+        Schema::create('role_permissions', function (Blueprint $table) {
+            $table->id();
+              $table->integer('admin_id')->nullable();
+              $table->string('role_id')->nullable();         
+             $table->longText('permissions')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -22,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('talukas', function (Blueprint $table) {
-            DB::statement('ALTER TABLE talukas MODIFY district_id BIGINT UNSIGNED NOT NULL');
-        });
+        Schema::dropIfExists('role_permissions');
     }
 };
