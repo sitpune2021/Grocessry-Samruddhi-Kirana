@@ -318,7 +318,7 @@
         });
 
         // 🔁 Auto load talukas on edit page
-        @if(isset($warehouse) && $warehouse - > district_id)
+        @if(isset($warehouse) && $warehouse -> district_id)
         fetch(`/get-talukas/{{ $warehouse->district_id }}`)
             .then(res => res.json())
             .then(data => {
