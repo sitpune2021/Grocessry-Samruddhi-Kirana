@@ -76,9 +76,7 @@
                                     'Product','Batches','Warehouse','AddStock','Sale',
                                     'Warehousetransfer'
                                     ] as $module)
-
-
-
+                                    
                                     <tr>
                                         <td>{{ $module }}</td>
 

@@ -398,14 +398,15 @@ class WarehouseTransferController extends Controller
     {
         $categoryIds = WarehouseStock::where('warehouse_id', $warehouse_id)
             ->where('quantity', '>', 0)
-            ->distinct()
-            ->pluck('category_id');
+            ->pluck('category_id')
+            ->unique();
 
-        $categories = Category::whereIn('id', $categoryIds)->get();
+        $categories = Category::whereIn('id', $categoryIds)
+            ->select('id', 'name')
+            ->get();
 
         return response()->json($categories);
     }
-
     
 
 }

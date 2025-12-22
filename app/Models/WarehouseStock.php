@@ -39,4 +39,5 @@ class WarehouseStock extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+    
 }
