@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -15,16 +16,17 @@ class AdminAuthController extends Controller
     public function index()
     {
         $users = User::with('role')->paginate(10);
-
-        return view('userProfile.index', compact('users'));
+        $warehouses = Warehouse::all();
+        return view('userProfile.index', compact('users', 'warehouses'));
     }
     public function createUser()
     {
         $mode = 'add';
         $roles = Role::all(); // fetch all roles
         $user = new User(); // ✅ empty model
+        $warehouses = Warehouse::all();
 
-        return view('userProfile.add-user', compact('mode', 'user', 'roles'));
+        return view('userProfile.add-user', compact('mode', 'user', 'roles', 'warehouses'));
     }
     public function store(Request $request)
     {
@@ -62,6 +64,7 @@ class AdminAuthController extends Controller
                 'last_name'     => $request->last_name,
                 'email'         => $request->email,
                 'mobile'        => $request->mobile,
+                'warehouse_id'  => $request->warehouse_id,
                 'role_id'       => $request->role_id,
                 'status'        => $request->status,
                 'profile_photo' => $photoPath,
@@ -88,18 +91,19 @@ class AdminAuthController extends Controller
     public function show($id)
     {
         $mode = 'view';
-
+        $warehouses = Warehouse::all();
         $user = User::with('role')->findOrFail($id);
         $roles = Role::all();
 
-        return view('userProfile.add-user', compact('mode', 'user', 'roles'));
+        return view('userProfile.add-user', compact('mode', 'user', 'roles', 'warehouses'));
     }
     public function editUser($id)
     {
         $mode = 'edit';
         $user = User::findOrFail($id);
+        $warehouses = Warehouse::all();
         $roles = Role::all();
-        return view('userProfile.add-user', compact('mode', 'user', 'roles'));
+        return view('userProfile.add-user', compact('mode', 'user', 'roles', 'warehouses'));
     }
 
     public function update(Request $request, $id)
@@ -147,6 +151,7 @@ class AdminAuthController extends Controller
             'email'      => $request->email,
             'mobile'     => $request->mobile,
             'role_id'    => $request->role_id,
+            'warehouse_id'  => $request->warehouse_id,
             'status'     => $request->status,
         ]);
 

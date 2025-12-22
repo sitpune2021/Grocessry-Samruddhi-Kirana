@@ -269,4 +269,9 @@
   transition: all 0.2s ease-in-out;
 }
 
+.large-checkbox{
+    transform: scale(1.5);
+    accent-color: #198754; /* success green */
+}
+
 
