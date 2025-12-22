@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('talukas', function (Blueprint $table) {
-            DB::statement('ALTER TABLE districts MODIFY state_id BIGINT UNSIGNED NULL');
+            DB::statement('ALTER TABLE talukas MODIFY district_id BIGINT UNSIGNED NULL');
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('talukas', function (Blueprint $table) {
-            DB::statement('ALTER TABLE districts MODIFY state_id BIGINT UNSIGNED NOT NULL');
+            DB::statement('ALTER TABLE talukas MODIFY district_id BIGINT UNSIGNED NOT NULL');
         });
     }
 };

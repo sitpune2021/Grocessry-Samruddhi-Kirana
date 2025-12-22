@@ -20,17 +20,12 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('warehouses', function (Blueprint $table) {
-            $table->dropForeign([
-                'country_id',
-                'state_id',
-            ]);
-            $table->dropColumn([                
+            $table->dropForeign(['country_id']); // drop country_id foreign key
+            $table->dropForeign(['state_id']);   // drop state_id foreign key
+            $table->dropColumn([
                 'country_id',
                 'state_id',
             ]);
