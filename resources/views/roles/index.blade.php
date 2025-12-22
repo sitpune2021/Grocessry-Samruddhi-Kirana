@@ -9,55 +9,53 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Warehouse</h5>
+                    <h5 class="card-title">Role</h5>
                 </div>
-                <div class="col-md-auto ms-auto">
-                    <a href="{{ route('warehouse.create') }}" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Add Warehouse
-                    </a>
+
+                <div class="col-md-auto ms-auto d-flex gap-2">
+                    <div class="col-md-auto ms-auto d-flex gap-2">
+                        <!-- Add Role Button -->
+                        <a href="{{ route('roles.create') }}" class="btn btn-primary">
+                            <i class="bx bx-plus"></i> Add Role
+                        </a>
+                    </div>
                 </div>
             </div>
+
 
             <!-- Search -->
             <x-datatable-search />
 
             <!-- Table -->
             <div class="table-responsive mt-3">
-                <table class="table table-bordered table-striped align-middle">
-                    <thead>
-                       <thead class="table-light">
+               <table id="batchTable" class="table table-bordered table-striped">
+
+                    <thead class="">
+                        <tr>
                             <th>Sr No</th>
-                            <th>Warehouse Name</th>
-                            <th>Address</th>
-                            <th>Contact Person</th>
-                            <th>Contact Number</th>
-                            <th>Email</th>
-                            <th>Status</th>
+                            <th>Role Name</th>
+                            <th>Description</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($warehouses as $warehouse)
-
+                        @forelse ($roles as $role)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $warehouse->name }}</td>
-                            <td>{{ $warehouse->address ?? '-' }}</td>
-                            <td>{{ $warehouse->contact_person ?? '-' }}</td>
-                            <td>{{ $warehouse->contact_number ?? '-'}}</td>
-                            <td>{{ $warehouse->email ?? '-'}}</td>
-                            <td>{{$warehouse->status ?? '-'}}</td>
+                            <td>{{ $role->name }}</td>
+                            <td>{{ $role->description ?? '-' }}</td>
+
                             <td>
-                                <x-action-buttons
-                                    :view-url="route('warehouse.show', $warehouse->id)"
-                                    :edit-url="route('warehouse.edit', $warehouse->id)"
-                                    :delete-url="route('warehouse.destroy', $warehouse->id)" />
+                                <x-action-buttons 
+                                :view-url="route('roles.show', $role->id)" 
+                                :edit-url="route('roles.edit', $role->id)" 
+                                :delete-url="route('roles.destroy', $role->id)" />
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="12" class="text-center text-muted">No Warehouse found</td>
+                            <td colspan="12" class="text-center text-muted">No role found</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -65,22 +63,14 @@
             </div>
 
             <!-- Pagination -->
-            <x-pagination
-                :from="$warehouses->firstItem()"
-                :to="$warehouses->lastItem()"
-                :total="$warehouses->total()" />
+            <x-pagination :from="$roles->firstItem()" :to="$roles->lastItem()" :total="$roles->total()" />
 
         </div>
     </div>
 </div>
 @endsection
 
-@push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-@endpush
-
 <!-- table search box script -->
-
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
@@ -111,3 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
+
+@endpush
