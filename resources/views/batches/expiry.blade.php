@@ -17,7 +17,19 @@
             <!-- Search -->
             <x-datatable-search />
 
-            <table class="table table-bordered">
+                <table class="table table-bordered">
+                    
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Batch</th>
+                            <th>Qty</th>
+                            <th>MFG</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
                 <thead class="table-light">
                     <tr>
