@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryAgentController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MasterWarehouseController;
 use App\Http\Controllers\ProductController;
@@ -100,7 +101,8 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 
 
 //Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
-Route::get('/expiry-alerts', 
+Route::get(
+    '/expiry-alerts',
     [ProductBatchController::class, 'expiryAlerts']
 )->name('batches.expiry');
 
@@ -138,6 +140,8 @@ Route::get(
 );
 
 
+Route::resource('/delivery-agents', DeliveryAgentController::class);
 
-
-
+// Deliveries List
+Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+    ->name('deliveries.index');

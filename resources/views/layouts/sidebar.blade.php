@@ -59,6 +59,18 @@
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>
+
+        <!-- Delivery Agent -->
+        <li class="menu-item">
+            <div class="menu-link  text-white" onclick="toggleMenu('deliveryAgentMenu','deliveryAgentArrow')">
+                <span><i class="bx bx-store me-2 "></i> Delivery Agent</span>
+                <i class="bx bx-chevron-right arrow" id="deliveryAgentArrow"></i>
+            </div>
+            <ul class="submenu" id="deliveryAgentMenu">
+                <li><a href="{{ route('delivery-agents.index') }}">Agent & vehicle</a></li>
+                <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
+            </ul>
+        </li>
 </div>
 
 <script>
