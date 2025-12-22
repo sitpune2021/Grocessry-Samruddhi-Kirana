@@ -24,12 +24,14 @@
 
         <li class="menu-header">Management</li>
 
-
+        @if(hasPermission('Roles', 'view'))
         <li class="menu-item">
             <a href="{{ route('roles.index') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i> Role</span>
             </a>
         </li>
+        @endif
+
 
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('roleMenu','inventoryArrow')">
@@ -74,6 +76,8 @@
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>
+
+    </ul>
 </div>
 
 <script>
