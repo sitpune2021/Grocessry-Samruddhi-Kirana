@@ -24,13 +24,13 @@
 
         <li class="menu-header">Management</li>
 
-        @if(hasPermission('Roles', 'view'))
+        {{-- @if(hasPermission('Roles', 'view')) --}}
         <li class="menu-item">
             <a href="{{ route('roles.index') }}" class="menu-link text-white">
                 <span><i class="bx bx-store me-2"></i> Role</span>
             </a>
         </li>
-        @endif
+        {{-- @endif --}}
 
 
         <li class="menu-item">
