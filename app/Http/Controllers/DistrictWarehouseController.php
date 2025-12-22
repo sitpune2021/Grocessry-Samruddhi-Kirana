@@ -13,30 +13,30 @@ class DistrictWarehouseController extends Controller
         return DistrictWarehouse::with('talukaWarehouses')->get();
     }
 
- public function store(Request $request)
-{
-    // Log request data
-    Log::info('District Warehouse Store Request', $request->all());
+    public function store(Request $request)
+    {
+        // Log request data
+        Log::info('District Warehouse Store Request', $request->all());
 
-    // Validate input
-    $validated = $request->validate([
-        'state_id' => 'required|exists:states,id',
-        'name'     => 'required|string|max:255',
-    ]);
+        // Validate input
+        $validated = $request->validate([
+            'state_id' => 'required|exists:states,id',
+            'name'     => 'required|string|max:255',
+        ]);
 
-    // Create record
-    $data = DistrictWarehouse::create($validated);
+        // Create record
+        $data = DistrictWarehouse::create($validated);
 
-    // Log created data
-    Log::info('District Warehouse Created', $data->toArray());
+        // Log created data
+        Log::info('District Warehouse Created', $data->toArray());
 
-    // Return response
-    return response()->json([
-        'status'  => true,
-        'message' => 'District warehouse created successfully',
-        'data'    => $data
-    ], 201);
-}
+        // Return response
+        return response()->json([
+            'status'  => true,
+            'message' => 'District warehouse created successfully',
+            'data'    => $data
+        ], 201);
+    }
 
 
 
@@ -56,4 +56,6 @@ class DistrictWarehouseController extends Controller
     {
         return DistrictWarehouse::destroy($id);
     }
+
+    
 }
