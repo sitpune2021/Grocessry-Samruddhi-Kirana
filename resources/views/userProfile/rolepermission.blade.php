@@ -63,19 +63,21 @@
 
                                 <tbody>
                                     @php
-                                    $dashboardCards = [ 'Work_Orders', 'project', 'MachineRecord'];
+                                    $dashboardCards = [
+                                    'Total Users',
+                                    'Total Products',
+                                    'Total Sales',
+                                    'Total Stock'
+                                    ];
                                     @endphp
 
                                     @foreach([
-                                    'Dashboard','Operator','Machine','Setting','Hsncode','MaterialType',
-                                    'FinancialYear','Customer','Vendors','Projects','WorkOrders',
-                                    'SetupSheet','MachineRecord','MaterialReq','MaterialOrder','Invoice','Subscription'
+                                    'Dashboard','Roles','User','RolePermission','Brands','Category',
+                                    'Product','Batches','Warehouse','AddStock','Sale',
+                                    'Warehousetransfer'
                                     ] as $module)
 
-                                    {{-- Hide Subscription for all roles except role 2 --}}
-                                    @if($module == 'Subscription' && request()->get('role_id') != 2)
-                                    @continue
-                                    @endif
+
 
                                     <tr>
                                         <td>{{ $module }}</td>
@@ -88,7 +90,7 @@
                                             @foreach($dashboardCards as $card)
                                             <label class="me-4">
                                                 <input type="checkbox"
-                                                    class="perm large-checkbox" 
+                                                    class="perm large-checkbox"
                                                     name="permissions[Dashboard][]"
                                                     value="view_{{ strtolower($card) }}">
                                                 View {{ $card }}

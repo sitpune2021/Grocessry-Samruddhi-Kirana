@@ -16,6 +16,7 @@ use App\Http\Controllers\RoleController;
 
 
 
+
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
@@ -55,6 +56,8 @@ Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock
     ->name('stock.update');
 Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
+
+Route::get('/get-categories-by-warehouse/{warehouse}', [MasterWarehouseController::class, 'getCategories']);
 
 
 
@@ -99,7 +102,10 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 });
 
 
-Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
+//Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
+Route::get('/expiry-alerts', 
+    [ProductBatchController::class, 'expiryAlerts']
+)->name('batches.expiry');
 
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');

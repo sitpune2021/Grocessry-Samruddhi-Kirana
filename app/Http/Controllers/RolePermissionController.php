@@ -19,22 +19,40 @@ class RolePermissionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'role_id' => 'required|exists:roles,id',
+            'role_id'     => 'required|exists:roles,id',
             'permissions' => 'required|array'
         ]);
 
-        RolePermission::where('role_id', $request->role_id)
-            ->where('admin_id', Auth::id())
-            ->delete();
+        // ✅ Clean permissions (remove null / empty)
+        $cleanPermissions = [];
 
-        RolePermission::create([
-            'role_id'     => $request->role_id,
-            'permissions' => json_encode($request->permissions),
-            'admin_id'    => Auth::id(),
-        ]);
+        foreach ($request->permissions as $module => $actions) {
+            $actions = array_filter($actions);
+
+            if (!empty($actions)) {
+                $cleanPermissions[$module] = array_values($actions);
+            }
+        }
+
+        // ❌ If no permissions selected
+        if (empty($cleanPermissions)) {
+            return back()->withErrors(['permissions' => 'Please select at least one permission']);
+        }
+
+        // ✅ Save / Update permissions (SINGLE QUERY)
+        RolePermission::updateOrCreate(
+            [
+                'role_id'  => $request->role_id,
+                'admin_id' => Auth::id(),
+            ],
+            [
+                'permissions' => json_encode($cleanPermissions),
+            ]
+        );
 
         return redirect()->back()->with('success', 'Permissions saved successfully!');
     }
+
 
     public function getRolePermissions($role_id)
     {
