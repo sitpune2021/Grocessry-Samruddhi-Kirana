@@ -13,7 +13,6 @@
             <!-- Layout container -->
             <div class="layout-page">
                 <!-- Navbar -->
-
                 @include('layouts.navbar')
                 <!-- / Navbar -->
 
@@ -58,112 +57,55 @@
                                                 </div>
 
                                                 {{-- Warehouse Type --}}
-                                                {{-- <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Warehouse Type *</label>
-                                                    <select name="type" class="form-select"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        <option value="">Select Type</option>
-                                                        <option value="master" {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>Master</option>
-                                                        <option value="district" {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>District</option>
-                                                        <option value="taluka" {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>Taluka</option>
-                                                    </select>
-                                                </div> --}}
-                                                {{-- Warehouse Type --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Warehouse Type *</label>
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-
                                                         <option value="">Select Type</option>
                                                         <option value="master"
                                                             {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>
-                                                            Master
-                                                        </option>
+                                                            Master</option>
                                                         <option value="district"
                                                             {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>
-                                                            District
-                                                        </option>
+                                                            District</option>
                                                         <option value="taluka"
                                                             {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>
-                                                            Taluka
-                                                        </option>
+                                                            Taluka</option>
                                                     </select>
                                                 </div>
 
-
                                                 {{-- Parent Warehouse --}}
-                                                {{-- <div class="col-md-4 mb-3">
+                                                <div class="col-md-4 mb-3" id="parentDiv">
                                                     <label class="form-label">Parent Warehouse</label>
-                                                    <select name="parent_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    <select name="parent_id" id="parent_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
                                                         @foreach ($warehouses as $w)
                                                             <option value="{{ $w->id }}"
+                                                                data-type="{{ $w->type }}"
                                                                 {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
                                                                 {{ $w->name }} ({{ ucfirst($w->type) }})
                                                             </option>
                                                         @endforeach
                                                     </select>
-                                                </div> --}}
-                                                <div class="col-md-4 mb-3" id="parentDiv">
-                                                    <label class="form-label">Parent Warehouse</label>
-
-                                                    <select name="parent_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="">Select Parent</option>
-                                                        @foreach ($warehouses as $w)
-                                                            <option value="{{ $w->id }}">
-                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
                                                 </div>
 
-
-                                                {{-- Country --}}
-                                                <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Country</label>
-                                                    <select name="country_id" id="country_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        <option value="">Select Country</option>
-                                                        @foreach ($countries as $country)
-                                                            <option value="{{ $country->id }}"
-                                                                {{ ($warehouse->country_id ?? '') == $country->id ? 'selected' : '' }}>
-                                                                {{ $country->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-
-                                                {{-- State --}}
-                                                <div class="col-md-3 mb-3">
-                                                    <label class="form-label">State</label>
-                                                    <select name="state_id" id="state_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @if(isset($warehouse->state))
-                                                        <option value="{{ $warehouse->state_id }}" selected>
-                                                            {{ $warehouse->state->name }}
-                                                        </option>
-                                                        @else
-                                                        <option value="">Select State</option>
-                                                        @endif
-                                                    </select>
-                                                </div>
                                                 {{-- District --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">District</label>
                                                     <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if (isset($warehouse->district))
-                                                            <option value="{{ $warehouse->district_id }}" selected>
-                                                                {{ $warehouse->district->name }}
+                                                        <option value="">Select District</option>
+                                                        @foreach ($districts as $district)
+                                                            <option value="{{ $district->id }}"
+                                                                {{ old('district_id', $warehouse->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ $district->name }}
                                                             </option>
-                                                        @else
-                                                            <option value="">Select District</option>
-                                                        @endif
+                                                        @endforeach
                                                     </select>
                                                 </div>
 
+                                                {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Taluka</label>
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
@@ -177,23 +119,6 @@
                                                         @endif
                                                     </select>
                                                 </div>
-
-                                                {{-- Taluka --}}
-                                                <!-- <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Taluka</label>
-                                                    <select name="taluka_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if (isset($warehouse->taluka))
-                                                            <option value="{{ $warehouse->taluka_id }}" selected>
-                                                                {{ $warehouse->taluka->name }}
-                                                            </option>
-                                                        @else
-                                                            <option value="">Select Taluka</option>
-                                                        @endif
-                                                    </select>
-                                                </div> -->
-
-
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
@@ -213,8 +138,9 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Mobile</label>
-                                                        <input type="text" name="mobile" class="form-control"
-                                                            maxlength="10" value="{{ $warehouse->mobile ?? '' }}"
+                                                        <input type="text" name="contact_number" class="form-control"
+                                                            maxlength="10"
+                                                            value="{{ $warehouse->contact_number ?? '' }}"
                                                             placeholder="Mobile"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
@@ -226,12 +152,12 @@
                                                         <label class="form-label">User Name</label>
                                                         <input type="text" name="user_name" class="form-control"
                                                             placeholder="User Name"
-                                                            value="{{ $warehouse->contact_person  ?? '' }}"
+                                                            value="{{ $warehouse->contact_person ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
                                                 </div>
 
-                                                {{-- User Email --}}
+                                                {{-- Email --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Email</label>
@@ -240,20 +166,18 @@
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
                                                 </div>
+
                                                 {{-- Buttons --}}
                                                 <div class="col-lg-12">
                                                     <div class="text-end">
                                                         <a href="{{ route('warehouse.index') }}"
                                                             class="btn btn-info">Cancel</a>
-
                                                         @if ($mode === 'add')
-                                                            <button type="submit" class="btn btn-primary">
-                                                                Save Warehouse
-                                                            </button>
+                                                            <button type="submit" class="btn btn-primary">Save
+                                                                Warehouse</button>
                                                         @elseif($mode === 'edit')
-                                                            <button type="submit" class="btn btn-primary">
-                                                                Update Warehouse
-                                                            </button>
+                                                            <button type="submit" class="btn btn-primary">Update
+                                                                Warehouse</button>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -266,113 +190,101 @@
 
                     @include('layouts.footer')
                 </div>
-
-                <!-- Content wrapper -->
+                <!-- / Content wrapper -->
             </div>
             <!-- / Layout page -->
         </div>
-
     </div>
     <!-- / Layout wrapper -->
-</body>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const typeSelect = document.getElementById('warehouseType');
-        const parentDiv = document.getElementById('parentDiv');
 
-        function toggleParent() {
-            if (typeSelect.value === 'master') {
-                parentDiv.style.display = 'none';
-            } else {
-                parentDiv.style.display = 'block';
-            }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const typeSelect = document.getElementById('warehouseType');
+    const parentDiv = document.getElementById('parentDiv');
+    const parentSelect = document.getElementById('parent_id');
+    const districtSelect = document.getElementById('district_id');
+    const talukaSelect = document.getElementById('taluka_id');
+
+    /* ===============================
+       Parent Warehouse logic
+    =============================== */
+    function toggleParent() {
+        const selectedType = typeSelect.value;
+
+        if (selectedType === 'master') {
+            parentDiv.style.display = 'none';
+        } else {
+            parentDiv.style.display = 'block';
+            filterParentOptions(selectedType);
         }
+    }
 
-        typeSelect.addEventListener('change', toggleParent);
-        toggleParent(); // edit mode support
-    });
-</script>
+    function filterParentOptions(selectedType) {
+        const options = parentSelect.querySelectorAll('option');
+        const currentValue = parentSelect.value;
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        options.forEach(opt => {
+            const type = opt.getAttribute('data-type');
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+            if (selectedType === 'district') {
+                opt.style.display =
+                    (type === 'master' || opt.value === '') ? 'block' : 'none';
+            } else if (selectedType === 'taluka') {
+                opt.style.display =
+                    (type === 'district' || opt.value === '') ? 'block' : 'none';
+            } else {
+                opt.style.display = 'block';
+            }
+        });
 
-        const typeSelect = document.getElementById('warehouseType');
-        const parentDiv = document.getElementById('parentDiv');
+        // reset only if invalid
+        if (![...options].some(o => o.value === currentValue && o.style.display !== 'none')) {
+            parentSelect.value = '';
+        }
+    }
 
-        // Safety check
-        if (!typeSelect || !parentDiv) {
-            console.log('Warehouse JS elements not found');
+    typeSelect.addEventListener('change', toggleParent);
+    toggleParent(); // page load
+
+
+    /* ===============================
+       Taluka dynamic loading
+    =============================== */
+    function loadTalukas(districtId, selectedTalukaId = null) {
+        if (!districtId) {
+            talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
             return;
         }
 
-        function toggleParent() {
-            if (typeSelect.value === 'master') {
-                parentDiv.style.display = 'none';
-            } else {
-                parentDiv.style.display = 'block';
-            }
-        }
+        fetch(`/get-talukas/${districtId}`)
+            .then(res => res.json())
+            .then(data => {
+                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
 
-        // Change event
-        typeSelect.addEventListener('change', toggleParent);
+                data.forEach(t => {
+                    talukaSelect.innerHTML += `
+                        <option value="${t.id}" ${t.id == selectedTalukaId ? 'selected' : ''}>
+                            ${t.name}
+                        </option>`;
+                });
+            });
+    }
 
-        // Run on page load (THIS FIXES YOUR ISSUE)
-        toggleParent();
+    // District change
+    districtSelect.addEventListener('change', function () {
+        loadTalukas(this.value);
     });
-</script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+    // ✅ AUTO LOAD ON EDIT PAGE
+    @if (isset($warehouse) && $warehouse->district_id)
+        loadTalukas(
+            {{ $warehouse->district_id }},
+            {{ $warehouse->taluka_id ?? 'null' }}
+        );
+    @endif
 
-        document.getElementById('country_id')?.addEventListener('change', function() {
-            let countryId = this.value;
-
-            if (!countryId) return;
-
-            fetch(`/get-states/${countryId}`)
-                .then(res => res.json())
-                .then(data => {
-                    let state = document.getElementById('state_id');
-                    state.innerHTML = '<option value="">Select State</option>';
-
-                    data.forEach(item => {
-                        state.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                    });
-                });
-        });
-
-        document.getElementById('state_id')?.addEventListener('change', function() {
-            let stateId = this.value;
-            alert(stateId);
-
-            fetch(`/get-districts/${stateId}`)
-                .then(res => res.json())
-                .then(data => {
-                    let district = document.getElementById('district_id');
-                    district.innerHTML = '<option value="">Select District</option>';
-
-                    data.forEach(item => {
-                        district.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                    });
-                });
-        });
-
-        document.getElementById('district_id')?.addEventListener('change', function() {
-            let districtId = this.value;
-
-            fetch(`/get-talukas/${districtId}`)
-                .then(res => res.json())
-                .then(data => {
-                    let taluka = document.getElementById('taluka_id');
-                    taluka.innerHTML = '<option value="">Select Taluka</option>';
-
-                    data.forEach(item => {
-                        taluka.innerHTML += `<option value="${item.id}">${item.name}</option>`;
-                    });
-                });
-        });
-
-    });
+});
 </script>

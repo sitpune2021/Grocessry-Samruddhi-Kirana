@@ -63,7 +63,7 @@ class BrandController extends Controller
 
         Brand::create($validated);
 
-        return redirect()->route('menus.brands.index')
+        return redirect()->route('brands.index')
             ->with('success', 'Brand created successfully');
     }
 

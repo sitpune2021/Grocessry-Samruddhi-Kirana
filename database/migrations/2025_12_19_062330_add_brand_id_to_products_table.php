@@ -12,18 +12,28 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->foreignId('brand_id')
-                ->after('category_id')
-                ->constrained()
+
+            // Brand relation
+            $table->unsignedBigInteger('brand_id')
+                ->nullable()
+                ->after('category_id');
+
+            $table->foreign('brand_id')
+                ->references('id')
+                ->on('brands')
                 ->onDelete('cascade');
 
+            // Dates (MUST be nullable initially)
             $table->date('effective_date')
+                ->nullable()
                 ->after('description');
 
             $table->date('expiry_date')
+                ->nullable()
                 ->after('effective_date');
         });
     }
+
 
     /**
      * Reverse the migrations.
@@ -31,7 +41,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropForeign(['brand_id']);
+            $table->dropForeign('products_brand_id_foreign');
             $table->dropColumn(['brand_id', 'effective_date', 'expiry_date']);
         });
     }

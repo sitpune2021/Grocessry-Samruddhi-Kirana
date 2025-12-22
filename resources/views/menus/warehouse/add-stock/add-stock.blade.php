@@ -29,12 +29,12 @@
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
-                                        @if($mode === 'add')
-                                        Add Stock
+                                        @if ($mode === 'add')
+                                            Add Stock
                                         @elseif($mode === 'edit')
-                                        Edit Stock
+                                            Edit Stock
                                         @else
-                                        View Stock
+                                            View Stock
                                         @endif
                                     </div>
 
@@ -42,80 +42,84 @@
                                     <div class="card-body">
                                         <form
                                             action="{{ $mode === 'edit' ? route('stock.update', $warehouse_stock->id) : route('warehouse.addStock') }}"
-                                            enctype="multipart/form-data"
-                                            method="POST">
+                                            enctype="multipart/form-data" method="POST">
                                             @csrf
-                                            @if($mode === 'edit')
-                                            @method('PUT')
+                                            @if ($mode === 'edit')
+                                                @method('PUT')
                                             @endif
 
                                             <div class="row">
                                                 {{-- Warehouse --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Warehouse <span class="mandatory">*</span></label>
+                                                        <label class="form-label">Warehouse <span
+                                                                class="mandatory">*</span></label>
                                                         <select name="warehouse_id"
                                                             class="form-select @error('warehouse_id') is-invalid @enderror"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                                             <option value="">Select Warehouse</option>
-                                                            @foreach($warehouses as $warehouse)
-                                                            <option value="{{ $warehouse->id }}"
-                                                                {{ old('warehouse_id',$warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
-                                                                {{ $warehouse->name }}
-                                                            </option>
+
+                                                            @foreach ($warehouses as $warehouse)
+                                                                <option value="{{ $warehouse->id }}"
+                                                                    {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                                                                    {{ $warehouse->name }}
+                                                                </option>
                                                             @endforeach
+
                                                         </select>
-                                                        @error('warehouse_id') <span class="text-danger">{{ $message }}</span> @enderror
+
+                                                        @error('warehouse_id')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
                                                 {{-- Category --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Category <span class="mandatory">*</span></label>
+                                                        <label class="form-label">Category <span
+                                                                class="mandatory">*</span></label>
                                                         <select name="category_id" id="category_id"
                                                             class="form-select @error('category_id') is-invalid @enderror"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                                             <option value="">Select Category</option>
-                                                            @foreach($categories as $category)
-                                                            <option value="{{ $category->id }}"
-                                                                {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                                {{ $category->name }}
-                                                            </option>
+
+                                                            @foreach ($categories as $category)
+                                                                <option value="{{ $category->id }}"
+                                                                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                                                    {{ $category->name }}
+                                                                </option>
                                                             @endforeach
+
                                                         </select>
-                                                        @error('category_id') <span class="text-danger">{{ $message }}</span> @enderror
+
+                                                        @error('category_id')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
-                                                {{-- Product Name --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label for="product_id">Product <span class="mandatory">*</span></label>
+                                                        <label for="product_id">Product <span
+                                                                class="mandatory">*</span></label>
 
-                                                        <select name="product_id"
-                                                            id="product_id"
+                                                        <select name="product_id" id="product_id"
                                                             class="form-select @error('product_id') is-invalid @enderror"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">-- Select Product --</option>
 
-                                                            {{-- Edit / View mode: preload products --}}
-                                                            @if(in_array($mode, ['edit', 'view']))
-                                                            @foreach($products as $product)
-                                                            <option value="{{ $product->id }}"
-                                                                {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
-                                                                {{ $product->name }}
-                                                            </option>
-                                                            @endforeach
-                                                            @endif
                                                         </select>
 
                                                         @error('product_id')
-                                                        <span class="text-danger">{{ $message }}</span>
+                                                            <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
+
 
                                                 {{-- Batch --}}
 
@@ -125,11 +129,11 @@
                                                         <select name="batch_id" id="batch_id" class="form-control"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Batch No --</option>
-                                                            @foreach($product_batches as $product_batch)
-                                                            <option value="{{ $product_batch->id }}"
-                                                                {{ old('batch_id', $warehouse_stock->batch_id ?? '') == $product_batch->id ? 'selected' : '' }}>
-                                                                {{ $product_batch->batch_no }}
-                                                            </option>
+                                                            @foreach ($product_batches as $product_batch)
+                                                                <option value="{{ $product_batch->id }}"
+                                                                    {{ old('batch_id', $warehouse_stock->batch_id ?? '') == $product_batch->id ? 'selected' : '' }}>
+                                                                    {{ $product_batch->batch_no }}
+                                                                </option>
                                                             @endforeach
                                                         </select>
                                                     </div>
@@ -147,21 +151,22 @@
                                                     </div>
                                                 </div>
 
-                                               
+
 
                                                 <!-- Buttons (Right Aligned) -->
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
-                                                    <a href="{{ route('index.addStock.warehouse') }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('index.addStock.warehouse') }}"
+                                                        class="btn btn-outline-secondary">
                                                         <i class="bx bx-arrow-back"></i> Back
                                                     </a>
-                                                    @if($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Save Stock
-                                                    </button>
+                                                    @if ($mode === 'add')
+                                                        <button type="submit" class="btn btn-primary">
+                                                            Save Stock
+                                                        </button>
                                                     @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Update Stock
-                                                    </button>
+                                                        <button type="submit" class="btn btn-primary">
+                                                            Update Stock
+                                                        </button>
                                                     @endif
                                                 </div>
 
@@ -189,25 +194,45 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    $('#category_id').on('change', function() {
-        let categoryId = $(this).val();
-        $('#product_id').html('<option value="">Loading...</option>');
+document.addEventListener('DOMContentLoaded', function () {
+
+    const categorySelect = document.getElementById('category_id');
+    const productSelect  = document.getElementById('product_id');
+
+    categorySelect.addEventListener('change', function () {
+
+        const categoryId = this.value;
+        productSelect.innerHTML = '<option value="">Loading...</option>';
 
         if (!categoryId) {
-            $('#product_id').html('<option value="">-- Select Product --</option>');
+            productSelect.innerHTML = '<option value="">-- Select Product --</option>';
             return;
         }
 
-        $.ajax({
-            url: '/get-products/' + categoryId,
-            type: 'GET',
-            success: function(products) {
-                let options = '<option value="">-- Select Product --</option>';
-                products.forEach(product => {
-                    options += `<option value="${product.id}">${product.name}</option>`;
+        fetch(`/get-products-by-category/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                productSelect.innerHTML = '<option value="">-- Select Product --</option>';
+
+                if (data.length === 0) {
+                    productSelect.innerHTML +=
+                        '<option value="">No products found</option>';
+                }
+
+                data.forEach(product => {
+                    productSelect.innerHTML += `
+                        <option value="${product.id}">
+                            ${product.name}
+                        </option>`;
                 });
-                $('#product_id').html(options);
-            }
-        });
+            })
+            .catch(() => {
+                productSelect.innerHTML =
+                    '<option value="">Error loading products</option>';
+            });
     });
+
+});
 </script>
+
