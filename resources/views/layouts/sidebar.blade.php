@@ -72,6 +72,7 @@
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>
+    </ul>
 </div>
 
 <script>

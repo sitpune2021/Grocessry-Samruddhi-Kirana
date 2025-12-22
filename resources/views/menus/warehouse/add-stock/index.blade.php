@@ -58,7 +58,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td>
+                            <td class="action-column" style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('warehouse.viewStockForm', $stock->id)"
                                     :edit-url="route('warehouse.editStockForm', $stock->id)"

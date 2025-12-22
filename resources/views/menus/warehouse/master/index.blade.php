@@ -48,7 +48,7 @@
                             <td>{{ $warehouse->contact_number ?? '-'}}</td>
                             <td>{{ $warehouse->email ?? '-'}}</td>
                             <td>{{$warehouse->status ?? '-'}}</td>
-                            <td>
+                            <td class="action-column" style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('warehouse.show', $warehouse->id)"
                                     :edit-url="route('warehouse.edit', $warehouse->id)"
