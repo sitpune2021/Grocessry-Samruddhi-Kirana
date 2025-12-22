@@ -76,7 +76,18 @@
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>
-    </ul>
+
+        <!-- retailer -->
+        <li class="menu-item">
+            <div class="menu-link  text-white" onclick="toggleMenu('retailerMenu','warehouseArrow')">
+                <span><i class="bx bx-store me-2 "></i>Retailer</span>
+                <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+            </div>
+            <ul class="submenu" id="retailerMenu">
+                <li><a href="{{ route('retailers.index') }}">Retailer profile</a></li>
+                <li><a href="{{ route('retailer-pricing.index') }}">Retailer pricing</a></li>
+            </ul>
+        </li>
 </div>
 
 <script>

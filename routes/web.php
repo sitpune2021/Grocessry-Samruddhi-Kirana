@@ -13,6 +13,8 @@ use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\WarehouseTransferController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RetailerController;
+use App\Http\Controllers\RetailerPricingController;
 
 
 
@@ -130,6 +132,13 @@ Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferC
 Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
     ->name('transfer.show');
 
+Route::get(
+    '/get-categories-by-warehouse/{warehouse_id}',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('warehouse.categories');
+
+    
+
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
 Route::get('/roles/create', [RoleController::class, 'create'])
@@ -150,3 +159,44 @@ Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
     
+Route::prefix('retailers')->name('retailers.')->group(function () {
+
+    Route::get('/', [RetailerController::class, 'index'])->name('index');
+
+    // CREATE
+    Route::get('/create', [RetailerController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerController::class, 'store'])->name('store');
+
+    // EDIT / UPDATE
+    Route::get('/{retailer}/edit', [RetailerController::class, 'edit'])->name('edit');
+    Route::put('/{retailer}', [RetailerController::class, 'update'])->name('update');
+
+    // DELETE
+    Route::delete('/{retailer}', [RetailerController::class, 'delete']);
+
+    // ACTIVATE / DEACTIVATE
+    Route::patch('/{retailer}/toggle-status', [RetailerController::class, 'toggleStatus'])
+        ->name('toggle.status');
+});
+
+
+Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
+
+    Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
+
+    Route::get('/create', [RetailerPricingController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerPricingController::class, 'store'])->name('store');
+
+    Route::get('/{pricing}/edit', [RetailerPricingController::class, 'edit'])->name('edit');
+    Route::put('/{pricing}', [RetailerPricingController::class, 'update'])->name('update');
+
+    Route::delete('/{pricing}', [RetailerPricingController::class, 'destroy'])->name('delete');
+
+    Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
+        ->name('bulk.upload');
+
+    Route::get('/get-products-by-category/{category}',
+        [RetailerPricingController::class, 'getProductsByCategory']);
+
+});
+
