@@ -59,8 +59,7 @@
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">Select Warehouse</option>
                                                             @foreach($warehouses as $warehouse)
-                                                            <option value="{{ $warehouse->id }}"
-                                                                {{ old('warehouse_id',$warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                                                                    {{ old('warehouse_id',$warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
                                                                 {{ $warehouse->name }}
                                                             </option>
                                                             @endforeach
@@ -209,5 +208,11 @@
                 $('#product_id').html(options);
             }
         });
+    $('#product_id').html(options);
+                }
+            });
+        } else {
+            $('#product_id').html('<option value="">-- Select Product --</option>');
+        }
     });
 </script>
