@@ -132,43 +132,8 @@
 
                 </div>
               </div>
-              @if($expiredCount > 0 || $expiringSoonCount > 0)
-              <div class="modal fade" id="expiryAlertModal" tabindex="-1">
-                  <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-
-                          <div class="modal-header bg-danger text-white">
-                              <h5 class="modal-title">⚠️ Stock Expiry Alert</h5>
-                              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                          </div>
-
-                          <div class="modal-body">
-                              @if($expiredCount > 0)
-                                  <p class="text-danger fw-bold">
-                                      ❌ {{ $expiredCount }} batch(es) already expired!
-                                  </p>
-                              @endif
-
-                              @if($expiringSoonCount > 0)
-                                  <p class="text-warning fw-bold">
-                                      ⚠️ {{ $expiringSoonCount }} batch(es) expiring within 7 days!
-                                  </p>
-                              @endif
-                          </div>
-
-                          <div class="modal-footer">
-                              <a href="{{ route('batches.expiry') }}" class="btn btn-primary">
-                                  View Details
-                              </a>
-                              <button class="btn btn-secondary" data-bs-dismiss="modal">
-                                  Ignore
-                              </button>
-                          </div>
-
-                      </div>
-                  </div>
-              </div>
               @endif
+
 
               <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
                 <div class="row">
