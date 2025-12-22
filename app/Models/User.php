@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\SoftDeletes; 
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasApiTokens, Notifiable ,SoftDeletes;
+    use HasFactory, HasApiTokens, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -34,7 +34,8 @@ class User extends Authenticatable
         'updated_at',
         'deleted_at',
         'status',
-        'last_login_at'
+        'last_login_at',
+        'warehouse_id'
     ];
 
     /**
@@ -59,7 +60,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-        public function role()
+    public function role()
     {
         return $this->belongsTo(Role::class);
     }

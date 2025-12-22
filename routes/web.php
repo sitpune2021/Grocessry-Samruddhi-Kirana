@@ -31,17 +31,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // User Profile 
-Route::get('/user-profile'                      , [AdminAuthController::class, 'index'])->name('user.profile');
-Route::get('/user-profile/create'               , [AdminAuthController::class, 'createUser'])->name('user.create');
-Route::post('/user-profile/store'               , [AdminAuthController::class, 'store'])->name('user.store');
-Route::get('/user/{id}'                         , [AdminAuthController::class, 'show'])->name('user.show');
-Route::get('/user/{id}/edit'                    , [AdminAuthController::class, 'editUser'])->name('user.edit');
-Route::put('/user/{id}'                         , [AdminAuthController::class, 'update'])->name('user.update');
-Route::delete('/user/{id}'                      , [AdminAuthController::class, 'destroy'])->name('user.destroy');
+Route::get('/user-profile', [AdminAuthController::class, 'index'])->name('user.profile');
+Route::get('/user-profile/create', [AdminAuthController::class, 'createUser'])->name('user.create');
+Route::post('/user-profile/store', [AdminAuthController::class, 'store'])->name('user.store');
+Route::get('/user/{id}', [AdminAuthController::class, 'show'])->name('user.show');
+Route::get('/user/{id}/edit', [AdminAuthController::class, 'editUser'])->name('user.edit');
+Route::put('/user/{id}', [AdminAuthController::class, 'update'])->name('user.update');
+Route::delete('/user/{id}', [AdminAuthController::class, 'destroy'])->name('user.destroy');
 
-Route::get( 'rolepermission'                    , [RolePermissionController::class, 'RolePermission'])->name('RolePermission');
-Route::post('rolepermission/store'              , [RolePermissionController::class, 'Store'])->name('Store');
-Route::get('/get-role-permissions/{id}'         , [RolePermissionController::class, 'getRolePermissions']);
+Route::get('rolepermission', [RolePermissionController::class, 'RolePermission'])->name('RolePermission');
+Route::post('rolepermission/store', [RolePermissionController::class, 'Store'])->name('Store');
+Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getRolePermissions']);
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/product', ProductController::class);
@@ -134,14 +134,21 @@ Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, '
 
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
+
 Route::get('/roles/create', [RoleController::class, 'create'])
     ->name('roles.create');
 
 Route::post('/roles/store', [RoleController::class, 'store'])
     ->name('roles.store');
 
-Route::get('/roles/{id}', [RoleController::class, 'show'])
+Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
+
+Route::get('/roles/{id}', [RoleController::class, 'edit'])
+    ->name('roles.edit');
+    
+Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
+    ->name('roles.destroy');
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 

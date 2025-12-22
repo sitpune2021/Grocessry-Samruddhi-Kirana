@@ -17,19 +17,19 @@
             <!-- Search -->
             <x-datatable-search />
 
-                <table class="table table-bordered">
-                    
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Batch</th>
-                            <th>Qty</th>
-                            <th>MFG</th>
-                            <th>Expiry</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+            <table class="table table-bordered">
+
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>MFG</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
                 <thead class="table-light">
                     <tr>
@@ -45,13 +45,20 @@
 
                 <tbody>
                     @foreach($batches as $batch)
-                    <tr
-                        @if($batch->expiry_date < now()->toDateString())
-                            style="background-color:#f8d7da" {{-- expired --}}
-                            @elseif($batch->expiry_date <= now()->addDays(7)->toDateString())
-                                style="background-color:#fff3cd" {{-- expiring soon --}}
-                                @endif
-                                >
+
+                    @php
+                    $rowStyle = '';
+
+                    if ($batch->expiry_date < now()) {
+                        // expired
+                        $rowStyle='background-color:#f8d7da' ;
+                        } elseif ($batch->expiry_date <= now()->addDays(7)) {
+                            // expiring soon
+                            $rowStyle = 'background-color:#fff3cd';
+                            }
+                            @endphp
+
+                            <tr style="{{ $rowStyle }}">
                                 <td style="width: 30px;">{{ $loop->iteration }}</td>
                                 <td>{{ $batch->product->name }}</td>
                                 <td>{{ $batch->batch_no }}</td>
@@ -63,20 +70,19 @@
                                     {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
                                 </td>
 
-
                                 <td align="center">
-                                    @if($batch->quantity > 0 && $batch->expiry_date >= now()->toDateString())
-                                    <a href="/sale/{{ $batch->product_id }}" title="Sell Product">
+                                    @if($batch->quantity > 0 && $batch->expiry_date >= now())
+                                    <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product">
                                         🛒 Sell
                                     </a>
                                     @else
                                     ❌
                                     @endif
                                 </td>
-                    </tr>
-                    @endforeach
-                </tbody>
+                            </tr>
 
+                            @endforeach
+                </tbody>
             </table>
 
         </div>
@@ -94,31 +100,31 @@
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
 
-    if (!searchInput || !table) return;
+        if (!searchInput || !table) return;
 
-    const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
 
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
 
-        rows.forEach(row => {
+            rows.forEach(row => {
 
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
 
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
         });
-    });
 
-});
+    });
 </script>
 @endpush
