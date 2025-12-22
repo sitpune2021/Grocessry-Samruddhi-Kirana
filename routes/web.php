@@ -57,6 +57,8 @@ Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock
 Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
+Route::get('/get-categories-by-warehouse/{warehouse}', [MasterWarehouseController::class, 'getCategories']);
+
 
 
 Route::get('/get-states/{country}', [LocationController::class, 'getStates']);

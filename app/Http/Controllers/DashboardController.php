@@ -15,15 +15,9 @@ use App\Models\ProductBatch;
 
 class DashboardController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // public function index()
-    // {
-    //     return view('dashboard.dashboard');
-    // }
 
-       public function index()
+
+    public function index()
     {
         $categoryCount = Category::count();
         $ProductCount = Product::count();
@@ -32,17 +26,17 @@ class DashboardController extends Controller
         $StockMovementCount = WarehouseStock::count();
         $WarehouseTransferCount = WarehouseTransfer::count();
         $UserCount = User::count();
- 
+
         $expiredCount = ProductBatch::where('quantity', '>', 0)
             ->whereDate('expiry_date', '<', now())
             ->count();
- 
+
         $expiringSoonCount = ProductBatch::where('quantity', '>', 0)
             ->whereBetween('expiry_date', [
                 now(),
                 now()->addDays(7)
             ])->count();
- 
+
         return view(
             'dashboard.dashboard',
             compact(
@@ -58,9 +52,6 @@ class DashboardController extends Controller
             )
         );
     }
- 
- 
-
 
     /**
      * Show the form for creating a new resource.

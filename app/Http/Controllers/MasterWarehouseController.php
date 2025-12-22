@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Models\District;
 
 class MasterWarehouseController extends Controller
 {
@@ -29,7 +30,10 @@ class MasterWarehouseController extends Controller
         $warehouses = Warehouse::all();
         $categories = Category::all();
         $countries = Country::all();
-        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries'));
+        $districts = District::orderBy('name')->get(); // fetch all districts
+
+
+        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
     }
 
     public function store(Request $request)
@@ -40,7 +44,7 @@ class MasterWarehouseController extends Controller
                 'type'           => 'required|in:master,district,taluka',
                 'address'        => 'nullable|string|max:500',
                 'contact_person' => 'nullable|string|max:255',
-                'mobile'         => 'nullable|string|max:15',
+                'contact_number'         => 'nullable|string|max:15',
                 'email'          => 'nullable|email',
 
 
@@ -63,7 +67,7 @@ class MasterWarehouseController extends Controller
                 'type'            => $request->type,
                 'address'         => $request->address,
                 'contact_person'  => $request->contact_person,
-                'contact_number'  => $request->mobile,
+                'contact_number' => $request->contact_number,
                 'email'          => $request->email,
                 'country_id'          => $request->country_id,
                 'state_id'          => $request->state_id,
@@ -125,12 +129,15 @@ class MasterWarehouseController extends Controller
         try {
             $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])->findOrFail($id);
             $countries = Country::all();
+            $districts = District::all();   // 🔹 this was missing
 
             return view('menus.warehouse.master.add-warehouse', [
                 'mode' => 'view', // view mode
                 'warehouse' => $warehouse,
                 'countries' => $countries,
                 'warehouses' => Warehouse::all(),
+                'districts' => $districts,
+
             ]);
         } catch (\Exception $e) {
             Log::error('Warehouse Show Error', [
@@ -147,12 +154,15 @@ class MasterWarehouseController extends Controller
         try {
             $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])->findOrFail($id);
             $countries = Country::all();
+            $districts = District::all(); // 🔹 important
 
             return view('menus.warehouse.master.add-warehouse', [
                 'mode' => 'edit', // edit mode
                 'warehouse' => $warehouse,
                 'countries' => $countries,
                 'warehouses' => Warehouse::all(),
+                'districts' => $districts,
+
             ]);
         } catch (\Exception $e) {
             Log::error('Warehouse Edit Error', [
@@ -174,7 +184,7 @@ class MasterWarehouseController extends Controller
                 'type' => 'required|in:master,district,taluka',
                 'address' => 'nullable|string|max:500',
                 'contact_person' => 'nullable|string|max:255',
-                'mobile' => 'nullable|string|max:15',
+                'contact_number' => 'nullable|string|max:15',
                 'email' => 'nullable|email',
             ]);
 
@@ -185,7 +195,7 @@ class MasterWarehouseController extends Controller
                 'district_id' => $request->district_id,
                 'taluka_id' => $request->taluka_id,
                 'address' => $request->address,
-                'contact_person' => $request->contact_person,
+                'contact_number' => $request->contact_number,
                 'contact_number' => $request->mobile,
                 'email' => $request->email,
             ]);
@@ -420,13 +430,13 @@ class MasterWarehouseController extends Controller
         }
     }
 
-    public function destroyStock(Request $request,$id)
+    public function destroyStock(Request $request, $id)
     {
-       
+
         Log::info('Delete Stock Request', $request->all());
-       
+
         try {
-            
+
             $stock = WarehouseStock::findOrFail($id);
 
             $stock->delete();
@@ -450,5 +460,12 @@ class MasterWarehouseController extends Controller
                 ->back()
                 ->with('error', 'Unable to delete stock');
         }
+    }
+
+    public function getCategories($warehouseId)
+    {
+        $categories = Category::where('warehouse_id', $warehouseId)->get();
+
+        return response()->json($categories);
     }
 }
