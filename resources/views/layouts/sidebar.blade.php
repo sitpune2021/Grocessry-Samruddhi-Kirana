@@ -32,7 +32,6 @@
         </li>
         {{-- @endif --}}
 
-
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('roleMenu','inventoryArrow')">
                 <span><i class="bx bx-package me-2 "></i>Role & Permission</span>
