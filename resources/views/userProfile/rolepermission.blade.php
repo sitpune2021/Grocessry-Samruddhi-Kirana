@@ -86,11 +86,11 @@
                                         @if($module == 'Dashboard')
                                         <td colspan="4" class="text-start">
                                             @foreach($dashboardCards as $card)
-                                            <label class="me-4">
-                                                <input type="checkbox"
+                                            <input type="checkbox"
                                                     class="perm large-checkbox" 
                                                     name="permissions[Dashboard][]"
                                                     value="view_{{ strtolower($card) }}">
+                                            <label class="me-4 ms-2">
                                                 View {{ $card }}
                                             </label>
                                             @endforeach

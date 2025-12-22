@@ -18,20 +18,25 @@
   letter-spacing: -0.5px;
 }
 
-/* login
- ******************************************************/
+/* Login Card */
 .login-card {
     width: 100%;
-    max-width: 500px;
+    max-width: 420px;        
+    min-height: auto;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin: auto;
+    padding: 0;
 }
 
+
+/* Logo */
 .login-logo {
-    max-width: 500px;
+    max-width: 350px;
     width: 100%;
     height: auto;
 }
+
 
 /* ! For .layout-navbar-fixed added fix padding top to .layout-page */
 /* Detached navbar */
@@ -250,7 +255,7 @@
 }
 
 
-.action-btn {
+ .action-btn {
   width: 30px;
   height: 30px;
   padding: 0;
@@ -262,16 +267,65 @@
 
 .action-btn i {
   font-size: 13px;
-}
+} 
 
 .action-btn:hover {
   transform: scale(1.05);
   transition: all 0.2s ease-in-out;
-}
+} 
 
 .large-checkbox{
     transform: scale(1.5);
     accent-color: #198754; /* success green */
 }
 
+/* 
+.action-column .action-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+.action-column .action-btn i {
+    font-size: 18px;
+    line-height: 1;
+    display: inline-block;
+}
+td.action-column {
+    white-space: nowrap !important;
+    min-width: 140px;
+}
+.action-column form {
+    display: inline-flex;
+} */
 
+/* 
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.action-btn i {
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.action-column form {
+  display: inline-flex;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+} */
