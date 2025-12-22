@@ -199,7 +199,7 @@ class BatchController extends Controller
             'ip'          => request()->ip(),
             'deleted_at'  => now()->toDateTimeString(),
         ]);
-
+        
         return response()->json([
             'status'  => true,
             'message' => 'Batch deleted successfully'

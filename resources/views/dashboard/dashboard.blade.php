@@ -79,17 +79,56 @@
                       </div>
                     </a>
                   </div>
-                 
-                    @if($expiredCount > 0 || $expiringSoonCount > 0)
-                    <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        let modal = new bootstrap.Modal(
-                            document.getElementById('expiryAlertModal')
-                        );
-                        modal.show();
+
+                  @if($expiredCount > 0 || $expiringSoonCount > 0)
+                  <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                      let modal = new bootstrap.Modal(
+                        document.getElementById('expiryAlertModal')
+                      );
+                      modal.show();
                     });
-                    </script>
+                  </script>
+                  @endif
+                </div>
+              </div>
+              <!-- Expiry Alert Modal -->
+              @if($expiredCount > 0 || $expiringSoonCount > 0)
+              <div class="expiry-toast-container">
+                <div class="alert alert-danger shadow d-flex align-items-start justify-content-between gap-3" role="alert">
+
+                  <!-- Left Content -->
+                  <div>
+                    <h6 class="alert-heading mb-1">
+                      <i class="bx bx-error-circle me-1"></i>
+                      Expiry Alert
+                    </h6>
+
+                    @if($expiredCount > 0)
+                    <div class="small">
+                      <i class="bx bx-x-circle me-1"></i>
+                      <strong>{{ $expiredCount }}</strong> expired batch(es)
+                    </div>
                     @endif
+
+                    @if($expiringSoonCount > 0)
+                    <div class="small text-warning">
+                      <i class="bx bx-time-five me-1"></i>
+                      <strong>{{ $expiringSoonCount }}</strong> expiring in 7 days
+                    </div>
+                    @endif
+                  </div>
+
+                  <!-- Right Actions -->
+                  <div class="text-end">
+                    <a href="{{ route('batches.expiry') }}" class="btn btn-sm btn-danger mb-1">
+                      View
+                    </a>
+                    <button type="button"
+                      class="btn-close ms-2"
+                      data-bs-dismiss="alert"
+                      aria-label="Close"></button>
+                  </div>
 
                 </div>
               </div>
