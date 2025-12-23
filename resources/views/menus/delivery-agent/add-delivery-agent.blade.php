@@ -55,10 +55,10 @@
                                                     <select name="driver_id"
                                                         class="form-select @error('driver_id') is-invalid @enderror"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-
                                                         <option value="">Select Agent</option>
                                                         @foreach ($agents as $agent)
-                                                        <option value="{{ $agent->id }}">
+                                                        <option value="{{ $agent->id }}"
+                                                            {{ old('driver_id', $driverVehicle->driver_id ?? '') == $agent->id ? 'selected' : '' }}>
                                                             {{ $agent->first_name }} {{ $agent->last_name }}
                                                         </option>
                                                         @endforeach
@@ -69,12 +69,12 @@
                                                     @enderror
                                                 </div>
 
-
                                                 {{-- Vehicle No --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Vehicle No</label>
                                                     <input type="text"
                                                         name="vehicle_no"
+                                                        placeholder="Enter vehicle number"
                                                         class="form-control @error('vehicle_no') is-invalid @enderror"
                                                         value="{{ old('vehicle_no', $driverVehicle->vehicle_no ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -88,6 +88,7 @@
                                                     <label class="form-label fw-medium">Vehicle Type</label>
                                                     <input type="text"
                                                         name="vehicle_type"
+                                                        placeholder="Enter vehicle type"
                                                         class="form-control @error('vehicle_type') is-invalid @enderror"
                                                         value="{{ old('vehicle_type', $driverVehicle->vehicle_type ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -101,6 +102,7 @@
                                                     <label class="form-label fw-medium">License No</label>
                                                     <input type="text"
                                                         name="license_no"
+                                                        placeholder="Enter license number"
                                                         class="form-control @error('license_no') is-invalid @enderror"
                                                         value="{{ old('license_no', $driverVehicle->license_no ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -118,7 +120,7 @@
                                                             type="radio"
                                                             name="active_status"
                                                             value="1"
-                                                            {{ old('active_status', $driverVehicle->active_status ?? '') == 1 ? 'checked' : '' }}
+                                                            {{ old('active_status', $driverVehicle->active_status ?? '1') == 1 ? 'checked' : '' }}
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <label class="form-check-label">Yes</label>
                                                     </div>
@@ -139,9 +141,10 @@
                                                 </div>
                                             </div>
 
+
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('category.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('delivery-agents.index') }}" class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
