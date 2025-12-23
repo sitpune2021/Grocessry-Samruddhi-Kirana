@@ -26,11 +26,11 @@
                                     <div class="card-header d-flex align-items-center">
                                         <h4 class="mb-0 flex-grow-1">
                                             @if ($mode === 'add')
-                                            Add User
+                                                Add User
                                             @elseif($mode === 'edit')
-                                            Edit User
+                                                Edit User
                                             @else
-                                            View User
+                                                View User
                                             @endif
                                         </h4>
                                     </div>
@@ -43,7 +43,7 @@
 
                                             @csrf
                                             @if ($mode === 'edit')
-                                            @method('PUT')
+                                                @method('PUT')
                                             @endif
 
                                             <div class="row">
@@ -58,7 +58,7 @@
 
                                                     {{-- Field error --}}
                                                     @error('first_name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -75,7 +75,7 @@
 
                                                     {{-- Display error message without red border --}}
                                                     @error('last_name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -95,7 +95,7 @@
 
                                                     {{-- Display error message without red border --}}
                                                     @error('mobile')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -111,21 +111,21 @@
                                                         <option value="">Select Role</option>
 
                                                         @foreach ($roles as $role)
-                                                        <option value="{{ $role->id }}"
-                                                            {{ old('role_id', $user->role_id ?? '') == $role->id ? 'selected' : '' }}>
-                                                            {{ $role->name }}
-                                                        </option>
+                                                            <option value="{{ $role->id }}"
+                                                                {{ old('role_id', $user->role_id ?? '') == $role->id ? 'selected' : '' }}>
+                                                                {{ $role->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
 
                                                     @if ($mode === 'view')
-                                                    <input type="hidden" name="role_id"
-                                                        value="{{ $user->role_id }}">
+                                                        <input type="hidden" name="role_id"
+                                                            value="{{ $user->role_id }}">
                                                     @endif
 
                                                     {{-- Display error message without red border --}}
                                                     @error('role_id')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -134,11 +134,11 @@
                                                     <label class="form-label">Warehouse Name</label>
                                                     <select name="warehouse_id" class="form-select">
                                                         <option value="">Select Warehouse</option>
-                                                        @foreach($warehouses as $warehouse)
-                                                        <option value="{{ $warehouse->id }}"
-                                                            {{ old('warehouse_id', $user->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
-                                                            {{ $warehouse->name }}
-                                                        </option>
+                                                        @foreach ($warehouses as $warehouse)
+                                                            <option value="{{ $warehouse->id }}"
+                                                                {{ old('warehouse_id', $user->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                                {{ $warehouse->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
 
@@ -158,7 +158,7 @@
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
 
                                                     @error('email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -179,7 +179,7 @@
                                                     </select>
 
                                                     @error('status')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -188,44 +188,35 @@
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Profile Photo</label>
 
-                                                    {{-- Only show file input in add/edit --}}
+                                                    {{-- Upload only in add/edit --}}
                                                     @if ($mode !== 'view')
-                                                    <input type="file" name="profile_photo"
-                                                        class="form-control @error('profile_photo') is-invalid @enderror">
+                                                        <input type="file" name="profile_photo"
+                                                            class="form-control @error('profile_photo') is-invalid @enderror">
                                                     @endif
 
-                                                    {{-- Show uploaded photo as clickable link in view mode --}}
+                                                    {{-- Show existing image as clickable link in EDIT + VIEW --}}
                                                     @if (!empty($user->profile_photo))
-                                                    @php
-                                                    $photoUrl = asset('storage/' . $user->profile_photo);
-                                                    @endphp
+                                                        @php
+                                                            $photoUrl = asset('storage/' . $user->profile_photo);
+                                                        @endphp
 
-                                                    @if ($mode === 'view')
-                                                    <p>
-                                                        <a href="{{ $photoUrl }}" target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            class="text-blue-600 underline">
-                                                            View Photo
-                                                        </a>
-                                                    </p>
+                                                        <p class="mt-2">
+                                                            <a href="{{ $photoUrl }}" target="_blank"
+                                                                class="text-primary">
+                                                                View Photo
+                                                            </a>
+                                                        </p>
                                                     @else
-                                                    {{-- Show image preview in add/edit mode --}}
-                                                    <div class="mt-2">
-                                                        <img src="{{ $photoUrl }}" class="rounded-circle"
-                                                            width="80" alt="Profile Photo">
-                                                    </div>
-                                                    @endif
-                                                    @else
-                                                    @if ($mode === 'view')
-                                                    <p>No profile photo uploaded</p>
-                                                    @endif
+                                                        @if ($mode !== 'add')
+                                                            <p class="text-muted">No profile photo uploaded</p>
+                                                        @endif
                                                     @endif
 
-                                                    {{-- Validation error --}}
                                                     @error('profile_photo')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
 
 
                                                 {{-- Buttons --}}
@@ -234,9 +225,9 @@
                                                         class="btn btn-info">Cancel</a>
 
                                                     @if ($mode !== 'view')
-                                                    <button class="btn btn-primary">
-                                                        {{ $mode === 'edit' ? 'Update User' : 'Save User' }}
-                                                    </button>
+                                                        <button class="btn btn-primary">
+                                                            {{ $mode === 'edit' ? 'Update User' : 'Save User' }}
+                                                        </button>
                                                     @endif
                                                 </div>
 
@@ -248,7 +239,7 @@
                             </div>
                         </div>
                     </div>
-                   
+
                     <br>
                     <br>
                     @include('layouts.footer')

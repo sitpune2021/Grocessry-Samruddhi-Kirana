@@ -199,92 +199,92 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <script>
-document.addEventListener('DOMContentLoaded', function () {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    const typeSelect = document.getElementById('warehouseType');
-    const parentDiv = document.getElementById('parentDiv');
-    const parentSelect = document.getElementById('parent_id');
-    const districtSelect = document.getElementById('district_id');
-    const talukaSelect = document.getElementById('taluka_id');
+            const typeSelect = document.getElementById('warehouseType');
+            const parentDiv = document.getElementById('parentDiv');
+            const parentSelect = document.getElementById('parent_id');
+            const districtSelect = document.getElementById('district_id');
+            const talukaSelect = document.getElementById('taluka_id');
 
-    /* ===============================
-       Parent Warehouse logic
-    =============================== */
-    function toggleParent() {
-        const selectedType = typeSelect.value;
+            /* ===============================
+               Parent Warehouse logic
+            =============================== */
+            function toggleParent() {
+                const selectedType = typeSelect.value;
 
-        if (selectedType === 'master') {
-            parentDiv.style.display = 'none';
-        } else {
-            parentDiv.style.display = 'block';
-            filterParentOptions(selectedType);
-        }
-    }
-
-    function filterParentOptions(selectedType) {
-        const options = parentSelect.querySelectorAll('option');
-        const currentValue = parentSelect.value;
-
-        options.forEach(opt => {
-            const type = opt.getAttribute('data-type');
-
-            if (selectedType === 'district') {
-                opt.style.display =
-                    (type === 'master' || opt.value === '') ? 'block' : 'none';
-            } else if (selectedType === 'taluka') {
-                opt.style.display =
-                    (type === 'district' || opt.value === '') ? 'block' : 'none';
-            } else {
-                opt.style.display = 'block';
+                if (selectedType === 'master') {
+                    parentDiv.style.display = 'none';
+                } else {
+                    parentDiv.style.display = 'block';
+                    filterParentOptions(selectedType);
+                }
             }
-        });
 
-        // reset only if invalid
-        if (![...options].some(o => o.value === currentValue && o.style.display !== 'none')) {
-            parentSelect.value = '';
-        }
-    }
+            function filterParentOptions(selectedType) {
+                const options = parentSelect.querySelectorAll('option');
+                const currentValue = parentSelect.value;
 
-    typeSelect.addEventListener('change', toggleParent);
-    toggleParent(); // page load
+                options.forEach(opt => {
+                    const type = opt.getAttribute('data-type');
+
+                    if (selectedType === 'district') {
+                        opt.style.display =
+                            (type === 'master' || opt.value === '') ? 'block' : 'none';
+                    } else if (selectedType === 'taluka') {
+                        opt.style.display =
+                            (type === 'district' || opt.value === '') ? 'block' : 'none';
+                    } else {
+                        opt.style.display = 'block';
+                    }
+                });
+
+                // reset only if invalid
+                if (![...options].some(o => o.value === currentValue && o.style.display !== 'none')) {
+                    parentSelect.value = '';
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleParent);
+            toggleParent(); // page load
 
 
-    /* ===============================
-       Taluka dynamic loading
-    =============================== */
-    function loadTalukas(districtId, selectedTalukaId = null) {
-        if (!districtId) {
-            talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
-            return;
-        }
+            /* ===============================
+               Taluka dynamic loading
+            =============================== */
+            function loadTalukas(districtId, selectedTalukaId = null) {
+                if (!districtId) {
+                    talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+                    return;
+                }
 
-        fetch(`/get-talukas/${districtId}`)
-            .then(res => res.json())
-            .then(data => {
-                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+                fetch(`/get-talukas/${districtId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
 
-                data.forEach(t => {
-                    talukaSelect.innerHTML += `
+                        data.forEach(t => {
+                            talukaSelect.innerHTML += `
                         <option value="${t.id}" ${t.id == selectedTalukaId ? 'selected' : ''}>
                             ${t.name}
                         </option>`;
-                });
+                        });
+                    });
+            }
+
+            // District change
+            districtSelect.addEventListener('change', function() {
+                loadTalukas(this.value);
             });
-    }
 
-    // District change
-    districtSelect.addEventListener('change', function () {
-        loadTalukas(this.value);
-    });
+            // ✅ AUTO LOAD ON EDIT PAGE
+            @if (isset($warehouse) && $warehouse->district_id)
+                loadTalukas(
+                    {{ $warehouse->district_id }},
+                    {{ $warehouse->taluka_id ?? 'null' }}
+                );
+            @endif
 
-    // ✅ AUTO LOAD ON EDIT PAGE
-    @if (isset($warehouse) && $warehouse->district_id)
-        loadTalukas(
-            {{ $warehouse->district_id }},
-            {{ $warehouse->taluka_id ?? 'null' }}
-        );
-    @endif
-
-});
-</script>
+        });
+    </script>
