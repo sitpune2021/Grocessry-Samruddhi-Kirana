@@ -28,7 +28,7 @@
                                 <h4 class="card-header">
                                     @if ($mode === 'add')
                                         Add Batch
-                                    @elseif($mode === 'edit')
+                                    @elseif ($mode === 'edit')
                                         Edit Batch
                                     @else
                                         View Batch
@@ -49,9 +49,8 @@
 
                                             {{-- Category --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Category</label>
-                                                <select name="category_id" id="category_id"
-                                                    class="form-select @error('category_id') is-invalid @enderror"
+                                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                                <select name="category_id" id="category_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Category</option>
                                                     @foreach ($categories as $category)
@@ -62,15 +61,14 @@
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- Product --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Product</label>
-                                                <select name="product_id" id="product_id"
-                                                    class="form-select @error('product_id') is-invalid @enderror"
+                                                <label class="form-label">Product <span class="text-danger">*</span></label>
+                                                <select name="product_id" id="product_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Product</option>
                                                     @if (isset($products))
@@ -83,7 +81,7 @@
                                                     @endif
                                                 </select>
                                                 @error('product_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
 
                                                 {{-- View / Edit → Product Image --}}
@@ -97,7 +95,7 @@
                                                             class="d-block mt-2 text-primary text-decoration-underline">
                                                             View Product Image
                                                         </a>
-                                                    @elseif($mode === 'edit')
+                                                    @elseif ($mode === 'edit')
                                                         <a href="{{ $imgUrl }}" target="_blank">
                                                             <img src="{{ $imgUrl }}" width="80"
                                                                 class="rounded border mt-2">
@@ -108,49 +106,49 @@
 
                                             {{-- Batch Number --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Batch Number</label>
+                                                <label class="form-label">Batch Number <span class="text-danger">*</span></label>
                                                 <input type="text" name="batch_no"
                                                     value="{{ old('batch_no', $batch->batch_no ?? '') }}"
-                                                    class="form-control @error('batch_no') is-invalid @enderror"
+                                                    class="form-control" placeholder="Enter batch no"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('batch_no')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- Quantity --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Quantity</label>
+                                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
                                                 <input type="number" name="quantity" min="1"
                                                     value="{{ old('quantity', $batch->quantity ?? '') }}"
-                                                    class="form-control @error('quantity') is-invalid @enderror"
+                                                    class="form-control"  placeholder="Enter quantity"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('quantity')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- MFG --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">MFG Date</label>
+                                                <label class="form-label">MFG Date<span class="text-danger">*</span></label>
                                                 <input type="date" name="mfg_date"
                                                     value="{{ old('mfg_date', $batch->mfg_date ?? '') }}"
-                                                    class="form-control @error('mfg_date') is-invalid @enderror"
+                                                    class="form-control"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('mfg_date')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- Expiry --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Expiry Date</label>
+                                                <label class="form-label">Expiry Date<span class="text-danger">*</span></label>
                                                 <input type="date" name="expiry_date"
                                                     value="{{ old('expiry_date', $batch->expiry_date ?? '') }}"
-                                                    class="form-control @error('expiry_date') is-invalid @enderror"
+                                                    class="form-control " 
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('expiry_date')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -186,7 +184,6 @@
 
 </body>
 
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -205,7 +202,6 @@
                     });
                     $('#product_id').html(options);
 
-                    // If edit mode, select the product
                     @if (isset($batch))
                         $('#product_id').val('{{ $batch->product_id }}');
                     @endif

@@ -41,6 +41,7 @@ class MasterWarehouseController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:master,district,taluka',
+            'contact_number' => 'required|digits:10',
 
             'parent_id'   => 'nullable|required_if:type,district|required_if:type,taluka|integer',
             'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',

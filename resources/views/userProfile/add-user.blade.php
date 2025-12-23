@@ -52,7 +52,7 @@
                                                     <label class="form-label">
                                                         First Name <span class="text-danger">*</span>
                                                     </label>
-                                                    <input type="text" name="first_name" class="form-control"
+                                                    <input type="text" name="first_name" class="form-control" placeholder="Enter first name"
                                                         value="{{ old('first_name', $user->first_name ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
 
@@ -69,7 +69,7 @@
                                                         Last Name <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <input type="text" name="last_name" class="form-control"
+                                                    <input type="text" name="last_name" class="form-control" placeholder="Enter last name"
                                                         value="{{ old('last_name', $user->last_name ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
 
@@ -86,7 +86,7 @@
                                                         Mobile <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <input type="text" name="mobile" class="form-control"
+                                                    <input type="text" name="mobile" class="form-control" placeholder="Enter mobile number"
                                                         value="{{ old('mobile', $user->mobile ?? '') }}"
                                                         oninput="validateMobile(this)"
                                                         onkeypress="return isNumber(event)"
@@ -106,7 +106,8 @@
                                                         Role <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <select name="role_id" class="form-control form-select"
+                                                    <select name="role_id" class="form-control form-select" placeholder="Enter role name"
+                                                        value="{{ old('role_id', $user->role_id ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Role</option>
 
@@ -152,7 +153,7 @@
                                                         Email
                                                     </label>
 
-                                                    <input type="email" name="email"
+                                                    <input type="email" name="email"  placeholder="Enter email"
                                                         class="form-control @error('email') is-invalid @enderror"
                                                         value="{{ old('email', $user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>

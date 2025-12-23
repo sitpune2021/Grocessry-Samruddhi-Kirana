@@ -48,17 +48,21 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse Name <span
-                                                                class="mandatory">*</span></label>
+                                                                class="text-danger">*</span></label>
                                                         <input type="text" name="name" class="form-control"
                                                             value="{{ old('name', $warehouse->name ?? '') }}"
                                                             placeholder="Warehouse Name"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                        @error('name')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
                                                 {{-- Warehouse Type --}}
                                                 <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Warehouse Type *</label>
+                                                    <label class="form-label">Warehouse Type <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Type</option>
@@ -72,11 +76,15 @@
                                                             {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>
                                                             Taluka</option>
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Parent Warehouse --}}
                                                 <div class="col-md-4 mb-3" id="parentDiv">
-                                                    <label class="form-label">Parent Warehouse</label>
+                                                    <label class="form-label">Parent Warehouse <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="parent_id" id="parent_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
@@ -88,11 +96,15 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- District --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">District</label>
+                                                    <label class="form-label">District <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
@@ -103,11 +115,15 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Taluka</label>
+                                                    <label class="form-label">Taluka <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->taluka))
@@ -118,18 +134,23 @@
                                                             <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
                                                     <label class="form-label">Address</label>
-                                                    <textarea name="address" class="form-control" rows="2" {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
+                                                    <textarea name="address" class="form-control" placeholder="address" rows="2"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
                                                 </div>
 
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Contact Person</label>
                                                     <input type="text" name="contact_person" class="form-control"
+                                                        placeholder="contact person"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 </div>
@@ -137,12 +158,17 @@
                                                 {{-- Mobile --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Mobile</label>
+                                                        <label class="form-label">Mobile <span
+                                                                class="text-danger">*</span></label>
                                                         <input type="text" name="contact_number" class="form-control"
                                                             maxlength="10"
                                                             value="{{ $warehouse->contact_number ?? '' }}"
                                                             placeholder="Mobile"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
+
+                                                        @error('contact_number')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 </div>
 

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 
 class StockController extends Controller
 {
-    
+
 
     public function create()
     {
@@ -30,10 +30,10 @@ class StockController extends Controller
         $availableStock = 0;
 
         return view('sale.create', compact(
-            'warehouses', 
-            'categories', 
-            'products', 
-            'selectedProduct', 
+            'warehouses',
+            'categories',
+            'products',
+            'selectedProduct',
             'availableStock'
         ));
     }
@@ -114,12 +114,10 @@ class StockController extends Controller
             Log::info('Sale completed successfully');
 
             return back()->with('success', 'Sale completed successfully');
-
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Sale error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Something went wrong during sale');
         }
     }
-
 }
