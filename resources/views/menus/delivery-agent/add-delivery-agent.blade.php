@@ -57,10 +57,10 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Agent</option>
                                                         @foreach ($agents as $agent)
-                                                        <option value="{{ $agent->id }}"
-                                                            {{ old('driver_id', $driverVehicle->driver_id ?? '') == $agent->id ? 'selected' : '' }}>
-                                                            {{ $agent->first_name }} {{ $agent->last_name }}
-                                                        </option>
+                                                            <option value="{{ $agent->id }}"
+                                                                {{ old('driver_id', $driverVehicle->driver_id ?? '') == $agent->id ? 'selected' : '' }}>
+                                                                {{ $agent->first_name }} {{ $agent->last_name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
 
@@ -132,7 +132,8 @@
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('delivery-agents.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('delivery-agents.index') }}"
+                                                    class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
