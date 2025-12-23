@@ -155,12 +155,13 @@ Route::post('/roles/store', [RoleController::class, 'store'])
 Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
-Route::get('/roles/{id}', [RoleController::class, 'edit'])
-    ->name('roles.edit');
+Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
+->name('roles.edit');
 
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
+    
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List

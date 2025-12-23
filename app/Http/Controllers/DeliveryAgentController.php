@@ -6,6 +6,7 @@ use App\Models\DeliveryAgent;
 use App\Models\DriverVehicle;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class DeliveryAgentController extends Controller
@@ -15,7 +16,12 @@ class DeliveryAgentController extends Controller
      */
     public function index()
     {
-        return view('menus.delivery-agent.index');
+        // Fetch delivery agent vehicles with driver info, paginate 10 per page
+        $driverVehicles = DriverVehicle::with('driver')
+            ->latest()
+            ->paginate(10);
+
+        return view('menus.delivery-agent.index', compact('driverVehicles'));
     }
 
     /**
@@ -23,8 +29,11 @@ class DeliveryAgentController extends Controller
      */
     public function create()
     {
-        $mode = "add";
+        $mode = 'add';
+
+        // Fetch all delivery agents for dropdown
         $agents = User::orderBy('first_name')->get();
+
         return view('menus.delivery-agent.add-delivery-agent', compact('mode', 'agents'));
     }
 
@@ -34,56 +43,51 @@ class DeliveryAgentController extends Controller
     public function store(Request $request)
     {
         try {
-            // 🔹 Log incoming request
+            // Log incoming request
             Log::info('DriverVehicle Store Request', [
                 'request_data' => $request->all(),
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
 
-            // 🔹 Validate request
+            // Validate input
             $validated = $request->validate([
                 'driver_id'     => 'required|exists:users,id',
                 'vehicle_no'    => 'required|string|max:255',
                 'vehicle_type'  => 'nullable|string|max:255',
                 'license_no'    => 'nullable|string|max:255',
-                'active_status' => 'required|boolean',
+                'active_status' => 'required|boolean', // 0 = inactive, 1 = active
             ]);
 
-            // 🔹 Create record
+            // Create record
             $driverVehicle = DriverVehicle::create([
                 'driver_id'    => $validated['driver_id'],
                 'vehicle_no'   => $validated['vehicle_no'],
                 'vehicle_type' => $validated['vehicle_type'] ?? null,
                 'license_no'   => $validated['license_no'] ?? null,
-                'active'       => $validated['active_status'],
+                'active'       => $validated['active_status'], // store active status
             ]);
 
-            // 🔹 Success log
+            // Log success
             Log::info('DriverVehicle Created Successfully', [
                 'driver_vehicle_id' => $driverVehicle->id,
-                'driver_id' => $driverVehicle->driver_id
+                'driver_id' => $driverVehicle->driver_id,
+                'active' => $driverVehicle->active
             ]);
 
             return redirect()
                 ->route('delivery-agents.index')
                 ->with('success', 'Agent created successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
-
-            // 🔸 Validation error log
             Log::warning('DriverVehicle Validation Failed', [
                 'errors' => $e->errors()
             ]);
-
-            throw $e; // let Laravel handle redirect with errors
-
+            throw $e;
         } catch (\Exception $e) {
-
-            // 🔴 Critical error log
             Log::error('DriverVehicle Store Failed', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString()
             ]);
 
             return redirect()
@@ -93,6 +97,7 @@ class DeliveryAgentController extends Controller
         }
     }
 
+
     /**
      * Display the specified resource.
      */
@@ -101,42 +106,29 @@ class DeliveryAgentController extends Controller
         try {
             Log::info('DriverVehicle Show Request', [
                 'driver_vehicle_id' => $id,
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
 
             $driverVehicle = DriverVehicle::with('driver')->findOrFail($id);
 
-            // Agents list (only for displaying name in dropdown)
-            $agents = User::where('role_id', 3)->get(); // adjust role_id if needed
+                  $agents = User::orderBy('first_name')->get();
 
-            return view('menus.delivery-agent.form', [
-                'driverVehicle' => $driverVehicle,
-                'agents'        => $agents,
-                'mode'          => 'view'
-            ]);
+
+            return view('menus.delivery-agent.add-delivery-agent', compact('driverVehicle', 'agents'))
+                ->with('mode', 'view');
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-
-            Log::warning('DriverVehicle Not Found', [
-                'id' => $id
-            ]);
-
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('error', 'Record not found');
+            Log::warning('DriverVehicle Not Found', ['id' => $id]);
+            return redirect()->route('delivery-agents.index')->with('error', 'Record not found');
         } catch (\Exception $e) {
-
             Log::error('DriverVehicle Show Error', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
-                'line'    => $e->getLine()
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString()
             ]);
-
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('error', 'Something went wrong');
+            return redirect()->route('delivery-agents.index')->with('error', 'Something went wrong');
         }
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -144,25 +136,22 @@ class DeliveryAgentController extends Controller
     public function edit($id)
     {
         try {
+            $mode = 'edit';
             $driverVehicle = DriverVehicle::findOrFail($id);
-            $agents = User::where('role_id', 3)->get(); // adjust role_id if needed
+        $agents = User::orderBy('first_name')->get();
 
-            return view('menus.delivery-agent.form', [
-                'driverVehicle' => $driverVehicle,
-                'agents'        => $agents,
-                'mode'          => 'edit'
-            ]);
+
+            return view('menus.delivery-agent.add-delivery-agent', compact('driverVehicle', 'agents', 'mode'));
         } catch (\Exception $e) {
             Log::error('DriverVehicle Edit Error', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ]);
 
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('error', 'Record not found');
+            return redirect()->route('delivery-agents.index')->with('error', 'Record not found');
         }
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -195,22 +184,14 @@ class DeliveryAgentController extends Controller
 
             Log::info('DriverVehicle Updated', ['id' => $id]);
 
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('success', 'Agent updated successfully');
+            return redirect()->route('delivery-agents.index')->with('success', 'Agent updated successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            Log::error('DriverVehicle Update Error', [
-                'message' => $e->getMessage()
-            ]);
-
-            return back()
-                ->withInput()
-                ->with('error', 'Update failed');
+            Log::error('DriverVehicle Update Error', ['message' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Update failed');
         }
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -219,22 +200,14 @@ class DeliveryAgentController extends Controller
     {
         try {
             $driverVehicle = DriverVehicle::findOrFail($id);
-
             $driverVehicle->delete();
 
             Log::info('DriverVehicle Deleted', ['id' => $id]);
 
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('success', 'Agent deleted successfully');
+            return redirect()->route('delivery-agents.index')->with('success', 'Agent deleted successfully');
         } catch (\Exception $e) {
-            Log::error('DriverVehicle Delete Error', [
-                'message' => $e->getMessage()
-            ]);
-
-            return redirect()
-                ->route('delivery-agents.index')
-                ->with('error', 'Delete failed');
+            Log::error('DriverVehicle Delete Error', ['message' => $e->getMessage()]);
+            return redirect()->route('delivery-agents.index')->with('error', 'Delete failed');
         }
     }
 }

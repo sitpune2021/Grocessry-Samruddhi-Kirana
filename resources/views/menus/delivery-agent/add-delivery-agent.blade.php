@@ -55,12 +55,12 @@
                                                             class="text-danger">*</span></label>
                                                     <select name="driver_id" class="form-select "
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-
                                                         <option value="">Select Agent</option>
                                                         @foreach ($agents as $agent)
-                                                            <option value="{{ $agent->id }}">
-                                                                {{ $agent->first_name }} {{ $agent->last_name }}
-                                                            </option>
+                                                        <option value="{{ $agent->id }}"
+                                                            {{ old('driver_id', $driverVehicle->driver_id ?? '') == $agent->id ? 'selected' : '' }}>
+                                                            {{ $agent->first_name }} {{ $agent->last_name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
 
@@ -68,7 +68,6 @@
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-
 
                                                 {{-- Vehicle No --}}
                                                 <div class="col-md-4">
@@ -130,10 +129,10 @@
                                                 </div>
                                             </div>
 
+
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('category.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                <a href="{{ route('delivery-agents.index') }}" class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
