@@ -49,43 +49,43 @@
                             <td>{{ $driverVehicle->vehicle_type ?? '-' }}</td>
                             <td>{{ $driverVehicle->license_no ?? '-' }}</td>
 
-                             {{-- Active Status --}}
+                            {{-- Active Status --}}
                             <td>
-    @if(($driverVehicle->active ?? 0) == 1)
-        <span class="btn btn-success btn-sm">
-            Yes 
-        </span>
-    @else
-        <span class="btn btn-danger btn-sm">
-            No 
-        </span>
-    @endif
-</td>
+                                @if(($driverVehicle->active ?? 0) == 1)
+                                <span class="btn btn-success btn-sm">
+                                    Yes
+                                </span>
+                                @else
+                                <span class="btn btn-danger btn-sm">
+                                    No
+                                </span>
+                                @endif
+                            </td>
+                            
+                            <td class="text-center">
+                                <x-action-buttons
+                                    :view-url="route('delivery-agents.show', $driverVehicle->id)"
+                                    :edit-url="route('delivery-agents.edit', $driverVehicle->id)"
+                                    :delete-url="route('delivery-agents.destroy', $driverVehicle->id)" />
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No delivery agents found</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <td class="text-center">
-                <x-action-buttons
-                    :view-url="route('delivery-agents.show', $driverVehicle->id)"
-                    :edit-url="route('delivery-agents.edit', $driverVehicle->id)"
-                    :delete-url="route('delivery-agents.destroy', $driverVehicle->id)" />
-            </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="5" class="text-center text-muted">No delivery agents found</td>
-            </tr>
-            @endforelse
-            </tbody>
-            </table>
+
+            <!-- Pagination -->
+            <div class="px-3 py-2">
+
+            </div>
+
         </div>
-
-
-        <!-- Pagination -->
-        <div class="px-3 py-2">
-
-        </div>
-
     </div>
-</div>
 
 </div>
 @endsection

@@ -161,18 +161,26 @@ Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
 Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
-    ->name('roles.edit');
+->name('roles.edit');
 
-Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
+Route::put('/roles/update/{id}',[RoleController::class, 'update'])->name('roles.update');
+
+Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
+    
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+  //  ->name('roles.edit');
+    
+Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
+    ->name('roles.destroy');
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List
 Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
     ->name('deliveries.index');
-
+    
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -239,3 +247,5 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
 });
+
+
