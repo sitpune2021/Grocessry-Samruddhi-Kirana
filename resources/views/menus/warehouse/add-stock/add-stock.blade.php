@@ -8,14 +8,10 @@
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
                 @include('layouts.sidebar')
             </aside>
-            <!-- / Menu -->
 
-            <!-- Layout container -->
             <div class="layout-page">
-                <!-- Navbar -->
 
                 @include('layouts.navbar')
-                <!-- / Navbar -->
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
@@ -54,15 +50,15 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse <span
                                                                 class="text-danger">*</span></label>
-                                                        <select name="warehouse_id"
-                                                            class="form-select "
+                                                        <select name="warehouse_id" class="form-select "
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">Select Warehouse</option>
 
                                                             @foreach ($warehouses as $warehouse)
                                                                 <option value="{{ $warehouse->id }}"
-                                                                    {{ old('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                                                                    {{ old('warehouse_id', $warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+
                                                                     {{ $warehouse->name }}
                                                                 </option>
                                                             @endforeach
@@ -80,15 +76,14 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Category <span class="text-danger">
                                                                 *</span></label>
-                                                        <select name="category_id" id="category_id"
-                                                            class="form-select "
+                                                        <select name="category_id" id="category_id" class="form-select "
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">Select Category</option>
 
                                                             @foreach ($categories as $category)
                                                                 <option value="{{ $category->id }}"
-                                                                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                                                    {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
                                                                     {{ $category->name }}
                                                                 </option>
                                                             @endforeach
@@ -106,11 +101,17 @@
                                                         <label for="product_id">Product <span
                                                                 class="text-danger">*</span></label>
 
-                                                        <select name="product_id" id="product_id"
-                                                            class="form-select "
+                                                        <select name="product_id" id="product_id" class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">-- Select Product --</option>
+
+                                                            @foreach ($products as $product)
+                                                                <option value="{{ $product->id }}"
+                                                                    {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                                    {{ $product->name }}
+                                                                </option>
+                                                            @endforeach
 
                                                         </select>
 
@@ -183,13 +184,10 @@
                     <!-- / Content -->
                     @include('layouts.footer')
                 </div>
-                <!-- Content wrapper -->
             </div>
-            <!-- / Layout page -->
         </div>
 
     </div>
-    <!-- / Layout wrapper -->
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 

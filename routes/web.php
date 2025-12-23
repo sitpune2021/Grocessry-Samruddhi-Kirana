@@ -17,6 +17,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RetailerController;
 use App\Http\Controllers\RetailerPricingController;
 use App\Http\Controllers\RetailerOrderController;
+use App\Http\Controllers\stockWarehouseController;
 
 
 
@@ -51,17 +52,17 @@ Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
 
-Route::get('/index-warehouse', [MasterWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
-Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
-Route::post('/add-stock-warehouse', [MasterWarehouseController::class, 'addStock'])->name('warehouse.addStock');
-Route::get('/view-stock-warehouse/{id}', [MasterWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
-Route::get('/edit-stock-warehouse/{id}', [MasterWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
-Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock'])
+Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
+Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
+Route::post('/add-stock-warehouse', [stockWarehouseController::class, 'addStock'])->name('warehouse.addStock');
+Route::get('/view-stock-warehouse/{id}', [stockWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
+Route::get('/edit-stock-warehouse/{id}', [stockWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
+Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'])
     ->name('stock.update');
-Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
+Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
-Route::get('/get-categories-by-warehouse/{warehouse}', [MasterWarehouseController::class, 'getCategories']);
+Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
 
 
 
@@ -140,7 +141,7 @@ Route::get(
     [WarehouseTransferController::class, 'getCategoriesByWarehouse']
 )->name('warehouse.categories');
 
-    
+
 
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
@@ -156,7 +157,7 @@ Route::get('/roles-show/{id}', [RoleController::class, 'show'])
 
 Route::get('/roles/{id}', [RoleController::class, 'edit'])
     ->name('roles.edit');
-    
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
@@ -165,7 +166,7 @@ Route::resource('/delivery-agents', DeliveryAgentController::class);
 // Deliveries List
 Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
     ->name('deliveries.index');
-    
+
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -202,9 +203,10 @@ Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () 
     Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
         ->name('bulk.upload');
 
-    Route::get('/get-products-by-category/{category}',
-        [RetailerPricingController::class, 'getProductsByCategory']);
-
+    Route::get(
+        '/get-products-by-category/{category}',
+        [RetailerPricingController::class, 'getProductsByCategory']
+    );
 });
 
 Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
@@ -216,7 +218,8 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
     Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
 
     // 🔥 Auto price fetch
-    Route::get('/get-retailer-price/{retailer}/{product}',
+    Route::get(
+        '/get-retailer-price/{retailer}/{product}',
         [RetailerOrderController::class, 'getRetailerPrice']
     )->name('get.price');
 
@@ -229,7 +232,4 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         '/get-products-by-retailer/{retailer}/{category}',
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
-
 });
-
-
