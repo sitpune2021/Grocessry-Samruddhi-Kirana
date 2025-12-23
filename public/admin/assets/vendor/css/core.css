@@ -11203,9 +11203,9 @@ li:not(:first-child) .dropdown-item, .dropdown-menu .dropdown-item:not(:first-ch
   display: table-cell !important;
 }
 
-.d-flex {
+/* .d-flex {
   display: flex !important;
-}
+} */
 
 .d-inline-flex {
   display: inline-flex !important;

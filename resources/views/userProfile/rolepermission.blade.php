@@ -76,9 +76,7 @@
                                     'Product','Batches','Warehouse','AddStock','Sale',
                                     'Warehousetransfer'
                                     ] as $module)
-
-
-
+                                    
                                     <tr>
                                         <td>{{ $module }}</td>
 
@@ -93,6 +91,7 @@
                                                     class="perm large-checkbox"
                                                     name="permissions[Dashboard][]"
                                                     value="view_{{ strtolower($card) }}">
+                                            <label class="me-4 ms-2">
                                                 View {{ $card }}
                                             </label>
                                             @endforeach

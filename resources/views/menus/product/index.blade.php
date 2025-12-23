@@ -82,7 +82,7 @@
 
 
                             {{-- Actions --}}
-                            <td>
+                            <td style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('product.show', $product->id)"
                                     :edit-url="route('product.edit', $product->id)"

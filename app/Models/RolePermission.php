@@ -18,4 +18,6 @@ class RolePermission extends Model
     protected $casts = [
         'permissions' => 'array'
     ];
+
+    
 }

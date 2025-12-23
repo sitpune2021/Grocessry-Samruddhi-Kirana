@@ -18,20 +18,25 @@
   letter-spacing: -0.5px;
 }
 
-/* login
- ******************************************************/
+/* Login Card */
 .login-card {
     width: 100%;
-    max-width: 500px;
+    max-width: 420px;        
+    min-height: auto;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    margin: auto;
+    padding: 0;
 }
 
+
+/* Logo */
 .login-logo {
-    max-width: 500px;
+    max-width: 350px;
     width: 100%;
     height: auto;
 }
+
 
 /* ! For .layout-navbar-fixed added fix padding top to .layout-page */
 /* Detached navbar */
@@ -250,7 +255,7 @@
 }
 
 
-.action-btn {
+ .action-btn {
   width: 30px;
   height: 30px;
   padding: 0;
@@ -262,16 +267,40 @@
 
 .action-btn i {
   font-size: 13px;
-}
+} 
 
 .action-btn:hover {
   transform: scale(1.05);
   transition: all 0.2s ease-in-out;
-}
+} 
 
 .large-checkbox{
     transform: scale(1.5);
     accent-color: #198754; /* success green */
 }
+/* expiry alert */
+.expiry-toast-container {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 1100; /* above navbar */
+    width: 360px;
+    max-width: 95%;
+}
 
+.expiry-toast-container .alert {
+    border-left: 5px solid #dc3545;
+    animation: slideInRight 0.4s ease;
+}
 
+/* Smooth entry animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

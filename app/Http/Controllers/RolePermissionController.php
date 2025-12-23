@@ -56,6 +56,7 @@ class RolePermissionController extends Controller
 
     public function getRolePermissions($role_id)
     {
+       
         $rolePermission = RolePermission::where('role_id', $role_id)
             ->where('admin_id', Auth::id())
             ->first();
