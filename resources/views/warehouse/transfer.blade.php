@@ -383,7 +383,7 @@ document.getElementById('from_warehouse_id').addEventListener('change', function
 
     if (!warehouseId) return;
 
-    fetch(`/get-categories-by-warehouse/${warehouseId}`)
+    fetch(`/ajax/warehouse/${warehouseId}/categories`)
         .then(res => res.json())
         .then(data => {
             categorySelect.innerHTML = '<option value="">Select Category</option>';

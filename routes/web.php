@@ -132,13 +132,20 @@ Route::get(
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
-Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
-    ->name('transfer.show');
 
 Route::get(
-    '/get-categories-by-warehouse/{warehouse_id}',
+    '/ajax/warehouse/{warehouse_id}/categories',
     [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-)->name('warehouse.categories');
+)->name('ajax.warehouse.categories');
+
+
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
+
+
+
 
     
 
