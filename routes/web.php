@@ -18,6 +18,7 @@ use App\Http\Controllers\RetailerController;
 use App\Http\Controllers\RetailerPricingController;
 use App\Http\Controllers\RetailerOrderController;
 use App\Http\Controllers\stockWarehouseController;
+use App\Http\Controllers\FIFOHistoryController;
 
 
 
@@ -91,11 +92,15 @@ Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
     ->name('batches.show');
 
 
+Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
+// Route::post('/sale/{id}', [StockController::class, 'show'])->name('sale.show');
+// Route::post('/sale/{id}', [StockController::class, 'update'])->name('sale.edit');
+// Route::post('/sale/{id}', [StockController::class, 'destroy'])->name('sale.destroy');
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
@@ -156,12 +161,12 @@ Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
 Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
-->name('roles.edit');
+    ->name('roles.edit');
 
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
-    
+
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List

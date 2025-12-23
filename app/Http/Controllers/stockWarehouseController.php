@@ -22,10 +22,11 @@ class stockWarehouseController extends Controller
             'category:id,name',
             'product:id,name',
             'batch:id,batch_no'
-        ])->paginate(10);
+        ])->orderBy('id', 'desc')->paginate(10);
 
         return view('menus.warehouse.add-stock.index', compact('stocks'));
     }
+
 
     // add stock in warehouse
     public function addStockForm()
@@ -33,9 +34,11 @@ class stockWarehouseController extends Controller
         $mode = 'add';
         $warehouses = Warehouse::all();
         $categories = Category::all();
+        $products = Product::all(); // ✅ ADD THIS
+
         $product_batches = ProductBatch::all();
 
-        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'warehouses', 'categories', 'product_batches'));
+        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'warehouses', 'categories', 'product_batches', 'products'));
     }
 
     public function addStock(Request $request)

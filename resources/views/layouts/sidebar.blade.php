@@ -71,6 +71,8 @@
                 <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
                 <li><a href="{{ route('index.addStock.warehouse') }}">Add Stock</a></li>
                 <li><a href="{{ route('sale.create') }}">FIFO Management</a></li>
+                <li><a href="{{ route('sell.index') }}">FIFO History</a></li>
+
                 <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
             </ul>
         </li>

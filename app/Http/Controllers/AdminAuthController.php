@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminAuthController extends Controller
 {
-    public function index()
-    {
-        $users = User::with('role')->paginate(10);
-        $warehouses = Warehouse::all();
-        return view('userProfile.index', compact('users', 'warehouses'));
-    }
+   public function index()
+{
+    $users = User::with('role')->orderBy('id', 'desc')->paginate(10);
+    $warehouses = Warehouse::all();
+    return view('userProfile.index', compact('users', 'warehouses'));
+}
+
     public function createUser()
     {
         $mode = 'add';

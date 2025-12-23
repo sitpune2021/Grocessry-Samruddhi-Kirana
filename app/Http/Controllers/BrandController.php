@@ -14,9 +14,10 @@ class BrandController extends Controller
      */
     public function index()
     {
-        $brands = Brand::latest()->paginate(10);
+        $brands = Brand::orderBy('created_at', 'desc')->paginate(10);
         return view('menus.brands.index', compact('brands'));
     }
+
 
     /**
      * Show the form for creating a new resource.

@@ -25,7 +25,6 @@ class StockController extends Controller
         $categories = Category::all();
         $products = Product::all();
 
-        // Default selected product
         $selectedProduct = null;
         $availableStock = 0;
 
@@ -36,13 +35,6 @@ class StockController extends Controller
             'selectedProduct',
             'availableStock'
         ));
-    }
-
-    // AJAX function to return products by category
-    public function getProductsByCategory($categoryId)
-    {
-        $products = Product::where('category_id', $categoryId)->get();
-        return response()->json($products);
     }
 
     public function store(Request $request)
@@ -63,10 +55,20 @@ class StockController extends Controller
                 ->where('product_id', $productId)
                 ->sum('quantity');
 
+            // // 2️⃣ Check if requested quantity exceeds available warehouse stock
+            // if ($qty > $totalWarehouseStock) {
+            //     return back()->with('error', "Insufficient stock! Only {$totalWarehouseStock} available in selected warehouse.");
+            // }
+
             // 2️⃣ Check if requested quantity exceeds available warehouse stock
             if ($qty > $totalWarehouseStock) {
-                return back()->with('error', "Insufficient stock! Only {$totalWarehouseStock} available in selected warehouse.");
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'warehouse_id' => "Insufficient stock! Only {$totalWarehouseStock} available in selected warehouse."
+                    ]);
             }
+
 
             // Fetch batches for this warehouse & product (FIFO)
             $batches = WarehouseStock::with('batch')
@@ -113,11 +115,18 @@ class StockController extends Controller
             DB::commit();
             Log::info('Sale completed successfully');
 
-            return back()->with('success', 'Sale completed successfully');
+            return redirect()->route('sell.index')
+                ->with('success', 'Sale completed successfully');
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Sale error', ['error' => $e->getMessage()]);
             return back()->with('error', 'Something went wrong during sale');
         }
+    }
+
+    public function getProductsByCategory($categoryId)
+    {
+        $products = Product::where('category_id', $categoryId)->get();
+        return response()->json($products);
     }
 }

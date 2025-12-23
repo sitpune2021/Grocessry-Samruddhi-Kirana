@@ -50,7 +50,7 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse <span
                                                                 class="text-danger">*</span></label>
-                                                        <select name="warehouse_id" class="form-select "
+                                                        <select  id= "warehouse_id" name="warehouse_id" class="form-select "
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">Select Warehouse</option>
