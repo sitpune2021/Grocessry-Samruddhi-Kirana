@@ -1,36 +1,122 @@
-<form method="POST" action="{{ route('retailer-orders.store') }}">
-    @csrf
+@include('layouts.header')
 
-    <!-- Retailer -->
-    <select id="retailer_id" name="retailer_id" required>
-        <option value="">Select Retailer</option>
-        @foreach($retailers as $retailer)
-            <option value="{{ $retailer->id }}">{{ $retailer->name }}</option>
-        @endforeach
-    </select>
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                @include('layouts.sidebar')
+            </aside>
+            <!-- / Menu -->
 
-    <!-- Category -->
-    <select id="category_id" required></select>
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
 
-    <!-- Product -->
-    <select id="product_id" required></select>
+                @include('layouts.navbar')
+                <!-- / Navbar -->
 
-    <!-- Locked Price -->
-    <input type="number" id="price" readonly placeholder="Price">
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="row justify-content-center">
+                            <div class="col-12">
+                                <div class="card shadow-sm border-0 rounded-3">
+                                    <h2 class="text-xl font-semibold mb-4">
+                                        Retailer Order Pricing
+                                    </h2>
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <form method="POST" action="{{ route('retailer-orders.store') }}">
+                                            @csrf
 
-    <!-- Quantity -->
-    <input type="number" id="quantity" placeholder="Qty" min="1" required>
+                                            <div class="row">
+                                                <!-- Retailer -->
+                                                <div class="col-12 col-md-6 mb-3">
+                                                    <label class="form-label">Retailer</label>
+                                                    <select id="retailer_id" name="retailer_id" class="form-select" required>
+                                                        <option value="">Select Retailer</option>
+                                                        @foreach($retailers as $retailer)
+                                                            <option value="{{ $retailer->id }}">{{ $retailer->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
 
-    <!-- 🔒 Hidden fields (actual submit data) -->
-    <input type="hidden" name="items[0][category_id]" id="h_category">
-    <input type="hidden" name="items[0][product_id]" id="h_product">
-    <input type="hidden" name="items[0][price]" id="h_price">
-    <input type="hidden" name="items[0][quantity]" id="h_quantity">
+                                                <!-- Category -->
+                                                <div class="col-12 col-md-6 mb-3">
+                                                    <label class="form-label">Category</label>
+                                                    <select id="category_id" class="form-select" required>
+                                                        <option value="">Select Category</option>
+                                                    </select>
+                                                </div>
+                                            </div>
 
-    <button type="submit">
-        Place Order
-    </button>
-</form>
+                                            <div class="row">
+                                                <!-- Product -->
+                                                <div class="col-12 col-md-6 mb-3">
+                                                    <label class="form-label">Product</label>
+                                                    <select id="product_id" class="form-select" required>
+                                                        <option value="">Select Product</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Locked Price -->
+                                                <div class="col-12 col-md-6 mb-3">
+                                                    <label class="form-label">Price</label>
+                                                    <input type="number"
+                                                        id="price"
+                                                        class="form-control"
+                                                        readonly
+                                                        placeholder="Price">
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <!-- Quantity -->
+                                                <div class="col-12 col-md-6 mb-3">
+                                                    <label class="form-label">Quantity</label>
+                                                    <input type="number"
+                                                        id="quantity"
+                                                        class="form-control"
+                                                        placeholder="Qty"
+                                                        min="1"
+                                                        required>
+                                                </div>
+                                            </div>
+
+                                            <!-- 🔒 Hidden fields -->
+                                            <input type="hidden" name="items[0][category_id]" id="h_category">
+                                            <input type="hidden" name="items[0][product_id]" id="h_product">
+                                            <input type="hidden" name="items[0][price]" id="h_price">
+                                            <input type="hidden" name="items[0][quantity]" id="h_quantity">
+
+                                            <!-- Submit -->
+                                            <div class="mt-4 d-flex justify-content-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    Place Order
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- / Content -->
+                    @include('layouts.footer')
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+    </div>
+    <!-- / Layout wrapper -->
+</body>
+
 
 <script>
 document.querySelector('form').addEventListener('submit', function () {

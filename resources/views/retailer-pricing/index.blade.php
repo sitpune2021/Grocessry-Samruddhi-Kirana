@@ -10,7 +10,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Retailer profile</h5>
+                    <h5 class="card-title">Retailer pricing</h5>
                 </div>
                 <div class="col-md-auto ms-auto mt-5">
                     <a href="{{ route('retailer-pricing.create') }}" class="btn btn-primary">
