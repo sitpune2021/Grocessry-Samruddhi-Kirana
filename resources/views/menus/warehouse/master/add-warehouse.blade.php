@@ -48,17 +48,21 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse Name <span
-                                                                class="mandatory">*</span></label>
+                                                                class="text-danger">*</span></label>
                                                         <input type="text" name="name" class="form-control"
                                                             value="{{ old('name', $warehouse->name ?? '') }}"
                                                             placeholder="Warehouse Name"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                        @error('name')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
                                                 {{-- Warehouse Type --}}
                                                 <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Warehouse Type *</label>
+                                                    <label class="form-label">Warehouse Type <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Type</option>
@@ -72,11 +76,15 @@
                                                             {{ ($warehouse->type ?? '') == 'taluka' ? 'selected' : '' }}>
                                                             Taluka</option>
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Parent Warehouse --}}
                                                 <div class="col-md-4 mb-3" id="parentDiv">
-                                                    <label class="form-label">Parent Warehouse</label>
+                                                    <label class="form-label">Parent Warehouse <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="parent_id" id="parent_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
@@ -88,11 +96,15 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- District --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">District</label>
+                                                    <label class="form-label">District <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
@@ -103,11 +115,15 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Taluka</label>
+                                                    <label class="form-label">Taluka <span
+                                                            class="text-danger">*</span></label>
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->taluka))
@@ -118,18 +134,23 @@
                                                             <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
                                                     <label class="form-label">Address</label>
-                                                    <textarea name="address" class="form-control" rows="2" {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
+                                                    <textarea name="address" class="form-control" placeholder="address" rows="2"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
                                                 </div>
 
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Contact Person</label>
                                                     <input type="text" name="contact_person" class="form-control"
+                                                        placeholder="contact person"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 </div>
@@ -137,12 +158,17 @@
                                                 {{-- Mobile --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Mobile</label>
+                                                        <label class="form-label">Mobile <span
+                                                                class="text-danger">*</span></label>
                                                         <input type="text" name="contact_number" class="form-control"
                                                             maxlength="10"
                                                             value="{{ $warehouse->contact_number ?? '' }}"
                                                             placeholder="Mobile"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
+
+                                                        @error('contact_number')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
@@ -199,92 +225,92 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <script>
-document.addEventListener('DOMContentLoaded', function () {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    const typeSelect = document.getElementById('warehouseType');
-    const parentDiv = document.getElementById('parentDiv');
-    const parentSelect = document.getElementById('parent_id');
-    const districtSelect = document.getElementById('district_id');
-    const talukaSelect = document.getElementById('taluka_id');
+            const typeSelect = document.getElementById('warehouseType');
+            const parentDiv = document.getElementById('parentDiv');
+            const parentSelect = document.getElementById('parent_id');
+            const districtSelect = document.getElementById('district_id');
+            const talukaSelect = document.getElementById('taluka_id');
 
-    /* ===============================
-       Parent Warehouse logic
-    =============================== */
-    function toggleParent() {
-        const selectedType = typeSelect.value;
+            /* ===============================
+               Parent Warehouse logic
+            =============================== */
+            function toggleParent() {
+                const selectedType = typeSelect.value;
 
-        if (selectedType === 'master') {
-            parentDiv.style.display = 'none';
-        } else {
-            parentDiv.style.display = 'block';
-            filterParentOptions(selectedType);
-        }
-    }
-
-    function filterParentOptions(selectedType) {
-        const options = parentSelect.querySelectorAll('option');
-        const currentValue = parentSelect.value;
-
-        options.forEach(opt => {
-            const type = opt.getAttribute('data-type');
-
-            if (selectedType === 'district') {
-                opt.style.display =
-                    (type === 'master' || opt.value === '') ? 'block' : 'none';
-            } else if (selectedType === 'taluka') {
-                opt.style.display =
-                    (type === 'district' || opt.value === '') ? 'block' : 'none';
-            } else {
-                opt.style.display = 'block';
+                if (selectedType === 'master') {
+                    parentDiv.style.display = 'none';
+                } else {
+                    parentDiv.style.display = 'block';
+                    filterParentOptions(selectedType);
+                }
             }
-        });
 
-        // reset only if invalid
-        if (![...options].some(o => o.value === currentValue && o.style.display !== 'none')) {
-            parentSelect.value = '';
-        }
-    }
+            function filterParentOptions(selectedType) {
+                const options = parentSelect.querySelectorAll('option');
+                const currentValue = parentSelect.value;
 
-    typeSelect.addEventListener('change', toggleParent);
-    toggleParent(); // page load
+                options.forEach(opt => {
+                    const type = opt.getAttribute('data-type');
+
+                    if (selectedType === 'district') {
+                        opt.style.display =
+                            (type === 'master' || opt.value === '') ? 'block' : 'none';
+                    } else if (selectedType === 'taluka') {
+                        opt.style.display =
+                            (type === 'district' || opt.value === '') ? 'block' : 'none';
+                    } else {
+                        opt.style.display = 'block';
+                    }
+                });
+
+                // reset only if invalid
+                if (![...options].some(o => o.value === currentValue && o.style.display !== 'none')) {
+                    parentSelect.value = '';
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleParent);
+            toggleParent(); // page load
 
 
-    /* ===============================
-       Taluka dynamic loading
-    =============================== */
-    function loadTalukas(districtId, selectedTalukaId = null) {
-        if (!districtId) {
-            talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
-            return;
-        }
+            /* ===============================
+               Taluka dynamic loading
+            =============================== */
+            function loadTalukas(districtId, selectedTalukaId = null) {
+                if (!districtId) {
+                    talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+                    return;
+                }
 
-        fetch(`/get-talukas/${districtId}`)
-            .then(res => res.json())
-            .then(data => {
-                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+                fetch(`/get-talukas/${districtId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
 
-                data.forEach(t => {
-                    talukaSelect.innerHTML += `
+                        data.forEach(t => {
+                            talukaSelect.innerHTML += `
                         <option value="${t.id}" ${t.id == selectedTalukaId ? 'selected' : ''}>
                             ${t.name}
                         </option>`;
-                });
+                        });
+                    });
+            }
+
+            // District change
+            districtSelect.addEventListener('change', function() {
+                loadTalukas(this.value);
             });
-    }
 
-    // District change
-    districtSelect.addEventListener('change', function () {
-        loadTalukas(this.value);
-    });
+            // ✅ AUTO LOAD ON EDIT PAGE
+            @if (isset($warehouse) && $warehouse->district_id)
+                loadTalukas(
+                    {{ $warehouse->district_id }},
+                    {{ $warehouse->taluka_id ?? 'null' }}
+                );
+            @endif
 
-    // ✅ AUTO LOAD ON EDIT PAGE
-    @if (isset($warehouse) && $warehouse->district_id)
-        loadTalukas(
-            {{ $warehouse->district_id }},
-            {{ $warehouse->taluka_id ?? 'null' }}
-        );
-    @endif
-
-});
-</script>
+        });
+    </script>

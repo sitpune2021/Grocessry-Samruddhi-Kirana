@@ -39,42 +39,54 @@
 
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-4">
-                                                    <label for="warehouse_id" class="form-label">Warehouse</label>
+                                                    <label for="warehouse_id" class="form-label">Warehouse <span
+                                                                class="text-danger">*</span></label>
                                                     <select name="warehouse_id" id="warehouse_id" class="form-select">
                                                         <option value="">Select Warehouse</option>
-                                                        @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                                        @foreach ($warehouses as $w)
+                                                            <option value="{{ $w->id }}">{{ $w->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('warehouse_id')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
 
 
 
                                                 <div class="col-md-4">
-                                                    <label for="category_id" class="form-label">Category</label>
+                                                    <label for="category_id" class="form-label">Category <span
+                                                                class="text-danger">*</span></label>
                                                     <select name="category_id" id="category_id" class="form-select">
                                                         <option value="">Select Category</option>
-                                                        @foreach($categories as $category)
-                                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                        @foreach ($categories as $category)
+                                                            <option value="{{ $category->id }}">{{ $category->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('warehouse_id')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
 
 
                                                 <!-- Product Dropdown -->
 
                                                 <div class="col-md-4">
-                                                    <label for="product_id" class="form-label">Product Name</label>
-                                                    <select name="product_id" id="product_id" class="form-select @error('product_id') is-invalid @enderror">
+                                                    <label for="product_id" class="form-label">Product Name <span
+                                                                class="text-danger">*</span></label>
+                                                    <select name="product_id" id="product_id" class="form-select ">
                                                         <option value="">Select Product</option>
-                                                        @foreach($products as $product)
-                                                        <option value="{{ $product->id }}" {{ ($selectedProduct == $product->id) ? 'selected' : '' }}>
-                                                            {{ $product->name }}
-                                                        </option>
+                                                        @foreach ($products as $product)
+                                                            <option value="{{ $product->id }}"
+                                                                {{ $selectedProduct == $product->id ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                     @error('product_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
@@ -82,16 +94,14 @@
 
 
                                                 <div class="col-md-4">
-                                                    <label for="quantity" class="form-label">Product Quantity</label>
-                                                    <input type="number"
-                                                        name="quantity"
-                                                        id="quantity"
-                                                        min="1"
+                                                    <label for="quantity" class="form-label">Product Quantity <span
+                                                                class="text-danger">*</span></label>
+                                                    <input type="number" name="quantity" id="quantity" min="1"
                                                         max="{{ $availableStock }}"
                                                         class="form-control @error('quantity') is-invalid @enderror"
                                                         placeholder="Max available: {{ $availableStock }}">
-                                                    @error('quantity')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                      @error('quantity')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                     <small id="stock-info" class="text-muted">
                                                         Max available in selected warehouse: {{ $availableStock }}
@@ -101,7 +111,8 @@
 
 
                                             <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('batches.index') }}"
+                                                    class="btn btn-outline-secondary">
                                                     Back
                                                 </a>
                                                 <button type="submit" class="btn btn-primary">

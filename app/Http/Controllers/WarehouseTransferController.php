@@ -17,22 +17,22 @@ use App\Models\Category;
 
 class WarehouseTransferController extends Controller
 {
-    
+
 
     public function index()
     {
         // Eager load related models for display
         $transfers = WarehouseTransfer::with([
-            'fromWarehouse', 
-            'toWarehouse', 
-            'category', 
-            'product', 
+            'fromWarehouse',
+            'toWarehouse',
+            'category',
+            'product',
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
         return view('warehouse.index', compact('transfers'));
     }
- 
+
     public function create()
     {
         return view('warehouse.transfer', [
@@ -42,7 +42,7 @@ class WarehouseTransferController extends Controller
             'transfer'   => null, // important
         ]);
     }
-    
+
     public function getProductsByCategory($category_id)
     {
         return Product::where('category_id', $category_id)->get();
@@ -93,7 +93,7 @@ class WarehouseTransferController extends Controller
                     [
                         'category_id' => $item['category_id'],
                         'product_id'  => $item['product_id'],
-                        'quantity'    => DB::raw('quantity + '.$item['quantity']),
+                        'quantity'    => DB::raw('quantity + ' . $item['quantity']),
                     ]
                 );
 
@@ -203,7 +203,7 @@ class WarehouseTransferController extends Controller
 
     // }
 
-   
+
     public function getWarehouseStock($warehouse_id, $batch_id)
     {
         $stock = WarehouseStock::where([
@@ -223,9 +223,9 @@ class WarehouseTransferController extends Controller
 
         $categories = Category::whereIn('id', function ($q) use ($transfer) {
             $q->select('category_id')
-            ->from('warehouse_stock')
-            ->where('warehouse_id', $transfer->from_warehouse_id)
-            ->where('quantity', '>', 0);
+                ->from('warehouse_stock')
+                ->where('warehouse_id', $transfer->from_warehouse_id)
+                ->where('quantity', '>', 0);
         })->get();
 
         $products = Product::where('category_id', $transfer->category_id)->get();
@@ -310,7 +310,7 @@ class WarehouseTransferController extends Controller
                 [
                     'category_id' => $validated['category_id'],
                     'product_id'  => $validated['product_id'],
-                    'quantity'    => DB::raw('quantity + '.$validated['quantity']),
+                    'quantity'    => DB::raw('quantity + ' . $validated['quantity']),
                 ]
             );
 
@@ -331,7 +331,7 @@ class WarehouseTransferController extends Controller
                 'old' => [
                     'from' => $oldFromWarehouse,
                     'to'   => $oldToWarehouse,
-                    'batch'=> $oldBatchId,
+                    'batch' => $oldBatchId,
                     'qty'  => $oldQty,
                 ],
                 'new' => $validated,
@@ -407,6 +407,4 @@ class WarehouseTransferController extends Controller
 
         return response()->json($categories);
     }
-    
-
 }
