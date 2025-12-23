@@ -1,14 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\RolePermission;
 if (!function_exists('hasPermission')) {
     function hasPermission($module, $action = null)
     {
         $user = Auth::user();
         if (!$user) return false;
 
-        $rolePermission = \App\Models\RolePermission::where('role_id', $user->role_id)
+        $rolePermission = RolePermission::where('role_id', $user->role_id)
             ->where('admin_id', $user->admin_id ?? $user->id)
             ->first();
 

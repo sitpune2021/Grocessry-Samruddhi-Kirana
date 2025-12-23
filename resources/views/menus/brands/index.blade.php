@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm p-2">
         <div class="card-datatable text-nowrap">
 
             <!-- Header -->
@@ -27,7 +27,7 @@
 
             <!-- Table -->
             <div class="table-responsive mt-5">
-                <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
+                <table id="batchTable" class="table table-bordered table-striped mb-0">
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
@@ -81,7 +81,7 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="text-center">
+                            <td class="text-center" style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('brands.show', $brand->id)"
                                     :edit-url="route('brands.edit', $brand->id)"

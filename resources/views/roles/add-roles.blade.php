@@ -14,39 +14,41 @@
                         <div class="card">
 
                             <div class="card-header">
-                                @if($mode=='add')
-                                <h4>Add Role</h4>
+                                @if ($mode == 'add')
+                                    <h4>Add Role</h4>
                                 @endif
 
-                                @if($mode=='edit')
-                                <h4>Edit Role</h4>
+                                @if ($mode == 'edit')
+                                    <h4>Edit Role</h4>
                                 @endif
 
-                                @if($mode=='show')
-                                <h4>Role</h4>
+                                @if ($mode == 'show')
+                                    <h4>Role</h4>
                                 @endif
 
                             </div>
 
                             <div class="card-body">
-                                <form action="{{ $mode == 'edit' ? route('roles.update', $role->id) : route('roles.store') }}" method="POST">
+                                <form
+                                    action="{{ $mode == 'edit' ? route('roles.update', $role->id) : route('roles.store') }}"
+                                    method="POST">
                                     @csrf
-                                    @if($mode == 'edit')
-                                    @method('PUT') <!-- Use PUT method for editing -->
+                                    @if ($mode == 'edit')
+                                        @method('PUT') <!-- Use PUT method for editing -->
                                     @endif
 
                                     <div class="d-flex gap-3">
                                         <div class="mb-3 flex-fill">
                                             <label class="form-label">
-                                                Role Name <span class="text-danger"></span>
+                                                Role Name <span class="text-danger">*</span>
                                             </label>
-
                                             <input type="text" name="name" class="form-control"
+                                                placeholder="Enter role name"
                                                 value="{{ old('name', $role->name ?? '') }}"
-                                                @if($mode=='show' ) disabled @endif>
+                                                @if ($mode == 'show') disabled @endif>
 
                                             @error('name')
-                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
 
@@ -56,19 +58,21 @@
                                             </label>
 
                                             <input type="text" name="description" class="form-control"
+                                                placeholder="Enter description"
                                                 value="{{ old('description', $role->description ?? '') }}"
-                                                @if($mode=='show' ) disabled @endif>
+                                                @if ($mode == 'show') disabled @endif>
 
                                             @error('description')
-                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
 
                                     <div class="text-end">
                                         <a href="{{ route('roles.index') }}" class="btn btn-info">Cancel</a>
-                                        @if($mode != 'show')
-                                        <button class="btn btn-primary">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
+                                        @if ($mode != 'show')
+                                            <button
+                                                class="btn btn-primary">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
                                         @endif
                                     </div>
                                 </form>

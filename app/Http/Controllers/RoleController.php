@@ -64,47 +64,34 @@ class RoleController extends Controller
             ->with('success', 'Role updated successfully.');
     }
 
-    // public function destroy($id)
-    // {
-    //     $mode = 'delete';
-    //    $role = Role::findOrFail($id); // fetch model instance
-    //     $role->delete();
+    public function destroy(string $id)
+    {
+        Log::info('Role Delete Request Received', ['role_id' => $id]);
 
-    //     return redirect()
-    //         ->route('roles.index')
-    //         ->with('success', 'Role deleted successfully.');
-    // }
-public function destroy(string $id)
-{
-    Log::info('Role Delete Request Received', ['role_id' => $id]);
+        $role = Role::find($id); // normal find for web requests
 
-    $role = Role::find($id); // normal find for web requests
+        if (!$role) {
+            Log::warning('Role Not Found for Delete', ['role_id' => $id]);
+            return redirect()->route('roles.index')
+                ->with('error', 'Role not found');
+        }
 
-    if (!$role) {
-        Log::warning('Role Not Found for Delete', ['role_id' => $id]);
-        return redirect()->route('roles.index')
-                         ->with('error', 'Role not found');
+        try {
+            // Soft Delete
+            $role->delete();
+
+            Log::info('Role Soft Deleted Successfully', ['role_id' => $id]);
+
+            return redirect()->route('roles.index')
+                ->with('success', 'Role deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Role Delete Error', [
+                'role_id' => $id,
+                'error'   => $e->getMessage()
+            ]);
+
+            return redirect()->route('roles.index')
+                ->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
-
-    try {
-        // Soft Delete
-        $role->delete();
-
-        Log::info('Role Soft Deleted Successfully', ['role_id' => $id]);
-
-        return redirect()->route('roles.index')
-                         ->with('success', 'Role deleted successfully.');
-
-    } catch (\Exception $e) {
-        Log::error('Role Delete Error', [
-            'role_id' => $id,
-            'error'   => $e->getMessage()
-        ]);
-
-        return redirect()->route('roles.index')
-                         ->with('error', 'Something went wrong: ' . $e->getMessage());
-    }
-}
-
-
 }

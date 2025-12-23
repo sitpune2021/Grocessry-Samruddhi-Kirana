@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryAgentController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MasterWarehouseController;
 use App\Http\Controllers\ProductController;
@@ -13,6 +14,11 @@ use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\WarehouseTransferController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RetailerController;
+use App\Http\Controllers\RetailerPricingController;
+use App\Http\Controllers\RetailerOrderController;
+use App\Http\Controllers\stockWarehouseController;
+use App\Http\Controllers\FIFOHistoryController;
 
 
 
@@ -30,34 +36,34 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // User Profile 
-Route::get('/user-profile'                      , [AdminAuthController::class, 'index'])->name('user.profile');
-Route::get('/user-profile/create'               , [AdminAuthController::class, 'createUser'])->name('user.create');
-Route::post('/user-profile/store'               , [AdminAuthController::class, 'store'])->name('user.store');
-Route::get('/user/{id}'                         , [AdminAuthController::class, 'show'])->name('user.show');
-Route::get('/user/{id}/edit'                    , [AdminAuthController::class, 'editUser'])->name('user.edit');
-Route::put('/user/{id}'                         , [AdminAuthController::class, 'update'])->name('user.update');
-Route::delete('/user/{id}'                      , [AdminAuthController::class, 'destroy'])->name('user.destroy');
+Route::get('/user-profile', [AdminAuthController::class, 'index'])->name('user.profile');
+Route::get('/user-profile/create', [AdminAuthController::class, 'createUser'])->name('user.create');
+Route::post('/user-profile/store', [AdminAuthController::class, 'store'])->name('user.store');
+Route::get('/user/{id}', [AdminAuthController::class, 'show'])->name('user.show');
+Route::get('/user/{id}/edit', [AdminAuthController::class, 'editUser'])->name('user.edit');
+Route::put('/user/{id}', [AdminAuthController::class, 'update'])->name('user.update');
+Route::delete('/user/{id}', [AdminAuthController::class, 'destroy'])->name('user.destroy');
 
-Route::get( 'rolepermission'                    , [RolePermissionController::class, 'RolePermission'])->name('RolePermission');
-Route::post('rolepermission/store'              , [RolePermissionController::class, 'Store'])->name('Store');
-Route::get('/get-role-permissions/{id}'         , [RolePermissionController::class, 'getRolePermissions']);
+Route::get('rolepermission', [RolePermissionController::class, 'RolePermission'])->name('RolePermission');
+Route::post('rolepermission/store', [RolePermissionController::class, 'Store'])->name('Store');
+Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getRolePermissions']);
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
 
-Route::get('/index-warehouse', [MasterWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
-Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
-Route::post('/add-stock-warehouse', [MasterWarehouseController::class, 'addStock'])->name('warehouse.addStock');
-Route::get('/view-stock-warehouse/{id}', [MasterWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
-Route::get('/edit-stock-warehouse/{id}', [MasterWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
-Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock'])
+Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
+Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
+Route::post('/add-stock-warehouse', [stockWarehouseController::class, 'addStock'])->name('warehouse.addStock');
+Route::get('/view-stock-warehouse/{id}', [stockWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
+Route::get('/edit-stock-warehouse/{id}', [stockWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
+Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'])
     ->name('stock.update');
-Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
+Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
-Route::get('/get-categories-by-warehouse/{warehouse}', [MasterWarehouseController::class, 'getCategories']);
+Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
 
 
 
@@ -86,11 +92,15 @@ Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
     ->name('batches.show');
 
 
+Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
+// Route::post('/sale/{id}', [StockController::class, 'show'])->name('sale.show');
+// Route::post('/sale/{id}', [StockController::class, 'update'])->name('sale.edit');
+// Route::post('/sale/{id}', [StockController::class, 'destroy'])->name('sale.destroy');
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
@@ -103,7 +113,8 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 
 
 //Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts']);
-Route::get('/expiry-alerts', 
+Route::get(
+    '/expiry-alerts',
     [ProductBatchController::class, 'expiryAlerts']
 )->name('batches.expiry');
 
@@ -130,15 +141,23 @@ Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferC
 Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
     ->name('transfer.show');
 
+Route::get(
+    '/get-categories-by-warehouse/{warehouse_id}',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('warehouse.categories');
+
+
+
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
+
 Route::get('/roles/create', [RoleController::class, 'create'])
     ->name('roles.create');
 
 Route::post('/roles/store', [RoleController::class, 'store'])
     ->name('roles.store');
 
-Route::get('/roles/{id}', [RoleController::class, 'show'])
+Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
 Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
@@ -150,3 +169,83 @@ Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
     
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+  //  ->name('roles.edit');
+    
+Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
+    ->name('roles.destroy');
+
+Route::resource('/delivery-agents', DeliveryAgentController::class);
+
+// Deliveries List
+Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+    ->name('deliveries.index');
+    
+Route::prefix('retailers')->name('retailers.')->group(function () {
+
+    Route::get('/', [RetailerController::class, 'index'])->name('index');
+
+    // CREATE
+    Route::get('/create', [RetailerController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerController::class, 'store'])->name('store');
+
+    // EDIT / UPDATE
+    Route::get('/{retailer}/edit', [RetailerController::class, 'edit'])->name('edit');
+    Route::put('/{retailer}', [RetailerController::class, 'update'])->name('update');
+
+    // DELETE
+    Route::delete('/{retailer}', [RetailerController::class, 'delete']);
+
+    // ACTIVATE / DEACTIVATE
+    Route::patch('/{retailer}/toggle-status', [RetailerController::class, 'toggleStatus'])
+        ->name('toggle.status');
+});
+
+
+Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
+
+    Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
+
+    Route::get('/create', [RetailerPricingController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerPricingController::class, 'store'])->name('store');
+
+    Route::get('/{pricing}/edit', [RetailerPricingController::class, 'edit'])->name('edit');
+    Route::put('/{pricing}', [RetailerPricingController::class, 'update'])->name('update');
+
+    Route::delete('/{pricing}', [RetailerPricingController::class, 'destroy'])->name('delete');
+
+    Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
+        ->name('bulk.upload');
+
+    Route::get(
+        '/get-products-by-category/{category}',
+        [RetailerPricingController::class, 'getProductsByCategory']
+    );
+});
+
+Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
+
+    Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
+
+    Route::get('/create', [RetailerOrderController::class, 'create'])->name('create');
+
+    Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
+
+    // 🔥 Auto price fetch
+    Route::get(
+        '/get-retailer-price/{retailer}/{product}',
+        [RetailerOrderController::class, 'getRetailerPrice']
+    )->name('get.price');
+
+    Route::get(
+        '/get-categories-by-retailer/{retailer}',
+        [RetailerOrderController::class, 'getCategoriesByRetailer']
+    )->name('get.categories');
+
+    Route::get(
+        '/get-products-by-retailer/{retailer}/{category}',
+        [RetailerOrderController::class, 'getProductsByRetailerCategory']
+    )->name('get.products');
+});
+
+

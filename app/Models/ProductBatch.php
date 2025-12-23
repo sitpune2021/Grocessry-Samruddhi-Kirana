@@ -32,6 +32,12 @@ class ProductBatch extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function stocks()
+    {
+        return $this->hasMany(WarehouseStock::class, 'batch_id');
+    }
+
+
 }
 
 

@@ -64,4 +64,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+ 
+    public function permissions()
+    {
+        return $this->role->permissions();
+    }
+
+    public function hasPermission($permission)
+    {
+        return $this->permissions()->where('name', $permission)->exists();
+    }
 }
