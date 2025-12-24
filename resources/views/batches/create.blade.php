@@ -14,141 +14,175 @@
 
             <!-- Layout container -->
             <div class="layout-page">
-                <!-- Navbar -->
 
+                <!-- Navbar -->
                 @include('layouts.navbar')
                 <!-- / Navbar -->
 
-                <!-- Content wrapper -->
+                <!-- Content -->
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="row justify-content-center">
-                        <!-- Form card -->
                         <div class="col-12">
-                            <div class="card mb-4" style="max-width: 1200px; margin:auto;">
+
+                            <div class="card mb-4" style="max-width:1200px;margin:auto;">
                                 <h4 class="card-header">
-                                    Add Batch
+                                    @if ($mode === 'add')
+                                        Add Batch
+                                    @elseif ($mode === 'edit')
+                                        Edit Batch
+                                    @else
+                                        View Batch
+                                    @endif
                                 </h4>
+
                                 <div class="card-body">
                                     <form method="POST"
-                                        action="{{ isset($batch) ? route('batches.update', $batch->id) : route('batches.store') }}">
+                                        action="{{ $mode === 'edit' ? route('batches.update', $batch->id) : ($mode === 'add' ? route('batches.store') : '#') }}"
+                                        {{ $mode === 'view' ? 'onsubmit=return false;' : '' }}>
+
                                         @csrf
-                                        @if (isset($batch))
-                                        @method('PUT')
+                                        @if ($mode === 'edit')
+                                            @method('PUT')
                                         @endif
 
-                                        <!-- Row 1: Category & Product -->
                                         <div class="row g-3 mb-3">
+
+                                            {{-- Category --}}
                                             <div class="col-md-4">
-                                                <label for="category_id" class="form-label">Category</label>
-                                                <select name="category_id" id="category_id"
-                                                    class="form-select @error('category_id') is-invalid @enderror">
+                                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                                <select name="category_id" id="category_id" class="form-select"
+                                                    {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Category</option>
                                                     @foreach ($categories as $category)
-                                                    <option value="{{ $category->id }}"
-                                                        {{ isset($batch) && $batch->category_id == $category->id ? 'selected' : '' }}>
-                                                        {{ $category->name }}
-                                                    </option>
+                                                        <option value="{{ $category->id }}"
+                                                            {{ old('category_id', $batch->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                            {{ $category->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
+                                            {{-- Product --}}
                                             <div class="col-md-4">
-                                                <label for="product_id" class="form-label">Product</label>
-                                                <select name="product_id" id="product_id"
-                                                    class="form-select @error('product_id') is-invalid @enderror">
+                                                <label class="form-label">Product <span class="text-danger">*</span></label>
+                                                <select name="product_id" id="product_id" class="form-select"
+                                                    {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Product</option>
                                                     @if (isset($products))
-                                                    @foreach ($products as $product)
-                                                    <option value="{{ $product->id }}"
-                                                        {{ isset($batch) && $batch->product_id == $product->id ? 'selected' : '' }}>
-                                                        {{ $product->name }}
-                                                    </option>
-                                                    @endforeach
+                                                        @foreach ($products as $product)
+                                                            <option value="{{ $product->id }}"
+                                                                {{ old('product_id', $batch->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
+                                                        @endforeach
                                                     @endif
                                                 </select>
                                                 @error('product_id')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
+
+                                                {{-- View / Edit → Product Image --}}
+                                                @if (isset($batch->product->image))
+                                                    @php
+                                                        $imgUrl = asset('storage/products/' . $batch->product->image);
+                                                    @endphp
+
+                                                    @if ($mode === 'view')
+                                                        <a href="{{ $imgUrl }}" target="_blank"
+                                                            class="d-block mt-2 text-primary text-decoration-underline">
+                                                            View Product Image
+                                                        </a>
+                                                    @elseif ($mode === 'edit')
+                                                        <a href="{{ $imgUrl }}" target="_blank">
+                                                            <img src="{{ $imgUrl }}" width="80"
+                                                                class="rounded border mt-2">
+                                                        </a>
+                                                    @endif
+                                                @endif
                                             </div>
 
-
-                                            <!-- Row 2: Batch Number & Quantity -->
-
+                                            {{-- Batch Number --}}
                                             <div class="col-md-4">
-                                                <label for="batch_no" class="form-label">Batch Number</label>
+                                                <label class="form-label">Batch Number <span class="text-danger">*</span></label>
                                                 <input type="text" name="batch_no"
-                                                    value="{{ $batch->batch_no ?? '' }}"
-                                                    class="form-control @error('batch_no') is-invalid @enderror"
-                                                    placeholder="Batch Number">
+                                                    value="{{ old('batch_no', $batch->batch_no ?? '') }}"
+                                                    class="form-control" placeholder="Enter batch no"
+                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('batch_no')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
+                                            {{-- Quantity --}}
                                             <div class="col-md-4">
-                                                <label for="quantity" class="form-label">Quantity</label>
-                                                <input type="number" name="quantity"
-                                                    value="{{ $batch->quantity ?? '' }}" min="1"
-                                                    class="form-control @error('quantity') is-invalid @enderror">
+                                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                                <input type="number" name="quantity" min="1"
+                                                    value="{{ old('quantity', $batch->quantity ?? '') }}"
+                                                    class="form-control"  placeholder="Enter quantity"
+                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('quantity')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
-
-                                            <!-- Row 3: MFG & Expiry -->
-
+                                            {{-- MFG --}}
                                             <div class="col-md-4">
-                                                <label for="mfg_date" class="form-label">MFG Date</label>
+                                                <label class="form-label">MFG Date<span class="text-danger">*</span></label>
                                                 <input type="date" name="mfg_date"
-                                                    value="{{ $batch->mfg_date ?? '' }}"
-                                                    class="form-control @error('mfg_date') is-invalid @enderror">
+                                                    value="{{ old('mfg_date', $batch->mfg_date ?? '') }}"
+                                                    class="form-control"
+                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('mfg_date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
+                                            {{-- Expiry --}}
                                             <div class="col-md-4">
-                                                <label for="expiry_date" class="form-label">Expiry Date</label>
+                                                <label class="form-label">Expiry Date<span class="text-danger">*</span></label>
                                                 <input type="date" name="expiry_date"
-                                                    value="{{ $batch->expiry_date ?? '' }}"
-                                                    class="form-control @error('expiry_date') is-invalid @enderror">
+                                                    value="{{ old('expiry_date', $batch->expiry_date ?? '') }}"
+                                                    class="form-control " 
+                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('expiry_date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                         </div>
-                                        <!-- Submit -->
+
+                                        {{-- Buttons --}}
                                         <div class="d-flex justify-content-end gap-2">
                                             <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">
                                                 Back
                                             </a>
-                                            <button type="submit" class="btn btn-primary">
-                                                {{ isset($batch) ? 'Update Batch' : 'Save Batch' }}
-                                            </button>
+
+                                            @if ($mode !== 'view')
+                                                <button type="submit" class="btn btn-primary">
+                                                    {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
+                                                </button>
+                                            @endif
                                         </div>
+
                                     </form>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
+                <!-- / Content -->
 
-
-                <!-- Content wrapper -->
             </div>
-
             <!-- / Layout page -->
         </div>
-
     </div>
     <!-- / Layout wrapper -->
-</body>
 
+</body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -168,9 +202,8 @@
                     });
                     $('#product_id').html(options);
 
-                    // If edit mode, select the product
-                    @if(isset($batch))
-                    $('#product_id').val('{{ $batch->product_id }}');
+                    @if (isset($batch))
+                        $('#product_id').val('{{ $batch->product_id }}');
                     @endif
                 }
             });

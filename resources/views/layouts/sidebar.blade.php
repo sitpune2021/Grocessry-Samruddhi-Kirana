@@ -8,8 +8,7 @@
     <!-- Logo -->
     <div class="sidebar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}"
-                alt="Samruddhi Kirana">
+            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}" alt="Samruddhi Kirana">
         </a>
     </div>
 
@@ -24,11 +23,9 @@
 
         <li class="menu-header">Management</li>
 
-        {{-- @if(hasPermission('Roles', 'view')) --}}
+        {{-- @if (hasPermission('Roles', 'view')) --}}
         <li class="menu-item">
-            <a href="{{ route('roles.index') }}" class="menu-link text-white">
-                <span><i class="bx bx-store me-2"></i> Role</span>
-            </a>
+         
         </li>
         {{-- @endif --}}
 
@@ -39,6 +36,9 @@
             </div>
 
             <ul class="submenu" id="roleMenu">
+                
+                <li><a href="{{ route('roles.index') }}">Role</a></li>
+
                 <li><a href="{{ route('user.profile') }}">Users</a></li>
 
                 <li><a href="{{ route('RolePermission') }}">Role & Permission</a></li>

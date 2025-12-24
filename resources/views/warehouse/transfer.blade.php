@@ -46,7 +46,7 @@
                                         <!-- Row 1: FROM & TO -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="from_warehouse_id" class="form-label">From Warehouse</label>
+                                                <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
                                                 <select name="from_warehouse_id" id="from_warehouse_id" class="form-select @error('from_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
@@ -57,12 +57,12 @@
                                                     @endforeach
                                                 </select>
                                                 @error('from_warehouse_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="to_warehouse_id" class="form-label">To Warehouse</label>
+                                                <label for="to_warehouse_id" class="form-label">To Warehouse <span class="text-danger">*</span></label>
                                                 <select name="to_warehouse_id" id="to_warehouse_id" class="form-select @error('to_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
@@ -72,15 +72,15 @@
                                                     @endforeach
                                                 </select>
                                                 @error('to_warehouse_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                             </div>
                                         </div>
 
                                         <!-- Row 2: CATEGORY & PRODUCT -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="category_id" class="form-label">Category</label>
+                                                <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
                                                 <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror">
                                                     <option value="">Select Category</option>
                                                     @foreach($categories as $c)
@@ -91,12 +91,12 @@
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="product_id" class="form-label">Product</label>
+                                                <label for="product_id" class="form-label">Product <span class="text-danger">*</span></label>
                                                 <select name="product_id" id="product_id" class="form-select">
                                                     <option value="">Select Product</option>
 
@@ -110,16 +110,16 @@
                                                     @endif
                                                 </select>
 
-                                                @error('product_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                               @error('product_id')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                             </div>
                                         </div>
 
                                         <!-- Row 3: BATCH & QTY -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="batch_id" class="form-label">Batch</label>
+                                                <label for="batch_id" class="form-label">Batch <span class="text-danger">*</span></label>
                                                 <select name="batch_id" id="batch_id" class="form-select">
                                                     <option value="">Select Batch</option>
 
@@ -133,19 +133,19 @@
                                                     @endif
                                                 </select>
 
-                                                @error('batch_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                              @error('batch_id')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="quantity" class="form-label">Quantity</label>
+                                                <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
                                                 <input type="number"
                                                 name="quantity"
                                                 id="quantity"
-                                                min="1"
+                                                min="1"  placeholder="Enter quantity"
                                                 value="{{ old('quantity', $transfer->quantity ?? '') }}"
-                                                class="form-control @error('quantity') is-invalid @enderror">
+                                                class="form-control ">
 
                                                 @if($errors->has('quantity'))
                                                     <small class="text-danger">{{ $errors->first('quantity') }}</small>

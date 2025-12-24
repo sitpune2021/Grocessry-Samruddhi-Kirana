@@ -5,71 +5,63 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
-use App\Models\Category;
-
+use Carbon\Carbon;
 
 class ProductBatchController extends Controller
 {
 
     public function index()
     {
-        $batches = ProductBatch::with('product')->get();
+        $batches = ProductBatch::with('product.category')->latest()->get();
         return view('batches.index', compact('batches'));
     }
 
+
     public function create()
     {
-        $categories = Category::all();
-        $products = collect(); // empty collection for products initially
-        $batch = null; // no batch in create mode
-
-        return view('batches.create', compact('categories', 'products', 'batch'));
+        return view('batches.create', [
+            'mode'       => 'add',              // ✅ FIX
+            'batch'      => null,
+            'categories' => Category::all(),
+            'products'   => collect(),
+        ]);
     }
+
 
     public function getProductsByCategory($category_id)
     {
-        $products = Product::where('category_id', $category_id)->get();
-
-        return response()->json($products);
+        return response()->json(
+            Product::where('category_id', $category_id)->get()
+        );
     }
+
 
     public function store(Request $request)
     {
         try {
-
-            // Validation
             $validated = $request->validate([
                 'category_id' => 'required|exists:categories,id',
                 'product_id'  => 'required|exists:products,id',
-                'batch_no'    => 'required',
+                'batch_no'    => 'required|string|max:50',
                 'mfg_date'    => 'nullable|date',
                 'expiry_date' => 'nullable|date|after:mfg_date',
                 'quantity'    => 'required|integer|min:1',
             ]);
 
-            // Create Product Batch
-            // $batch = ProductBatch::create([
-            //     'category_id' => $validated['category_id'], 
-            //     'product_id'  => $validated['product_id'],
-            //     'batch_no'    => $validated['batch_no'],
-            //     'mfg_date'    => $validated['mfg_date'] ?? null,
-            //     'expiry_date' => $validated['expiry_date'] ?? null,
-            //     'quantity'    => $validated['quantity'],
-            // ]);
-
             $product = Product::findOrFail($validated['product_id']);
 
-            $expiryDate = $validated['expiry_date'] ?? (
-                $validated['mfg_date'] && $product->expiry_days
-                    ? \Carbon\Carbon::parse($validated['mfg_date'])
-                        ->addDays($product->expiry_days)
+            // ✅ FIX: Auto expiry calculation
+            $expiryDate = $validated['expiry_date'] ??
+                (
+                    $validated['mfg_date'] && $product->expiry_days
+                    ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
                     : null
-            );
-
+                );
 
             $batch = ProductBatch::create([
                 'category_id' => $validated['category_id'],
@@ -80,44 +72,89 @@ class ProductBatchController extends Controller
                 'quantity'    => $validated['quantity'],
             ]);
 
-
-            // Stock Movement Entry
+            // Stock IN entry
             StockMovement::create([
                 'product_batch_id' => $batch->id,
                 'type'             => 'in',
                 'quantity'         => $validated['quantity'],
             ]);
 
-            Log::info('Product batch created successfully', [
-                'batch_id'   => $batch->id,
-                'category_id'=> $validated['category_id'],
-                'product_id' => $validated['product_id'],
-                'quantity'   => $validated['quantity'],
-            ]);
+            Log::info('Product batch created', ['batch_id' => $batch->id]);
 
-            return redirect('/batches')->with('success', 'Batch added successfully');
-
+            return redirect()
+                ->route('batches.index')     // ✅ FIX
+                ->with('success', 'Batch added successfully');
         } catch (ValidationException $e) {
-
-            Log::warning('Product batch validation failed', [
-                'errors' => $e->errors(),
-                'input'  => $request->all(),
-            ]);
-
             throw $e;
-
         } catch (Exception $e) {
-
-            Log::error('Error while creating product batch', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'input'   => $request->all(),
-            ]);
-
-            return back()->with('error', 'Something went wrong while saving batch');
+            Log::error('Batch create error', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Something went wrong');
         }
     }
+
+
+    public function show($id)
+    {
+        $batch = ProductBatch::with('product.category')->findOrFail($id);
+
+        return view('batches.create', [        // ✅ SAME PAGE
+            'mode'       => 'view',          // ✅ FIX
+            'batch'      => $batch,
+            'categories' => Category::all(),
+            'products'   => Product::where('category_id', $batch->category_id)->get(),
+        ]);
+    }
+
+
+    public function edit($id)
+    {
+        $batch = ProductBatch::findOrFail($id);
+
+        return view('batches.create', [        // ✅ SAME PAGE
+            'mode'       => 'edit',          // ✅ FIX
+            'batch'      => $batch,
+            'categories' => Category::all(),
+            'products'   => Product::where('category_id', $batch->category_id)->get(),
+        ]);
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $batch = ProductBatch::findOrFail($id);
+
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'product_id'  => 'required|exists:products,id',
+            'batch_no'    => 'required|string|max:50',
+            'mfg_date'    => 'nullable|date',
+            'expiry_date' => 'nullable|date|after:mfg_date',
+            'quantity'    => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($validated['product_id']);
+
+        // ✅ FIX: expiry recalculation on update
+        $validated['expiry_date'] = $validated['expiry_date'] ??
+            (
+                $validated['mfg_date'] && $product->expiry_days
+                ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
+                : $batch->expiry_date
+            );
+
+        $batch->update($validated);
+
+        return redirect()
+            ->route('batches.index')
+            ->with('success', 'Batch updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        ProductBatch::findOrFail($id)->delete();
+        return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
+    }
+
 
     public function expiryAlerts()
     {
@@ -128,50 +165,4 @@ class ProductBatchController extends Controller
 
         return view('batches.expiry', compact('batches'));
     }
-
-    // Edit Method
-    public function edit($id)
-    {
-        $batch = ProductBatch::findOrFail($id);
-        $categories = Category::all();
-        $products = Product::where('category_id', $batch->category_id)->get();
-
-        return view('batches.create', compact('categories', 'products', 'batch'));
-    }
-
-    // Update Method
-    public function update(Request $request, $id)
-    {
-        $batch = ProductBatch::findOrFail($id);
-
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'product_id'  => 'required|exists:products,id',
-            'batch_no'    => 'required',
-            'mfg_date'    => 'nullable|date',
-            'expiry_date' => 'nullable|date|after:mfg_date',
-            'quantity'    => 'required|integer|min:1',
-        ]);
-
-        $batch->update($validated);
-
-        return redirect()->route('batches.index')->with('success', 'Batch updated successfully');
-    }
-
-    public function destroy($id)
-    {
-        $batch = ProductBatch::findOrFail($id);
-        $batch->delete(); // soft delete
-        return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
-    }
-
-    public function show($batchId)
-    {
-        $batch = ProductBatch::with('product')
-            ->findOrFail($batchId);
-
-        return view('batches.show', compact('batch'));
-    }
-
-
 }
