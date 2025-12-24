@@ -15,8 +15,6 @@ class LoginController extends Controller
 
     public function login(Request $request, $type)
     {
-
-
         $validator = Validator::make(
             array_merge($request->all(), ['login_type' => $type]),
             [
@@ -50,16 +48,28 @@ class LoginController extends Controller
 
             $otp = rand(100000, 999999);
 
-            $user->update([
-                'otp' => $otp,
-                'otp_expires_at' => now()->addMinutes(5)
-            ]);
+            $user->otp = $otp;
+            $user->otp_expires_at = Carbon::now()->addMinutes(5);
+            $user->save();
 
-            // Send SMS here
+            $message = "Your OTP for login is $otp";
+
+            Http::withoutVerifying()->asForm()->post(
+                'http://redirect.ds3.in/submitsms.jsp',
+                [
+                    'user'     => 'SITSol',
+                    'key'      => 'b6b34d1d4dXX',
+                    'mobile'   => $user->mobile,
+                    'message'  => $message,
+                    'senderid' => 'DALERT',
+                    'accusage' => '10',
+                ]
+            );
 
             return response()->json([
                 'status' => true,
                 'message' => 'OTP sent successfully'
+                // ❌ do NOT return OTP in production
             ]);
         }
 
@@ -80,78 +90,6 @@ class LoginController extends Controller
             'user' => $user
         ]);
     }
-
-    // public function login(Request $request)
-    // {
-    //     $validate = Validator::make($request->all(), [
-    //         'mobile'     => 'required|digits:10',
-    //         'role_id'    => 'required',
-    //         'login_type' => 'required|in:otp,password',
-    //         'password'   => 'required_if:login_type,password|string',
-    //     ]);
-
-    //     if ($validate->fails()) {
-    //         return response()->json(['errors' => $validate->errors()], 400);
-    //     }
-
-    //     $user = User::where('mobile', $request->mobile)
-    //         ->where('role_id', $request->role_id)
-    //         ->first();
-
-    //     if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'User not found'
-    //         ], 404);
-    //     }
-
-    //     // OTP LOGIN
-    //     if ($request->login_type === 'otp') {
-
-    //         $otp = rand(100000, 999999);
-
-    //         $user->otp = $otp;
-    //         $user->otp_expires_at = Carbon::now()->addMinutes(5);
-    //         $user->save();
-
-    //         $message = "Your OTP for login is $otp";
-
-    //         Http::withoutVerifying()->asForm()->post(
-    //             'http://redirect.ds3.in/submitsms.jsp',
-    //             [
-    //                 'user' => 'SITSol',
-    //                 'key' => 'b6b34d1d4dXX',
-    //                 'mobile' => $user->mobile,
-    //                 'message' => $message,
-    //                 'senderid' => 'DALERT',
-    //                 'accusage' => '10',
-    //             ]
-    //         );
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'OTP sent successfully',
-    //             'otp' => $otp, // remove return OTP in production
-    //         ]);
-    //     }
-
-    //     // PASSWORD LOGIN
-    //     if (!Hash::check($request->password, $user->password)) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Invalid password'
-    //         ], 401);
-    //     }
-
-    //     $token = $user->createToken('login-token')->plainTextToken;
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Login successful',
-    //         'token' => $token,
-    //         'user' => $user
-    //     ]);
-    // }
 
     public function verifyOtp(Request $request)
     {
