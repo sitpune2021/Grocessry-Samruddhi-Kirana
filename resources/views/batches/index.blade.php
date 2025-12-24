@@ -36,7 +36,7 @@
                     @foreach($batches as $batch)
                     <tr>
                         <td style="width: 30px;">{{ $loop->iteration }}</td>
-                        <td>{{ $batch->product->name }}</td>
+                        <td>{{ $batch->product->name ??''}}</td>
                         <td>{{ $batch->batch_no }}</td>
                         <td>{{ $batch->quantity }}</td>
                         <td>{{ $batch->mfg_date }}</td>
