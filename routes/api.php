@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\CategoryProductController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login/{type}', [LoginController::class, 'login']);
 Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
 Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
 
