@@ -237,6 +237,12 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
 
+    Route::get(
+        '/ajax/get-warehouses-by-category/{retailer}/{category}',
+        [RetailerOrderController::class, 'getWarehousesByCategory']
+    )->name('ajax.get.warehouses');
+
+
 });
 
 
