@@ -26,11 +26,30 @@ Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
+
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+//     Route::get('/forgot-password', function () {
+//         return view('admin-login.password.reset');
+//     })->name('forgot.password');
+// });
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/forgot-password', function () {
-        return view('admin-login.password.reset');
-    })->name('forgot.password');
+    Route::get('/products', [ProductController::class, 'index'])
+        ->middleware('permission:product.view');
+
+    Route::get('/products/create', [ProductController::class, 'create'])
+        ->middleware('permission:product.create');
+
+    Route::post('/products', [ProductController::class, 'store'])
+        ->middleware('permission:product.create');
+
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])
+        ->middleware('permission:product.edit');
+
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])
+        ->middleware('permission:product.delete');
 });
 
 // User Profile 
@@ -140,7 +159,7 @@ Route::get(
     [WarehouseTransferController::class, 'getCategoriesByWarehouse']
 )->name('warehouse.categories');
 
-    
+
 
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
@@ -156,7 +175,7 @@ Route::get('/roles-show/{id}', [RoleController::class, 'show'])
 
 Route::get('/roles/{id}', [RoleController::class, 'edit'])
     ->name('roles.edit');
-    
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
@@ -165,7 +184,7 @@ Route::resource('/delivery-agents', DeliveryAgentController::class);
 // Deliveries List
 Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
     ->name('deliveries.index');
-    
+
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -202,9 +221,10 @@ Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () 
     Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
         ->name('bulk.upload');
 
-    Route::get('/get-products-by-category/{category}',
-        [RetailerPricingController::class, 'getProductsByCategory']);
-
+    Route::get(
+        '/get-products-by-category/{category}',
+        [RetailerPricingController::class, 'getProductsByCategory']
+    );
 });
 
 Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
@@ -216,7 +236,8 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
     Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
 
     // 🔥 Auto price fetch
-    Route::get('/get-retailer-price/{retailer}/{product}',
+    Route::get(
+        '/get-retailer-price/{retailer}/{product}',
         [RetailerOrderController::class, 'getRetailerPrice']
     )->name('get.price');
 
@@ -229,7 +250,4 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         '/get-products-by-retailer/{retailer}/{category}',
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
-
 });
-
-

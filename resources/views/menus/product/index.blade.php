@@ -119,32 +119,32 @@
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
 
-    if (!searchInput || !table) return;
+        if (!searchInput || !table) return;
 
-    const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
 
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
 
-        rows.forEach(row => {
+            rows.forEach(row => {
 
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
 
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
         });
-    });
 
-});
+    });
 </script>
 
 @endpush

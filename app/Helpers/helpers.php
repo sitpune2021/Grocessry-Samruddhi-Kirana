@@ -3,23 +3,27 @@
 use Illuminate\Support\Facades\Auth;
 
 if (!function_exists('hasPermission')) {
-    function hasPermission($module, $action = null)
+
+    function hasPermission(string $permission): bool
     {
         $user = Auth::user();
         if (!$user) return false;
+
+        // Super Admin (optional)
+        if ($user->role_id == 1) {
+            return true;
+        }
 
         $rolePermission = \App\Models\RolePermission::where('role_id', $user->role_id)
             ->where('admin_id', $user->admin_id ?? $user->id)
             ->first();
 
-        if (!$rolePermission) return false;
+        if (!$rolePermission || empty($rolePermission->permissions)) {
+            return false;
+        }
 
         $permissions = json_decode($rolePermission->permissions, true);
 
-        if (!isset($permissions[$module])) return false;
-
-        if ($action === null) return true;
-
-        return in_array($action, $permissions[$module]);
+        return in_array($permission, $permissions);
     }
 }
