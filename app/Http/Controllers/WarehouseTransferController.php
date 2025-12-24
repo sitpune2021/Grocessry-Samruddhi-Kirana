@@ -407,4 +407,7 @@ class WarehouseTransferController extends Controller
 
         return response()->json($categories);
     }
+
+    
+
 }
