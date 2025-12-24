@@ -22,7 +22,7 @@
             <x-datatable-search />
 
             <!-- Table -->
-            <div class="table-responsive mt-3">
+            <div class="table-responsive mt-3 p-3">
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
                        <thead class="table-light">

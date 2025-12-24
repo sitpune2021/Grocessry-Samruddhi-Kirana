@@ -22,10 +22,10 @@
             <x-datatable-search />
 
             <!-- Table -->
-            <div class="table-responsive">
+            <div class="table-responsive mt-5 p-3">
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
-                        <tr>
+                        <tr class="bg-light">
                             <th>Sr No</th>
                             <th>Warehouse</th>
                             <th>Category</th>

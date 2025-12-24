@@ -169,25 +169,24 @@
                     type: "GET",
                     success: function(response) {
 
-                        if (role_id == 2) {
-                            $(".perm").prop("checked", true);
-                        }
+                        $(".perm").prop("checked", false);
 
-                        if (response.status) {
-                            let permissions = response.permissions;
+                        if (response.status && Array.isArray(response.permissions)) {
 
-                            Object.keys(permissions).forEach(function(module) {
-                                permissions[module].forEach(function(action) {
-                                    $(`input[name="permissions[${module}][]"][value="${action}"]`)
-                                        .prop("checked", true);
-                                });
+                            response.permissions.forEach(function(permission) {
+
+                                $(`input.perm[value="${permission}"]`)
+                                    .prop("checked", true);
+
                             });
                         }
 
+                        // Super Admin (optional)
                         if (role_id == 2) {
                             $(".perm").prop("checked", true);
                         }
                     }
+
                 });
             }
 

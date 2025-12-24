@@ -16,75 +16,75 @@
 
             <!-- Search -->
             <x-datatable-search />
+            <div class="table-responsive mt-5 p-3">
+                <table class="table table-bordered">
 
-            <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Batch</th>
+                            <th>Qty</th>
+                            <th>MFG</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Batch</th>
-                        <th>Qty</th>
-                        <th>MFG</th>
-                        <th>Expiry</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sr No</th>
+                            <th>Product</th>
+                            <th>Batch</th>
+                            <th>Qty</th>
+                            <th>MFG</th>
+                            <th>Expiry</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
-                <thead class="table-light">
-                    <tr>
-                        <th>Sr No</th>
-                        <th>Product</th>
-                        <th>Batch</th>
-                        <th>Qty</th>
-                        <th>MFG</th>
-                        <th>Expiry</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+                    <tbody>
+                        @foreach($batches as $batch)
 
-                <tbody>
-                    @foreach($batches as $batch)
+                        @php
+                        $rowStyle = '';
 
-                    @php
-                    $rowStyle = '';
+                        if ($batch->expiry_date < now()) {
+                            // expired
+                            $rowStyle='background-color:#f8d7da' ;
+                            } elseif ($batch->expiry_date <= now()->addDays(7)) {
+                                // expiring soon
+                                $rowStyle = 'background-color:#fff3cd';
+                                }
+                                @endphp
 
-                    if ($batch->expiry_date < now()) {
-                        // expired
-                        $rowStyle='background-color:#f8d7da' ;
-                        } elseif ($batch->expiry_date <= now()->addDays(7)) {
-                            // expiring soon
-                            $rowStyle = 'background-color:#fff3cd';
-                            }
-                            @endphp
+                                <tr style="{{ $rowStyle }}">
+                                    <td style="width: 30px;">{{ $loop->iteration }}</td>
+                                    <td>{{ $batch->product->name }}</td>
+                                    <td>{{ $batch->batch_no }}</td>
+                                    <td>{{ $batch->quantity }}</td>
+                                    <td style="width: 50px;">
+                                        {{ $batch->mfg_date ? \Carbon\Carbon::parse($batch->mfg_date)->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td style="width: 50px;">
+                                        {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
+                                    </td>
 
-                            <tr style="{{ $rowStyle }}">
-                                <td style="width: 30px;">{{ $loop->iteration }}</td>
-                                <td>{{ $batch->product->name }}</td>
-                                <td>{{ $batch->batch_no }}</td>
-                                <td>{{ $batch->quantity }}</td>
-                                <td style="width: 50px;">
-                                    {{ $batch->mfg_date ? \Carbon\Carbon::parse($batch->mfg_date)->format('d/m/Y') : '-' }}
-                                </td>
-                                <td style="width: 50px;">
-                                    {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
-                                </td>
+                                    <td align="center">
+                                        @if($batch->quantity > 0 && $batch->expiry_date >= now())
+                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product">
+                                            🛒 Sell
+                                        </a>
+                                        @else
+                                        ❌
+                                        @endif
+                                    </td>
+                                </tr>
 
-                                <td align="center">
-                                    @if($batch->quantity > 0 && $batch->expiry_date >= now())
-                                    <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product">
-                                        🛒 Sell
-                                    </a>
-                                    @else
-                                    ❌
-                                    @endif
-                                </td>
-                            </tr>
-
-                            @endforeach
-                </tbody>
-            </table>
-
+                                @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
