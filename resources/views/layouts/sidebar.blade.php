@@ -70,9 +70,9 @@
             </div>
             <ul class="submenu" id="warehouseMenu">
                 <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-                <li><a href="{{ route('index.addStock.warehouse') }}">Add Stock</a></li>
-                <li><a href="{{ route('sale.create') }}">FIFO Management</a></li>
-                <li><a href="{{ route('transfer.index') }}">Warehouse Transfers</a></li>
+                <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
+                <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
             </ul>
         </li>
 
@@ -87,7 +87,7 @@
                 <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
             </ul>
         </li>
-        <li class="menu-item">
+        <!-- <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('retailerMenu','warehouseArrow')">
                 <span><i class="bx bx-store me-2 "></i>Retailer</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
@@ -97,7 +97,7 @@
                 <li><a href="{{ route('retailer-pricing.index') }}">Retailer pricing</a></li>
                 <li><a href="{{ route('retailer-orders.create') }}">Retailer Order price Lock</a></li>
             </ul>
-        </li>
+        </li> -->
 </div>
 
 <script>
