@@ -1,8 +1,8 @@
 @include('layouts.header')
 
-<body class="bg-light">
+<body class="bg-light" >
 
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+<div class="container min-vh-100 d-flex align-items-center justify-content-center p-10 "> 
     <div class="login-card card">
         <div class="card-body p-4">
 

@@ -178,7 +178,6 @@
 
                 </div>
               </div>
-
               <!-- <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
                 <div class="row">
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
@@ -711,8 +710,6 @@
 
   <!-- GitHub Buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-
-
 </body>
 
 </html>

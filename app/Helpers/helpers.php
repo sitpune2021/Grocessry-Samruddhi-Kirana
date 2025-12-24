@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\RolePermission;
 if (!function_exists('hasPermission')) {
 
     function hasPermission(string $permission): bool

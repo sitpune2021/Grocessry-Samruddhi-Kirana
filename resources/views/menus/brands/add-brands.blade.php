@@ -30,108 +30,99 @@
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-category me-1"></i>
-                                        @if($mode === 'add')
-                                        Add Brand
+                                        @if ($mode === 'add')
+                                            Add Brand
                                         @elseif($mode === 'edit')
-                                        Edit Brand
+                                            Edit Brand
                                         @else
-                                        View Brand
+                                            View Brand
                                         @endif
                                     </div>
 
                                     <div class="card-body">
                                         <form
                                             action="{{ isset($brand) ? route('brands.update', $brand->id) : route('brands.store') }}"
-                                            method="POST"
-                                            enctype="multipart/form-data">
+                                            method="POST" enctype="multipart/form-data">
                                             @csrf
-                                            @if(isset($brand))
-                                            @method('PUT')
+                                            @if (isset($brand))
+                                                @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
 
                                                 {{-- Brand Name --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Brand Name <span class="text-danger">*</span></label>
-                                                    <input
-                                                        type="text"
-                                                        name="name"
+                                                    <label class="form-label fw-medium">Brand Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" name="name"
                                                         class="form-control @error('name') is-invalid @enderror"
                                                         value="{{ old('name', $brand->name ?? '') }}"
                                                         placeholder="Enter brand name"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('name')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Brand Slug --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Brand Slug</label>
-                                                    <input
-                                                        type="text"
-                                                        name="slug"
+                                                    <input type="text" name="slug"
                                                         class="form-control @error('slug') is-invalid @enderror"
                                                         value="{{ old('slug', $brand->slug ?? '') }}"
                                                         placeholder="Auto-generated or manual"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('slug')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Description --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Description</label>
-                                                    <input
-                                                        type="text"
-                                                        name="description"
+                                                    <input type="text" name="description"
                                                         class="form-control @error('description') is-invalid @enderror"
                                                         value="{{ old('description', $brand->description ?? '') }}"
                                                         placeholder="Short description"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('description')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Logo --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Brand Logo</label>
-                                                    @if($mode !== 'view')
-                                                    <input
-                                                        type="file"
-                                                        name="logo"
-                                                        class="form-control @error('logo') is-invalid @enderror"
-                                                        accept="image/*">
+                                                    @if ($mode !== 'view')
+                                                        <input type="file" name="logo"
+                                                            class="form-control @error('logo') is-invalid @enderror"
+                                                            accept="image/*">
                                                     @endif
 
-                                                    @if(isset($brand) && $brand->logo)
-                                                    <div class="mt-2">
-                                                        <img src="{{ asset('storage/brands/'.$brand->logo) }}"
-                                                            alt="Brand Logo"
-                                                            width="80"
-                                                            class="rounded border">
-                                                    </div>
+                                                    @if (isset($brand) && $brand->logo)
+                                                        <div class="mt-2">
+                                                            <img src="{{ asset('storage/brands/' . $brand->logo) }}"
+                                                                alt="Brand Logo" width="80" class="rounded border">
+                                                        </div>
                                                     @endif
 
                                                     @error('logo')
-                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Status --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Status</label>
-                                                    <select
-                                                        name="status"
-                                                        class="form-control"
+                                                    <label class="form-label fw-medium">Status</label> <span
+                                                        class="text-danger">*</span>
+                                                    <select name="status" class="form-control"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="1" {{ old('status', $brand->status ?? 1) == 1 ? 'selected' : '' }}>
+                                                        <option value="1"
+                                                            {{ old('status', $brand->status ?? 1) == 1 ? 'selected' : '' }}>
                                                             Active
                                                         </option>
-                                                        <option value="0" {{ old('status', $brand->status ?? 1) == 0 ? 'selected' : '' }}>
+                                                        <option value="0"
+                                                            {{ old('status', $brand->status ?? 1) == 0 ? 'selected' : '' }}>
                                                             Inactive
                                                         </option>
                                                     </select>
@@ -141,18 +132,19 @@
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('brands.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('brands.index') }}"
+                                                    class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
-                                                @if($mode === 'add')
-                                                <button type="submit" class="btn btn-primary">
-                                                    Save Brand
-                                                </button>
+                                                @if ($mode === 'add')
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Save Brand
+                                                    </button>
                                                 @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-primary">
-                                                    Update Brand
-                                                </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Update Brand
+                                                    </button>
                                                 @endif
                                             </div>
 

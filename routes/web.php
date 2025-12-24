@@ -17,6 +17,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RetailerController;
 use App\Http\Controllers\RetailerPricingController;
 use App\Http\Controllers\RetailerOrderController;
+use App\Http\Controllers\stockWarehouseController;
+use App\Http\Controllers\FIFOHistoryController;
 
 
 
@@ -70,17 +72,17 @@ Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
 
-Route::get('/index-warehouse', [MasterWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
-Route::get('/add-stock-warehouse', [MasterWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
-Route::post('/add-stock-warehouse', [MasterWarehouseController::class, 'addStock'])->name('warehouse.addStock');
-Route::get('/view-stock-warehouse/{id}', [MasterWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
-Route::get('/edit-stock-warehouse/{id}', [MasterWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
-Route::put('/stock/{id}/update', [MasterWarehouseController::class, 'updateStock'])
+Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
+Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
+Route::post('/add-stock-warehouse', [stockWarehouseController::class, 'addStock'])->name('warehouse.addStock');
+Route::get('/view-stock-warehouse/{id}', [stockWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
+Route::get('/edit-stock-warehouse/{id}', [stockWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
+Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'])
     ->name('stock.update');
-Route::delete('/stock/{id}/delete', [MasterWarehouseController::class, 'destroyStock'])
+Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
-Route::get('/get-categories-by-warehouse/{warehouse}', [MasterWarehouseController::class, 'getCategories']);
+Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
 
 
 
@@ -109,11 +111,15 @@ Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
     ->name('batches.show');
 
 
+Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
+// Route::post('/sale/{id}', [StockController::class, 'show'])->name('sale.show');
+// Route::post('/sale/{id}', [StockController::class, 'update'])->name('sale.edit');
+// Route::post('/sale/{id}', [StockController::class, 'destroy'])->name('sale.destroy');
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
@@ -151,14 +157,17 @@ Route::get(
 );
 Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
-Route::get('/warehouse-transfer/{batch}', [WarehouseTransferController::class, 'show'])
-    ->name('transfer.show');
 
 Route::get(
-    '/get-categories-by-warehouse/{warehouse_id}',
+    '/ajax/warehouse/{warehouse_id}/categories',
     [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-)->name('warehouse.categories');
+)->name('ajax.warehouse.categories');
 
+
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
 
 Route::get('/roles/index', [RoleController::class, 'index'])
@@ -173,9 +182,18 @@ Route::post('/roles/store', [RoleController::class, 'store'])
 Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
-Route::get('/roles/{id}', [RoleController::class, 'edit'])
-    ->name('roles.edit');
+Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
+->name('roles.edit');
 
+Route::put('/roles/update/{id}',[RoleController::class, 'update'])->name('roles.update');
+
+Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
+    ->name('roles.destroy');
+
+    
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+  //  ->name('roles.edit');
+    
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 

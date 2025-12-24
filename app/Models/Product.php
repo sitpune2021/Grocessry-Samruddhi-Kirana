@@ -38,4 +38,10 @@ class Product extends Model
     {
         return $this->hasMany(ProductBatch::class);
     }
+
+    public function warehouseStocks()
+    {
+        return $this->hasMany(WarehouseStock::class);
+    }
+
 }
