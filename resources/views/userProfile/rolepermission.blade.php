@@ -63,49 +63,74 @@
 
                                 <tbody>
                                     @php
+                                    $modules = [
+                                    'dashboard' => 'Dashboard',
+                                    'roles' => 'Roles',
+                                    'user' => 'User',
+                                    'role_permission' => 'Role Permission',
+                                    'brands' => 'Brands',
+                                    'category' => 'Category',
+                                    'product' => 'Product',
+                                    'batches' => 'Batches',
+                                    'warehouse' => 'Warehouse',
+                                    'add_stock' => 'Add Stock',
+                                    'sale' => 'Sale',
+                                    'warehouse_transfer' => 'Warehouse Transfer',
+                                    ];
+
                                     $dashboardCards = [
-                                    'Total Users',
-                                    'Total Products',
-                                    'Total Sales',
-                                    'Total Stock'
+                                    'total_users' => 'Total Users',
+                                    'total_products' => 'Total Products',
+                                    'total_sales' => 'Total Sales',
+                                    'total_stock' => 'Total Stock',
                                     ];
                                     @endphp
 
-                                    @foreach([
-                                    'Dashboard','Roles','User','RolePermission','Brands','Category',
-                                    'Product','Batches','Warehouse','AddStock','Sale',
-                                    'Warehousetransfer'
-                                    ] as $module)
-                                    
+
+                                    @foreach($modules as $moduleKey => $moduleLabel)
                                     <tr>
-                                        <td>{{ $module }}</td>
+                                        <td>{{ $moduleLabel }}</td>
 
-                                        <input type="hidden" name="permissions[{{ $module }}][]" value="">
-
-                                        {{-- Dashboard → card-wise view permissions --}}
-                                        @if($module == 'Dashboard')
+                                        @if($moduleKey === 'dashboard')
                                         <td colspan="4" class="text-start">
-                                            @foreach($dashboardCards as $card)
-                                            <label class="me-4">
-                                                <input type="checkbox"
+                                            @foreach($dashboardCards as $key => $label)
+                                            <div class="form-check">
+                                                <input
+                                                    type="checkbox"
                                                     class="perm large-checkbox"
-                                                    name="permissions[Dashboard][]"
-                                                    value="view_{{ strtolower($card) }}">
-                                            <label class="me-4 ms-2">
-                                                View {{ $card }}
-                                            </label>
+                                                    name="permissions[]"
+                                                    value="dashboard.view.{{ $key }}"
+                                                    id="dash_{{ $key }}">
+                                                <label for="dash_{{ $key }}">{{ $label }}</label>
+                                            </div>
                                             @endforeach
                                         </td>
                                         @else
-                                        <td><input type="checkbox" class="perm large-checkbox" name="permissions[{{ $module }}][]" value="add"></td>
-                                        <td><input type="checkbox" class="perm large-checkbox" name="permissions[{{ $module }}][]" value="view"></td>
-                                        <td><input type="checkbox" class="perm large-checkbox" name="permissions[{{ $module }}][]" value="edit"></td>
-                                        <td><input type="checkbox" class="perm large-checkbox" name="permissions[{{ $module }}][]" value="delete"></td>
+                                        <td>
+                                            <input type="checkbox" class="perm large-checkbox"
+                                                name="permissions[]"
+                                                value="{{ $moduleKey }}.create">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="perm large-checkbox"
+                                                name="permissions[]"
+                                                value="{{ $moduleKey }}.view">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="perm large-checkbox"
+                                                name="permissions[]"
+                                                value="{{ $moduleKey }}.edit">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="perm large-checkbox"
+                                                name="permissions[]"
+                                                value="{{ $moduleKey }}.delete">
+                                        </td>
                                         @endif
-
                                     </tr>
-
                                     @endforeach
+
+
                                 </tbody>
 
                             </table>

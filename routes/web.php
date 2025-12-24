@@ -28,11 +28,30 @@ Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
+
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+//     Route::get('/forgot-password', function () {
+//         return view('admin-login.password.reset');
+//     })->name('forgot.password');
+// });
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/forgot-password', function () {
-        return view('admin-login.password.reset');
-    })->name('forgot.password');
+    Route::get('/products', [ProductController::class, 'index'])
+        ->middleware('permission:product.view');
+
+    Route::get('/products/create', [ProductController::class, 'create'])
+        ->middleware('permission:product.create');
+
+    Route::post('/products', [ProductController::class, 'store'])
+        ->middleware('permission:product.create');
+
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])
+        ->middleware('permission:product.edit');
+
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])
+        ->middleware('permission:product.delete');
 });
 
 // User Profile 
@@ -151,10 +170,6 @@ Route::get(
 )->name('transfer.show');
 
 
-
-
-
-
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
 
@@ -187,7 +202,7 @@ Route::resource('/delivery-agents', DeliveryAgentController::class);
 // Deliveries List
 Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
     ->name('deliveries.index');
-    
+
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -254,5 +269,3 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
 });
-
-
