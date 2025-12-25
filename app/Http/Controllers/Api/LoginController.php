@@ -241,7 +241,6 @@ class LoginController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'mobile'  => 'required|digits:10',
-            'role_id' => 'required|integer'
         ]);
 
         if ($validator->fails()) {
@@ -252,7 +251,6 @@ class LoginController extends Controller
         }
 
         $user = User::where('mobile', $request->mobile)
-            ->where('role_id', $request->role_id)
             ->first();
 
         // Do NOT reveal whether user exists (security)
