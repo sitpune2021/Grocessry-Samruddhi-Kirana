@@ -26,7 +26,7 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Stock
+                                            Add Warehouse Stock
                                         @elseif($mode === 'edit')
                                             Edit Stock
                                         @else

@@ -19,6 +19,7 @@ use App\Http\Controllers\RetailerPricingController;
 use App\Http\Controllers\RetailerOrderController;
 use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
+use App\Http\Controllers\GroceryShopController;
 
 
 
@@ -28,11 +29,30 @@ Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
+
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+//     Route::get('/forgot-password', function () {
+//         return view('admin-login.password.reset');
+//     })->name('forgot.password');
+// });
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/forgot-password', function () {
-        return view('admin-login.password.reset');
-    })->name('forgot.password');
+    Route::get('/products', [ProductController::class, 'index'])
+        ->middleware('permission:product.view');
+
+    Route::get('/products/create', [ProductController::class, 'create'])
+        ->middleware('permission:product.create');
+
+    Route::post('/products', [ProductController::class, 'store'])
+        ->middleware('permission:product.create');
+
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])
+        ->middleware('permission:product.edit');
+
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])
+        ->middleware('permission:product.delete');
 });
 
 // User Profile 
@@ -151,10 +171,6 @@ Route::get(
 )->name('transfer.show');
 
 
-
-
-
-
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
 
@@ -187,7 +203,7 @@ Route::resource('/delivery-agents', DeliveryAgentController::class);
 // Deliveries List
 Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
     ->name('deliveries.index');
-    
+
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -253,6 +269,31 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         '/get-products-by-retailer/{retailer}/{category}',
         [RetailerOrderController::class, 'getProductsByRetailerCategory']
     )->name('get.products');
+
+    Route::get(
+        '/ajax/get-warehouses-by-category/{retailer}/{category}',
+        [RetailerOrderController::class, 'getWarehousesByCategory']
+    )->name('ajax.get.warehouses');
+
+
 });
 
+
+Route::get('/grocery-shops', [GroceryShopController::class, 'index'])
+    ->name('grocery-shops.index');
+
+Route::get('/grocery-shops/create', [GroceryShopController::class, 'create'])
+    ->name('grocery-shops.create');
+
+Route::post('/grocery-shops', [GroceryShopController::class, 'store'])
+    ->name('grocery-shops.store');
+
+Route::get('/grocery-shops/{groceryShop}/edit', [GroceryShopController::class, 'edit'])
+    ->name('grocery-shops.edit');
+
+Route::put('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'update'])
+    ->name('grocery-shops.update');
+
+Route::delete('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'destroy'])
+    ->name('grocery-shops.destroy');
 
