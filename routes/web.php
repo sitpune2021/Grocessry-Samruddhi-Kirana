@@ -19,6 +19,7 @@ use App\Http\Controllers\RetailerPricingController;
 use App\Http\Controllers\RetailerOrderController;
 use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
+use App\Http\Controllers\GroceryShopController;
 
 
 
@@ -262,4 +263,23 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
 
 });
 
+
+
+Route::get('/grocery-shops', [GroceryShopController::class, 'index'])
+    ->name('grocery-shops.index');
+
+Route::get('/grocery-shops/create', [GroceryShopController::class, 'create'])
+    ->name('grocery-shops.create');
+
+Route::post('/grocery-shops', [GroceryShopController::class, 'store'])
+    ->name('grocery-shops.store');
+
+Route::get('/grocery-shops/{groceryShop}/edit', [GroceryShopController::class, 'edit'])
+    ->name('grocery-shops.edit');
+
+Route::put('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'update'])
+    ->name('grocery-shops.update');
+
+Route::delete('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'destroy'])
+    ->name('grocery-shops.destroy');
 
