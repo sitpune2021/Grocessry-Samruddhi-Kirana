@@ -11,6 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'sub_category_id',
         'brand_id',
         'name',
         'sku',
@@ -43,5 +44,8 @@ class Product extends Model
     {
         return $this->hasMany(WarehouseStock::class);
     }
-
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class);
+    }
 }

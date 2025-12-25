@@ -20,9 +20,7 @@ use App\Http\Controllers\RetailerOrderController;
 use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
 use App\Http\Controllers\GroceryShopController;
-
-
-
+use App\Http\Controllers\SubCategoryController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -69,9 +67,12 @@ Route::post('rolepermission/store', [RolePermissionController::class, 'Store'])-
 Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getRolePermissions']);
 
 Route::resource('/category', CategoryController::class);
+Route::resource('/sub-category', SubCategoryController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
+
+Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
 
 Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
 Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
@@ -184,17 +185,17 @@ Route::get('/roles-show/{id}', [RoleController::class, 'show'])
     ->name('roles.show');
 
 Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
-->name('roles.edit');
+    ->name('roles.edit');
 
-Route::put('/roles/update/{id}',[RoleController::class, 'update'])->name('roles.update');
+Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles.update');
 
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
-    
+
 //Route::get('/roles/{id}', [RoleController::class, 'edit'])
-  //  ->name('roles.edit');
-    
+//  ->name('roles.edit');
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
@@ -274,8 +275,6 @@ Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
         '/ajax/get-warehouses-by-category/{retailer}/{category}',
         [RetailerOrderController::class, 'getWarehousesByCategory']
     )->name('ajax.get.warehouses');
-
-
 });
 
 
@@ -296,4 +295,3 @@ Route::put('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'updat
 
 Route::delete('/grocery-shops/{groceryShop}', [GroceryShopController::class, 'destroy'])
     ->name('grocery-shops.destroy');
-
