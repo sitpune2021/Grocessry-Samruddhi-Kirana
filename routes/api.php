@@ -13,17 +13,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::post('/login/{type}', [LoginController::class, 'login']);
-Route::post('/verify-otp', [LoginController::class, 'verifyOtp']);
+Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
+Route::post('/verify-otp/{type}', [LoginController::class, 'verifyOtp']);
+Route::post('/reset-password', [LoginController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
 
+Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::get('/categories', [CategoryProductController::class, 'getCategories']);
+    Route::get('/categories/{id}/products', [CategoryProductController::class, 'getProductsByCategory']);
+    Route::get('/brands/{id}/products', [CategoryProductController::class, 'getProductsByBrand']);
+});
 Route::apiResource('/district-warehouses', DistrictWarehouseController::class);
 Route::apiResource('/taluka-warehouses', TalukaWarehouseController::class);
 
 Route::apiResource('/users', UserController::class);
 
 Route::apiResource('/batch', BatchController::class);
-
-
-Route::get('/categories', [CategoryProductController::class, 'getCategories']);
-Route::get('/categories/{id}/products', [CategoryProductController::class, 'getProductsByCategory']);
-Route::get('/brands/{id}/products', [CategoryProductController::class, 'getProductsByBrand']);

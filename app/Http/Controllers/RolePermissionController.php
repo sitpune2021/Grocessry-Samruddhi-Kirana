@@ -20,35 +20,46 @@ class RolePermissionController extends Controller
     {
         $request->validate([
             'role_id'     => 'required|exists:roles,id',
-            'permissions' => 'required|array'
+            'permissions' => 'required|array|min:1',
         ]);
 
-        // ✅ Clean permissions (remove null / empty)
-        $cleanPermissions = [];
+        // New permissions from form
+        $newPermissions = collect($request->permissions)
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
 
-        foreach ($request->permissions as $module => $actions) {
-            $actions = array_filter($actions);
-
-            if (!empty($actions)) {
-                $cleanPermissions[$module] = array_values($actions);
-            }
+        if (empty($newPermissions)) {
+            return back()->withErrors([
+                'permissions' => 'Please select at least one permission'
+            ]);
         }
 
-        // ❌ If no permissions selected
-        if (empty($cleanPermissions)) {
-            return back()->withErrors(['permissions' => 'Please select at least one permission']);
-        }
+        // Fetch existing role permissions
+        $rolePermission = RolePermission::where('role_id', $request->role_id)
+            ->where('admin_id', Auth::id())
+            ->first();
 
-        // ✅ Save / Update permissions (SINGLE QUERY)
-        RolePermission::updateOrCreate(
-            [
-                'role_id'  => $request->role_id,
-                'admin_id' => Auth::id(),
-            ],
-            [
-                'permissions' => json_encode($cleanPermissions),
-            ]
-        );
+        if ($rolePermission) {
+            // Merge old + new
+            $mergedPermissions = collect($rolePermission->permissions)
+                ->merge($newPermissions)
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $rolePermission->update([
+                'permissions' => $mergedPermissions
+            ]);
+        } else {
+            // First time insert
+            RolePermission::create([
+                'role_id'     => $request->role_id,
+                'admin_id'    => Auth::id(),
+                'permissions' => $newPermissions
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Permissions saved successfully!');
     }
@@ -56,19 +67,20 @@ class RolePermissionController extends Controller
 
     public function getRolePermissions($role_id)
     {
-       
         $rolePermission = RolePermission::where('role_id', $role_id)
             ->where('admin_id', Auth::id())
             ->first();
 
         if ($rolePermission) {
-            $permissions = json_decode($rolePermission->permissions, true);
             return response()->json([
                 'status' => true,
-                'permissions' => $permissions ?? []
+                'permissions' => $rolePermission->permissions ?? []
             ]);
         }
 
-        return response()->json(['status' => false, 'permissions' => []]);
+        return response()->json([
+            'status' => false,
+            'permissions' => []
+        ]);
     }
 }
