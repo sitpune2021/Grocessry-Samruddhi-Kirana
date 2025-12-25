@@ -22,8 +22,8 @@ if (!function_exists('hasPermission')) {
             return false;
         }
 
-        $permissions = json_decode($rolePermission->permissions, true);
+        // $permissions = json_decode($rolePermission->permissions, true);
 
-        return in_array($permission, $permissions);
+        return in_array($permission, $rolePermission->permissions, true);
     }
 }

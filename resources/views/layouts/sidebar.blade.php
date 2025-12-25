@@ -15,22 +15,23 @@
     <ul>
 
         <!-- Dashboard -->
-    
+
         <li class="menu-item">
             <a href="/dashboard" class="menu-link active text-white">
                 <span><i class="bx bx-home-smile me-2"></i> Dashboard</span>
             </a>
         </li>
- 
+
 
         <li class="menu-header">Management</li>
 
         {{-- @if (hasPermission('Roles', 'view')) --}}
         <li class="menu-item">
-         
+
         </li>
         {{-- @endif --}}
 
+        @if(auth()->check() && auth()->user()->role_id == 1)
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('roleMenu','inventoryArrow')">
                 <span><i class="bx bx-package me-2 "></i>Role & Permission</span>
@@ -38,7 +39,7 @@
             </div>
 
             <ul class="submenu" id="roleMenu">
-                
+
                 <li><a href="{{ route('roles.index') }}">Role</a></li>
 
                 <li><a href="{{ route('user.profile') }}">Users</a></li>
@@ -47,6 +48,7 @@
 
             </ul>
         </li>
+        @endif
 
         <!-- Inventory Dropdown -->
         <li class="menu-item">
