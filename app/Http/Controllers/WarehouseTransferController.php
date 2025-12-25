@@ -36,12 +36,18 @@ class WarehouseTransferController extends Controller
     public function create()
     {
         return view('warehouse.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-            //'categories' => Category::all(),
+            'warehouses' => Warehouse::where('status', 'active')
+                ->where('type', 'district')
+                ->whereNotNull('district_id')
+                ->where('district_id', '!=', 0)
+                ->get(),
+
             'categories' => collect(), // initially empty
-            'transfer'   => null, // important
+            'transfer'   => null,
         ]);
     }
+
+
 
     public function getProductsByCategory($category_id)
     {

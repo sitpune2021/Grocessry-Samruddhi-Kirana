@@ -20,25 +20,26 @@
             </div><br><br>
             <!-- Search -->
             <x-datatable-search />
-            <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
-                                            <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Retailer</th>
-                        <th>Category</th>
-                        <th>Product</th>
-                        <th>Base Price (₹)</th>
-                        <th>Discount %</th>
-                        <th>Discount Amt (₹)</th>
-                        <th>Effective Price (₹)</th>
-                        <th>Effective From</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
+            <div class="table-responsive mt-5 p-3">
+                <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Retailer</th>
+                            <th>Category</th>
+                            <th>Product</th>
+                            <th>Base Price (₹)</th>
+                            <th>Discount %</th>
+                            <th>Discount Amt (₹)</th>
+                            <th>Effective Price (₹)</th>
+                            <th>Effective From</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    @forelse($pricings as $index => $p)
+                    <tbody>
+                        @forelse($pricings as $index => $p)
                         <tr>
                             <td>{{ $pricings->firstItem() + $index }}</td>
                             <td>{{ $p->retailer->name ?? '-' }}</td>
@@ -65,24 +66,24 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                            onclick="return confirm('Delete pricing?')">
+                                        onclick="return confirm('Delete pricing?')">
                                         Delete
                                     </button>
                                 </form>
                             </td>
                         </tr>
-                    @empty
+                        @empty
                         <tr>
                             <td colspan="11" align="center">No pricing found</td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
-
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
             {{ $pricings->links() }}
 
 
-</div>
+        </div>
     </div>
 </div>
 
@@ -107,32 +108,32 @@
 
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
 
-    if (!searchInput || !table) return;
+        if (!searchInput || !table) return;
 
-    const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
 
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
 
-        rows.forEach(row => {
+            rows.forEach(row => {
 
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
 
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
         });
-    });
 
-});
+    });
 </script>
 
 @endsection

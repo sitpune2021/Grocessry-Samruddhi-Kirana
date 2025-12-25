@@ -12,7 +12,7 @@ class RetailerOrderItem extends Model
     protected $table = 'retailer_order_items';
 
     protected $fillable = [
-        'order_id',
+        'retailer_order_id',
         'product_id',
         'category_id',
         'quantity',
@@ -24,7 +24,7 @@ class RetailerOrderItem extends Model
 
     public function order()
     {
-        return $this->belongsTo(RetailerOrder::class, 'order_id');
+        return $this->belongsTo(RetailerOrder::class, 'retailer_order_id');
     }
 
     public function product()
