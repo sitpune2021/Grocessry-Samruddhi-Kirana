@@ -98,6 +98,15 @@
                 <li><a href="{{ route('retailer-orders.create') }}">Retailer Order price Lock</a></li>
             </ul>
         </li> -->
+        <li class="menu-item">
+            <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                <span><i class="bx bx-store me-2 "></i>Shop Management</span>
+                <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+            </div>
+            <ul class="submenu" id="shopMenu">
+                <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+            </ul>
+        </li>
 </div>
 
 <script>
