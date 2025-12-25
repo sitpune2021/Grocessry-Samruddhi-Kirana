@@ -14,6 +14,49 @@ use Illuminate\Support\Facades\Validator;
 
 class LoginController extends Controller
 {
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name'     => 'required|string|max:255',
+            'last_name'      => 'nullable|string|max:255',
+            'mobile'   => 'required|digits:10|unique:users,mobile',
+            'email'    => 'nullable|email|unique:users,email',
+            'password' => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+            ]
+        ], [
+            'password.regex' => 'Password must contain uppercase, lowercase, number & special character.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'mobile'   => $request->mobile,
+            'email'    => $request->email,
+            'role_id'  => 8, // default role_id for new users as customer
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Registration successful',
+            'user'    => [
+                'id'     => $user->id,
+                'name'   => $user->first_name . ' ' . $user->last_name,
+                'mobile' => $user->mobile,
+                'email'  => $user->email
+            ]
+        ], 201);
+    }
 
     public function login(Request $request, $type)
     {
