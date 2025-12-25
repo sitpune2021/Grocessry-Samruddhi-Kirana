@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+
 
 class LoginController extends Controller
 {
@@ -46,30 +48,49 @@ class LoginController extends Controller
         /* ================= OTP LOGIN ================= */
         if ($type === 'otp') {
 
+            // ✅ Rate limit BEFORE OTP generation
+            $key = 'login-otp-' . $request->mobile;
+
+            if (RateLimiter::tooManyAttempts($key, 3)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Too many OTP requests. Try again after 5 minutes.'
+                ], 429);
+            }
+
+            RateLimiter::hit($key, 300); // 5 minutes
+
             $otp = rand(100000, 999999);
 
-            $user->otp = $otp;
+
+            $user->otp = Hash::make($otp);
             $user->otp_expires_at = Carbon::now()->addMinutes(5);
             $user->save();
 
             $message = "Your OTP for login is $otp";
 
-            Http::withoutVerifying()->asForm()->post(
+            $response = Http::asForm()->post(
                 'http://redirect.ds3.in/submitsms.jsp',
                 [
-                    'user'     => 'SITSol',
-                    'key'      => 'b6b34d1d4dXX',
-                    'mobile'   => $user->mobile,
+                    'user'     => env('SMS_USER'),
+                    'key'      => env('SMS_KEY'),
+                    'mobile'   => '91' . $user->mobile,
                     'message'  => $message,
-                    'senderid' => 'DALERT',
+                    'senderid' => env('SMS_SENDERID'),
                     'accusage' => '10',
                 ]
             );
 
+            if (!$response->successful()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Failed to send OTP. Try again.'
+                ], 500);
+            }
+
             return response()->json([
                 'status' => true,
                 'message' => 'OTP sent successfully'
-                // ❌ do NOT return OTP in production
             ]);
         }
 
@@ -91,16 +112,94 @@ class LoginController extends Controller
         ]);
     }
 
-    public function verifyOtp(Request $request)
+
+    public function forgotPassword(Request $request)
     {
-        $validate = Validator::make($request->all(), [
-            'mobile' => 'required|digits:10',
-            'role_id'   => 'required',
-            'otp'    => 'required|digits:6'
+        $validator = Validator::make($request->all(), [
+            'mobile'  => 'required|digits:10',
+            'role_id' => 'required|integer'
         ]);
 
-        if ($validate->fails()) {
-            return response()->json(['errors' => $validate->errors()], 400);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('mobile', $request->mobile)
+            ->where('role_id', $request->role_id)
+            ->first();
+
+        // Do NOT reveal whether user exists (security)
+        if (!$user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'If the account exists, OTP has been sent'
+            ]);
+        }
+
+        // Rate limit
+        $key = 'forgot-password-' . $request->mobile;
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Too many requests. Try later.'
+            ], 429);
+        }
+        RateLimiter::hit($key, 300);
+
+        $otp = rand(100000, 999999);
+
+        $user->otp = Hash::make($otp);
+        $user->otp_expires_at = Carbon::now()->addMinutes(5);
+        $user->save();
+
+        // Send SMS
+        $message = "Your password reset OTP is $otp";
+
+        Http::asForm()->post(
+            'http://redirect.ds3.in/submitsms.jsp',
+            [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $user->mobile,
+                'message'  => $message,
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'If the account exists, OTP has been sent'
+        ]);
+    }
+
+    public function verifyOtp(Request $request, $type)
+    {
+        // Allow only valid OTP types
+        if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP type'
+            ], 400);
+        }
+
+        $validator = Validator::make(
+            array_merge($request->all(), ['otp_type' => $type]),
+            [
+                'mobile'  => 'required|digits:10',
+                'role_id' => 'required|integer',
+                'otp'     => 'required|digits:6',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $user = User::where('mobile', $request->mobile)
@@ -108,33 +207,139 @@ class LoginController extends Controller
             ->first();
 
         if (!$user) {
-            return response()->json(['message' => 'User not found', 'status' => false], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
         }
 
-        if ($user->otp != $request->otp) {
-            return response()->json(['message' => 'Invalid OTP', 'status' => false], 400);
+        // OTP must exist
+        if (!$user->otp || !$user->otp_expires_at) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP not requested'
+            ], 400);
         }
 
-        if (Carbon::now()->greaterThan($user->otp_expires_at)) {
-            return response()->json(['message' => 'OTP expired', 'status' => false], 400);
+        /* Rate limiting (per mobile + type) */
+        $rateKey = "otp-verify-{$type}-{$request->mobile}";
+
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Too many attempts. Try again later.'
+            ], 429);
         }
 
-        // Clear OTP after success
+        RateLimiter::hit($rateKey, 300); // 5 minutes
+
+        /* Expired OTP (CHECK FIRST) */
+        if (now()->greaterThan($user->otp_expires_at)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP expired'
+            ], 400);
+        }
+
+        /* Invalid OTP */
+        if (!Hash::check($request->otp, $user->otp)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP'
+            ], 400);
+        }
+
+        // Clear OTP after successful verification
         $user->otp = null;
         $user->otp_expires_at = null;
         $user->save();
 
-        // Issue login token (Sanctum)
-        $token = $user->createToken('mobile-login')->plainTextToken;
+        /* ================= RESPONSE BASED ON TYPE ================= */
+
+        if ($type === 'login_otp') {
+
+            // $user->otp = null;
+            // $user->otp_expires_at = null;
+            // $user->save();
+
+            $token = $user->createToken('mobile-login')->plainTextToken;
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Login successfully',
+                'token' => $token,
+                'user' => $user
+            ]);
+        }
+
+        // 🔁 FORGOT PASSWORD OTP → allow reset
+        if ($type === 'forgot_password_otp') {
+
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP verified. You may reset your password.'
+            ]);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'mobile'   => 'required|digits:10',
+            // 'otp'      => 'required|digits:6',
+            'password' => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('mobile', $request->mobile)->first();
+
+        //  User / OTP existence check
+        // if (!$user || !$user->otp || !$user->otp_expires_at) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'OTP invalid or expired'
+        //     ], 400);
+        // }
+
+        //  OTP expiry check
+        // if (now()->greaterThan($user->otp_expires_at)) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'OTP expired'
+        //     ], 400);
+        // }
+
+        //  OTP mismatch
+        // if (!Hash::check($request->otp, $user->otp)) {
+        //     return response()->json([
+        //         'status' => false,
+        //         'message' => 'Invalid OTP'
+        //     ], 400);
+        // }
+
+        // Update password & clear OTP
+
+        $user->password = Hash::make($request->password);
+        // $user->otp = null;
+        // $user->otp_expires_at = null;
+        $user->save();
 
         return response()->json([
-            'message' => 'OTP verified successfully',
             'status' => true,
-            'token' => $token,
+            'message' => 'Password reset successful',
             'user' => $user
         ]);
     }
-
 
     public function logout(Request $request)
     {
