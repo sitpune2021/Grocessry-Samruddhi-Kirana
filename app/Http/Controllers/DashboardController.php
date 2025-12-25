@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Batch;
+use App\Models\GroceryShop;
 use App\Models\User;
 use App\Models\WarehouseStock;
 use App\Models\Warehouse;
@@ -26,6 +27,12 @@ class DashboardController extends Controller
         $StockMovementCount = WarehouseStock::count();
         $WarehouseTransferCount = WarehouseTransfer::count();
         $UserCount = User::count();
+        $warehouseDistrict = Warehouse::whereNotNull('district_id')
+            ->pluck('name');
+        $warehouseTaluka = Warehouse::whereNotNull('taluka_id')
+            ->pluck('name');
+        $shops = GroceryShop::where('status', 'active')
+            ->pluck('shop_name');
 
         $expiredCount = ProductBatch::where('quantity', '>', 0)
             ->whereDate('expiry_date', '<', now())
@@ -48,7 +55,10 @@ class DashboardController extends Controller
                 'WarehouseTransferCount',
                 'UserCount',
                 'expiredCount',
-                'expiringSoonCount'
+                'expiringSoonCount',
+                'warehouseDistrict',
+                'warehouseTaluka',
+                'shops'
             )
         );
     }
