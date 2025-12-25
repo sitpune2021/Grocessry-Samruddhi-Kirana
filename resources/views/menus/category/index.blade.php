@@ -12,10 +12,12 @@
                     <h5 class="card-title mb-0">Category</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
+                     @if(hasPermission('category', 'create'))
                     <a href="{{ route('category.create') }}"
                         class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Category
                     </a>
+                     @endif
                 </div>
 
             </div>
