@@ -27,11 +27,11 @@
             <x-datatable-search />
 
             <!-- Table -->
-            <div class="table-responsive mt-3">
+            <div class="table-responsive mt-3 p-3">
                <table id="batchTable" class="table table-bordered table-striped">
 
                     <thead class="">
-                        <tr>
+                        <tr class="bg-light">
                             <th>Sr No</th>
                             <th>Role Name</th>
                             <th>Description</th>

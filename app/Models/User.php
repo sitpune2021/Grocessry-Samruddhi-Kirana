@@ -53,6 +53,11 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+
+    protected $casts = [
+        'permissions' => 'array', // IMPORTANT
+    ];
+
     protected function casts(): array
     {
         return [
@@ -62,7 +67,7 @@ class User extends Authenticatable
     }
     public function role()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(Role::class,'role_id');
     }
  
     public function permissions()
@@ -70,8 +75,42 @@ class User extends Authenticatable
         return $this->role->permissions();
     }
 
-    public function hasPermission($permission)
+    public function hasRole(string $role): bool
     {
-        return $this->permissions()->where('name', $permission)->exists();
+        return $this->role === $role;
+        // OR: return $this->role->name === $role; (if role relation)
     }
+
+    public function hasPermission(string $permission): bool
+    {
+        if (!$this->permissions) {
+            return false;
+        }
+
+        $permissions = is_array($this->permissions)
+            ? $this->permissions
+            : json_decode($this->permissions, true);
+
+        return in_array($permission, $permissions);
+    }
+
+    // public function hasPermission(string $permission): bool
+    // {
+
+    //     if ($this->role == 2) {
+    //         return true;
+    //     }
+
+    //     if (!empty($this->permissions) && in_array($permission, $this->permissions)) {
+    //         return true;
+    //     }
+
+    //     $rolePerm = RolePermission::where('role_id', $this->role_id)->first();
+
+    //     if (!$rolePerm) {
+    //         return false;
+    //     }
+
+    //     return in_array($permission, $rolePerm->permissions ?? []);
+    // }
 }

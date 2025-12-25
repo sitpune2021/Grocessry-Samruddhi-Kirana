@@ -26,7 +26,7 @@
             </div>
 
             <!-- Table -->
-            <div class="table-responsive mt-5">
+            <div class="table-responsive mt-5 p-3">
                 <table id="driverVehicleTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
                     <thead class="table-light">
                         <tr>
@@ -44,7 +44,8 @@
                         @forelse ($driverVehicles as $driverVehicle)
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
-                            <td>{{ $driverVehicle->driver->first_name }} {{ $driverVehicle->driver->last_name}}</td>
+                            <td>{{ $driverVehicle->driver?->first_name }}
+                                {{ $driverVehicle->driver?->last_name }}</td>
                             <td>{{ $driverVehicle->vehicle_no }}</td>
                             <td>{{ $driverVehicle->vehicle_type ?? '-' }}</td>
                             <td>{{ $driverVehicle->license_no ?? '-' }}</td>
@@ -61,7 +62,7 @@
                                 </span>
                                 @endif
                             </td>
-                            
+
                             <td class="text-center">
                                 <x-action-buttons
                                     :view-url="route('delivery-agents.show', $driverVehicle->id)"

@@ -47,11 +47,12 @@
                                              class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </div>
+                             
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">
-                                        {{ Auth::user()?->name ?? 'Guest' }}
-                                    </h6>
-                                    <small class="text-body-secondary">Admin</small>
+                                        {{ Auth::user()?->first_name ?? 'Guest' }}
+                                    </h6>                                   
+                                    <small class="text-body-secondary">{{ Auth::user()?->role?->name ?? 'Guest' }}</small>
                                 </div>
                             </div>
                         </a>
