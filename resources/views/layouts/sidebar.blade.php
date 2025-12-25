@@ -22,7 +22,6 @@
             </a>
         </li>
 
-
         <li class="menu-header">Management</li>
 
         {{-- @if (hasPermission('Roles', 'view')) --}}
@@ -58,9 +57,12 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
+                @if(auth()->check() && auth()->user()->role_id == 1)
                 <li><a href="{{ route('brands.index') }}">Brand</a></li>
                 <li><a href="{{ route('category.index') }}">Category</a></li>
+                <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
                 <li><a href="{{ route('product.index') }}">Products</a></li>
+                @endif
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                 <li><a href="/expiry-alerts">Expiry Alerts</a></li>
             </ul>
@@ -75,8 +77,11 @@
             <ul class="submenu" id="warehouseMenu">
                 <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
                 <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
+                @if(auth()->check() && auth()->user()->role_id == 1)
                 <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                @endif
                 <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+
             </ul>
         </li>
 
@@ -87,7 +92,9 @@
                 <i class="bx bx-chevron-right arrow" id="deliveryAgentArrow"></i>
             </div>
             <ul class="submenu" id="deliveryAgentMenu">
+                @if(auth()->check() && auth()->user()->role_id == 1)
                 <li><a href="{{ route('delivery-agents.index') }}">Agent & vehicle</a></li>
+                @endif
                 <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
             </ul>
         </li>
@@ -102,6 +109,8 @@
                 <li><a href="{{ route('retailer-orders.create') }}">Retailer Order price Lock</a></li>
             </ul>
         </li> -->
+
+        @if(auth()->check() && auth()->user()->role_id == 1)
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
                 <span><i class="bx bx-store me-2 "></i>Shop Management</span>
@@ -111,6 +120,7 @@
                 <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
             </ul>
         </li>
+        @endif
 </div>
 
 <script>

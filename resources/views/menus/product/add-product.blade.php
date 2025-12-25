@@ -32,11 +32,11 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Product
+                                        Add Product
                                         @elseif ($mode === 'edit')
-                                            Edit Product
+                                        Edit Product
                                         @else
-                                            View Product
+                                        View Product
                                         @endif
                                     </div>
 
@@ -47,11 +47,10 @@
                                             method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @if (isset($product))
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row">
-
                                                 {{-- Category --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
@@ -62,17 +61,45 @@
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">Select Category</option>
                                                             @foreach ($categories as $category)
-                                                                <option value="{{ $category->id }}"
-                                                                    {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                                    {{ $category->name }}
-                                                                </option>
+                                                            <option value="{{ $category->id }}"
+                                                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                                {{ $category->name }}
+                                                            </option>
                                                             @endforeach
                                                         </select>
                                                         @error('category_id')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
+                                                {{-- Sub Category --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            Sub Category <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <select name="sub_category_id" id="sub_category_id" class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Sub Category</option>
+
+                                                            {{-- Edit mode --}}
+                                                            @if(isset($product) && isset($subCategories))
+                                                            @foreach($subCategories as $sub)
+                                                            <option value="{{ $sub->id }}"
+                                                                {{ old('sub_category_id', $product->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                                {{ $sub->name }}
+                                                            </option>
+                                                            @endforeach
+                                                            @endif
+                                                        </select>
+
+                                                        @error('sub_category_id')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
 
                                                 {{-- Brand --}}
                                                 <div class="col-md-4">
@@ -83,14 +110,14 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">-- Select Brand --</option>
                                                         @foreach ($brands as $brand)
-                                                            <option value="{{ $brand->id }}"
-                                                                {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                                                {{ $brand->name }}
-                                                            </option>
+                                                        <option value="{{ $brand->id }}"
+                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                                                            {{ $brand->name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
                                                     @error('brand_id')
-                                                        <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
@@ -105,7 +132,7 @@
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Enter product name">
                                                         @error('name')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -120,7 +147,7 @@
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Enter SKU (optional)">
                                                         @error('sku')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -132,7 +159,7 @@
                                                         <textarea name="description" class="form-control " placeholder="Enter description" rows="3"
                                                             placeholder="Enter product description" {{ $mode === 'view' ? 'readonly' : '' }}>{{ old('description', $product->description ?? '') }}</textarea>
                                                         @error('description')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -147,7 +174,7 @@
                                                             value="{{ old('effective_date', isset($product) ? \Carbon\Carbon::parse($product->effective_date)->format('Y-m-d') : '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('effective_date')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -162,7 +189,7 @@
                                                             value="{{ old('expiry_date', isset($product) ? \Carbon\Carbon::parse($product->expiry_date)->format('Y-m-d') : '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('expiry_date')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -178,7 +205,7 @@
                                                             value="{{ old('base_price', $product->base_price ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('base_price')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -193,7 +220,7 @@
                                                             value="{{ old('retailer_price', $product->retailer_price ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('retailer_price')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -208,7 +235,7 @@
                                                             value="{{ old('mrp', $product->mrp ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('mrp')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -224,7 +251,7 @@
                                                             value="{{ old('gst_percentage', $product->gst_percentage ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('gst_percentage')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -240,7 +267,7 @@
                                                             value="{{ old('stock', $product->stock ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('stock')
-                                                            <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -250,24 +277,24 @@
                                                     <label class="form-label">Product Images</label>
 
                                                     @if ($mode !== 'view')
-                                                        <input type="file" name="product_images[]" multiple
-                                                            class="form-control @error('product_images') is-invalid @enderror">
+                                                    <input type="file" name="product_images[]" multiple
+                                                        class="form-control @error('product_images') is-invalid @enderror">
                                                     @endif
 
                                                     @error('product_images')
-                                                        <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                     @enderror
 
                                                     @if (!empty($product->product_images))
-                                                        <div class="mt-3 d-flex flex-wrap gap-2">
-                                                            @foreach (json_decode($product->product_images) as $img)
-                                                                <a href="{{ asset('storage/products/' . $img) }}"
-                                                                    target="_blank"
-                                                                    class="text-primary text-decoration-underline d-block">
-                                                                    View
-                                                                </a>
-                                                            @endforeach
-                                                        </div>
+                                                    <div class="mt-3 d-flex flex-wrap gap-2">
+                                                        @foreach (json_decode($product->product_images) as $img)
+                                                        <a href="{{ asset('storage/products/' . $img) }}"
+                                                            target="_blank"
+                                                            class="text-primary text-decoration-underline d-block">
+                                                            View
+                                                        </a>
+                                                        @endforeach
+                                                    </div>
                                                     @endif
                                                 </div>
 
@@ -279,13 +306,13 @@
                                                     </a>
 
                                                     @if ($mode === 'add')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Save Product
-                                                        </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Save Product
+                                                    </button>
                                                     @elseif ($mode === 'edit')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Update Product
-                                                        </button>
+                                                    <button type="submit" class="btn btn-primary">
+                                                        Update Product
+                                                    </button>
                                                     @endif
                                                 </div>
 
@@ -309,3 +336,38 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+
+        // Load Sub Categories on Category change
+        $('select[name="category_id"]').on('change', function() {
+
+            let categoryId = $(this).val();
+            let subCategorySelect = $('#sub_category_id');
+
+            subCategorySelect.html('<option value="">Loading...</option>');
+
+            if (categoryId) {
+                $.ajax({
+                    url: "{{ url('get-sub-categories') }}/" + categoryId,
+                    type: "GET",
+                    success: function(data) {
+
+                        let options = '<option value="">Select Sub Category</option>';
+                        $.each(data, function(key, value) {
+                            options += `<option value="${value.id}">${value.name}</option>`;
+                        });
+
+                        subCategorySelect.html(options);
+                    }
+                });
+            } else {
+                subCategorySelect.html('<option value="">Select Sub Category</option>');
+            }
+        });
+    });
+</script>
