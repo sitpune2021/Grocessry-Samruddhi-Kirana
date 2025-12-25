@@ -27,7 +27,7 @@
 
               <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
                 <div class="row">
-                  <div class="col-lg-6 col-md-12 col-6 mb-6">
+                  <div class="col-lg-4 col-md-12 col-4 mb-4">
                     <a href="{{ route('category.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
                         <div class="card-body">
@@ -41,7 +41,7 @@
                   </div>
 
 
-                  <div class="col-lg-6 col-md-12 col-6 mb-6">
+                  <div class="col-lg-4 col-md-12 col-4 mb-4">
                     <a href="{{ route('product.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
                         <div class="card-body">
