@@ -9,12 +9,12 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Delivery Agent</h5>
+                    <h5 class="card-title mb-0">Vehicle Assignment</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('delivery-agents.create') }}"
+                    <a href="{{ route('vehicle-assignments.create') }}"
                         class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Agent
+                        <i class="bx bx-plus"></i> Assign Vehicle
                     </a>
                 </div>
 
@@ -65,9 +65,9 @@
 
                             <td class="text-center">
                                 <x-action-buttons
-                                    :view-url="route('delivery-agents.show', $driverVehicle->id)"
-                                    :edit-url="route('delivery-agents.edit', $driverVehicle->id)"
-                                    :delete-url="route('delivery-agents.destroy', $driverVehicle->id)" />
+                                    :view-url="route('vehicle-assignments.show', $driverVehicle->id)"
+                                    :edit-url="route('vehicle-assignments.edit', $driverVehicle->id)"
+                                    :delete-url="route('vehicle-assignments.destroy', $driverVehicle->id)" />
                             </td>
                         </tr>
                         @empty
