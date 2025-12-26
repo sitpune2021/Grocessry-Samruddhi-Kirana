@@ -32,7 +32,7 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
                                         @if ($mode === 'add')
-                                        Add Product
+                                        <h4>Add Product</h4>
                                         @elseif ($mode === 'edit')
                                         Edit Product
                                         @else
