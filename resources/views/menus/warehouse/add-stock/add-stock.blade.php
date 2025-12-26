@@ -124,7 +124,7 @@
 
                                                 {{-- Batch --}}
 
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label for="batch_id">Batch</label>
                                                         <select name="batch_id" id="batch_id" class="form-control"
@@ -138,7 +138,7 @@
                                                             @endforeach
                                                         </select>
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Prices --}}
                                                 <div class="col-md-3">
