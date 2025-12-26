@@ -21,6 +21,8 @@ use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
 use App\Http\Controllers\GroceryShopController;
 use App\Http\Controllers\SubCategoryController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\VehicleAssignmentController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -63,6 +65,7 @@ Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getR
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/sub-category', SubCategoryController::class);
+Route::resource('/units', UnitController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
@@ -192,17 +195,15 @@ Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
-
-//Route::get('/roles/{id}', [RoleController::class, 'edit'])
-//  ->name('roles.edit');
-
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
+
+Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List
-Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+Route::get('/deliveries', [VehicleAssignmentController::class, 'index'])
     ->name('deliveries.index');
 
 
