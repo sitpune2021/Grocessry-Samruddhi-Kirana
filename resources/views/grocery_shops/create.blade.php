@@ -1,0 +1,194 @@
+
+@include('layouts.header')
+
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <!-- Menu -->
+            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                @include('layouts.sidebar')
+            </aside>
+            <!-- / Menu -->
+
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+
+                @include('layouts.navbar')
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+                        <div class="row justify-content-center">
+                            <div class="col-12">
+
+                                <div class="card shadow-sm border-0 rounded-3">
+
+                                        <h3 class="text-xl font-semibold mb-4">
+                                            {{ isset($shop) ? 'Update Shop' : 'Create Shop' }}
+                                        </h3>
+
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                       <form method="POST"
+                                            action="{{ isset($shop)
+                                                    ? route('grocery-shops.update', $shop->id)
+                                                    : route('grocery-shops.store') }}">
+
+                                            @csrf
+                                            @if(isset($shop))
+                                                @method('PUT')
+                                            @endif
+
+                                            {{-- Row 1 --}}
+                                            <div class="row">
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">Shop Name</label>
+                                                    <input type="text"
+                                                        name="shop_name"
+                                                        class="form-control"
+                                                        placeholder="Shop Name"
+                                                        value="{{ old('shop_name', $shop->shop_name ?? '') }}"
+                                                        required>
+                                                </div>
+
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">Owner Name</label>
+                                                    <input type="text"
+                                                        name="owner_name"
+                                                        class="form-control"
+                                                        placeholder="Owner Name"
+                                                        value="{{ old('owner_name', $shop->owner_name ?? '') }}">
+                                                </div>
+                                            </div>
+
+                                            {{-- Row 2 --}}
+                                            <div class="row">
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">Mobile No</label>
+                                                    <input type="text"
+                                                        name="mobile_no"
+                                                        class="form-control"
+                                                        placeholder="Mobile No"
+                                                        value="{{ old('mobile_no', $shop->mobile_no ?? '') }}">
+                                                </div>
+
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">District</label>
+                                                    <select name="district_id"
+                                                            id="district_id"
+                                                            class="form-select"
+                                                            required>
+                                                        <option value="">Select District</option>
+                                                        @foreach($districts as $district)
+                                                            <option value="{{ $district->id }}"
+                                                                {{ old('district_id', $shop->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ $district->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {{-- Row 3 --}}
+                                            <div class="row">
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">Taluka</label>
+                                                    <select name="taluka_id"
+                                                            id="taluka_id"
+                                                            class="form-select"
+                                                            required>
+                                                        <option value="">Select Taluka</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-6 col-12 mb-3">
+                                                    <label class="form-label">Address</label>
+                                                    <textarea name="address"
+                                                            class="form-control"
+                                                            rows="2"
+                                                            placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
+                                                </div>
+                                            </div>
+
+   
+                                            <!-- Buttons -->
+                                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                                <a href="{{ route('grocery-shops.index') }}" class="btn btn-outline-secondary">
+                                                    <i class="bx bx-arrow-back"></i> Back
+                                                </a>
+
+                                                <button type="submit" class="btn btn-primary">
+                                                    {{ isset($shop) ? 'Update Shop' : 'Save Shop' }}
+                                                </button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- / Content -->
+                    @include('layouts.footer')
+                </div>
+                <!-- Content wrapper -->
+            </div>
+            <!-- / Layout page -->
+        </div>
+
+    </div>
+    <!-- / Layout wrapper -->
+</body>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+    const districtSelect = document.getElementById('district_id');
+    const talukaSelect   = document.getElementById('taluka_id');
+    const selectedTaluka = "{{ old('taluka_id', $shop->taluka_id ?? '') }}";
+
+    function loadTalukas(districtId) {
+        talukaSelect.innerHTML = '<option value="">Loading...</option>';
+
+        fetch(`/talukas/by-district/${districtId}`)
+            .then(res => res.json())
+            .then(data => {
+                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+
+                data.forEach(taluka => {
+                    const option = document.createElement('option');
+                    option.value = taluka.id;
+                    option.text  = taluka.name;
+
+                    if (taluka.id == selectedTaluka) {
+                        option.selected = true;
+                    }
+
+                    talukaSelect.appendChild(option);
+                });
+            });
+    }
+
+    districtSelect.addEventListener('change', function () {
+        if (this.value) {
+            loadTalukas(this.value);
+        } else {
+            talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+        }
+    });
+
+    // EDIT time auto load
+    if (districtSelect.value) {
+        loadTalukas(districtSelect.value);
+    }
+});
+</script>

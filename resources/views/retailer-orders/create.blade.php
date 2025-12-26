@@ -47,7 +47,7 @@
                                                 <!-- Category -->
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="form-label">Category</label>
-                                                    <select id="category_id" class="form-select" required>
+                                                    <select id="category_id" name="category_id" class="form-select" required>
                                                         <option value="">Select Category</option>
                                                     </select>
                                                 </div>
@@ -57,7 +57,7 @@
                                                 <!-- Product -->
                                                 <div class="col-12 col-md-6 mb-3">
                                                     <label class="form-label">Product</label>
-                                                    <select id="product_id" class="form-select" required>
+                                                    <select id="product_id" name="product_id" class="form-select" required>
                                                         <option value="">Select Product</option>
                                                     </select>
                                                 </div>
@@ -67,6 +67,7 @@
                                                     <label class="form-label">Price</label>
                                                     <input type="number"
                                                         id="price"
+                                                        name="price"
                                                         class="form-control"
                                                         readonly
                                                         placeholder="Price">
@@ -79,11 +80,20 @@
                                                     <label class="form-label">Quantity</label>
                                                     <input type="number"
                                                         id="quantity"
+                                                        name="quantity"
                                                         class="form-control"
                                                         placeholder="Qty"
                                                         min="1"
                                                         required>
                                                 </div>
+                                            </div>
+
+                                            <!-- Warehouse -->
+                                            <div class="col-12 col-md-6 mb-3">
+                                                <label class="form-label">Warehouse</label>
+                                                <select id="warehouse_id" name="warehouse_id" class="form-select" required>
+                                                    <option value="">Select Warehouse</option>
+                                                </select>
                                             </div>
 
                                             <!-- 🔒 Hidden fields -->
@@ -128,8 +138,6 @@ document.querySelector('form').addEventListener('submit', function () {
 
 });
 </script>
-
-
 
 <script>
 const retailer = document.getElementById('retailer_id');
@@ -184,3 +192,36 @@ product.addEventListener('change', function () {
 });
 </script>
 
+<script>
+const warehouse = document.getElementById('warehouse_id');
+</script>
+
+<!-- category wise district and taluka wise show -->
+<script>
+category.addEventListener('change', function () {
+
+    product.innerHTML   = '<option value="">Select Product</option>';
+    warehouse.innerHTML = '<option value="">Loading...</option>';
+    priceEl.value = '';
+
+    // 🔥 Load warehouses by category
+    fetch(`/retailer-orders/ajax/get-warehouses-by-category/${retailer.value}/${this.value}`)
+        .then(res => res.json())
+        .then(data => {
+            warehouse.innerHTML = '<option value="">Select Warehouse</option>';
+            data.forEach(w => {
+                warehouse.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+            });
+        });
+
+    // Existing product fetch
+    fetch(`/retailer-orders/get-products-by-retailer/${retailer.value}/${this.value}`)
+        .then(res => res.json())
+        .then(data => {
+            product.innerHTML = '<option value="">Select Product</option>';
+            data.forEach(p => {
+                product.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+        });
+});
+</script>

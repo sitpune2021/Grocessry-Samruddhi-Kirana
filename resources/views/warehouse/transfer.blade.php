@@ -27,7 +27,7 @@
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
-                                    Warehouse-to-Warehouse Stock Transfer
+                                    District Wise Warehouse-to-Warehouse Stock Transfer
                                 </h4>
 
                                 <div class="card-body">
