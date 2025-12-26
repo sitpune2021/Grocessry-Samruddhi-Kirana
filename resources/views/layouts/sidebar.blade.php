@@ -1,7 +1,6 @@
 @include('layouts.header')
 
 
-
 <!-- Sidebar -->
 <div class="sidebar">
 
@@ -152,3 +151,4 @@
         }
     }
 </script>
+
