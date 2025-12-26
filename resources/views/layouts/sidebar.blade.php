@@ -2,7 +2,7 @@
 
 
 <!-- Sidebar -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
 
     <!-- Logo -->
     <div class="sidebar-logo">
@@ -17,7 +17,7 @@
 
         <li class="menu-item">
             <a href="/dashboard" class="menu-link active text-white">
-                <span><i class="bx bx-home-smile me-2"></i>DASHBOARD</span>
+                <i class="bx bx-home-smile me-2"></i><span>DASHBOARD</span>
             </a>
         </li>
 
@@ -33,7 +33,7 @@
         @if(auth()->check() && auth()->user()->role_id == 1)
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('userMenu','inventoryArrow')">
-                <span><i class="bx bx-package me-2 "></i>USER MANAGEMENT</span>
+                <i class="bx bx-package me-2 "></i><span>USER MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
             </div>
 
@@ -49,7 +49,7 @@
         <!-- Inventory Dropdown -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
-                <span><i class="bx bx-package me-2 "></i>INVENTORY</span>
+                <i class="bx bx-package me-2 "></i><span>INVENTORY</span>
                 <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
             </div>
 
@@ -68,7 +68,7 @@
         <!-- Warehouse -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>WAREHOUSE MANAGEMENT</span>
+               <i class="bx bx-store me-2 "></i><span>WAREHOUSE MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="warehouseMenu">
@@ -85,7 +85,7 @@
         <!-- Delivery Agent -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('deliveryAgentMenu','deliveryAgentArrow')">
-                <span><i class="bx bx-store me-2 "></i> DELIVERY AGENT</span>
+                <i class="bx bx-store me-2 "></i><span>DELIVERY AGENT</span>
                 <i class="bx bx-chevron-right arrow" id="deliveryAgentArrow"></i>
             </div>
             <ul class="submenu" id="deliveryAgentMenu">
@@ -110,7 +110,7 @@
         @if(auth()->check() && auth()->user()->role_id == 1)
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>SHOP MANAGEMENT</span>
+                <i class="bx bx-store me-2 "></i><span>SHOP MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="shopMenu">
