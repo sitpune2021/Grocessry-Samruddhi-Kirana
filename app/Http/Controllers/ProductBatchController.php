@@ -21,7 +21,6 @@ class ProductBatchController extends Controller
         return view('batches.index', compact('batches'));
     }
 
-
     public function create()
     {
         return view('batches.create', [
@@ -32,14 +31,12 @@ class ProductBatchController extends Controller
         ]);
     }
 
-
     public function getProductsByCategory($category_id)
     {
         return response()->json(
             Product::where('category_id', $category_id)->get()
         );
     }
-
 
     public function store(Request $request)
     {
@@ -92,7 +89,6 @@ class ProductBatchController extends Controller
         }
     }
 
-
     public function show($id)
     {
         $batch = ProductBatch::with('product.category')->findOrFail($id);
@@ -105,7 +101,6 @@ class ProductBatchController extends Controller
         ]);
     }
 
-
     public function edit($id)
     {
         $batch = ProductBatch::findOrFail($id);
@@ -117,7 +112,6 @@ class ProductBatchController extends Controller
             'products'   => Product::where('category_id', $batch->category_id)->get(),
         ]);
     }
-
 
     public function update(Request $request, $id)
     {
@@ -154,7 +148,6 @@ class ProductBatchController extends Controller
         ProductBatch::findOrFail($id)->delete();
         return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
     }
-
 
     public function expiryAlerts()
     {

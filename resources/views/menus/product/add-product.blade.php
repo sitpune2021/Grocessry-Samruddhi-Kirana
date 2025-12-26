@@ -72,6 +72,7 @@
                                                         @enderror
                                                     </div>
                                                 </div>
+
                                                 {{-- Sub Category --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
@@ -81,7 +82,9 @@
 
                                                         <select name="sub_category_id" id="sub_category_id" class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            @if($mode === 'add')
                                                             <option value="">Select Sub Category</option>
+                                                            @endif
 
                                                             {{-- Edit mode --}}
                                                             @if(isset($product) && isset($subCategories))
@@ -98,27 +101,6 @@
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
-
-
-                                                {{-- Brand --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Brand <span class="text-danger">*</span>
-                                                    </label>
-                                                    <select name="brand_id" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="">-- Select Brand --</option>
-                                                        @foreach ($brands as $brand)
-                                                        <option value="{{ $brand->id }}"
-                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                                            {{ $brand->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('brand_id')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
                                                 </div>
 
                                                 {{-- Product Name --}}
@@ -164,8 +146,28 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Effective Date --}}
+                                                {{-- Brand --}}
                                                 <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Brand <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="brand_id" class="form-control"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">-- Select Brand --</option>
+                                                        @foreach ($brands as $brand)
+                                                        <option value="{{ $brand->id }}"
+                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                                                            {{ $brand->name }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('brand_id')
+                                                    <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Effective Date --}}
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">
                                                             Effective Date <span class="text-danger">*</span>
@@ -177,10 +179,10 @@
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Expiry Date --}}
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">
                                                             Expiry Date <span class="text-danger">*</span>
@@ -192,7 +194,7 @@
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Prices --}}
                                                 <div class="col-md-3">
@@ -213,7 +215,7 @@
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
-                                                            Retailer Price <span class="text-danger">*</span>
+                                                            Selling Price <span class="text-danger">*</span>
                                                         </label>
                                                         <input type="number" step="0.01" name="retailer_price"
                                                             class="form-control" placeholder="Enter retailer price"
@@ -257,7 +259,7 @@
                                                 </div>
 
                                                 {{-- Stock --}}
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">
                                                             Stock <span class="text-danger">*</span>
@@ -270,7 +272,7 @@
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Images --}}
                                                 <div class="col-md-6 mb-3">

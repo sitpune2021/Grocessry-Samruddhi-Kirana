@@ -13,8 +13,8 @@
                     <h5 class="card-title">Warehouse Transfers</h5>
                 </div>
                 <div class="col-md-auto ms-auto mt-5">
-                    <a href="/warehouse-transfer" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Transfer Stock
+                    <a href="{{route('transfer.create')}}" class="btn btn-primary">
+                        Transfer Stock
                     </a>
                 </div>
             </div><br><br>
