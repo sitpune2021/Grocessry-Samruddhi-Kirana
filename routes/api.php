@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\CategoryProductController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::post('/register/{role}', [LoginController::class, 'register']);
+Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
 Route::post('/verify-otp/{type}', [LoginController::class, 'verifyOtp']);

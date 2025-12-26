@@ -2,7 +2,9 @@
 * demo.css
 * File include item demo only specific css only
 ******************************************************************************/
-    
+#sidebar::-webkit-scrollbar {
+  display: none;
+} 
 .menu .app-brand.demo {
   height: 64px;
   margin-top: 12px;
@@ -17,7 +19,8 @@
   font-size: 1.75rem;
   letter-spacing: -0.5px;
 }
-/* Login Card */
+
+
 
 /* Login Page Background */
 .login-body {
@@ -49,6 +52,8 @@
     margin: auto;
     padding: 0;
 }
+
+
 
 
 /* Logo */
@@ -162,6 +167,8 @@
 }
 
 
+
+
 /* Sidebar Container */
 .sidebar {
   width: 250px;
@@ -258,9 +265,8 @@
 
 /* Hover effect for main menu (a + div both) */
 .menu-link:hover {
-  background: #0a0a92;
-  /* Dark blue hover */
-  color: #ffffff;
+  background: #ffffff;
+  /* color: #faf6f6; */
 }
 
 /* Icon + text white on hover */
@@ -324,4 +330,78 @@
         transform: translateX(0);
         opacity: 1;
     }
+
+  }
+
+
+
+    /* Sidebar container */
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        background-color: #1e1e2f;
+        position: fixed;
+        top: 0;
+        left: 0;
+        overflow-y: auto;      /* ✅ Scrollbar enabled */
+        overflow-x: hidden;
+        padding-bottom: 30px;
+    }
+
+  
+
+    .sidebar {
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #1e1e2f;
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* LOGO — fixed inside sidebar */
+.sidebar-logo {
+    position: sticky;     /* 🔥 IMPORTANT */
+    top: 0;               /* 🔥 IMPORTANT */
+    z-index: 10;
+
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.sidebar-logo img {
+    max-width: 160px;
+}
+
+/* MENU — scrollable */
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.warehouse-list {
+  height: 150px;            /* visible area */
+  overflow: hidden;
+  position: relative;
+}
+
+.warehouse-list ul {
+  position: absolute;
+  width: 100%;
+  animation: slideUp 10s linear infinite;
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
 }
