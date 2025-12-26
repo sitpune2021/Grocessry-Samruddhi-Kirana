@@ -137,6 +137,9 @@
                                                                 </option>
                                                             @endforeach
                                                         </select>
+                                                          @error('batch_id')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
@@ -149,6 +152,9 @@
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Quantity">
+                                                             @error('quantity')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
 

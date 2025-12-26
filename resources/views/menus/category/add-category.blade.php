@@ -29,9 +29,9 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-category me-1"></i>
+                                      
                                         @if ($mode === 'add')
-                                            Add Category
+                                           <h4> Add Category </h4>
                                         @elseif($mode === 'edit')
                                             Edit Category
                                         @else
