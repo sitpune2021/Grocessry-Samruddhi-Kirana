@@ -42,7 +42,7 @@
                                         @method('PUT')
                                         @endif
 
-
+                                        <input type="hidden" name="category_id[]" value="1">
                                         <!-- Row 1: FROM & TO -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
@@ -80,7 +80,7 @@
 
                                         <!-- Row 2: CATEGORY & PRODUCT -->
                                         <div class="row g-3 mb-3">
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 d-none">
 
                                                 <label class="form-label fw-semibold">
                                                     Category <span class="text-danger">*</span>
@@ -189,7 +189,7 @@
 
                                             <div class="col-md-6">
                                                 <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
-                                                <input type="number"
+                                                <input type="text"
                                                     name="quantity"
                                                     id="quantity"
                                                     min="1" placeholder="Enter quantity"
@@ -272,189 +272,6 @@
 </body>
 
 
-<script>
-    document.getElementById('category_id').addEventListener('change', function() {
-        let categoryId = this.value;
-        let product = document.getElementById('product_id');
-        let batch = document.getElementById('batch_id');
-
-        const oldProductId = document.getElementById('old_product_id')?.value;
-
-        product.innerHTML = '<option>Loading...</option>';
-        batch.innerHTML = '<option>Select Batch</option>';
-
-        if (!categoryId) return;
-
-
-    });
-</script>
-
-<!-- get category wise product list and batch number -->
-<script>
-    document.getElementById('product_id').addEventListener('change', function() {
-        let productIds = $('#product_id').val();
-        let batch = document.getElementById('batch_id');
-        let oldBatchId = document.getElementById('old_batch_id')?.value;
-
-        batch.innerHTML = '<option>Loading...</option>';
-
-
-    });
-</script>
-
-<!-- validation error massage qut. -->
-<script>
-    const quantityInput = document.getElementById('quantity');
-    const batchSelect = document.getElementById('batch_id');
-    const fromWarehouseSelect = document.querySelector('select[name="from_warehouse_id"]');
-    const errorEl = document.getElementById('qtyError');
-    const form = document.getElementById('transferForm');
-
-    let maxQty = 0;
-
-    // Fetch stock whenever batch or warehouse changes
-    function fetchStock() {
-        const batchId = batchSelect.value;
-        const fromWarehouseId = fromWarehouseSelect.value;
-
-        if (!batchId || !fromWarehouseId) {
-            maxQty = 0;
-            errorEl.style.display = 'none';
-            return;
-        }
-
-        fetch(`/get-warehouse-stock/${fromWarehouseId}/${batchId}`)
-            .then(res => res.json())
-            .then(data => {
-                maxQty = data.quantity || 0;
-                validateQty();
-            });
-    }
-
-    function validateQty() {
-        const qty = parseInt(quantityInput.value) || 0;
-        if (qty > maxQty) {
-            errorEl.style.display = 'block';
-            errorEl.innerText = `Cannot transfer more than available stock (${maxQty})`;
-            return false;
-        } else {
-            errorEl.style.display = 'none';
-            return true;
-        }
-    }
-
-    // Event listeners
-    quantityInput.addEventListener('input', validateQty);
-    batchSelect.addEventListener('change', fetchStock);
-    fromWarehouseSelect.addEventListener('change', fetchStock);
-
-    // Prevent form submit if invalid
-    form.addEventListener('submit', function(e) {
-        if (!validateQty()) {
-            e.preventDefault();
-            alert('Please fix the quantity before submitting.');
-        }
-    });
-</script>
-
-<!-- batch expired validation -->
-<script>
-    batchSelect.addEventListener('change', function() {
-        const batchId = this.value;
-
-        if (!batchId) return;
-
-        fetch(`/check-batch-validity/${batchId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.valid) {
-                    errorEl.style.display = 'block';
-                    errorEl.innerText = data.message;
-
-                    quantityInput.value = '';
-                    quantityInput.disabled = true;
-                } else {
-                    errorEl.style.display = 'none';
-                    quantityInput.disabled = false;
-
-                    // stock bhi fetch karo
-                    fetchStock();
-                }
-            });
-    });
-</script>
-
-<!-- get warehouse wise category -->
-<script>
-    document.getElementById('from_warehouse_id').addEventListener('change', function() {
-        const warehouseId = this.value;
-
-        const categorySelect = document.getElementById('category_id');
-        const productSelect = document.getElementById('product_id');
-        const batchSelect = document.getElementById('batch_id');
-
-        const oldCategoryId = document.getElementById('old_category_id')?.value;
-
-        categorySelect.innerHTML = '<option value="">Loading categories...</option>';
-        productSelect.innerHTML = '<option value="">Select Product</option>';
-        batchSelect.innerHTML = '<option value="">Select Batch</option>';
-
-        if (!warehouseId) return;
-
-        fetch(`/ajax/warehouse/${warehouseId}/categories`)
-            .then(res => res.json())
-            .then(data => {
-                categorySelect.innerHTML = '<option value="">Select Category</option>';
-
-                data.forEach(c => {
-                    const selected = oldCategoryId == c.id ? 'selected' : '';
-                    categorySelect.innerHTML += `
-                    <option value="${c.id}" ${selected}>${c.name}</option>
-                `;
-                });
-
-                // 🔥 auto trigger product load in edit
-                if (oldCategoryId) {
-                    categorySelect.dispatchEvent(new Event('change'));
-                }
-            });
-    });
-</script>
-
-<!-- same warehouse not selected in from and to warehouse dropdown -->
-<script>
-    const fromWarehouse = document.getElementById('from_warehouse_id');
-    const toWarehouse = document.getElementById('to_warehouse_id');
-    const oldToWarehouse = document.getElementById('old_to_warehouse_id')?.value;
-
-    fromWarehouse.addEventListener('change', function() {
-        const selectedFrom = this.value;
-
-        Array.from(toWarehouse.options).forEach(option => {
-            if (!option.value) return;
-
-            // same warehouse hide
-            if (option.value === selectedFrom) {
-                option.disabled = true;
-                option.style.display = 'none';
-            } else {
-                option.disabled = false;
-                option.style.display = 'block';
-            }
-        });
-
-        // ✅ Edit mode → restore selection
-        if (oldToWarehouse && selectedFrom !== oldToWarehouse) {
-            toWarehouse.value = oldToWarehouse;
-        }
-
-        // ✅ Create mode safety
-        if (!oldToWarehouse && toWarehouse.value === selectedFrom) {
-            toWarehouse.value = '';
-        }
-    });
-</script>
-
 <!-- edit mode get warehouse wise category -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -486,56 +303,67 @@
 
         const fromWarehouse = fromWarehouseEl.value;
         const toWarehouse = toWarehouseEl.value;
-        const categoryId = categoryEl.value;
-        const productId = productEl.value;
-        const batchId = batchEl.value;
-        const quantity = qtyEl.value;
+        const categoryId = document.querySelector('input[name="category_id[]"]').value;
 
-        if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
+        const productIds = $('#product_id').val(); // ARRAY
+        const batchIds = $('#batch_id').val(); // ARRAY
+        const quantity = qtyEl.value; // "10,20,30"
+
+        if (!fromWarehouse || !toWarehouse || !productIds || !batchIds || !quantity) {
             alert('Please fill all fields');
             return;
         }
 
-        if (!validateQty()) return;
+        const quantityList = quantity.split(',').map(q => q.trim());
 
-        const rowIndex = editingIndex !== null ? editingIndex : index;
-
-        if (editingIndex !== null) {
-            removeRow(editingIndex);
-            editingIndex = null;
+        if (
+            productIds.length !== batchIds.length ||
+            batchIds.length !== quantityList.length
+        ) {
+            alert('Product, Batch and Quantity count mismatch');
+            return;
         }
+ 
+        // 🔥 LOOP = MULTIPLE ROWS
+        productIds.forEach((productId, i) => {
 
-        const row = `
+            const batchId = batchIds[i];
+            const qty = quantityList[i];
+
+            const rowIndex = index++;
+
+            const row = `
         <tr id="row_${rowIndex}">
             <td>${fromWarehouseEl.options[fromWarehouseEl.selectedIndex].text}</td>
             <td>${toWarehouseEl.options[toWarehouseEl.selectedIndex].text}</td>
-            <td>${categoryEl.options[categoryEl.selectedIndex].text}</td>
-            <td>${productEl.options[productEl.selectedIndex].text}</td>
-            <td>${batchEl.options[batchEl.selectedIndex].text}</td>
-            <td>${quantity}</td>
+            <td>Category</td>
+            <td>${$('#product_id option[value="'+productId+'"]').text()}</td>
+            <td>${$('#batch_id option[value="'+batchId+'"]').text()}</td>
+            <td>${qty}</td>
             <td>
-                <button type="button" class="btn btn-warning btn-sm me-1" onclick="editRow(${rowIndex})">Edit</button>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${rowIndex})">Remove</button>
+                <button type="button" class="btn btn-warning btn-sm me-1 edit-row" data-index="${rowIndex}">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm remove-row" data-index="${rowIndex}">Remove</button>
             </td>
         </tr>
-    `;
+        `;
 
-        tableWrapper.style.display = 'block';
-        tableBody.insertAdjacentHTML('beforeend', row);
+            tableWrapper.style.display = 'block';
+            tableBody.insertAdjacentHTML('beforeend', row);
 
-        itemsContainer.insertAdjacentHTML('beforeend', `
-        <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
-        <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
-        <input type="hidden" name="items[${rowIndex}][category_id]" value="${categoryId}">
-        <input type="hidden" name="items[${rowIndex}][product_id]" value="${productId}">
-        <input type="hidden" name="items[${rowIndex}][batch_id]" value="${batchId}">
-        <input type="hidden" name="items[${rowIndex}][quantity]" value="${quantity}">
+            itemsContainer.insertAdjacentHTML('beforeend', `
+    <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
+    <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
+    <input type="hidden" name="items[${rowIndex}][category_id]" value="${categoryId}">
+    <input type="hidden" name="items[${rowIndex}][product_id]" value="${productId}">
+    <input type="hidden" name="items[${rowIndex}][batch_id]" value="${batchId}">
+    <input type="hidden" name="items[${rowIndex}][quantity]" value="${qty}">
     `);
+        });
 
-        if (rowIndex === index) index++;
 
         resetFullForm();
     });
+
 
     /* ================= EDIT ================= */
 
@@ -562,8 +390,7 @@
         await waitForOptions(batchEl, getVal('batch_id'));
         batchEl.value = getVal('batch_id');
 
-        qtyEl.value = getVal('quantity');
-        fetchStock();
+
 
         removeRow(i);
     }
@@ -623,32 +450,29 @@
             width: '100%'
         });
 
+        $('#from_warehouse_id').on('change', function() {
 
-        // -------------------------
-        // CATEGORY → PRODUCTS
-        // -------------------------
-        $('#category_id').on('change', function() {
-
-            let categoryIds = $(this).val();
-            let warehouseId = $('#from_warehouse_id').val();
-
-            if (!categoryIds || !warehouseId) return;
+            let warehouseId = $(this).val();
+            if (!warehouseId) return;
 
             $.get("{{ route('ajax.warehouse.stock.data') }}", {
-                category_ids: categoryIds,
                 warehouse_id: warehouseId
             }, function(res) {
 
                 if (res.type === 'products') {
+
                     let options = '';
                     res.data.forEach(p => {
                         options += `<option value="${p.id}">${p.name}</option>`;
                     });
 
                     $('#product_id').html(options).trigger('change');
+                    $('#batch_id').html('').trigger('change');
                 }
             });
         });
+
+
 
 
         $('#product_id').on('change', function() {
@@ -666,7 +490,11 @@
                 if (res.type === 'batches') {
                     let options = '';
                     res.data.forEach(b => {
-                        options += `<option value="${b.id}">${b.batch_no}</option>`;
+                        options += `
+                <option value="${b.id}">
+                    ${b.batch_no}
+                </option>
+            `;
                     });
 
                     $('#batch_id').html(options).trigger('change');
@@ -677,5 +505,35 @@
 
 
     });
+</script>
 
+<script>
+    $('#batch_id').on('change', function() {
+
+        let selectedBatches = $(this).val(); // array
+        let warehouseId = $('#from_warehouse_id').val();
+
+        if (!selectedBatches || !warehouseId) {
+            $('#quantity').val('');
+            return;
+        }
+
+        let qtyList = [];
+        let requests = [];
+
+        selectedBatches.forEach(batchId => {
+            requests.push(
+                $.get(`/get-warehouse-stock/${warehouseId}/${batchId}`, function(res) {
+                    if (res.quantity) {
+                        qtyList.push(res.quantity);
+                    }
+                })
+            );
+        });
+
+        Promise.all(requests).then(() => {
+            // 🔥 COMMA SEPARATED, NOT SUM
+            $('#quantity').val(qtyList.join(','));
+        });
+    });
 </script>

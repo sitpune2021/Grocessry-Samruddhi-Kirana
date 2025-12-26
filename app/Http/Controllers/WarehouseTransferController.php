@@ -36,14 +36,10 @@ class WarehouseTransferController extends Controller
     public function create()
     {
         return view('warehouse.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')
-                ->where('type', 'district')
-                ->whereNotNull('district_id')
-                ->where('district_id', '!=', 0)
-                ->get(),
-
+            'warehouses' => Warehouse::where('status', 'active')->get(),
+            //'categories' => Category::all(),
             'categories' => collect(), // initially empty
-            'transfer'   => null,
+            'transfer'   => null, // important
         ]);
     }
 
@@ -292,13 +288,13 @@ class WarehouseTransferController extends Controller
     {
         $transfer = WarehouseTransfer::findOrFail($id);
 
-        // 🔴 OLD VALUES
+
         $oldFromWarehouse = $transfer->from_warehouse_id;
         $oldToWarehouse   = $transfer->to_warehouse_id;
         $oldBatchId       = $transfer->batch_id;
         $oldQty           = $transfer->quantity;
 
-        // ✅ Validation
+
         $validated = $request->validate([
             'from_warehouse_id' => 'required|exists:warehouses,id',
             'to_warehouse_id'   => 'required|exists:warehouses,id|different:from_warehouse_id',
@@ -457,10 +453,13 @@ class WarehouseTransferController extends Controller
     public function getWarehouseStockData(Request $request)
     {
         // CATEGORY → PRODUCTS
-        if ($request->has('category_ids') && $request->has('warehouse_id')) {
+        if (
+            $request->has('warehouse_id') &&
+            !$request->has('category_ids') &&
+            !$request->has('product_ids')
+        ) {
 
             $products = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-                ->whereIn('category_id', $request->category_ids)
                 ->where('quantity', '>', 0)
                 ->with('product:id,name')
                 ->get()
@@ -473,7 +472,6 @@ class WarehouseTransferController extends Controller
                 'data' => $products
             ]);
         }
-
         // PRODUCT → BATCHES (MULTI)
         if ($request->has('product_ids') && $request->has('warehouse_id')) {
 

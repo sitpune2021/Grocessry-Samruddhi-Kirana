@@ -27,6 +27,16 @@
         {{-- @if (hasPermission('Roles', 'view')) --}}
         <li class="menu-item">
 
+            {{-- @if (hasPermission('Roles', 'view')) --}}
+        <li class="menu-item">
+            <a href="{{ route('roles.index') }}" class="menu-link text-white">
+                <span><i class="bx bx-store me-2"></i> Role</span>
+            </a>
+        </li>
+
+        {{-- @endif --}}
+
+
         </li>
         {{-- @endif --}}
 
@@ -44,7 +54,7 @@
             </ul>
         </li>
         @endif
-        
+
 
         <!-- Inventory Dropdown -->
         <li class="menu-item">
@@ -151,4 +161,3 @@
         }
     }
 </script>
-

@@ -129,8 +129,9 @@ Route::get(
 
 
 Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
+Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
+    ->name('transfer.create');
 
-Route::get('/warehouse-transfer', [WarehouseTransferController::class, 'create'])->name('transfer.create');
 Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
 Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
 Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
@@ -158,7 +159,8 @@ Route::get(
     [WarehouseTransferController::class, 'getWarehouseAllData']
 )->name('warehouse.multiselect');
 
-Route::get('/ajax/warehouse-stock-data', 
+Route::get(
+    '/ajax/warehouse-stock-data',
     [WarehouseTransferController::class, 'getWarehouseStockData']
 )->name('ajax.warehouse.stock.data');
 
@@ -189,7 +191,11 @@ Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles
 
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
-    
+
+
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+//  ->name('roles.edit');
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
@@ -211,31 +217,30 @@ Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
     Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
     Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
     Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
-
 });
 
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
 
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
 
 Route::prefix('retailers')->name('retailers.')->group(function () {
@@ -331,14 +336,13 @@ Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
     Route::delete('/{groceryShop}', [GroceryShopController::class, 'destroy'])
         ->name('destroy');
-    
-    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
-    ->name('show');
 
+    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
+        ->name('show');
 });
 
-    Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
-        ->name('talukas.by-district');
+Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
+    ->name('talukas.by-district');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
