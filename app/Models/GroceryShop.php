@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// app/Models/GroceryShop.php
+
 class GroceryShop extends Model
 {
     protected $fillable = [
@@ -18,4 +18,11 @@ class GroceryShop extends Model
         'pincode',
         'status',
     ];
+
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+
 }
