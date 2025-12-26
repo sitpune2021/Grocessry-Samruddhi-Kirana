@@ -8,15 +8,20 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        // Commands list here, e.g.
-        // \App\Console\Commands\BlockExpiredBatches::class,
+        // \App\Console\Commands\BatchExpiryAlert::class, // optional
     ];
 
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('batches:block-expired')->daily();
-    }
+        // Daily 9 PM expiry alert
+        $schedule->command('batch:expiry-alert')
+            ->dailyAt('21:00')
+            ->withoutOverlapping()
+            ->runInBackground();
 
+        // (Optional) auto block expired batches
+        // $schedule->command('batches:block-expired')->daily();
+    }
 
     protected function commands()
     {

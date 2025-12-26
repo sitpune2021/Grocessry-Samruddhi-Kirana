@@ -34,10 +34,10 @@
                                 <th>SKU</th>
                                 <th>Description</th>
                                 <th>Base Price</th>
-                                <th>Retailer Price</th>
+                                <th>Selling Price</th>
                                 <th>MRP</th>
                                 <th>GST (%)</th>
-                                <th>Stock</th>
+                                <!-- <th>Stock</th> -->
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -75,10 +75,7 @@
                                     <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                                     <td>₹{{ number_format($product->mrp, 2) }}</td>
                                     <td>{{ $product->gst_percentage ?? '-' }}</td>
-                                    <td>{{ $product->stock ?? '-' }}</td>
-
-
-
+                                    <!-- <td>{{ $product->stock ?? '-' }}</td> -->
                                     {{-- Actions --}}
                                     <td>
                                         <x-action-buttons :view-url="route('product.show', $product->id)" :edit-url="route('product.edit', $product->id)" :delete-url="route('product.destroy', $product->id)" />
