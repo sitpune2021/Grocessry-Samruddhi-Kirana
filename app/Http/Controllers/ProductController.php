@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
+use App\Models\SubCategory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -54,7 +55,8 @@ class ProductController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            return view('menus.product.add-product', compact('mode', 'categories', 'brands'));
+            $subCategories = SubCategory::all();
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -83,14 +85,14 @@ class ProductController extends Controller
                 'brand_id'        => 'required',
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
-                'effective_date'  => 'required|date',
-                'expiry_date'     => 'required|date|after_or_equal:effective_date',
+                // 'effective_date'  => 'required|date',
+                // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
                 'description'     => 'nullable|string',
-                'base_price'      => 'required|numeric',
-                'retailer_price'  => 'required|numeric',
-                'mrp'             => 'required|numeric',
-                'gst_percentage'  => 'required|numeric',
-                'stock'           => 'required|integer',
+                'base_price'      => 'required|numeric|min:1',
+                'retailer_price'  => 'required|numeric|min:1',
+                'mrp'             => 'required|numeric|min:1',
+                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
@@ -164,7 +166,9 @@ class ProductController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands'));
+            $subCategories = SubCategory::where('category_id', $product->category_id)->get();
+
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
             Log::error('Product View Error', ['message' => $e->getMessage()]);
             return redirect()->route('product.index')
@@ -194,7 +198,9 @@ class ProductController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands'));
+            $subCategories = SubCategory::where('category_id', $product->category_id)->get();
+
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -227,14 +233,17 @@ class ProductController extends Controller
 
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
+                'brand_id'        => 'required',
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
+                // 'effective_date'  => 'required|date',
+                // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
                 'description'     => 'nullable|string',
-                'base_price'      => 'required|numeric',
-                'retailer_price'  => 'required|numeric',
-                'mrp'             => 'required|numeric',
-                'gst_percentage'  => 'required|numeric',
-                'stock'           => 'required|integer',
+                'base_price'      => 'required|numeric|min:1',
+                'retailer_price'  => 'required|numeric|min:1',
+                'mrp'             => 'required|numeric|min:1',
+                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
