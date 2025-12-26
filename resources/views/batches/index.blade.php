@@ -58,8 +58,6 @@
     </div>
 </div>
 
-
-
 @endsection
 
 <!-- table search box script -->
