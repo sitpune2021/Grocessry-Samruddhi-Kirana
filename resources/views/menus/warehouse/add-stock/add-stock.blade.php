@@ -124,7 +124,7 @@
 
                                                 {{-- Batch --}}
 
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label for="batch_id">Batch</label>
                                                         <select name="batch_id" id="batch_id" class="form-control"
@@ -137,8 +137,11 @@
                                                                 </option>
                                                             @endforeach
                                                         </select>
+                                                          @error('batch_id')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Prices --}}
                                                 <div class="col-md-3">
@@ -149,6 +152,9 @@
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Quantity">
+                                                             @error('quantity')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
 

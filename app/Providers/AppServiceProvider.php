@@ -17,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        // Fix for MySQL key length issue (utf8mb4)
+        Schema::defaultStringLength(191);
+
         Blade::if('canPermission', function ($permission) {
 
             $user = auth()->user();

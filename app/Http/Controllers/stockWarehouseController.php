@@ -50,7 +50,8 @@ class stockWarehouseController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
             'product_id'   => 'required|exists:products,id',
-            'batch_id'     => 'required|exists:product_batches,id',
+            //'batch_id'     => 'required|exists:product_batches,id',
+            'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
         ]);
 
@@ -64,12 +65,26 @@ class stockWarehouseController extends Controller
                 'batch_id'     => $request->batch_id,
             ]);
 
+            // $stock = WarehouseStock::where([
+            //     'warehouse_id' => $request->warehouse_id,
+            //     'category_id'  => $request->category_id,
+            //     'product_id'   => $request->product_id,
+            //     'batch_id'     => $request->batch_id,
+            // ])->first();
             $stock = WarehouseStock::where([
                 'warehouse_id' => $request->warehouse_id,
                 'category_id'  => $request->category_id,
                 'product_id'   => $request->product_id,
-                'batch_id'     => $request->batch_id,
-            ])->first();
+            ]);
+
+            if ($request->filled('batch_id')) {
+                $stock->where('batch_id', $request->batch_id);
+            } else {
+                $stock->whereNull('batch_id');
+            }
+
+            $stock = $stock->first();
+
 
             if ($stock) {
                 Log::info('Stock exists, updating quantity', [
@@ -91,7 +106,8 @@ class stockWarehouseController extends Controller
                     'warehouse_id' => $request->warehouse_id,
                     'category_id'  => $request->category_id,
                     'product_id'   => $request->product_id,
-                    'batch_id'     => $request->batch_id,
+                    //'batch_id'     => $request->batch_id,
+                    'batch_id'     => $request->batch_id ?? null,
                     'quantity'     => $request->quantity,
                 ]);
 
@@ -170,7 +186,8 @@ class stockWarehouseController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
             'product_id'   => 'required|exists:products,id',
-            'batch_id'     => 'required|exists:product_batches,id',
+            //'batch_id'     => 'required|exists:product_batches,id',
+            'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
         ]);
 
@@ -183,7 +200,8 @@ class stockWarehouseController extends Controller
                 'warehouse_id' => $request->warehouse_id,
                 'category_id'  => $request->category_id,
                 'product_id'   => $request->product_id,
-                'batch_id'     => $request->batch_id,
+                //'batch_id'     => $request->batch_id,
+                'batch_id'     => $request->batch_id ?? null,
                 'quantity'     => $request->quantity,
             ]);
 

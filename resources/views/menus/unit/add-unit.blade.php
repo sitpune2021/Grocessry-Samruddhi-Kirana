@@ -29,81 +29,84 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                      
+                                        <i class="bx bx-category me-1"></i>
                                         @if ($mode === 'add')
-                                           <h4> Add Category </h4>
+                                        Add Unit
                                         @elseif($mode === 'edit')
-                                            Edit Category
+                                        Edit Unit
                                         @else
-                                            View Category
+                                        View Unit
                                         @endif
                                     </div>
 
                                     <div class="card-body">
                                         <form
-                                            action="{{ isset($category) ? route('category.update', $category->id) : route('category.store') }}"
+                                            action="{{ $mode === 'edit' ? route('units.update', $units->id) : route('units.store') }}"
                                             method="POST">
                                             @csrf
-                                            @if (isset($category))
-                                                @method('PUT')
+
+                                            @if ($mode === 'edit')
+                                            @method('PUT')
                                             @endif
 
                                             <!-- Inputs side by side -->
                                             <div class="row g-3">
 
-                                                <!-- Category Name -->
+                                                <!-- Parent Category -->
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Category Name</label> <span
-                                                        class="text-danger">*</span>
+                                                    <label class="form-label fw-medium">
+                                                        Unit Name <span class="text-danger">*</span>
+                                                    </label>
 
-                                                    <input type="text" name="name" class="form-control "
-                                                        value="{{ old('name', $category->name ?? '') }}"
-                                                        placeholder="Enter category name"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('name')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                <!-- Category Slug -->
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Category Slug<span class="text-danger">*</span></label>
-                                                    <input type="text" name="slug"
+                                                    <input type="text"
+                                                        name="name"
                                                         class="form-control"
-                                                        value="{{ old('slug', $category->slug ?? '') }}"
-                                                        placeholder="auto-generated or manual"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                     @error('slug')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                        value="{{ old('name', $units->name ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                    @error('name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
+                                                <!-- Sub Category Name -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Short Name<span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <input type="text"
+                                                        name="short_name"
+                                                        class="form-control"
+                                                        value="{{ old('short_name', $units->short_name ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                    @error('short_name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
                                             </div>
 
                                             <!-- Buttons (Right Aligned) -->
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('category.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                <a href="{{ route('units.index') }}" class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Save Category
-                                                    </button>
-                                                @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Update Category
-                                                    </button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    Save Unit
+                                                </button>
+                                                @elseif ($mode === 'edit')
+                                                <button type="submit" class="btn btn-primary">
+                                                    Update Unit
+                                                </button>
                                                 @endif
                                             </div>
-
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                     <!-- / Content -->

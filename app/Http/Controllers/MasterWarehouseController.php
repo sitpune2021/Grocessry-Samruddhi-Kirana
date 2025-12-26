@@ -37,15 +37,18 @@ class MasterWarehouseController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:master,district,taluka',
-            'contact_number' => 'required|digits:10',
+      $request->validate([
+    'name' => 'required|string|max:255',
+    'type' => 'required|in:master,district,taluka',
+    'contact_person' => 'required|string|min:3|max:50',
+    'email' => 'required|email',
+    'contact_number' => 'required|digits:10',
+    'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+    'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+    'taluka_id' => 'nullable|required_if:type,taluka|integer',
+    'address'  => 'required|string|max:500'
+]);
 
-            'parent_id'   => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'taluka_id'   => 'nullable|required_if:type,taluka|integer',
-        ]);
 
         $data = [
             'name'           => $request->name,
@@ -155,7 +158,6 @@ class MasterWarehouseController extends Controller
                 'district_id' => $request->district_id,
                 'taluka_id' => $request->taluka_id,
                 'address' => $request->address,
-                'contact_number' => $request->contact_number,
                 'contact_number' => $request->mobile,
                 'email' => $request->email,
             ]);

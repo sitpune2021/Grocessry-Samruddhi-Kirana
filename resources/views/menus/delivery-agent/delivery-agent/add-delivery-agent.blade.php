@@ -30,11 +30,11 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-category me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Agent
+                                        Add Agent
                                         @elseif($mode === 'edit')
-                                            Edit Agent
+                                        Edit Agent
                                         @else
-                                            View Agent
+                                        View Agent
                                         @endif
                                     </div>
 
@@ -44,61 +44,68 @@
                                             method="POST">
                                             @csrf
                                             @if (isset($driverVehicle))
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
 
                                                 {{-- Agent / Driver Name --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Agent Name <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="driver_id" class="form-select "
+                                                    <label class="form-label fw-medium">
+                                                        Name <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        name="name"
+                                                        class="form-control"
+                                                        value="{{ old('name', $agent->name ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="">Select Agent</option>
-                                                        @foreach ($agents as $agent)
-                                                            <option value="{{ $agent->id }}"
-                                                                {{ old('driver_id', $driverVehicle->driver_id ?? '') == $agent->id ? 'selected' : '' }}>
-                                                                {{ $agent->first_name }} {{ $agent->last_name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
 
-                                                    @error('driver_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @error('name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Vehicle No --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Vehicle <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="text" name="vehicle_no" class="form-control"
-                                                        placeholder="Enter vehicle no"
-                                                        value="{{ old('vehicle_no', $driverVehicle->vehicle_no ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('vehicle_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <label class="form-label fw-medium">
+                                                        Mobile <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        name="mobile"
+                                                        class="form-control"
+                                                        value="{{ old('mobile', $agent->mobile ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                    @error('mobile')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Vehicle Type --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Vehicle Type</label>
-                                                    <input type="text" name="vehicle_type" class="form-control"
-                                                        placeholder="Enter vehicle type"
-                                                        value="{{ old('vehicle_type', $driverVehicle->vehicle_type ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    <label class="form-label fw-medium">
+                                                        Email
+                                                    </label>
+                                                    <input type="email"
+                                                        name="email"
+                                                        class="form-control"
+                                                        value="{{ old('email', $agent->email ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                    @error('email')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
 
                                                 </div>
 
                                                 {{-- License No --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">License No </label>
-                                                    <input type="text" name="license_no" class="form-control "
-                                                        placeholder="Enter license no"
-                                                        value="{{ old('license_no', $driverVehicle->license_no ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    <label class="form-label fw-medium">Vehicle Type</label>
+                                                    <input type="text"
+                                                        name="vehicle_type"
+                                                        class="form-control"
+                                                        value="{{ old('vehicle_type', $agent->vehicle_type ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                 </div>
 
@@ -124,7 +131,7 @@
                                                     </div>
 
                                                     @error('active_status')
-                                                        <div class="text-danger small">{{ $message }}</div>
+                                                    <div class="text-danger small">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -138,9 +145,9 @@
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">Save Agent</button>
+                                                <button type="submit" class="btn btn-primary">Save Agent</button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">Update Agent</button>
+                                                <button type="submit" class="btn btn-primary">Update Agent</button>
                                                 @endif
                                             </div>
                                         </form>

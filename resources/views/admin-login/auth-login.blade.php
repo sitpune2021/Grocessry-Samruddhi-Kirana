@@ -1,8 +1,8 @@
 @include('layouts.header')
 
-<body class="bg-light" >
+<body class="login-body" >
 
-<div class="container min-vh-100 d-flex align-items-center justify-content-center p-10 "> 
+<div class="container min-vh-100 align-items-center justify-content-center p-10 "> 
     <div class="login-card card">
         <div class="card-body p-4">
 
@@ -66,7 +66,7 @@
                     </a>
                 </div>
 
-                <button class="btn btn-primary w-100">Login</button>
+                <button class="btn btn-success w-100">Login</button>
             </form>
 
         </div>
