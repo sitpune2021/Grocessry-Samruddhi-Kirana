@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'log
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/categories',                    [CategoryProductController::class, 'getCategories']);
-    Route::get('/categories/{id}/subcategories', [CategoryProductController::class, 'getSubCategories']);
+    Route::get('/categories/{id}/subcategories', [CategoryProductController::class, 'getSubCategoriesByCategory']);
     Route::get('/subcategories/{id}/products',   [CategoryProductController::class, 'getProductsBySubcategory']);
     Route::get('/brands',                        [CategoryProductController::class, 'getBrands']);
     Route::get('/brands/{id}/products',          [CategoryProductController::class, 'getProductsByBrand']);
