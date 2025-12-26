@@ -21,6 +21,8 @@ use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
 use App\Http\Controllers\GroceryShopController;
 use App\Http\Controllers\SubCategoryController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\VehicleAssignmentController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -63,6 +65,7 @@ Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getR
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/sub-category', SubCategoryController::class);
+Route::resource('/units', UnitController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
@@ -147,14 +150,16 @@ Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles
 
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
-    
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
+
+Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List
-Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+Route::get('/deliveries', [VehicleAssignmentController::class, 'index'])
     ->name('deliveries.index');
 
 
@@ -169,31 +174,30 @@ Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
     Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
     Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
     Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
-
 });
 
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
 
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
 
 Route::prefix('retailers')->name('retailers.')->group(function () {
@@ -289,14 +293,13 @@ Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
     Route::delete('/{groceryShop}', [GroceryShopController::class, 'destroy'])
         ->name('destroy');
-    
-    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
-    ->name('show');
 
+    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
+        ->name('show');
 });
 
-    Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
-        ->name('talukas.by-district');
+Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
+    ->name('talukas.by-district');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
