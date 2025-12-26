@@ -45,7 +45,7 @@
             </ul>
         </li>
         @endif
-        
+
 
         <!-- Inventory Dropdown -->
         <li class="menu-item">
@@ -56,13 +56,14 @@
 
             <ul class="submenu" id="inventoryMenu">
                 @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                <li><a href="{{ route('category.index') }}">Category</a></li>
-                <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                <li><a href="{{ route('product.index') }}">Products</a></li>
+                <li><a href="{{ route('brands.index') }}" class="uppercase">Brand</a></li>
+                <li><a href="{{ route('category.index') }}" class="uppercase">Category</a></li>
+                <li><a href="{{ route('sub-category.index') }}" class="uppercase">Sub Category</a></li>
+                <li><a href="{{ route('units.index') }}" class="uppercase">Unit</a></li>
+                <li><a href="{{ route('product.index') }}" class="uppercase">Products</a></li>
                 @endif
-                <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
-                <li><a href="/expiry-alerts">Expiry Alerts</a></li>
+                <li><a href="{{ route('batches.index') }}" class="uppercase">Batch Management</a></li>
+                <li><a href="/expiry-alerts" class="uppercase">Expiry Alerts</a></li>
             </ul>
         </li>
 
@@ -73,12 +74,12 @@
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="warehouseMenu">
-                <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-                <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
+                <li><a href="{{ route('warehouse.index') }}" class="uppercase">Add Warehouse</a></li>
+                <li><a href="{{ route('index.addStock.warehouse') }}" class="uppercase">Add Warehouse Stock</a></li>
                 @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                <li><a href="{{ route('sale.create') }}" class="uppercase">Offer Management</a></li>
                 @endif
-                <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                <li><a href="{{ route('transfer.index') }}" class="uppercase">District Warehouse Transfers</a></li>
 
             </ul>
         </li>
@@ -91,9 +92,11 @@
             </div>
             <ul class="submenu" id="deliveryAgentMenu">
                 @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('delivery-agents.index') }}">Agent & vehicle</a></li>
+                <li><a href="{{ route('delivery-agents.index') }}" class="uppercase">Delivery Agent</a></li>
+
+                <li><a href="{{ route('vehicle-assignments.index') }}" class="uppercase">Agent & vehicle</a></li>
                 @endif
-                <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
+                <li><a href="{{ route('deliveries.index') }}" class="uppercase">Deliveries</a></li>
             </ul>
         </li>
         <!-- <li class="menu-item">
