@@ -19,7 +19,7 @@
                 @include('layouts.navbar')
                 <!-- / Navbar -->
 
-                
+
                 <!-- Content wrapper -->
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="row justify-content-center">
@@ -29,9 +29,9 @@
                                 <h4 class="card-header text-center">
                                     Warehouse-to-Warehouse Stock Transfer
                                 </h4>
-                               
+
                                 <div class="card-body">
-                                    
+
                                     <form id="transferForm" method="POST"
                                         action="{{ isset($transfer) 
                                             ? route('transfer.update', $transfer->id) 
@@ -39,7 +39,7 @@
 
                                         @csrf
                                         @if(isset($transfer))
-                                            @method('PUT')
+                                        @method('PUT')
                                         @endif
 
 
@@ -50,15 +50,15 @@
                                                 <select name="from_warehouse_id" id="from_warehouse_id" class="form-select @error('from_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}"
-                                                            {{ (isset($transfer) && $transfer->from_warehouse_id == $w->id) ? 'selected' : '' }}>
-                                                            {{ $w->name }}
-                                                        </option>
+                                                    <option value="{{ $w->id }}"
+                                                        {{ (isset($transfer) && $transfer->from_warehouse_id == $w->id) ? 'selected' : '' }}>
+                                                        {{ $w->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('from_warehouse_id')
-                                                        <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
                                             </div>
 
                                             <div class="col-md-6">
@@ -66,106 +66,155 @@
                                                 <select name="to_warehouse_id" id="to_warehouse_id" class="form-select @error('to_warehouse_id') is-invalid @enderror">
                                                     <option value="">Select Warehouse</option>
                                                     @foreach($warehouses as $w)
-                                                        <option value="{{ $w->id }}"
+                                                    <option value="{{ $w->id }}"
                                                         {{ (isset($transfer) && $transfer->to_warehouse_id == $w->id) ? 'selected' : '' }}>
-                                                        {{ $w->name }}</option>
+                                                        {{ $w->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('to_warehouse_id')
-                                                        <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
                                             </div>
                                         </div>
 
                                         <!-- Row 2: CATEGORY & PRODUCT -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
+
+                                                <label class="form-label fw-semibold">
+                                                    Category <span class="text-danger">*</span>
+                                                </label>
+
+                                                <select name="category_id[]" id="category_id"
+                                                    class="form-control form-select"
+                                                    multiple>
+                                                    <option value="all">Select All</option>
+
+                                                    @foreach($categories as $c)
+                                                    <option value="{{ $c->id }}">
+                                                        {{ $c->name }}
+                                                    </option>
+                                                    @endforeach
+                                                </select>
+
+                                                @error('category_id')
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!--     <div class="col-md-6">
+                                              
                                                 <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror">
                                                     <option value="">Select Category</option>
                                                     @foreach($categories as $c)
-                                                        <option value="{{ $c->id }}"
-                                                            {{ (isset($transfer) && $transfer->category_id == $c->id) ? 'selected' : '' }}>
-                                                            {{ $c->name }}
-                                                        </option>
+                                                    <option value="{{ $c->id }}"
+                                                        {{ (isset($transfer) && $transfer->category_id == $c->id) ? 'selected' : '' }}>
+                                                        {{ $c->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
-                                                        <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
                                             </div>
+                                             -->
 
                                             <div class="col-md-6">
+                                                <label for="product_id" class="form-label">Product <span class="text-danger">*</span></label>
+                                                <select name="product_id[]" id="product_id"
+                                                    class="form-control form-select"
+                                                    multiple>
+                                                    <option value="">Select All</option>
+
+                                                    @if(isset($products))
+                                                    @foreach($products as $p)
+                                                    <option value="{{ $p->id }}"
+                                                        {{ (isset($transfer) && $transfer->product_id == $p->id) ? 'selected' : '' }}>
+                                                        {{ $p->name }}
+                                                    </option>
+                                                    @endforeach
+                                                    @endif
+                                                </select>
+
+                                                @error('product_id')
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+
+                                            <!-- <div class="col-md-6">
                                                 <label for="product_id" class="form-label">Product <span class="text-danger">*</span></label>
                                                 <select name="product_id" id="product_id" class="form-select">
                                                     <option value="">Select Product</option>
 
                                                     @if(isset($products))
-                                                        @foreach($products as $p)
-                                                            <option value="{{ $p->id }}"
-                                                                {{ (isset($transfer) && $transfer->product_id == $p->id) ? 'selected' : '' }}>
-                                                                {{ $p->name }}
-                                                            </option>
-                                                        @endforeach
+                                                    @foreach($products as $p)
+                                                    <option value="{{ $p->id }}"
+                                                        {{ (isset($transfer) && $transfer->product_id == $p->id) ? 'selected' : '' }}>
+                                                        {{ $p->name }}
+                                                    </option>
+                                                    @endforeach
                                                     @endif
                                                 </select>
 
-                                               @error('product_id')
-                                                        <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
-                                            </div>
+                                                @error('product_id')
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div> -->
                                         </div>
 
                                         <!-- Row 3: BATCH & QTY -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <label for="batch_id" class="form-label">Batch <span class="text-danger">*</span></label>
-                                                <select name="batch_id" id="batch_id" class="form-select">
+                                                <select name="batch_id[]" id="batch_id"
+                                                    class="form-control form-select"
+                                                    multiple>
                                                     <option value="">Select Batch</option>
 
                                                     @if(isset($batches))
-                                                        @foreach($batches as $b)
-                                                            <option value="{{ $b->id }}"
-                                                                {{ (isset($transfer) && $transfer->batch_id == $b->id) ? 'selected' : '' }}>
-                                                                {{ $b->batch_no }}
-                                                            </option>
-                                                        @endforeach
+                                                    @foreach($batches as $b)
+                                                    <option value="{{ $b->id }}"
+                                                        {{ (isset($transfer) && $transfer->batch_id == $b->id) ? 'selected' : '' }}>
+                                                        {{ $b->batch_no }}
+                                                    </option>
+                                                    @endforeach
                                                     @endif
                                                 </select>
 
-                                              @error('batch_id')
-                                                        <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                                @error('batch_id')
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
                                             </div>
 
                                             <div class="col-md-6">
                                                 <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
                                                 <input type="number"
-                                                name="quantity"
-                                                id="quantity"
-                                                min="1"  placeholder="Enter quantity"
-                                                value="{{ old('quantity', $transfer->quantity ?? '') }}"
-                                                class="form-control ">
+                                                    name="quantity"
+                                                    id="quantity"
+                                                    min="1" placeholder="Enter quantity"
+                                                    value="{{ old('quantity', $transfer->quantity ?? '') }}"
+                                                    class="form-control ">
 
                                                 @if($errors->has('quantity'))
-                                                    <small class="text-danger">{{ $errors->first('quantity') }}</small>
+                                                <small class="text-danger">{{ $errors->first('quantity') }}</small>
                                                 @endif
                                                 <small id="qtyError" class="text-danger" style="display:none;"></small>
                                             </div>
                                         </div>
 
                                         @if(isset($transfer))
-                                            <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
+                                        <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
                                         @endif
 
                                         @if(isset($transfer))
-                                            <input type="hidden" id="old_category_id" value="{{ $transfer->category_id }}">
-                                            <input type="hidden" id="old_product_id" value="{{ $transfer->product_id }}">
-                                            <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
+                                        <input type="hidden" id="old_category_id" value="{{ $transfer->category_id }}">
+                                        <input type="hidden" id="old_product_id" value="{{ $transfer->product_id }}">
+                                        <input type="hidden" id="old_batch_id" value="{{ $transfer->batch_id }}">
                                         @endif
-                                        
+
                                         @if(isset($transfer))
-                                            <input type="hidden" id="old_to_warehouse_id" value="{{ $transfer->to_warehouse_id }}">
+                                        <input type="hidden" id="old_to_warehouse_id" value="{{ $transfer->to_warehouse_id }}">
                                         @endif
 
 
@@ -187,7 +236,7 @@
                                                         <th>Category</th>
                                                         <th>Product</th>
                                                         <th>Batch</th>
-                                                        <th>Quantity</th>                                
+                                                        <th>Quantity</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -224,270 +273,239 @@
 
 
 <script>
-document.getElementById('category_id').addEventListener('change', function () {
-    let categoryId = this.value;
-    let product = document.getElementById('product_id');
-    let batch = document.getElementById('batch_id');
+    document.getElementById('category_id').addEventListener('change', function() {
+        let categoryId = this.value;
+        let product = document.getElementById('product_id');
+        let batch = document.getElementById('batch_id');
 
-    const oldProductId = document.getElementById('old_product_id')?.value;
+        const oldProductId = document.getElementById('old_product_id')?.value;
 
-    product.innerHTML = '<option>Loading...</option>';
-    batch.innerHTML = '<option>Select Batch</option>';
+        product.innerHTML = '<option>Loading...</option>';
+        batch.innerHTML = '<option>Select Batch</option>';
 
-    if (!categoryId) return;
+        if (!categoryId) return;
 
-    fetch(`/get-products-by-category/${categoryId}`)
-        .then(res => res.json())
-        .then(data => {
-            product.innerHTML = '<option value="">Select Product</option>';
 
-            data.forEach(p => {
-                const selected = oldProductId == p.id ? 'selected' : '';
-                product.innerHTML += `
-                    <option value="${p.id}" ${selected}>${p.name}</option>
-                `;
-            });
-
-            // 🔥 auto trigger batch load
-            if (oldProductId) {
-                product.dispatchEvent(new Event('change'));
-            }
-        });
-});
+    });
 </script>
 
 <!-- get category wise product list and batch number -->
 <script>
-document.getElementById('product_id').addEventListener('change', function () {
-    let productId = this.value;
-    let batch = document.getElementById('batch_id');
-    let oldBatchId = document.getElementById('old_batch_id')?.value;
+    document.getElementById('product_id').addEventListener('change', function() {
+        let productIds = $('#product_id').val();
+        let batch = document.getElementById('batch_id');
+        let oldBatchId = document.getElementById('old_batch_id')?.value;
 
-    batch.innerHTML = '<option>Loading...</option>';
+        batch.innerHTML = '<option>Loading...</option>';
 
-    fetch(`/get-batches-by-product/${productId}`)
-        .then(res => res.json())
-        .then(data => {
-            batch.innerHTML = '<option value="">Select Batch</option>';
 
-            data.forEach(b => {
-                let selected = (oldBatchId && oldBatchId == b.id) ? 'selected' : '';
-
-                batch.innerHTML += `
-                    <option value="${b.id}" ${selected}>
-                        ${b.batch_no}
-                    </option>
-                `;
-            });
-        });
-});
-
+    });
 </script>
 
 <!-- validation error massage qut. -->
 <script>
-const quantityInput = document.getElementById('quantity');
-const batchSelect = document.getElementById('batch_id');
-const fromWarehouseSelect = document.querySelector('select[name="from_warehouse_id"]');
-const errorEl = document.getElementById('qtyError');
-const form = document.getElementById('transferForm');
+    const quantityInput = document.getElementById('quantity');
+    const batchSelect = document.getElementById('batch_id');
+    const fromWarehouseSelect = document.querySelector('select[name="from_warehouse_id"]');
+    const errorEl = document.getElementById('qtyError');
+    const form = document.getElementById('transferForm');
 
-let maxQty = 0;
+    let maxQty = 0;
 
-// Fetch stock whenever batch or warehouse changes
-function fetchStock() {
-    const batchId = batchSelect.value;
-    const fromWarehouseId = fromWarehouseSelect.value;
+    // Fetch stock whenever batch or warehouse changes
+    function fetchStock() {
+        const batchId = batchSelect.value;
+        const fromWarehouseId = fromWarehouseSelect.value;
 
-    if (!batchId || !fromWarehouseId) {
-        maxQty = 0;
-        errorEl.style.display = 'none';
-        return;
+        if (!batchId || !fromWarehouseId) {
+            maxQty = 0;
+            errorEl.style.display = 'none';
+            return;
+        }
+
+        fetch(`/get-warehouse-stock/${fromWarehouseId}/${batchId}`)
+            .then(res => res.json())
+            .then(data => {
+                maxQty = data.quantity || 0;
+                validateQty();
+            });
     }
 
-    fetch(`/get-warehouse-stock/${fromWarehouseId}/${batchId}`)
-        .then(res => res.json())
-        .then(data => {
-            maxQty = data.quantity || 0;
-            validateQty();
-        });
-}
-
-function validateQty() {
-    const qty = parseInt(quantityInput.value) || 0;
-    if (qty > maxQty) {
-        errorEl.style.display = 'block';
-        errorEl.innerText = `Cannot transfer more than available stock (${maxQty})`;
-        return false;
-    } else {
-        errorEl.style.display = 'none';
-        return true;
+    function validateQty() {
+        const qty = parseInt(quantityInput.value) || 0;
+        if (qty > maxQty) {
+            errorEl.style.display = 'block';
+            errorEl.innerText = `Cannot transfer more than available stock (${maxQty})`;
+            return false;
+        } else {
+            errorEl.style.display = 'none';
+            return true;
+        }
     }
-}
 
-// Event listeners
-quantityInput.addEventListener('input', validateQty);
-batchSelect.addEventListener('change', fetchStock);
-fromWarehouseSelect.addEventListener('change', fetchStock);
+    // Event listeners
+    quantityInput.addEventListener('input', validateQty);
+    batchSelect.addEventListener('change', fetchStock);
+    fromWarehouseSelect.addEventListener('change', fetchStock);
 
-// Prevent form submit if invalid
-form.addEventListener('submit', function(e) {
-    if (!validateQty()) {
-        e.preventDefault();
-        alert('Please fix the quantity before submitting.');
-    }
-});
+    // Prevent form submit if invalid
+    form.addEventListener('submit', function(e) {
+        if (!validateQty()) {
+            e.preventDefault();
+            alert('Please fix the quantity before submitting.');
+        }
+    });
 </script>
 
 <!-- batch expired validation -->
 <script>
-batchSelect.addEventListener('change', function () {
-    const batchId = this.value;
+    batchSelect.addEventListener('change', function() {
+        const batchId = this.value;
 
-    if (!batchId) return;
+        if (!batchId) return;
 
-    fetch(`/check-batch-validity/${batchId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (!data.valid) {
-                errorEl.style.display = 'block';
-                errorEl.innerText = data.message;
+        fetch(`/check-batch-validity/${batchId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.valid) {
+                    errorEl.style.display = 'block';
+                    errorEl.innerText = data.message;
 
-                quantityInput.value = '';
-                quantityInput.disabled = true;
-            } else {
-                errorEl.style.display = 'none';
-                quantityInput.disabled = false;
+                    quantityInput.value = '';
+                    quantityInput.disabled = true;
+                } else {
+                    errorEl.style.display = 'none';
+                    quantityInput.disabled = false;
 
-                // stock bhi fetch karo
-                fetchStock();
-            }
-        });
-});
+                    // stock bhi fetch karo
+                    fetchStock();
+                }
+            });
+    });
 </script>
 
 <!-- get warehouse wise category -->
 <script>
-document.getElementById('from_warehouse_id').addEventListener('change', function () {
-    const warehouseId = this.value;
+    document.getElementById('from_warehouse_id').addEventListener('change', function() {
+        const warehouseId = this.value;
 
-    const categorySelect = document.getElementById('category_id');
-    const productSelect  = document.getElementById('product_id');
-    const batchSelect    = document.getElementById('batch_id');
+        const categorySelect = document.getElementById('category_id');
+        const productSelect = document.getElementById('product_id');
+        const batchSelect = document.getElementById('batch_id');
 
-    const oldCategoryId = document.getElementById('old_category_id')?.value;
+        const oldCategoryId = document.getElementById('old_category_id')?.value;
 
-    categorySelect.innerHTML = '<option value="">Loading categories...</option>';
-    productSelect.innerHTML  = '<option value="">Select Product</option>';
-    batchSelect.innerHTML    = '<option value="">Select Batch</option>';
+        categorySelect.innerHTML = '<option value="">Loading categories...</option>';
+        productSelect.innerHTML = '<option value="">Select Product</option>';
+        batchSelect.innerHTML = '<option value="">Select Batch</option>';
 
-    if (!warehouseId) return;
+        if (!warehouseId) return;
 
-    fetch(`/ajax/warehouse/${warehouseId}/categories`)
-        .then(res => res.json())
-        .then(data => {
-            categorySelect.innerHTML = '<option value="">Select Category</option>';
+        fetch(`/ajax/warehouse/${warehouseId}/categories`)
+            .then(res => res.json())
+            .then(data => {
+                categorySelect.innerHTML = '<option value="">Select Category</option>';
 
-            data.forEach(c => {
-                const selected = oldCategoryId == c.id ? 'selected' : '';
-                categorySelect.innerHTML += `
+                data.forEach(c => {
+                    const selected = oldCategoryId == c.id ? 'selected' : '';
+                    categorySelect.innerHTML += `
                     <option value="${c.id}" ${selected}>${c.name}</option>
                 `;
-            });
+                });
 
-            // 🔥 auto trigger product load in edit
-            if (oldCategoryId) {
-                categorySelect.dispatchEvent(new Event('change'));
-            }
-        });
-});
+                // 🔥 auto trigger product load in edit
+                if (oldCategoryId) {
+                    categorySelect.dispatchEvent(new Event('change'));
+                }
+            });
+    });
 </script>
 
 <!-- same warehouse not selected in from and to warehouse dropdown -->
 <script>
-const fromWarehouse = document.getElementById('from_warehouse_id');
-const toWarehouse   = document.getElementById('to_warehouse_id');
-const oldToWarehouse = document.getElementById('old_to_warehouse_id')?.value;
+    const fromWarehouse = document.getElementById('from_warehouse_id');
+    const toWarehouse = document.getElementById('to_warehouse_id');
+    const oldToWarehouse = document.getElementById('old_to_warehouse_id')?.value;
 
-fromWarehouse.addEventListener('change', function () {
-    const selectedFrom = this.value;
+    fromWarehouse.addEventListener('change', function() {
+        const selectedFrom = this.value;
 
-    Array.from(toWarehouse.options).forEach(option => {
-        if (!option.value) return;
+        Array.from(toWarehouse.options).forEach(option => {
+            if (!option.value) return;
 
-        // same warehouse hide
-        if (option.value === selectedFrom) {
-            option.disabled = true;
-            option.style.display = 'none';
-        } else {
-            option.disabled = false;
-            option.style.display = 'block';
+            // same warehouse hide
+            if (option.value === selectedFrom) {
+                option.disabled = true;
+                option.style.display = 'none';
+            } else {
+                option.disabled = false;
+                option.style.display = 'block';
+            }
+        });
+
+        // ✅ Edit mode → restore selection
+        if (oldToWarehouse && selectedFrom !== oldToWarehouse) {
+            toWarehouse.value = oldToWarehouse;
+        }
+
+        // ✅ Create mode safety
+        if (!oldToWarehouse && toWarehouse.value === selectedFrom) {
+            toWarehouse.value = '';
         }
     });
-
-    // ✅ Edit mode → restore selection
-    if (oldToWarehouse && selectedFrom !== oldToWarehouse) {
-        toWarehouse.value = oldToWarehouse;
-    }
-
-    // ✅ Create mode safety
-    if (!oldToWarehouse && toWarehouse.value === selectedFrom) {
-        toWarehouse.value = '';
-    }
-});
 </script>
 
 <!-- edit mode get warehouse wise category -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const fromWarehouse = document.getElementById('from_warehouse_id');
+    document.addEventListener('DOMContentLoaded', function() {
+        const fromWarehouse = document.getElementById('from_warehouse_id');
 
-    if (fromWarehouse.value) {
-        fromWarehouse.dispatchEvent(new Event('change'));
-    }
-});
+        if (fromWarehouse.value) {
+            fromWarehouse.dispatchEvent(new Event('change'));
+        }
+    });
 </script>
 
 <!-- multiple product Transfer with edit-->
 <script>
-let index = 0;
-let editingIndex = null;
+    let index = 0;
+    let editingIndex = null;
 
-// cache elements
-const fromWarehouseEl = document.getElementById('from_warehouse_id');
-const toWarehouseEl   = document.getElementById('to_warehouse_id');
-const categoryEl      = document.getElementById('category_id');
-const productEl       = document.getElementById('product_id');
-const batchEl         = document.getElementById('batch_id');
-const qtyEl           = document.getElementById('quantity');
-const tableWrapper    = document.getElementById('workOrderTableWrapper');
-const tableBody       = document.querySelector('#workOrderTable tbody');
-const itemsContainer  = document.getElementById('itemsContainer');
+    // cache elements
+    const fromWarehouseEl = document.getElementById('from_warehouse_id');
+    const toWarehouseEl = document.getElementById('to_warehouse_id');
+    const categoryEl = document.getElementById('category_id');
+    const productEl = document.getElementById('product_id');
+    const batchEl = document.getElementById('batch_id');
+    const qtyEl = document.getElementById('quantity');
+    const tableWrapper = document.getElementById('workOrderTableWrapper');
+    const tableBody = document.querySelector('#workOrderTable tbody');
+    const itemsContainer = document.getElementById('itemsContainer');
 
-document.getElementById('addItemBtn').addEventListener('click', function () {
+    document.getElementById('addItemBtn').addEventListener('click', function() {
 
-    const fromWarehouse = fromWarehouseEl.value;
-    const toWarehouse   = toWarehouseEl.value;
-    const categoryId    = categoryEl.value;
-    const productId     = productEl.value;
-    const batchId       = batchEl.value;
-    const quantity      = qtyEl.value;
+        const fromWarehouse = fromWarehouseEl.value;
+        const toWarehouse = toWarehouseEl.value;
+        const categoryId = categoryEl.value;
+        const productId = productEl.value;
+        const batchId = batchEl.value;
+        const quantity = qtyEl.value;
 
-    if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
-        alert('Please fill all fields');
-        return;
-    }
+        if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
+            alert('Please fill all fields');
+            return;
+        }
 
-    if (!validateQty()) return;
+        if (!validateQty()) return;
 
-    const rowIndex = editingIndex !== null ? editingIndex : index;
+        const rowIndex = editingIndex !== null ? editingIndex : index;
 
-    if (editingIndex !== null) {
-        removeRow(editingIndex);
-        editingIndex = null;
-    }
+        if (editingIndex !== null) {
+            removeRow(editingIndex);
+            editingIndex = null;
+        }
 
-    const row = `
+        const row = `
         <tr id="row_${rowIndex}">
             <td>${fromWarehouseEl.options[fromWarehouseEl.selectedIndex].text}</td>
             <td>${toWarehouseEl.options[toWarehouseEl.selectedIndex].text}</td>
@@ -502,10 +520,10 @@ document.getElementById('addItemBtn').addEventListener('click', function () {
         </tr>
     `;
 
-    tableWrapper.style.display = 'block';
-    tableBody.insertAdjacentHTML('beforeend', row);
+        tableWrapper.style.display = 'block';
+        tableBody.insertAdjacentHTML('beforeend', row);
 
-    itemsContainer.insertAdjacentHTML('beforeend', `
+        itemsContainer.insertAdjacentHTML('beforeend', `
         <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
         <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
         <input type="hidden" name="items[${rowIndex}][category_id]" value="${categoryId}">
@@ -514,143 +532,150 @@ document.getElementById('addItemBtn').addEventListener('click', function () {
         <input type="hidden" name="items[${rowIndex}][quantity]" value="${quantity}">
     `);
 
-    if (rowIndex === index) index++;
+        if (rowIndex === index) index++;
 
-    resetFullForm();
-});
-
-/* ================= EDIT ================= */
-
-async function editRow(i) {
-    editingIndex = i;
-
-    const getVal = name =>
-        document.querySelector(`[name="items[${i}][${name}]"]`)?.value;
-
-    fromWarehouseEl.value = getVal('from_warehouse_id');
-    toWarehouseEl.value   = getVal('to_warehouse_id');
-
-    // trigger warehouse → category
-    fromWarehouseEl.dispatchEvent(new Event('change'));
-
-    await waitForOptions(categoryEl, getVal('category_id'));
-    categoryEl.value = getVal('category_id');
-    categoryEl.dispatchEvent(new Event('change'));
-
-    await waitForOptions(productEl, getVal('product_id'));
-    productEl.value = getVal('product_id');
-    productEl.dispatchEvent(new Event('change'));
-
-    await waitForOptions(batchEl, getVal('batch_id'));
-    batchEl.value = getVal('batch_id');
-
-    qtyEl.value = getVal('quantity');
-    fetchStock();
-
-    removeRow(i);
-}
-
-/* ================= HELPERS ================= */
-
-function removeRow(i) {
-    document.getElementById(`row_${i}`)?.remove();
-    document.querySelectorAll(`[name^="items[${i}]"]`).forEach(el => el.remove());
-}
-
-function resetFullForm() {
-    productEl.innerHTML = '<option value="">Select Product</option>';
-    batchEl.innerHTML   = '<option value="">Select Batch</option>';
-    qtyEl.value         = '';
-    categoryEl.value    = '';
-    fromWarehouseEl.value = '';
-    toWarehouseEl.value   = '';
-}
-
-/* wait till dropdown options are loaded */
-function waitForOptions(selectEl, value) {
-    return new Promise(resolve => {
-        const interval = setInterval(() => {
-            if ([...selectEl.options].some(o => o.value == value)) {
-                clearInterval(interval);
-                resolve();
-            }
-        }, 100);
+        resetFullForm();
     });
-}
+
+    /* ================= EDIT ================= */
+
+    async function editRow(i) {
+        editingIndex = i;
+
+        const getVal = name =>
+            document.querySelector(`[name="items[${i}][${name}]"]`)?.value;
+
+        fromWarehouseEl.value = getVal('from_warehouse_id');
+        toWarehouseEl.value = getVal('to_warehouse_id');
+
+        // trigger warehouse → category
+        fromWarehouseEl.dispatchEvent(new Event('change'));
+
+        await waitForOptions(categoryEl, getVal('category_id'));
+        categoryEl.value = getVal('category_id');
+        categoryEl.dispatchEvent(new Event('change'));
+
+        await waitForOptions(productEl, getVal('product_id'));
+        productEl.value = getVal('product_id');
+        productEl.dispatchEvent(new Event('change'));
+
+        await waitForOptions(batchEl, getVal('batch_id'));
+        batchEl.value = getVal('batch_id');
+
+        qtyEl.value = getVal('quantity');
+        fetchStock();
+
+        removeRow(i);
+    }
+
+    /* ================= HELPERS ================= */
+
+    function removeRow(i) {
+        document.getElementById(`row_${i}`)?.remove();
+        document.querySelectorAll(`[name^="items[${i}]"]`).forEach(el => el.remove());
+    }
+
+    function resetFullForm() {
+        productEl.innerHTML = '<option value="">Select Product</option>';
+        batchEl.innerHTML = '<option value="">Select Batch</option>';
+        qtyEl.value = '';
+        categoryEl.value = '';
+        fromWarehouseEl.value = '';
+        toWarehouseEl.value = '';
+    }
+
+    /* wait till dropdown options are loaded */
+    function waitForOptions(selectEl, value) {
+        return new Promise(resolve => {
+            const interval = setInterval(() => {
+                if ([...selectEl.options].some(o => o.value == value)) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 100);
+        });
+    }
 </script>
 
 
-<!-- multiple product Transfer without edit-->
-<!-- <script>
-let index = 0;
+<!-- multiple selection script  -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-// cache all required elements
-const fromWarehouseEl = document.getElementById('from_warehouse_id');
-const toWarehouseEl   = document.getElementById('to_warehouse_id');
-const categoryEl      = document.getElementById('category_id');
-const productEl       = document.getElementById('product_id');
-const batchEl         = document.getElementById('batch_id');
-const qtyEl           = document.getElementById('quantity');
-const tableWrapper    = document.getElementById('workOrderTableWrapper');
-const tableBody       = document.querySelector('#workOrderTable tbody');
-const itemsContainer  = document.getElementById('itemsContainer');
+<script>
+    $(document).ready(function() {
 
-document.getElementById('addItemBtn').addEventListener('click', function () {
+        $('#category_id').select2({
+            placeholder: 'Select Category',
+            closeOnSelect: false,
+            width: '100%'
+        });
 
-    const fromWarehouse = fromWarehouseEl.value;
-    const toWarehouse   = toWarehouseEl.value;
-    const categoryId    = categoryEl.value;
-    const productId     = productEl.value;
-    const batchId       = batchEl.value;
-    const quantity      = qtyEl.value;
+        $('#product_id').select2({
+            placeholder: 'Select Product',
+            closeOnSelect: false,
+            width: '100%'
+        });
 
-    if (!fromWarehouse || !toWarehouse || !categoryId || !productId || !batchId || !quantity) {
-        alert('Please fill all fields');
-        return;
-    }
-
-    if (!validateQty()) return;
-
-    const row = `
-        <tr id="row_${index}">
-            <td>${fromWarehouseEl.options[fromWarehouseEl.selectedIndex].text}</td>
-            <td>${toWarehouseEl.options[toWarehouseEl.selectedIndex].text}</td>
-            <td>${categoryEl.options[categoryEl.selectedIndex].text}</td>
-            <td>${productEl.options[productEl.selectedIndex].text}</td>
-            <td>${batchEl.options[batchEl.selectedIndex].text}</td>
-            <td>${quantity}</td>
-            <td>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${index})">
-                    Remove
-                </button>
-            </td>
-        </tr>
-    `;
-
-    tableWrapper.style.display = 'block';
-    tableBody.insertAdjacentHTML('beforeend', row);
-
-    itemsContainer.insertAdjacentHTML('beforeend', `
-        <input type="hidden" name="items[${index}][from_warehouse_id]" value="${fromWarehouse}">
-        <input type="hidden" name="items[${index}][to_warehouse_id]" value="${toWarehouse}">
-        <input type="hidden" name="items[${index}][category_id]" value="${categoryId}">
-        <input type="hidden" name="items[${index}][product_id]" value="${productId}">
-        <input type="hidden" name="items[${index}][batch_id]" value="${batchId}">
-        <input type="hidden" name="items[${index}][quantity]" value="${quantity}">
-    `);
-
-    index++;
-
-    // reset product fields only
-    productEl.value = '';
-    batchEl.value   = '';
-    qtyEl.value     = '';
-});
-
-function removeRow(i) {
-    document.getElementById(`row_${i}`)?.remove();
-    document.querySelectorAll(`[name^="items[${i}]"]`).forEach(el => el.remove());
-}
-</script> -->
+        $('#batch_id').select2({
+            placeholder: 'Select Batch',
+            closeOnSelect: false,
+            width: '100%'
+        });
 
 
+        // -------------------------
+        // CATEGORY → PRODUCTS
+        // -------------------------
+        $('#category_id').on('change', function() {
+
+            let categoryIds = $(this).val();
+            let warehouseId = $('#from_warehouse_id').val();
+
+            if (!categoryIds || !warehouseId) return;
+
+            $.get("{{ route('ajax.warehouse.stock.data') }}", {
+                category_ids: categoryIds,
+                warehouse_id: warehouseId
+            }, function(res) {
+
+                if (res.type === 'products') {
+                    let options = '';
+                    res.data.forEach(p => {
+                        options += `<option value="${p.id}">${p.name}</option>`;
+                    });
+
+                    $('#product_id').html(options).trigger('change');
+                }
+            });
+        });
+
+
+        $('#product_id').on('change', function() {
+
+            let productIds = $(this).val();
+            let warehouseId = $('#from_warehouse_id').val();
+
+            if (!productIds || !warehouseId) return;
+
+            $.get("{{ route('ajax.warehouse.stock.data') }}", {
+                product_ids: productIds,
+                warehouse_id: warehouseId
+            }, function(res) {
+
+                if (res.type === 'batches') {
+                    let options = '';
+                    res.data.forEach(b => {
+                        options += `<option value="${b.id}">${b.batch_no}</option>`;
+                    });
+
+                    $('#batch_id').html(options).trigger('change');
+                }
+            });
+        });
+
+
+
+    });
+
+</script>
