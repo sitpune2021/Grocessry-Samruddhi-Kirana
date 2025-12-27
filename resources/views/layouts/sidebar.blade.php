@@ -17,7 +17,7 @@
 
         <li class="menu-item">
             <a href="/dashboard" class="menu-link active text-white">
-                <span><i class="bx bx-home-smile me-2"></i>DASHBOARD</span>
+                <i class="bx bx-home-smile me-2"></i><span>DASHBOARD</span>
             </a>
         </li>
 
@@ -69,7 +69,7 @@
         <!-- Warehouse -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>WAREHOUSE MANAGEMENT</span>
+               <i class="bx bx-store me-2 "></i><span>WAREHOUSE MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="warehouseMenu">
@@ -106,7 +106,7 @@
         @if(auth()->check() && auth()->user()->role_id == 1)
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>SHOP MANAGEMENT</span>
+                <i class="bx bx-store me-2 "></i><span>SHOP MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="shopMenu">

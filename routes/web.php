@@ -195,6 +195,10 @@ Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 
+
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+//  ->name('roles.edit');
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
 

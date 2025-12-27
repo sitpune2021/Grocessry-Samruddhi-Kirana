@@ -144,6 +144,9 @@
                                                     <label class="form-label">Address</label>
                                                     <textarea name="address" class="form-control" placeholder="address" rows="2"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
+                                                         @error('address')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                 </div>
 
                                                 {{-- Contact Person --}}
@@ -153,6 +156,9 @@
                                                         placeholder="contact person"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                        @error('contact_person')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                 </div>
 
                                                 {{-- Mobile --}}
@@ -173,7 +179,7 @@
                                                 </div>
 
                                                 {{-- User Name --}}
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">User Name</label>
                                                         <input type="text" name="user_name" class="form-control"
@@ -181,7 +187,7 @@
                                                             value="{{ $warehouse->contact_person ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     </div>
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
@@ -190,6 +196,10 @@
                                                         <input type="email" name="email" class="form-control"
                                                             placeholder="Email" value="{{ $warehouse->email ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
+
+                                                             @error('email')
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                                        @enderror
                                                     </div>
                                                 </div>
 
