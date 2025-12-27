@@ -264,7 +264,7 @@ class LoginController extends Controller
         // ✅ Same response whether user exists or not
         return response()->json([
             'status'  => true,
-            'message' => 'If an account exists, an OTP has been sent to the registered mobile number.'
+            'message' => 'If an account exists,OTP has been sent to the registered mobile number.'
         ]);
     }
 
