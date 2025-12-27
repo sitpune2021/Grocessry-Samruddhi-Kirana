@@ -17,6 +17,9 @@ class LoginController extends Controller
 {
     public function register(Request $request)
     {
+        if ($request->filled('email') === false) {
+            $request->merge(['email' => null]);
+        }
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name'  => 'nullable|string|max:255',
@@ -27,7 +30,6 @@ class LoginController extends Controller
                 'confirmed',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
             ],
-            'role_id' => 'required|in:7,8,9'
         ]);
 
         if ($validator->fails()) {
@@ -37,16 +39,20 @@ class LoginController extends Controller
             ], 422);
         }
 
-        // ✅ Fetch role by ID
-        $role = Role::find($request->role_id);
+        /* ================= ROLE TYPE ================= */
+        $type = 'customer';
+
+        /* ================= FETCH ROLE FROM DB ================= */
+        $role = Role::where('name', $type)->first();
 
         if (!$role) {
             return response()->json([
                 'status' => false,
-                'message' => 'Role not found'
+                'message' => ucfirst($type) . ' role not found'
             ], 404);
         }
 
+        /* ================= CREATE USER ================= */
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name'  => $request->last_name,
@@ -57,12 +63,12 @@ class LoginController extends Controller
             'status'     => 1
         ]);
 
-        // ✅ Token
+        /* ================= TOKEN ================= */
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'status' => true,
-            'message' => 'Registration successful',
+            'message' => 'Customer registration successful',
             'token' => $token,
             'token_type' => 'Bearer',
             'user' => [
@@ -72,10 +78,11 @@ class LoginController extends Controller
                 'mobile' => $user->mobile,
                 'email' => $user->email,
                 'role_id' => $role->id,
-                'role' => $role->name,
+                'role' => $role->name
             ]
         ], 201);
     }
+
 
     public function login(Request $request, $type)
     {
@@ -115,7 +122,7 @@ class LoginController extends Controller
         }
 
         /* ================= ROLE CHECK ================= */
-        if (!in_array($user->role_id, [7, 8, 9])) {
+        if (!in_array(strtolower($user->role->name), ['customer', 'retailer', 'delivery agent'])) {
             return response()->json([
                 'status' => false,
                 'message' => 'This role is not allowed to login'
@@ -139,9 +146,10 @@ class LoginController extends Controller
             $otp = rand(100000, 999999);
 
             $user->update([
-                'otp' => Hash::make($otp),
+                'otp' => $otp,
                 'otp_expires_at' => Carbon::now()->addMinutes(5)
             ]);
+
 
             $response = Http::asForm()->post(
                 'http://redirect.ds3.in/submitsms.jsp',
@@ -193,7 +201,6 @@ class LoginController extends Controller
             ]
         ], 200);
     }
-
 
 
     public function forgotPassword(Request $request)
@@ -261,7 +268,6 @@ class LoginController extends Controller
         ]);
     }
 
-    //bavesh
     public function verifyOtp(Request $request, $type)
     {
         if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
