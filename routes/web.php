@@ -82,6 +82,12 @@ Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'
 Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
+    Route::get(
+    '/get-sub-categories/{category}',
+    [stockWarehouseController::class, 'byCategory']
+);
+
+
 Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
 
 Route::get('/get-states/{country}', [LocationController::class, 'getStates']);
@@ -108,11 +114,22 @@ Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name
 Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
     ->name('batches.show');
 
+Route::get('/ws/categories/{warehouse}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+Route::get('/ws/subcategories/{warehouse}/{category}', [ProductBatchController::class, 'getSubCategories']);
+Route::get('/ws/products-by-sub/{warehouse}/{sub}', [ProductBatchController::class, 'getProductsBySubCategory']);
+Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
+
+
 Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
+
+Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
+Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
+Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);

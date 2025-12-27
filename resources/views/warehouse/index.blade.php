@@ -43,7 +43,7 @@
                             <td>{{ $t->toWarehouse->name }}</td>
                             <td>{{ $t->category->name }}</td>
                             <td>{{ $t->product->name }}</td>
-                            <td>{{ $t->batch->batch_no }}</td>
+                            <td>{{ $t->batch->batch_no  ?? ''}}</td>
                             <td>{{ $t->quantity }}</td>
                             <td>{{ $t->created_at->format('d-m-Y') }}</td>
                             <td class="action-column" style="white-space:nowrap;">
