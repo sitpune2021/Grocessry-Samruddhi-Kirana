@@ -29,13 +29,12 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                      
                                         @if ($mode === 'add')
-                                           <h4> Add Category </h4>
+                                        <h4>Add Category</h4>
                                         @elseif($mode === 'edit')
-                                            Edit Category
+                                        <h4>Edit Category</h4>
                                         @else
-                                            View Category
+                                        <h4>View Category</h4>
                                         @endif
                                     </div>
 
@@ -45,38 +44,66 @@
                                             method="POST">
                                             @csrf
                                             @if (isset($category))
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
-                                            <!-- Inputs side by side -->
                                             <div class="row g-3">
+
+                                                <!-- Brand Name -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Brand Name <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <select name="brand_id" class="form-select" {{ $mode === 'show' ? 'disabled' : '' }}>
+                                                        @if($mode !== 'show')
+                                                        <option value="">Select Brand</option>
+                                                        @foreach ($brands as $brand)
+                                                        <option value="{{ $brand->id }}"
+                                                            {{ old('brand_id', $category->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                                                            {{ $brand->name }}
+                                                        </option>
+                                                        @endforeach
+                                                        @else
+                                                        {{-- View mode: show only the selected brand --}}
+                                                        <option>{{ $category->brand->name ?? '-' }}</option>
+                                                        @endif
+                                                    </select>
+
+                                                    @error('brand_id')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
                                                 <!-- Category Name -->
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Category Name</label> <span
-                                                        class="text-danger">*</span>
-
-                                                    <input type="text" name="name" class="form-control "
+                                                    <label class="form-label fw-medium">
+                                                        Category Name <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="name" class="form-control"
                                                         value="{{ old('name', $category->name ?? '') }}"
                                                         placeholder="Enter category name"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('name')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 <!-- Category Slug -->
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Category Slug<span class="text-danger">*</span></label>
-                                                    <input type="text" name="slug"
-                                                        class="form-control"
+                                                    <label class="form-label fw-medium">
+                                                        Category Slug <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="slug" class="form-control"
                                                         value="{{ old('slug', $category->slug ?? '') }}"
                                                         placeholder="auto-generated or manual"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                     @error('slug')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @error('slug')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
+
 
                                             </div>
 
@@ -88,13 +115,13 @@
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Save Category
-                                                    </button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    Save Category
+                                                </button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">
-                                                        Update Category
-                                                    </button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    Update Category
+                                                </button>
                                                 @endif
                                             </div>
 
@@ -102,7 +129,6 @@
                                     </div>
                                 </div>
                             </div>
-
 
                         </div>
                     </div>
@@ -113,7 +139,6 @@
             </div>
             <!-- / Layout page -->
         </div>
-
     </div>
     <!-- / Layout wrapper -->
 </body>
@@ -123,23 +148,25 @@
         const nameInput = document.querySelector('input[name="name"]');
         const slugInput = document.querySelector('input[name="slug"]');
 
-        nameInput.addEventListener('keyup', function() {
-            if (!slugInput.dataset.manual) {
-                slugInput.value = generateSlug(this.value);
+        if (nameInput && slugInput) {
+            nameInput.addEventListener('keyup', function() {
+                if (!slugInput.dataset.manual) {
+                    slugInput.value = generateSlug(this.value);
+                }
+            });
+
+            slugInput.addEventListener('input', function() {
+                this.dataset.manual = true;
+            });
+
+            function generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
             }
-        });
-
-        slugInput.addEventListener('input', function() {
-            this.dataset.manual = true;
-        });
-
-        function generateSlug(text) {
-            return text
-                .toLowerCase()
-                .trim()
-                .replace(/[^a-z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
         }
     });
 </script>
