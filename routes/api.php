@@ -12,21 +12,29 @@ use App\Http\Controllers\Api\CategoryProductController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::post('/register', [LoginController::class, 'register']);
-Route::post('/login/{type}', [LoginController::class, 'login']);
-Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
-Route::post('/verify-otp/{type}', [LoginController::class, 'verifyOtp']);
-Route::post('/reset-password', [LoginController::class, 'resetPassword']);
+
+Route::post('/register',                                       [LoginController::class, 'register']);
+Route::post('/login/{type}',                                   [LoginController::class, 'login']);
+Route::post('/forgot-password',                                [LoginController::class, 'forgotPassword']);
+Route::post('/verify-otp/{type}',                              [LoginController::class, 'verifyOtp']);
+Route::post('/reset-password',                                 [LoginController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('/categories', [CategoryProductController::class, 'getCategories']);
-    Route::get('/categories/{id}/products', [CategoryProductController::class, 'getProductsByCategory']);
-    Route::get('/brands/{id}/products', [CategoryProductController::class, 'getProductsByBrand']);
+
+    Route::get('/categories',                    [CategoryProductController::class, 'getCategories']);
+    Route::get('/categories/{id}/subcategories', [CategoryProductController::class, 'getSubCategoriesByCategory']);
+    Route::get('/subcategories/{id}/products',   [CategoryProductController::class, 'getProductsBySubcategory']);
+    Route::get('/brands',                        [CategoryProductController::class, 'getBrands']);
+    Route::get('/brands/{id}/products',          [CategoryProductController::class, 'getProductsByBrand']);
+    Route::get('/products/{id}/similar',         [CategoryProductController::class, 'getSimilarProducts']);
+    Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
+
+
+
 });
-Route::apiResource('/district-warehouses', DistrictWarehouseController::class);
-Route::apiResource('/taluka-warehouses', TalukaWarehouseController::class);
 
-Route::apiResource('/users', UserController::class);
-
-Route::apiResource('/batch', BatchController::class);
+Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
+Route::apiResource('/taluka-warehouses',    TalukaWarehouseController::class);
+Route::apiResource('/users',                UserController::class);
+Route::apiResource('/batch',                BatchController::class);
