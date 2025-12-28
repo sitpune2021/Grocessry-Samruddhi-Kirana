@@ -39,25 +39,49 @@
                                     </div>
 
                                     <div class="card-body">
-                                        <form
-                                            action="{{ isset($driverVehicle) ? route('delivery-agents.update', $driverVehicle->id) : route('delivery-agents.store') }}"
+                                        <form enctype="multipart/form-data"
+                                            action="{{ isset($agent) ? route('delivery-agents.update', $agent->id) : route('delivery-agents.store') }}"
                                             method="POST">
                                             @csrf
-                                            @if (isset($driverVehicle))
+                                            @if (isset($agent))
                                             @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
 
-                                                {{-- Agent / Driver Name --}}
+                                                {{-- Shop Name --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label">
+                                                        Shop Name <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <select name="shop_id" id="shop_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Shop</option>
+
+                                                        @foreach($shops as $shop)
+                                                        <option value="{{ $shop->id }}"
+                                                            {{ old('shop_id', $agent->shop_id ?? '') == $shop->id ? 'selected' : '' }}>
+                                                            {{ $shop->shop_name }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+
+                                                    @error('shop_id')
+                                                    <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Name --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">
-                                                        Name <span class="text-danger">*</span>
+                                                        First Name <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="text"
                                                         name="name"
                                                         class="form-control"
-                                                        value="{{ old('name', $agent->name ?? '') }}"
+                                                        placeholder="Enter first name"
+                                                        value="{{ old('name', $agent->user->first_name ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                     @error('name')
@@ -65,7 +89,23 @@
                                                     @enderror
                                                 </div>
 
-                                                {{-- Vehicle No --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Last Name <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        name="last_name"
+                                                        class="form-control"
+                                                        placeholder="Enter last name"
+                                                        value="{{ old('last_name', $agent->user->last_name ?? '') }}"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                    @error('last_name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Mobile --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">
                                                         Mobile <span class="text-danger">*</span>
@@ -73,7 +113,8 @@
                                                     <input type="text"
                                                         name="mobile"
                                                         class="form-control"
-                                                        value="{{ old('mobile', $agent->mobile ?? '') }}"
+                                                        placeholder="Enter 10 digit mobile number"
+                                                        value="{{ old('mobile', $agent->user->mobile ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                     @error('mobile')
@@ -81,7 +122,7 @@
                                                     @enderror
                                                 </div>
 
-                                                {{-- Vehicle Type --}}
+                                                {{-- Email --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">
                                                         Email
@@ -89,43 +130,182 @@
                                                     <input type="email"
                                                         name="email"
                                                         class="form-control"
-                                                        value="{{ old('email', $agent->email ?? '') }}"
+                                                        placeholder="Enter email address"
+                                                        value="{{ old('email', $agent->user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                     @error('email')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
-
                                                 </div>
 
-                                                {{-- License No --}}
+                                                {{-- DOB --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Vehicle Type</label>
-                                                    <input type="text"
-                                                        name="vehicle_type"
+                                                    <label class="form-label fw-medium">
+                                                        Date of Birth
+                                                    </label>
+                                                    <input type="date"
+                                                        name="dob"
                                                         class="form-control"
-                                                        value="{{ old('vehicle_type', $agent->vehicle_type ?? '') }}"
+                                                        value="{{ old('dob', $agent->dob ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
+                                                    @error('dob')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
+
+                                                {{-- Gender --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium d-block">
+                                                        Gender
+                                                    </label>
+
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input"
+                                                            type="radio"
+                                                            name="gender"
+                                                            value="male"
+                                                            {{ old('gender', $agent->gender ?? '') === 'male' ? 'checked' : '' }}
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <label class="form-check-label">Male</label>
+                                                    </div>
+
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input"
+                                                            type="radio"
+                                                            name="gender"
+                                                            value="female"
+                                                            {{ old('gender', $agent->gender ?? '') === 'female' ? 'checked' : '' }}
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <label class="form-check-label">Female</label>
+                                                    </div>
+
+                                                    @error('gender')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Address --}}
+                                                <div class="col-md-8">
+                                                    <label class="form-label fw-medium">Address</label>
+                                                    <textarea name="address"
+                                                        class="form-control"
+                                                        rows="3"
+                                                        placeholder="Enter complete address"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>{{ old('address', $agent->address ?? '') }}</textarea>
+
+                                                    @error('address')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Profile Image --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Profile Image</label>
+
+                                                    @if(!empty($agent->user->profile_photo))
+                                                    <div class="mb-2">
+                                                        <img src="{{ asset('storage/' . $agent->user->profile_photo) }}"
+                                                            class="img-thumbnail" width="120">
+                                                    </div>
+                                                    @endif
+
+                                                    @if($mode !== 'view')
+                                                    <input type="file"
+                                                        name="profile_image"
+                                                        class="form-control"
+                                                        accept="image/*">
+                                                    @endif
+
+                                                    @error('profile_image')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Aadhaar Card --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Aadhaar Card
+                                                    </label>
+
+
+                                                    @if($mode !== 'view')
+                                                    <input type="file"
+                                                        name="aadhaar_card"
+                                                        class="form-control"
+                                                        accept="image/*,.pdf">
+                                                    @endif
+
+                                                    @error('aadhaar_card')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+
+
+                                                    @if(!empty($agent->aadhaar_card))
+                                                    <div class="mb-2">
+                                                        <a href="{{ asset('storage/' . $agent->aadhaar_card) }}" target="_blank"
+                                                            class="">
+                                                            View Aadhaar
+                                                        </a>
+                                                    </div>
+                                                    @endif
+                                                </div>
+
+                                                {{-- Driving License --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Driving License
+                                                    </label>
+
+                                                    {{-- Show existing file in edit/view mode --}}
+
+
+                                                    {{-- File input for add/edit mode --}}
+                                                    @if($mode !== 'view')
+                                                    <input type="file"
+                                                        name="driving_license"
+                                                        class="form-control"
+                                                        accept="image/*,.pdf">
+                                                    @endif
+
+                                                    @error('driving_license')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+
+                                                    @if(!empty($agent->driving_license))
+                                                    <div class="mb-2">
+                                                        <a href="{{ asset('storage/' . $agent->driving_license) }}" target="_blank"
+                                                            class="">
+                                                            View Driving License
+                                                        </a>
+                                                    </div>
+                                                    @endif
+                                                </div>
+
 
                                                 {{-- Active Status --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium d-block">Active <span
-                                                            class="text-danger">*</span></label>
+                                                    <label class="form-label fw-medium d-block">
+                                                        Active Status <span class="text-danger">*</span>
+                                                    </label>
 
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio"
-                                                            name="active_status" value="1"
-                                                            {{ old('active_status', $driverVehicle->active_status ?? '') == 1 ? 'checked' : '' }}
+                                                        <input class="form-check-input"
+                                                            type="radio"
+                                                            name="active_status"
+                                                            value="1"
+                                                            {{ old('active_status', $agent->active_status ?? 1) == 1 ? 'checked' : '' }}
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <label class="form-check-label">Yes</label>
                                                     </div>
 
                                                     <div class="form-check form-check-inline">
-                                                        <input class="form-check-input" type="radio"
-                                                            name="active_status" value="0" checked
-                                                            {{ old('active_status', $driverVehicle->active_status ?? '') == 0 ? 'checked' : '' }}
+                                                        <input class="form-check-input"
+                                                            type="radio"
+                                                            name="active_status"
+                                                            value="0"
+                                                            {{ old('active_status', $agent->active_status ?? '') == 0 ? 'checked' : '' }}
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <label class="form-check-label">No</label>
                                                     </div>
@@ -134,14 +314,14 @@
                                                     <div class="text-danger small">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                            </div>
 
+                                            </div>
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('delivery-agents.index') }}"
                                                     class="btn btn-outline-secondary">
-                                                    <i class="bx bx-arrow-back"></i> Back
+                                                    Back
                                                 </a>
 
                                                 @if ($mode === 'add')

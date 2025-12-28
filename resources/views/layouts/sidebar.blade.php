@@ -35,8 +35,8 @@
                 <li><a href="">TEMPORALY ORDER</a></li>
 
             </ul>
-        </li>  
-        
+        </li>
+
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('CustomerMenu','inventoryArrow')">
                 <span><i class="bx bx-package me-2 "></i>CUSTOMER MANAGEMENT</span>
@@ -48,7 +48,7 @@
                 <li><a href="">TEMPORALY</a></li>
 
             </ul>
-        </li> 
+        </li>
 
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('ProductMenu','warehouseArrow')">
@@ -65,20 +65,20 @@
                 @endif
             </ul>
         </li>
-        
+
         <!-- Warehouse -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
-               <i class="bx bx-store me-2 "></i><span>WAREHOUSE MANAGEMENT</span>
+                <i class="bx bx-store me-2 "></i><span>WAREHOUSE MANAGEMENT</span>
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="warehouseMenu">
                 <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-                <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>                            
+                <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
             </ul>
         </li>
 
-         <!-- Inventory Dropdown -->
+        <!-- Inventory Dropdown -->
         <li class="menu-item">
             <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
                 <span><i class="bx bx-package me-2 "></i>INVENTORY MANAGEMENT</span>
@@ -86,7 +86,7 @@
             </div>
 
             <ul class="submenu" id="inventoryMenu">
-               
+
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                 <li><a href="/expiry-alerts">Expiry Alerts</a></li>
             </ul>
@@ -99,7 +99,7 @@
             </div>
 
             <ul class="submenu" id="TransferMenu">
-                 <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
             </ul>
         </li>
 
@@ -112,7 +112,8 @@
             <ul class="submenu" id="shopMenu">
                 <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
                 @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('delivery-agents.index') }}">Agent & Vehicle</a></li>
+                <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
                 @endif
                 <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
             </ul>
@@ -126,7 +127,7 @@
             </div>
 
             <ul class="submenu" id="OfferMenu">
-                 @if(auth()->check() && auth()->user()->role_id == 1)
+                @if(auth()->check() && auth()->user()->role_id == 1)
                 <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                 @endif
             </ul>
@@ -152,16 +153,16 @@
         </li>
         {{-- @endif --}}
 
-       
-        
 
-       
-         
-        
 
-       
 
-        
+
+
+
+
+
+
+
 </div>
 
 <script>
