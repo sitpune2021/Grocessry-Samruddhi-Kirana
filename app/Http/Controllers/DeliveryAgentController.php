@@ -367,4 +367,21 @@ class DeliveryAgentController extends Controller
             return back()->with('error', 'Unable to delete');
         }
     }
+
+
+    public function assignDelivery(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:customer_orders,id',
+            'delivery_agent_id' => 'required|exists:delivery_agents,id',
+        ]);
+
+        DeliveryAgent::create([
+            'order_id' => $request->order_id,
+            'delivery_agent_id' => $request->delivery_agent_id,
+            'status' => 'assigned',
+        ]);
+
+        return back()->with('success', 'Delivery agent assigned successfully');
+    }
 }

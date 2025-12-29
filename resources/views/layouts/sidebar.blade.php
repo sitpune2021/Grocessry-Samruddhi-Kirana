@@ -139,7 +139,7 @@
                     <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
                     <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
                     @endif
-                    <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
+                    <li><a href="{{ route('customer-orders.index') }}">Deliveries</a></li>
                 </ul>
             </li>
             @endif

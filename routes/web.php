@@ -82,7 +82,6 @@ Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCat
 Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
 
 
-
 Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
 Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
 Route::post('/add-stock-warehouse', [stockWarehouseController::class, 'addStock'])->name('warehouse.addStock');
@@ -233,6 +232,9 @@ Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
 Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
+
+Route::post('/admin-assign-delivery',[DeliveryAgentController::class, 'assignDelivery']
+)->name('admin.assign.delivery');
 
 // Deliveries List
 Route::resource('/customer-orders', CustomerOrderController::class);
