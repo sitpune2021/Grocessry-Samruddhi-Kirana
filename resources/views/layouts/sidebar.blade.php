@@ -176,13 +176,10 @@
                     <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
                 </ul>
             </li>
-
-
-            {{-- @if (hasPermission('Roles', 'view')) --}}
-            <li class="menu-item">
-
-            </li>
-            {{-- @endif --}}
+            
+            <li class="menu-header text-white"><a href="/purchase-orders/create">
+                POS SYSTEM
+            </a></li>
 
         </ul>
     </div>
