@@ -51,21 +51,45 @@
                                             @endif
 
                                             <div class="row">
+
+                                                {{-- Brand --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Brand <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="brand_id" id="brand_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Brand</option>
+                                                        @foreach ($brands as $brand)
+                                                        <option value="{{ $brand->id }}"
+                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                                                            {{ $brand->name }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('brand_id')
+                                                    <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
+
                                                 {{-- Category --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">
                                                             Category <span class="text-danger">*</span>
                                                         </label>
-                                                        <select name="category_id" class="form-select"
+                                                        <select name="category_id" id="category_id" class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">Select Category</option>
+
+                                                            @if($mode !== 'add')
                                                             @foreach ($categories as $category)
                                                             <option value="{{ $category->id }}"
                                                                 {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
                                                                 {{ $category->name }}
                                                             </option>
                                                             @endforeach
+                                                            @endif
                                                         </select>
                                                         @error('category_id')
                                                         <span class="text-danger">{{ $message }}</span>
@@ -82,13 +106,10 @@
 
                                                         <select name="sub_category_id" id="sub_category_id" class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                            @if($mode === 'add')
                                                             <option value="">Select Sub Category</option>
-                                                            @endif
 
-                                                            {{-- Edit mode --}}
-                                                            @if(isset($product) && isset($subCategories))
-                                                            @foreach($subCategories as $sub)
+                                                            @if($mode !== 'add')
+                                                            @foreach ($subCategories as $sub)
                                                             <option value="{{ $sub->id }}"
                                                                 {{ old('sub_category_id', $product->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
                                                                 {{ $sub->name }}
@@ -146,25 +167,7 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Brand --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Brand <span class="text-danger">*</span>
-                                                    </label>
-                                                    <select name="brand_id" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="">-- Select Brand --</option>
-                                                        @foreach ($brands as $brand)
-                                                        <option value="{{ $brand->id }}"
-                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                                            {{ $brand->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('brand_id')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
+
 
                                                 {{-- Effective Date --}}
                                                 <!-- <div class="col-md-4">
@@ -345,31 +348,78 @@
 <script>
     $(document).ready(function() {
 
-        // Load Sub Categories on Category change
-        $('select[name="category_id"]').on('change', function() {
+        $('#brand_id').on('change', function() {
+
+            let brandId = $(this).val();
+            let categorySelect = $('#category_id');
+            let subCategorySelect = $('#sub_category_id');
+
+            // Reset dropdowns
+            categorySelect.html('<option value="">Select Category</option>');
+            subCategorySelect.html('<option value="">Select Sub Category</option>');
+
+            if (!brandId) return;
+
+            categorySelect.html('<option value="">Loading...</option>');
+
+            $.ajax({
+                url: "{{ url('get-categories-by-brand') }}/" + brandId,
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+
+                    let options = '<option value="">Select Category</option>';
+
+                    if (data.length > 0) {
+                        $.each(data, function(key, value) {
+                            options += `<option value="${value.id}">${value.name}</option>`;
+                        });
+                    } else {
+                        options += '<option value="">No categories found</option>';
+                    }
+
+                    categorySelect.html(options);
+                },
+                error: function() {
+                    categorySelect.html('<option value="">Error loading categories</option>');
+                }
+            });
+        });
+
+        $('#category_id').on('change', function() {
 
             let categoryId = $(this).val();
             let subCategorySelect = $('#sub_category_id');
 
+            subCategorySelect.html('<option value="">Select Sub Category</option>');
+
+            if (!categoryId) return;
+
             subCategorySelect.html('<option value="">Loading...</option>');
 
-            if (categoryId) {
-                $.ajax({
-                    url: "{{ url('get-sub-categories') }}/" + categoryId,
-                    type: "GET",
-                    success: function(data) {
+            $.ajax({
+                url: "{{ url('get-sub-categories') }}/" + categoryId,
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
 
-                        let options = '<option value="">Select Sub Category</option>';
+                    let options = '<option value="">Select Sub Category</option>';
+
+                    if (data.length > 0) {
                         $.each(data, function(key, value) {
                             options += `<option value="${value.id}">${value.name}</option>`;
                         });
-
-                        subCategorySelect.html(options);
+                    } else {
+                        options += '<option value="">No sub categories found</option>';
                     }
-                });
-            } else {
-                subCategorySelect.html('<option value="">Select Sub Category</option>');
-            }
+
+                    subCategorySelect.html(options);
+                },
+                error: function() {
+                    subCategorySelect.html('<option value="">Error loading sub categories</option>');
+                }
+            });
         });
+
     });
 </script>
