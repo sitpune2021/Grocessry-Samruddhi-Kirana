@@ -136,7 +136,8 @@
                 <ul class="submenu" id="shopMenu">
                     <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
                     @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Agent & Vehicle</a></li>
+                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
                     @endif
                     <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
                 </ul>
