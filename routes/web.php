@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryAgentController;
 use App\Http\Controllers\LocationController;
@@ -26,12 +27,17 @@ use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Artisan;
 
-Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+// Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+// Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
 
+// Guest-only routes
+Route::middleware('guest')->group(function () {
+    Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+    Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+});
 
 Route::middleware(['auth'])->group(function () {
 
@@ -87,7 +93,7 @@ Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'
 Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
 
-    Route::get(
+Route::get(
     '/get-sub-categories/{category}',
     [stockWarehouseController::class, 'byCategory']
 );
@@ -229,8 +235,7 @@ Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List
-Route::get('/deliveries', [VehicleAssignmentController::class, 'index'])
-    ->name('deliveries.index');
+Route::resource('/customer-orders', CustomerOrderController::class);
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
