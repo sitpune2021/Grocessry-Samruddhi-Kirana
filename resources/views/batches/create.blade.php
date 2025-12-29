@@ -187,12 +187,12 @@
 
                                         {{-- Buttons --}}
                                         <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('batches.index') }}" class="btn btn-outline-secondary">
+                                            <a href="{{ route('batches.index') }}" class="btn btn-success">
                                                 Back
                                             </a>
 
                                             @if ($mode !== 'view')
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-success">
                                                     {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
                                                 </button>
                                             @endif

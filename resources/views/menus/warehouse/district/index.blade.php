@@ -12,7 +12,7 @@
                     <h5 class="card-title">Product</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('product.create') }}" class="btn btn-primary">
+                    <a href="{{ route('product.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Add Product
                     </a>
                 </div>

@@ -12,7 +12,7 @@
                     <h5 class="card-title">Stock In Warehouse</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-primary">
+                    <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Stock In Warehouse
                     </a>
                 </div>

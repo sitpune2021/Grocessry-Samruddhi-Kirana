@@ -14,7 +14,7 @@
                 <div class="col-md-auto ms-auto">
                     @if(hasPermission('category', 'create'))
                     <a href="{{ route('sub-category.create') }}"
-                        class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Sub Category
                     </a>
                     @endif
