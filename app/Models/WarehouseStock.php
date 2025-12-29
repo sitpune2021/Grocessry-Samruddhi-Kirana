@@ -17,6 +17,7 @@ class WarehouseStock extends Model
     protected $fillable = [
         'warehouse_id',
         'category_id',
+        'sub_category_id',
         'product_id',
         'batch_id',
         'quantity',
@@ -38,6 +39,11 @@ class WarehouseStock extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
     
 }

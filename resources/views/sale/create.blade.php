@@ -53,8 +53,6 @@
                                                     @enderror
                                                 </div>
 
-
-
                                                 <div class="col-md-4">
                                                     <label for="category_id" class="form-label">Category <span
                                                                 class="text-danger">*</span></label>
@@ -70,6 +68,12 @@
                                                     @enderror
                                                 </div>
 
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Sub Category <span class="text-danger">*</span></label>
+                                                    <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                        <option value="">Select Sub Category</option>
+                                                    </select>
+                                                </div>
 
                                                 <!-- Product Dropdown -->
 
@@ -90,9 +94,6 @@
                                                     @enderror
                                                 </div>
 
-
-
-
                                                 <div class="col-md-4">
                                                     <label for="quantity" class="form-label">Product Quantity <span
                                                                 class="text-danger">*</span></label>
@@ -107,8 +108,8 @@
                                                         Max available in selected warehouse: {{ $availableStock }}
                                                     </small>
                                                 </div>
-                                            </div>
 
+                                            </div>
 
                                             <div class="d-flex justify-content-end gap-2">
                                                 <a href="{{ route('batches.index') }}"
@@ -119,7 +120,6 @@
                                                     Product Sell
                                                 </button>
                                             </div>
-
 
                                         </form>
 
@@ -145,39 +145,78 @@
     <!-- / Layout wrapper -->
 </body>
 
-<script>
-    document.getElementById('category_id').addEventListener('change', function() {
-        let categoryId = this.value;
-        let productSelect = document.getElementById('product_id');
-
-        productSelect.innerHTML = '<option>Loading...</option>';
-
-        fetch(`/get-products-by-category/${categoryId}`)
-            .then(res => res.json())
-            .then(data => {
-                productSelect.innerHTML = '<option value="">-- Select Product --</option>';
-                data.forEach(p => {
-                    productSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-                });
-            });
-    });
-</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    document.getElementById('product_id').addEventListener('change', function() {
-        let productId = this.value;
-        let warehouseId = document.getElementById('warehouse_id').value;
-        let quantityInput = document.getElementById('quantity');
-        let stockInfo = document.getElementById('stock-info');
+/* Warehouse → Category */
+$('#warehouse_id').change(function () {
 
-        if (!warehouseId || !productId) return;
+    let wid = $(this).val();
+    $('#category_id').html('<option>Loading...</option>');
+    $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+    $('#product_id').html('<option value="">Select Product</option>');
+    $('#quantity').val('');
+    $('#stock-info').text('');
 
-        fetch(`/get-stock/${warehouseId}/${productId}`)
-            .then(res => res.json())
-            .then(data => {
-                let stock = data.stock;
-                quantityInput.max = stock;
-                stockInfo.textContent = `Max available in selected warehouse: ${stock}`;
-            });
+    if (!wid) return;
+
+    $.get('/sell/ws/categories/' + wid, function (data) {
+        let html = '<option value="">Select Category</option>';
+        data.forEach(c => html += `<option value="${c.id}">${c.name}</option>`);
+        $('#category_id').html(html);
     });
+});
+
+/* Category → Sub Category */
+$('#category_id').change(function () {
+
+    let wid = $('#warehouse_id').val();
+    let cid = $(this).val();
+
+    $('#sub_category_id').html('<option>Loading...</option>');
+    $('#product_id').html('<option value="">Select Product</option>');
+    $('#quantity').val('');
+    $('#stock-info').text('');
+
+    if (!cid) return;
+
+    $.get('/sell/ws/subcategories/' + wid + '/' + cid, function (data) {
+        let html = '<option value="">Select Sub Category</option>';
+        data.forEach(s => html += `<option value="${s.id}">${s.name}</option>`);
+        $('#sub_category_id').html(html);
+    });
+});
+
+/* Sub Category → Product */
+$('#sub_category_id').change(function () {
+
+    let wid = $('#warehouse_id').val();
+    let sid = $(this).val();
+
+    $('#product_id').html('<option>Loading...</option>');
+    $('#quantity').val('');
+    $('#stock-info').text('');
+
+    if (!sid) return;
+
+    $.get('/sell/ws/products/' + wid + '/' + sid, function (data) {
+        let html = '<option value="">Select Product</option>';
+        data.forEach(p => html += `<option value="${p.id}">${p.name}</option>`);
+        $('#product_id').html(html);
+    });
+});
+
+/* Product → Quantity */
+$('#product_id').change(function () {
+
+    let wid = $('#warehouse_id').val();
+    let pid = $(this).val();
+
+    if (!pid) return;
+
+    $.get('/sell/ws/quantity/' + wid + '/' + pid, function (qty) {
+        $('#quantity').attr('max', qty);
+        $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
+    });
+});
 </script>

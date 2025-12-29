@@ -30,7 +30,6 @@
                             <th>Warehouse</th>
                             <th>Category</th>
                             <th>Product Name</th>
-                            <th>Batch No</th>
                             <th>Quantity</th>
                             <th>Actions</th>
                         </tr>
@@ -48,9 +47,6 @@
 
                             {{-- Product --}}
                             <td>{{ $stock->product->name ?? '-' }}</td>
-
-                            {{-- Batch --}}
-                            <td>{{ $stock->batch->batch_no ?? '-' }}</td>
 
                             {{-- Quantity --}}
                             <td>

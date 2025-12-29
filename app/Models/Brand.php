@@ -13,4 +13,9 @@ class Brand extends Model
         'logo',
         'status'
     ];
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'brand_id');
+    }
 }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
@@ -14,9 +16,13 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::orderBy('id', 'desc')->paginate(10);
+        $categories = Category::with('brand')
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
         return view('menus.category.index', compact('categories'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -24,7 +30,8 @@ class CategoryController extends Controller
     public function create()
     {
         $mode = 'add';
-        return view('menus.category.add-category', compact('mode'));
+        $brands = Brand::all(); // ✅ Pass brands to view
+        return view('menus.category.add-category', compact('brands', 'mode'));
     }
 
     /**
@@ -37,26 +44,29 @@ class CategoryController extends Controller
         Log::info('Category store request received', [
             'request_data' => $request->all(),
             'ip'           => $request->ip(),
-            'user_id'      => auth()->id(),
+            'user_id'      => Auth::id(),
         ]);
 
         try {
             // Validation
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:categories,name',
-                'slug' => 'required|string|max:255',
+                'name'     => 'required|string|max:255|unique:categories,name',
+                'slug'     => 'required|string|max:255',
+                'brand_id' => 'required|exists:brands,id',
             ]);
 
             // Create category
             $category = Category::create([
-                'name' => $validated['name'],
-                'slug' => $validated['slug'],
+                'name'     => $validated['name'],
+                'slug'     => $validated['slug'],
+                'brand_id' => $validated['brand_id'],
             ]);
 
             Log::info('Category created successfully', [
                 'category_id' => $category->id,
                 'name'        => $category->name,
                 'slug'        => $category->slug,
+                'brand_id'    => $category->brand_id,
             ]);
 
             return redirect()
@@ -93,11 +103,12 @@ class CategoryController extends Controller
     {
         try {
             // Log request
-            $mode = 'show';
+            $mode = 'view';
             Log::info('Category Show Request Received', ['id' => $id]);
 
             // Fetch category
             $category = Category::find($id);
+            $brands = Brand::all();
 
             if (!$category) {
                 Log::warning("Category Not Found", ['id' => $id]);
@@ -109,8 +120,9 @@ class CategoryController extends Controller
             Log::info('Category Found', ['category' => $category]);
 
             // Return response
-            return view('menus.category.add-category', compact('category', 'mode'));
-        } catch (\Throwable $e) {
+           return view('menus.category.add-category', compact('category', 'brands', 'mode'));
+        }
+ catch (\Throwable $e) {
 
             Log::error('Category Show Error', ['error' => $e->getMessage()]);
 
@@ -123,39 +135,28 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
-    {
+   public function edit($id)
+{
+    Log::info('Category Edit Request Received', ['id' => $id]);
 
-        Log::info('Category Edit Request Received', ['id' => $id]);
+    $category = Category::with('brand')->find($id);
 
-        try {
-            $category = Category::find($id);
-            $mode = 'edit';
+    if (!$category) {
+        Log::warning('Category Not Found for Edit', ['id' => $id]);
 
-            if (!$category) {
-                Log::warning('Category Not Found for Edit', ['id' => $id]);
-
-                return redirect()->route('category.index')
-                    ->with('error', 'Category not found');
-            }
-
-            Log::info('Category Loaded for Edit', [
-                'category_id' => $category->id,
-                'name'        => $category->name,
-            ]);
-
-            return view('menus.category.add-category', compact('category', 'mode'));
-        } catch (\Throwable $e) {
-
-            Log::error('Category Edit Error', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-            ]);
-            return redirect()->route('category.index')
-                ->with('error', 'Something went wrong');
-        }
+        return redirect()->route('category.index')
+            ->with('error', 'Category not found');
     }
+
+    $brands = Brand::all();   // ✅ get all brands
+    $mode   = 'edit';
+
+    return view('menus.category.add-category', compact(
+        'category',
+        'brands',
+        'mode'
+    ));
+}
 
 
 
@@ -167,7 +168,7 @@ class CategoryController extends Controller
         Log::info('Category Update Request Received', [
             'id'      => $id,
             'request' => $request->all(),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         try {
@@ -181,15 +182,18 @@ class CategoryController extends Controller
             }
 
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-                'slug' => 'required|string|max:255',
+                'brand_id' => 'required|exists:brands,id',
+                'name'     => 'required|string|max:255|unique:categories,name,' . $category->id,
+                'slug'     => 'required|string|max:255',
             ]);
 
-            $category->update($validated);
+
+            $category->update($validated); // ✅ Save brand_id
 
             Log::info('Category Updated Successfully', [
                 'category_id' => $category->id,
                 'name'        => $category->name,
+                'brand_id'    => $category->brand_id,
             ]);
 
             return redirect()->route('category.index')

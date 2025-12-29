@@ -47,6 +47,20 @@
 
                                         <div class="row g-3 mb-3">
 
+                                            {{-- Warehouse --}}
+                                            <div class="col-md-4">
+                                                <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                                               <select name="warehouse_id" id="warehouse_id" class="form-select">
+                                                    <option value="">Select Warehouse</option>
+                                                    @foreach ($warehouses as $w)
+                                                        <option value="{{ $w->id }}"
+                                                            {{ old('warehouse_id', $batch->warehouse_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
                                             {{-- Category --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Category <span class="text-danger">*</span></label>
@@ -63,6 +77,23 @@
                                                 @error('category_id')
                                                     <span class="text-danger">{{ $message }}</span>
                                                 @enderror
+                                            </div>
+
+                                            {{-- Sub Category --}}
+                                            <div class="col-md-4">
+                                                <label class="form-label">Sub Category <span class="text-danger">*</span></label>
+                                                <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                    <option value="">Select Sub Category</option>
+
+                                                    @if(isset($subCategories))
+                                                        @foreach ($subCategories as $sub)
+                                                            <option value="{{ $sub->id }}"
+                                                                {{ old('sub_category_id', $batch->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                                {{ $sub->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
                                             </div>
 
                                             {{-- Product --}}
@@ -119,7 +150,7 @@
                                             {{-- Quantity --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                                                <input type="number" name="quantity" min="1"
+                                                <input type="number" name="quantity" id="quantity" readonly
                                                     value="{{ old('quantity', $batch->quantity ?? '') }}"
                                                     class="form-control"  placeholder="Enter quantity"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -187,28 +218,79 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    $('#category_id').change(function() {
-        let categoryId = $(this).val();
-        $('#product_id').html('<option value="">Loading...</option>');
-
-        if (categoryId) {
-            $.ajax({
-                url: '/get-products/' + categoryId,
-                type: 'GET',
-                success: function(products) {
-                    let options = '<option value="">-- Select Product --</option>';
-                    products.forEach(function(product) {
-                        options += `<option value="${product.id}">${product.name}</option>`;
-                    });
-                    $('#product_id').html(options);
-
-                    @if (isset($batch))
-                        $('#product_id').val('{{ $batch->product_id }}');
-                    @endif
-                }
-            });
-        } else {
-            $('#product_id').html('<option value="">-- Select Product --</option>');
-        }
+function loadCategories(wid, selected = null) {
+    return $.get('/ws/categories/' + wid, function (data) {
+        let html = '<option value="">Select Category</option>';
+        data.forEach(c => {
+            html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
+        });
+        $('#category_id').html(html);
     });
+}
+
+function loadSubCategories(wid, cid, selected = null) {
+    return $.get('/ws/subcategories/' + wid + '/' + cid, function (data) {
+        let html = '<option value="">Select Sub Category</option>';
+        data.forEach(s => {
+            html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
+        });
+        $('#sub_category_id').html(html);
+    });
+}
+
+function loadProducts(wid, sid, selected = null) {
+    return $.get('/ws/products-by-sub/' + wid + '/' + sid, function (data) {
+        let html = '<option value="">Select Product</option>';
+        data.forEach(p => {
+            html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
+        });
+        $('#product_id').html(html);
+    });
+}
+
+function loadQuantity(wid, pid) {
+    return $.get('/ws/quantity/' + wid + '/' + pid, function (res) {
+        $('#quantity').val(res.quantity);
+    });
+}
+
+/* CHANGE EVENTS */
+$('#warehouse_id').change(function () {
+    loadCategories(this.value);
+    $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+    $('#product_id').html('<option value="">Select Product</option>');
+    $('#quantity').val('');
+});
+
+$('#category_id').change(function () {
+    loadSubCategories($('#warehouse_id').val(), this.value);
+});
+
+$('#sub_category_id').change(function () {
+    loadProducts($('#warehouse_id').val(), this.value);
+});
+
+$('#product_id').change(function () {
+    loadQuantity($('#warehouse_id').val(), this.value);
+});
+
+/* ✅ EDIT MODE AUTO SELECT (NO setTimeout) */
+$(document).ready(async function () {
+
+    let mode = "{{ $mode }}";
+    if (mode !== 'edit') return;
+
+    let wid = "{{ $batch->warehouse_id ?? ''}}";
+    let cid = "{{ $batch->category_id ?? ''}}";
+    let sid = "{{ $batch->sub_category_id ?? ''}}";
+    let pid = "{{ $batch->product_id ?? ''}}";
+
+    $('#warehouse_id').val(wid);
+
+    await loadCategories(wid, cid);
+    await loadSubCategories(wid, cid, sid);
+    await loadProducts(wid, sid, pid);
+    await loadQuantity(wid, pid);
+});
 </script>
+

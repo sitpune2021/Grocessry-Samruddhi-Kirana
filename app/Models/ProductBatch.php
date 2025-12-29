@@ -10,7 +10,9 @@ class ProductBatch extends Model
     use SoftDeletes;
     
      protected $fillable = [
+        'warehouse_id',
         'category_id',
+        'sub_category_id',
         'product_id',
         'batch_no',
         'expiry_date',
@@ -35,6 +37,11 @@ class ProductBatch extends Model
     public function stocks()
     {
         return $this->hasMany(WarehouseStock::class, 'batch_id');
+    }
+
+    public function subCategory()
+    {
+        return $this->belongsTo(SubCategory::class);
     }
 
 
