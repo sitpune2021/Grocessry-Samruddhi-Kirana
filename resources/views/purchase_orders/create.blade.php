@@ -21,6 +21,14 @@
                     <!-- Content wrapper -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="w-full">
+                            @if(session('success'))
+                                <div class="">
+                                    <div class="w-44 mb-5 flex justify-end">
+                                        <x-alert />
+                                    </div>
+                                    {{-- {{ session('success') }} --}}
+                                </div>
+                            @endif
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
                                     purchase order
