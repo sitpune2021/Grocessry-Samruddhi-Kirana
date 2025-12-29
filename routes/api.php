@@ -13,12 +13,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('/register',                                       [LoginController::class, 'register']);
-Route::post('/login/{type}',                                   [LoginController::class, 'login']);
-Route::post('/forgot-password',                                [LoginController::class, 'forgotPassword']);
-Route::post('/verify-otp/{type}',                              [LoginController::class, 'verifyOtp']);
-Route::post('/reset-password',                                 [LoginController::class, 'resetPassword']);
-Route::middleware('auth:sanctum')->post('/logout', [LoginController::class, 'logout']);
+Route::post('/register', [LoginController::class, 'register']);
+Route::post('/login/{type}', [LoginController::class, 'login']);
+Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
+Route::post('/verify-otp/{type}', [LoginController::class, 'verifyOtp']);
+Route::post('/reset-password', [LoginController::class, 'resetPassword']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout']);
+});
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
@@ -29,9 +31,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/brands/{id}/products',          [CategoryProductController::class, 'getProductsByBrand']);
     Route::get('/products/{id}/similar',         [CategoryProductController::class, 'getSimilarProducts']);
     Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
-
-
-
 });
 
 Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
