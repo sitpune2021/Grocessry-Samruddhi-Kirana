@@ -87,6 +87,67 @@
                                                         {{ $readonly }}>
 
                                                 </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">
+                                                        State <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <select name="state_id" id="state_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                        <option value="">Select State</option>
+
+                                                        @foreach ($states as $state)
+                                                            <option value="{{ $state->id }}"
+                                                                {{ old('state_id', $warehouse->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                                                {{ $state->name }}
+                                                            </option>
+                                                        @endforeach
+
+                                                    </select>
+
+                                                    @error('state_id')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- District --}}
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">District <span
+                                                            class="text-danger">*</span></label>
+                                                    <select name="district_id" id="district_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select District</option>
+                                                        @foreach ($districts as $district)
+                                                            <option value="{{ $district->id }}"
+                                                                {{ old('district_id', $warehouse->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ $district->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Taluka --}}
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">Taluka <span
+                                                            class="text-danger">*</span></label>
+                                                    <select name="taluka_id" id="taluka_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        @if (isset($warehouse->taluka))
+                                                            <option value="{{ $warehouse->taluka_id }}" selected>
+                                                                {{ $warehouse->taluka->name }}
+                                                            </option>
+                                                        @else
+                                                            <option value="">Select Taluka</option>
+                                                        @endif
+                                                    </select>
+                                                    @error('type')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-6">
@@ -96,23 +157,26 @@
                                                 </div>
 
                                                 {{-- Logo --}}
-                                              <div class="col-md-4">
-    <label class="form-label fw-medium">Supplier Logo</label>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Supplier Logo</label>
 
-    {{-- Upload input for edit --}}
-    <input type="file" name="logo" class="form-control" accept="image/*">
+                                                    {{-- Upload input for edit --}}
+                                                    <input type="file" name="logo" class="form-control"
+                                                        accept="image/*">
 
-    {{-- Display existing logo if available --}}
-    @if (isset($supplier) && $supplier->logo)
-        <div class="mt-2">
-            {{-- Show small preview --}}
-            {{-- <a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">
+                                                    {{-- Display existing logo if available --}}
+                                                    @if (isset($supplier) && $supplier->logo)
+                                                        <div class="mt-2">
+                                                            {{-- Show small preview --}}
+                                                            {{-- <a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">
                 <img src="{{ asset('storage/suppliers/' . $supplier->logo) }}" width="80" class="rounded border" alt="Supplier Logo">
             </a> --}}
-            <p class="mt-1"><a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">View Logo</a></p>
-        </div>
-    @endif
-</div>
+                                                            <p class="mt-1"><a
+                                                                    href="{{ asset('storage/suppliers/' . $supplier->logo) }}"
+                                                                    target="_blank">View Logo</a></p>
+                                                        </div>
+                                                    @endif
+                                                </div>
 
 
 

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Supplier;
+use App\Models\District;
+use App\Models\Talukas;
+use App\Models\State;
 
 class SupplierController extends Controller
 {
@@ -17,10 +20,18 @@ class SupplierController extends Controller
 
     public function create()
     {
+        $districts = District::all();
+        $talukas   = Talukas::all();   
+        $states    = State::all();
+
         return view('supplier.create', [
-            'mode' => 'add'
+            'mode'      => 'add',
+            'districts' => $districts,
+            'talukas'   => $talukas,
+            'states'    => $states,
         ]);
     }
+
 
     public function store(Request $request)
     {
