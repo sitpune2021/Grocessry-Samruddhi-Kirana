@@ -11,7 +11,7 @@ class WarehouseStock extends Model
 {
     use HasFactory;
 
-     use SoftDeletes;
+    use SoftDeletes;
     protected $table = 'warehouse_stock';
 
     protected $fillable = [
@@ -21,6 +21,8 @@ class WarehouseStock extends Model
         'product_id',
         'batch_id',
         'quantity',
+        'supplier_id',
+
     ];
 
     public function batch()
@@ -45,5 +47,8 @@ class WarehouseStock extends Model
     {
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
-    
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
 }

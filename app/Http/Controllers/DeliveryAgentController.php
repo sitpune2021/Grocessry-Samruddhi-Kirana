@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class DeliveryAgentController extends Controller
@@ -45,6 +46,7 @@ class DeliveryAgentController extends Controller
      */
     public function store(Request $request)
     {
+        
         Log::info('Delivery Agent store process started', [
             'requested_by' => Auth::id(),
             'ip' => $request->ip()
@@ -54,14 +56,12 @@ class DeliveryAgentController extends Controller
 
         try {
 
-            /* ----------------------------
-         | 1. Validate Request
-         ---------------------------- */
             Log::info('Validating delivery agent request');
 
-            $validated = $request->validate([
+            $validated = Validator::make($request->all(), [
+
                 'name'            => 'required|string|max:255',
-                'last_name'            => 'required|string|max:255',
+                'last_name'       => 'required|string|max:255',
                 'mobile'          => 'required|digits:10|unique:users,mobile',
                 'email'           => 'nullable|email|unique:users,email',
                 'password'        => 'nullable|min:6',
@@ -77,14 +77,23 @@ class DeliveryAgentController extends Controller
                 'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
-            Log::info('Validation passed', [
-                'mobile' => $validated['mobile'],
-                'email'  => $validated['email'] ?? null
-            ]);
 
-            /* ----------------------------
-         | 2. Get Delivery Agent Role
-         ---------------------------- */
+            if ($validated->fails()) {
+                return redirect()
+                    ->back()
+                    ->withErrors($validated)   // 🔥 THIS is required
+                    ->withInput();
+                    
+            }
+
+dd("hi");
+
+            // Log::info('Validation passed', [
+            //     'mobile' => $validated['mobile'],
+            //     'email'  => $validated['email'] ?? null
+            // ]);
+
+
             Log::info('Fetching Delivery Agent role');
 
             $role = Role::where('name', 'Delivery Agent')->firstOrFail();
@@ -93,15 +102,14 @@ class DeliveryAgentController extends Controller
                 'role_id' => $role->id
             ]);
 
-            /* ----------------------------
-         | 3. Create User
-         ---------------------------- */
+
             Log::info('Creating user record');
             $profileImage = null;
 
-            if ($request->hasFile('profile_photo')) {
-                $profileImage = $request->file('profile_image')
-                    ->store('profile_photos', 'public');
+            if ($request->hasFile('profile_image')) {
+                $file = $request->file('profile_image');
+                $profileImage = $file->getClientOriginalName();
+                $file->storeAs('profile_photos', $profileImage, 'public');
 
                 Log::info('Profile image uploaded', [
                     'path' => $profileImage
@@ -123,9 +131,7 @@ class DeliveryAgentController extends Controller
                 'user_id' => $user->id
             ]);
 
-            /* ----------------------------
-         | 4. Upload Files
-         ---------------------------- */
+
             Log::info('Uploading delivery agent files');
 
 
@@ -133,8 +139,10 @@ class DeliveryAgentController extends Controller
             $licensePath  = null;
 
             if ($request->hasFile('aadhaar_card')) {
-                $aadhaarPath = $request->file('aadhaar_card')
-                    ->store('delivery_agents/aadhaar', 'public');
+
+                $file = $request->file('aadhaar_card');
+                $aadhaarPath = $file->getClientOriginalName();
+                $file->storeAs('delivery_agents/aadhaar', $aadhaarPath, 'public');
 
                 Log::info('Aadhaar uploaded', [
                     'path' => $aadhaarPath
@@ -142,17 +150,16 @@ class DeliveryAgentController extends Controller
             }
 
             if ($request->hasFile('driving_license')) {
-                $licensePath = $request->file('driving_license')
-                    ->store('delivery_agents/license', 'public');
 
+                $file = $request->file('driving_license');
+                $licensePath = $file->getClientOriginalName();
+
+                $file->storeAs('delivery_agents/license', $licensePath, 'public');
                 Log::info('Driving license uploaded', [
                     'path' => $licensePath
                 ]);
             }
 
-            /* ----------------------------
-         | 5. Create Delivery Agent
-         ---------------------------- */
             Log::info('Creating delivery agent record');
 
             DeliveryAgent::create([
@@ -192,7 +199,8 @@ class DeliveryAgentController extends Controller
                 'request' => $request->except(['password'])
             ]);
 
-            return back()
+            return redirect()
+                ->back()
                 ->withInput()
                 ->with('error', 'Something went wrong. Please try again.');
         }
@@ -271,48 +279,125 @@ class DeliveryAgentController extends Controller
                 throw new \Exception('User not linked with delivery agent');
             }
 
+            // // Profile Image
+            // if ($request->hasFile('profile_image')) {
+
+            //     if ($agent->user->profile_image) {
+            //         Storage::disk('public')
+            //             ->delete('profile_photo/' . $agent->user->profile_image);
+            //     }
+
+            //     $file = $request->file('profile_image');
+            //     $fileName = $file->getClientOriginalName();
+            //     $file->storeAs('profile_photo', $fileName, 'public');
+            //     $agent->user->profile_image = $fileName;
+
+            //     Log::info('Profile image uploaded', ['file' => $fileName]);
+            // }
+
+            // if ($request->hasFile('profile_image')) {
+            //     $profile_image['profile_image'] = $fileName;
+            // }
+
+            // $user->update([
+            //     'first_name' => $validated['name'],
+            //     'last_name'  => $validated['last_name'],
+            //     'mobile'     => $request->mobile, // if coming from form
+            //     'email'      => $request->email ?? null,
+            //     'profile_photo' => $profile_image['profile_image'] ?? $agent->user->profile_image,
+            // ]);
+
+            // ---------------- Profile Image ----------------
+            $profilePhotoName = $agent->user->profile_photo;
+            if ($request->hasFile('profile_image')) {
+
+                // delete old image
+                if ($agent->user->profile_photo) {
+                    Storage::disk('public')
+                        ->delete('profile_photos/' . $agent->user->profile_photo);
+                }
+
+                $file = $request->file('profile_image');
+                $profilePhotoName = $file->getClientOriginalName();
+
+                $file->storeAs('profile_photos', $profilePhotoName, 'public');
+
+                Log::info('Profile image uploaded', ['file' => $profilePhotoName]);
+            }
+
+            // ---------------- Update User ----------------
             $user->update([
-                'first_name' => $validated['name'],
-                'last_name'  => $validated['last_name'],
-                'mobile'     => $request->mobile, // if coming from form
-                'email'      => $request->email ?? null,
+                'first_name'    => $validated['name'],
+                'last_name'     => $validated['last_name'],
+                'mobile'        => $request->mobile,
+                'email'         => $request->email ?? null,
+                'profile_photo' => $profilePhotoName,
             ]);
+
 
             Log::info('User Updated Successfully', [
                 'user_id' => $user->id,
             ]);
 
             /* ---------------- File Uploads ---------------- */
-            if ($request->hasFile('profile_image')) {
-                $agent->profile_image = $request->file('profile_image')
-                    ->store('profile_photo', 'public');
 
-                Log::info('Profile image uploaded');
-            }
-
+            // Aadhaar Card
             if ($request->hasFile('aadhaar_card')) {
-                $agent->aadhaar_card = $request->file('aadhaar_card')
-                    ->store('delivery_agents/aadhaar', 'public');
 
-                Log::info('Aadhaar uploaded');
+                if ($agent->aadhaar_card) {
+                    Storage::disk('public')
+                        ->delete('delivery_agents/aadhaar/' . $agent->aadhaar_card);
+                }
+
+                $file = $request->file('aadhaar_card');
+                $fileName = $file->getClientOriginalName();
+
+                $file->storeAs('delivery_agents/aadhaar/', $fileName, 'public');
+
+                $agent->aadhaar_card = $fileName;
+
+                Log::info('Aadhaar uploaded', ['file' => $fileName]);
             }
 
+            // Driving License
             if ($request->hasFile('driving_license')) {
-                $agent->driving_license = $request->file('driving_license')
-                    ->store('delivery_agents/license', 'public');
 
-                Log::info('Driving license uploaded');
+                if ($agent->driving_license) {
+                    Storage::disk('public')
+                        ->delete('delivery_agents/license/' . $agent->driving_license);
+                }
+
+                $file = $request->file('driving_license');
+                $fileName = $file->getClientOriginalName();
+
+                $file->storeAs('delivery_agents/license/', $fileName, 'public');
+
+                $agent->driving_license = $fileName;
+
+                Log::info('Driving license uploaded', ['file' => $fileName]);
             }
+
 
             /* ---------------- Update Agent ---------------- */
-            $agent->update([
+            $data = [
                 'shop_id'       => $validated['shop_id'],
                 'dob'           => $validated['dob'] ?? null,
                 'gender'        => $validated['gender'] ?? null,
                 'address'       => $validated['address'] ?? null,
                 'active_status' => $validated['active_status'],
                 'updated_by'    => Auth::id(),
-            ]);
+            ];
+
+
+            if ($request->hasFile('aadhaar_card')) {
+                $data['aadhaar_card'] = $fileName;
+            }
+
+            if ($request->hasFile('driving_license')) {
+                $data['driving_license'] = $fileName;
+            }
+
+            $agent->update($data);
 
             Log::info('Delivery Agent Updated Successfully', [
                 'agent_id' => $agent->id,
@@ -366,5 +451,22 @@ class DeliveryAgentController extends Controller
 
             return back()->with('error', 'Unable to delete');
         }
+    }
+
+
+    public function assignDelivery(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:customer_orders,id',
+            'delivery_agent_id' => 'required|exists:delivery_agents,id',
+        ]);
+
+        DeliveryAgent::create([
+            'order_id' => $request->order_id,
+            'delivery_agent_id' => $request->delivery_agent_id,
+            'status' => 'assigned',
+        ]);
+
+        return back()->with('success', 'Delivery agent assigned successfully');
     }
 }

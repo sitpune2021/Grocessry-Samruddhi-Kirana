@@ -19,18 +19,6 @@
             <div class="table-responsive mt-5 p-3">
                 <table class="table table-bordered">
 
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Batch</th>
-                            <th>Qty</th>
-                            <th>MFG</th>
-                            <th>Expiry</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
                     <thead class="table-light">
                         <tr>
                             <th>Sr No</th>
@@ -60,7 +48,7 @@
 
                                 <tr style="{{ $rowStyle }}">
                                     <td style="width: 30px;">{{ $loop->iteration }}</td>
-                                    <td>{{ $batch->product->name }}</td>
+                                    <td>{{ $batch->product->name ?? '' }}</td>
                                     <td>{{ $batch->batch_no }}</td>
                                     <td>{{ $batch->quantity }}</td>
                                     <td style="width: 50px;">
@@ -70,10 +58,10 @@
                                         {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
                                     </td>
 
-                                    <td align="center">
+                                    <td align="center" class="text-success">
                                         @if($batch->quantity > 0 && $batch->expiry_date >= now())
-                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product">
-                                            🛒 Sell
+                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product" class="text-success">
+                                            🛒 SELL
                                         </a>
                                         @else
                                         ❌
@@ -83,6 +71,7 @@
 
                                 @endforeach
                     </tbody>
+                    
                 </table>
             </div>
         </div>

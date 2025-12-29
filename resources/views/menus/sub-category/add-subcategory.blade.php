@@ -113,16 +113,16 @@
 
                                             <!-- Buttons (Right Aligned) -->
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('sub-category.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('sub-category.index') }}" class="btn btn-success">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-success">
                                                     Save Sub Category
                                                 </button>
                                                 @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-success">
                                                     Update Sub Category
                                                 </button>
                                                 @endif
