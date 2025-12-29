@@ -24,7 +24,7 @@ use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
-
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -400,4 +400,52 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
     // // DELETE
     Route::delete('/{id}', [SupplierController::class, 'destroy'])
         ->name('destroy');
+});
+
+
+Route::get('/dev/run/{action}', function ($action) {
+    try {
+        switch ($action) {
+            case 'clear':
+                Artisan::call('config:clear');
+                Artisan::call('cache:clear');
+                Artisan::call('route:clear');
+                Artisan::call('view:clear');
+                return "Cleared config, cache, route, and view.";
+
+            case 'migrate':
+                Artisan::call('session:table');
+                Artisan::call('migrate');
+                return "Migration completed successfully!";
+
+            case 'migrate-fresh':
+                Artisan::call('migrate:fresh', ['--seed' => true]);
+                return "Fresh migration and seed completed!";
+
+            case 'seed':
+                Artisan::call('db:seed');
+                return "Database seeding completed!";
+
+            case 'seed-menu':
+                Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
+                return "MenuSeeder database seeding completed!";
+
+            case 'seed-role':
+                Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
+                return "RoleSeeder database seeding completed!";
+
+            case 'storage-link':
+                Artisan::call('storage:link');
+                $output = Artisan::output();
+                return "Storage link created!"  . nl2br($output);
+
+            case 'install':
+                exec('composer install');
+                return "composer install executed!";
+            default:
+                return "Invalid action: $action";
+        }
+    } catch (\Exception $e) {
+        return "Error running action [$action]: " . $e->getMessage();
+    }
 });
