@@ -267,6 +267,16 @@ Route::get(
 )->name('transfer.show');
 
 
+Route::get(
+    '/ajax/product-batches',
+    [WarehouseTransferController::class, 'getBatchesByProducts']
+)->name('ajax.product.batches');
+
+Route::get(
+    '/get-batch-stock/{batch}',
+    [WarehouseTransferController::class, 'getBatchStock']
+);
+
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
     Route::get('/', [RetailerController::class, 'index'])->name('index');
