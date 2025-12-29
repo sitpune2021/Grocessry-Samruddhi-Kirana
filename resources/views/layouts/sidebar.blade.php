@@ -70,11 +70,11 @@
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="ProductMenu">
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                    <li><a href="{{ route('category.index') }}">Category</a></li>
-                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    <li><a href="{{ route('product.index') }}">Products</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('brands.index') }}">Brand</a></li>
+                        <li><a href="{{ route('category.index') }}">Category</a></li>
+                        <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                        <li><a href="{{ route('product.index') }}">Products</a></li>
                     @endif
                 </ul>
             </li>
@@ -107,6 +107,8 @@
                 <ul class="submenu" id="inventoryMenu">
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
+                    <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
+
                 </ul>
             </li>
 
@@ -154,8 +156,8 @@
                 </div>
 
                 <ul class="submenu" id="OfferMenu">
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                     @endif
                 </ul>
             </li>
