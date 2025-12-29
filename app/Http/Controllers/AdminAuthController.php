@@ -225,6 +225,7 @@ class AdminAuthController extends Controller
     //         return back()->with('error', 'Something went wrong!');
     //     }
     // }
+
     public function login(Request $request)
     {
         $request->validate([
