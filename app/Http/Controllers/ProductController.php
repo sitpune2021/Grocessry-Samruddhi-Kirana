@@ -103,7 +103,7 @@ class ProductController extends Controller
                 foreach ($request->file('product_images') as $image) {
 
                     $originalName = $image->getClientOriginalName();
-                    $fileName = time() . '_' . uniqid() . '_' . $originalName;
+                    $fileName = $originalName;
 
                     $image->storeAs('products', $fileName, 'public');
 
