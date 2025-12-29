@@ -12,12 +12,12 @@
                     <h5 class="card-title mb-0">Category</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                     @if(hasPermission('category', 'create'))
+                    @if(hasPermission('category', 'create'))
                     <a href="{{ route('category.create') }}"
                         class="btn btn-primary btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Category
                     </a>
-                     @endif
+                    @endif
                 </div>
 
             </div>
@@ -35,6 +35,7 @@
                             <th class="text-center" style="width: 80px;">Sr No</th>
                             <th style="width: 30%;">Category Name</th>
                             <th style="width: 40%;">Slug</th>
+                            <th style="width: 40%;">Brand Name</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
@@ -45,20 +46,20 @@
                             <td class="text-center fw-semibold">
                                 {{ $categories->firstItem() + $index }}
                             </td>
-
                             <td>
                                 <span class="fw-medium">{{ $category->name }}</span>
                             </td>
-
-                            <td class="text-muted">
-                                {{ $category->slug }}
-                            </td>
-                            <td class="text-center"> <x-action-buttons
+                            <td class="text-muted">{{ $category->slug }}</td>
+                            
+                            <td>{{ $category->brand?->name ?? '-' }}</td>
+                            <td class="text-center">
+                                <x-action-buttons
                                     :view-url="route('category.show', $category->id)"
                                     :edit-url="route('category.edit', $category->id)"
                                     :delete-url="route('category.destroy', $category->id)" />
                             </td>
                         </tr>
+
                         @empty
                         <tr>
                             <td colspan="4" class="text-center text-muted py-4">
@@ -88,36 +89,36 @@
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
 <!-- table search box script -->
- 
+
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
 
-    if (!searchInput || !table) return;
+        if (!searchInput || !table) return;
 
-    const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
 
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
 
-        rows.forEach(row => {
+            rows.forEach(row => {
 
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
 
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
         });
-    });
 
-});
+    });
 </script>
 
 @endpush

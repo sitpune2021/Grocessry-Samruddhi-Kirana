@@ -1,4 +1,3 @@
-
 @include('layouts.header')
 
 <body>
@@ -26,21 +25,23 @@
                             <div class="col-12">
 
                                 <div class="card shadow-sm border-0 rounded-3">
-
-                                        <h3 class="text-xl font-semibold mb-4">
-                                            {{ isset($shop) ? 'Update Shop' : 'Create Shop' }}
-                                        </h3>
+                                       
+                                    <div class="card-header d-flex align-items-center">
+                                        <h4 class="mb-0 flex-grow-1">
+                                           {{ isset($shop) ? 'Update Shop' : 'Create Shop' }}
+                                        </h4>
+                                    </div>
 
                                     <!-- Card Body -->
                                     <div class="card-body">
-                                       <form method="POST"
+                                        <form method="POST"
                                             action="{{ isset($shop)
                                                     ? route('grocery-shops.update', $shop->id)
                                                     : route('grocery-shops.store') }}">
 
                                             @csrf
                                             @if(isset($shop))
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             {{-- Row 1 --}}
@@ -48,20 +49,27 @@
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Shop Name</label>
                                                     <input type="text"
+                                                        id="shop_name"
                                                         name="shop_name"
                                                         class="form-control"
                                                         placeholder="Shop Name"
-                                                        value="{{ old('shop_name', $shop->shop_name ?? '') }}"
-                                                        required>
+                                                        value="{{ old('shop_name', $shop->shop_name ?? '') }}">
+                                                    @error('shop_name')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Owner Name</label>
                                                     <input type="text"
+                                                        id="owner_name"
                                                         name="owner_name"
                                                         class="form-control"
                                                         placeholder="Owner Name"
                                                         value="{{ old('owner_name', $shop->owner_name ?? '') }}">
+                                                    @error('owner_name')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
                                             </div>
 
@@ -69,27 +77,33 @@
                                             <div class="row">
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Mobile No</label>
-                                                    <input type="text"
-                                                        name="mobile_no"
+                                                    <input type="text" 
+                                                     name="contact_number" 
+                                                     maxlength="10"
                                                         class="form-control"
                                                         placeholder="Mobile No"
                                                         value="{{ old('mobile_no', $shop->mobile_no ?? '') }}">
+                                                    @error('mobile_no')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">District</label>
                                                     <select name="district_id"
-                                                            id="district_id"
-                                                            class="form-select"
-                                                            required>
+                                                        id="district_id"
+                                                        class="form-select">
                                                         <option value="">Select District</option>
                                                         @foreach($districts as $district)
-                                                            <option value="{{ $district->id }}"
-                                                                {{ old('district_id', $shop->district_id ?? '') == $district->id ? 'selected' : '' }}>
-                                                                {{ $district->name }}
-                                                            </option>
+                                                        <option value="{{ $district->id }}"
+                                                            {{ old('district_id', $shop->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                            {{ $district->name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
+                                                    @error('district_id')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
                                             </div>
 
@@ -98,23 +112,30 @@
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Taluka</label>
                                                     <select name="taluka_id"
-                                                            id="taluka_id"
-                                                            class="form-select"
-                                                            required>
+                                                        id="taluka_id"
+                                                        class="form-select">
                                                         <option value="">Select Taluka</option>
                                                     </select>
+                                                    @error('taluka_id')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Address</label>
                                                     <textarea name="address"
-                                                            class="form-control"
-                                                            rows="2"
-                                                            placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
+                                                        id= "address"
+                                                        class="form-control"
+                                                        rows="2"
+                                                        placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
+                                                        
+                                                   @error('address')
+                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
                                             </div>
 
-   
+
                                             <!-- Buttons -->
                                             <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('grocery-shops.index') }}" class="btn btn-outline-secondary">
@@ -136,13 +157,13 @@
                     </div>
                 </div>
 
-                    <!-- / Content -->
-                    @include('layouts.footer')
-                </div>
-                <!-- Content wrapper -->
+                <!-- / Content -->
+                @include('layouts.footer')
             </div>
-            <!-- / Layout page -->
+            <!-- Content wrapper -->
         </div>
+        <!-- / Layout page -->
+    </div>
 
     </div>
     <!-- / Layout wrapper -->
@@ -150,45 +171,45 @@
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    const districtSelect = document.getElementById('district_id');
-    const talukaSelect   = document.getElementById('taluka_id');
-    const selectedTaluka = "{{ old('taluka_id', $shop->taluka_id ?? '') }}";
+        const districtSelect = document.getElementById('district_id');
+        const talukaSelect = document.getElementById('taluka_id');
+        const selectedTaluka = "{{ old('taluka_id', $shop->taluka_id ?? '') }}";
 
-    function loadTalukas(districtId) {
-        talukaSelect.innerHTML = '<option value="">Loading...</option>';
+        function loadTalukas(districtId) {
+            talukaSelect.innerHTML = '<option value="">Loading...</option>';
 
-        fetch(`/talukas/by-district/${districtId}`)
-            .then(res => res.json())
-            .then(data => {
-                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+            fetch(`/talukas/by-district/${districtId}`)
+                .then(res => res.json())
+                .then(data => {
+                    talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
 
-                data.forEach(taluka => {
-                    const option = document.createElement('option');
-                    option.value = taluka.id;
-                    option.text  = taluka.name;
+                    data.forEach(taluka => {
+                        const option = document.createElement('option');
+                        option.value = taluka.id;
+                        option.text = taluka.name;
 
-                    if (taluka.id == selectedTaluka) {
-                        option.selected = true;
-                    }
+                        if (taluka.id == selectedTaluka) {
+                            option.selected = true;
+                        }
 
-                    talukaSelect.appendChild(option);
+                        talukaSelect.appendChild(option);
+                    });
                 });
-            });
-    }
+        }
 
-    districtSelect.addEventListener('change', function () {
-        if (this.value) {
-            loadTalukas(this.value);
-        } else {
-            talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+        districtSelect.addEventListener('change', function() {
+            if (this.value) {
+                loadTalukas(this.value);
+            } else {
+                talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+            }
+        });
+
+        // EDIT time auto load
+        if (districtSelect.value) {
+            loadTalukas(districtSelect.value);
         }
     });
-
-    // EDIT time auto load
-    if (districtSelect.value) {
-        loadTalukas(districtSelect.value);
-    }
-});
 </script>

@@ -1,9 +1,12 @@
 @include('layouts.header')
 
 
-
 <!-- Sidebar -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
+
+    <div class="sidebar-close">
+        <i class="bx bx-x" style="color:red !important;" id="sidebarClose"></i>
+    </div>
 
     <!-- Logo -->
     <div class="sidebar-logo">
@@ -12,114 +15,182 @@
         </a>
     </div>
 
-    <ul>
+    <div class="sidebar-menu" id="sidebarMenu">
+        <ul>
+            <!-- Dashboard -->
+            <li class="menu-item">
+                <a href="/dashboard" class="menu-link active text-white">
+                    <span style="padding-left:10px">
+                        <i class="bx bx-home-smile me-2"></i>
+                        DASHBOARD
+                    </span>
+                </a>
+            </li>
 
-        <!-- Dashboard -->
+            <!-- <li class="menu-header">MANAGEMENT</li> -->
 
-        <li class="menu-item">
-            <a href="/dashboard" class="menu-link active text-white">
-                <span><i class="bx bx-home-smile me-2"></i>DASHBOARD</span>
-            </a>
-        </li>
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('OrderMenu','orderArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        ORDER MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="orderArrow"></i>
+                </div>
+
+                <ul class="submenu" id="OrderMenu">
+
+                    <li><a href="">TEMPORALY ORDER</a></li>
+
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('CustomerMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        CUSTOMER MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
+                </div>
+
+                <ul class="submenu" id="CustomerMenu">
+
+                    <li><a href="">TEMPORALY</a></li>
+
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('ProductMenu','warehouseArrow')">
+                    <span>
+                        <i class="bx bx-store me-2 "></i>
+                        PRODUCT MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                </div>
+                <ul class="submenu" id="ProductMenu">
+                    @if(auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
+                    <li><a href="{{ route('category.index') }}">Category</a></li>
+                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                    <li><a href="{{ route('product.index') }}">Products</a></li>
+                    @endif
+                </ul>
+            </li>
+
+            <!-- Warehouse -->
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
+                    <span>
+                        <i class="bx bx-store me-2 "></i>
+                        WAREHOUSE MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                </div>
+                <ul class="submenu" id="warehouseMenu">
+                    <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
+                    <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
+                </ul>
+            </li>
+
+            <!-- Inventory Dropdown -->
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        INVENTORY MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
+                </div>
+
+                <ul class="submenu" id="inventoryMenu">
+                    <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
+                    <li><a href="/expiry-alerts">Expiry Alerts</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('TransferMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        TRANSFER MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
+                </div>
+
+                <ul class="submenu" id="TransferMenu">
+                    <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                </ul>
+            </li>
+
+            @if(auth()->check() && auth()->user()->role_id == 1)
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                    <span>
+                        <i class="bx bx-store me-2 "></i>
+                        SHOP MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                </div>
+                <ul class="submenu" id="shopMenu">
+                    <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+                    @if(auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                    @endif
+                    <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
+                </ul>
+            </li>
+            @endif
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('OfferMenu','offerArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        OFFER / SCHEME MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="offerArrow"></i>
+                </div>
+
+                <ul class="submenu" id="OfferMenu">
+                    @if(auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    @endif
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('SettingMenu','settingArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        SETTINGS
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="settingArrow"></i>
+                </div>
+
+                <ul class="submenu" id="SettingMenu">
+                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
+                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
+                    <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
+                    <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
+                </ul>
+            </li>
 
 
-        <li class="menu-header">MANAGEMENT</li>
+            {{-- @if (hasPermission('Roles', 'view')) --}}
+            <li class="menu-item">
 
-        {{-- @if (hasPermission('Roles', 'view')) --}}
-        <li class="menu-item">
+            </li>
+            {{-- @endif --}}
 
-        </li>
-        {{-- @endif --}}
+        </ul>
+    </div>
 
-        @if(auth()->check() && auth()->user()->role_id == 1)
-        <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('userMenu','inventoryArrow')">
-                <span><i class="bx bx-package me-2 "></i>USER MANAGEMENT</span>
-                <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-            </div>
-
-            <ul class="submenu" id="userMenu">
-
-                <li><a href="{{ route('user.profile') }}">USER</a></li>
-
-            </ul>
-        </li>
-        @endif
-        
-
-        <!-- Inventory Dropdown -->
-        <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
-                <span><i class="bx bx-package me-2 "></i>INVENTORY</span>
-                <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-            </div>
-
-            <ul class="submenu" id="inventoryMenu">
-                @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                <li><a href="{{ route('category.index') }}">Category</a></li>
-                <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                <li><a href="{{ route('product.index') }}">Products</a></li>
-                @endif
-                <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
-                <li><a href="/expiry-alerts">Expiry Alerts</a></li>
-            </ul>
-        </li>
-
-        <!-- Warehouse -->
-        <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>WAREHOUSE MANAGEMENT</span>
-                <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-            </div>
-            <ul class="submenu" id="warehouseMenu">
-                <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-                <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
-                @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                @endif
-                <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
-
-            </ul>
-        </li>
-
-        <!-- Delivery Agent -->
-        <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('deliveryAgentMenu','deliveryAgentArrow')">
-                <span><i class="bx bx-store me-2 "></i> DELIVERY AGENT</span>
-                <i class="bx bx-chevron-right arrow" id="deliveryAgentArrow"></i>
-            </div>
-            <ul class="submenu" id="deliveryAgentMenu">
-                @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('delivery-agents.index') }}">Agent & vehicle</a></li>
-                @endif
-                <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
-            </ul>
-        </li>
-        <!-- <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('retailerMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>Retailer</span>
-                <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-            </div>
-            <ul class="submenu" id="retailerMenu">
-                <li><a href="{{ route('retailers.index') }}">Retailer profile</a></li>
-                <li><a href="{{ route('retailer-pricing.index') }}">Retailer pricing</a></li>
-                <li><a href="{{ route('retailer-orders.create') }}">Retailer Order price Lock</a></li>
-            </ul>
-        </li> -->
-
-        @if(auth()->check() && auth()->user()->role_id == 1)
-        <li class="menu-item">
-            <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                <span><i class="bx bx-store me-2 "></i>SHOP MANAGEMENT</span>
-                <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-            </div>
-            <ul class="submenu" id="shopMenu">
-                <li><a href="{{ route('grocery-shops.index') }}">SHOP DETAILS</a></li>
-            </ul>
-        </li>
-        @endif
 </div>
+
+
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -21,6 +21,10 @@ use App\Http\Controllers\stockWarehouseController;
 use App\Http\Controllers\FIFOHistoryController;
 use App\Http\Controllers\GroceryShopController;
 use App\Http\Controllers\SubCategoryController;
+use App\Http\Controllers\UnitController;
+use App\Http\Controllers\VehicleAssignmentController;
+use App\Http\Controllers\SupplierController;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -63,11 +67,15 @@ Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getR
 
 Route::resource('/category', CategoryController::class);
 Route::resource('/sub-category', SubCategoryController::class);
+Route::resource('/units', UnitController::class);
 Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
 
+Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
 Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
+
+
 
 Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
 Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
@@ -78,6 +86,12 @@ Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'
     ->name('stock.update');
 Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
     ->name('stock.delete');
+
+    Route::get(
+    '/get-sub-categories/{category}',
+    [stockWarehouseController::class, 'byCategory']
+);
+
 
 Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
 
@@ -105,11 +119,22 @@ Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name
 Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
     ->name('batches.show');
 
+Route::get('/ws/categories/{warehouse}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+Route::get('/ws/subcategories/{warehouse}/{category}', [ProductBatchController::class, 'getSubCategories']);
+Route::get('/ws/products-by-sub/{warehouse}/{sub}', [ProductBatchController::class, 'getProductsBySubCategory']);
+Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
+
+
 Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
 
 Route::get('/sale/{product?}', [StockController::class, 'create'])
     ->name('sale.create');
 Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
+
+Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
+Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
+Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
 // AJAX route to get products by category
 Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
@@ -126,6 +151,50 @@ Route::get(
     '/expiry-alerts',
     [ProductBatchController::class, 'expiryAlerts']
 )->name('batches.expiry');
+
+
+Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
+Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
+    ->name('transfer.create');
+
+Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
+Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
+Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
+// Soft delete
+Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
+
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+
+
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
+
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/all-multiselect',
+    [WarehouseTransferController::class, 'getWarehouseAllData']
+)->name('warehouse.multiselect');
+
+Route::get(
+    '/ajax/warehouse-stock-data',
+    [WarehouseTransferController::class, 'getWarehouseStockData']
+)->name('ajax.warehouse.stock.data');
+
+
+
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
 
 Route::get('/roles/index', [RoleController::class, 'index'])
@@ -147,14 +216,20 @@ Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles
 
 Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
-    
+
+
+//Route::get('/roles/{id}', [RoleController::class, 'edit'])
+//  ->name('roles.edit');
+
 Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
     ->name('roles.destroy');
+
+Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
 // Deliveries List
-Route::get('/deliveries', [DeliveryAgentController::class, 'index'])
+Route::get('/deliveries', [VehicleAssignmentController::class, 'index'])
     ->name('deliveries.index');
 
 
@@ -169,32 +244,41 @@ Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
     Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
     Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
     Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
-
 });
 
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
 
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
+
+Route::get(
+    '/ajax/product-batches',
+    [WarehouseTransferController::class, 'getBatchesByProducts']
+)->name('ajax.product.batches');
+
+Route::get(
+    '/get-batch-stock/{batch}',
+    [WarehouseTransferController::class, 'getBatchStock']
+);
 
 Route::prefix('retailers')->name('retailers.')->group(function () {
 
@@ -289,14 +373,79 @@ Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
     Route::delete('/{groceryShop}', [GroceryShopController::class, 'destroy'])
         ->name('destroy');
-    
-    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
-    ->name('show');
 
+    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
+        ->name('show');
 });
 
-    Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
-        ->name('talukas.by-district');
+Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
+    ->name('talukas.by-district');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Route::prefix('supplier')->name('supplier.')->group(function () {
+
+    Route::get('/', [SupplierController::class, 'index'])->name('index');
+
+    // // CREATE
+    Route::get('/create', [SupplierController::class, 'create'])->name('create');
+    Route::post('/store', [SupplierController::class, 'store'])->name('store');
+
+    // // EDIT / UPDATE
+    Route::get('/{id}/edit', [SupplierController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [SupplierController::class, 'update'])->name('update');
+    Route::get('/{id}', [SupplierController::class, 'show'])
+        ->name('show');
+    // // DELETE
+    Route::delete('/{id}', [SupplierController::class, 'destroy'])
+        ->name('destroy');
+});
+
+
+Route::get('/dev/run/{action}', function ($action) {
+    try {
+        switch ($action) {
+            case 'clear':
+                Artisan::call('config:clear');
+                Artisan::call('cache:clear');
+                Artisan::call('route:clear');
+                Artisan::call('view:clear');
+                return "Cleared config, cache, route, and view.";
+
+            case 'migrate':
+                Artisan::call('session:table');
+                Artisan::call('migrate');
+                return "Migration completed successfully!";
+
+            case 'migrate-fresh':
+                Artisan::call('migrate:fresh', ['--seed' => true]);
+                return "Fresh migration and seed completed!";
+
+            case 'seed':
+                Artisan::call('db:seed');
+                return "Database seeding completed!";
+
+            case 'seed-menu':
+                Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
+                return "MenuSeeder database seeding completed!";
+
+            case 'seed-role':
+                Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
+                return "RoleSeeder database seeding completed!";
+
+            case 'storage-link':
+                Artisan::call('storage:link');
+                $output = Artisan::output();
+                return "Storage link created!"  . nl2br($output);
+
+            case 'install':
+                exec('composer install');
+                return "composer install executed!";
+            default:
+                return "Invalid action: $action";
+        }
+    } catch (\Exception $e) {
+        return "Error running action [$action]: " . $e->getMessage();
+    }
+});

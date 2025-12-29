@@ -8,7 +8,7 @@ use App\Models\GroceryShop;
 use App\Models\Taluka;
 use App\Models\District;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
 
 class GroceryShopController extends Controller
 {
@@ -34,26 +34,26 @@ class GroceryShopController extends Controller
 
     public function store(Request $request)
     {
-        \Log::info('Grocery Shop Store Hit', $request->all());
+        Log::info('Grocery Shop Store Hit', $request->all());
 
         $request->validate([
             'shop_name'   => 'required|string|max:255',
-            'mobile_no'  => 'nullable|digits:10',
-            'district_id'=> 'required',
-            'taluka_id'  => 'required',
+            'owner_name'  => 'required|string|max:255',
+            'contact_number'   => 'required|digits:10',
+            'district_id' => 'required',
+            'taluka_id'   => 'required',
+            'address'     => 'required|string|max:500'
         ]);
-
 
         GroceryShop::create([
             'shop_name'   => $request->shop_name,
             'owner_name' => $request->owner_name,
             'mobile_no'  => $request->mobile_no,
             'address'    => $request->address,
-            'district_id'=> $request->district_id,
+            'district_id' => $request->district_id,
             'taluka_id'  => $request->taluka_id,
             'status'     => 'active',
         ]);
-
 
         return redirect()->route('grocery-shops.index')
             ->with('success', 'Shop added successfully');
@@ -117,6 +117,4 @@ class GroceryShopController extends Controller
             'taluka'   => $taluka,
         ]);
     }
-
-
 }

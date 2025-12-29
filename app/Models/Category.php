@@ -14,11 +14,17 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
+        'brand_id'
     ];
 
     public function products()
     {
         return $this->hasMany(Product::class);
     }
+    public function brand()
+{
+    return $this->belongsTo(Brand::class, 'brand_id');
+}
+
 
 }

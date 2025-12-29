@@ -12,6 +12,7 @@ use App\Models\Warehouse;
 use App\Models\ProductBatch;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\SubCategory;
 
 class stockWarehouseController extends Controller
 {
@@ -34,11 +35,18 @@ class stockWarehouseController extends Controller
         $mode = 'add';
         $warehouses = Warehouse::all();
         $categories = Category::all();
-        $products = Product::all(); // ✅ ADD THIS
-
+        $products = Product::all(); // ADD THIS
         $product_batches = ProductBatch::all();
+        $sub_categories = []; // initially empty
 
-        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'warehouses', 'categories', 'product_batches', 'products'));
+        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'warehouses', 'categories', 'product_batches', 'products','sub_categories'));
+    }
+
+    public function byCategory($categoryId)
+    {
+        return SubCategory::where('category_id', $categoryId)
+                ->select('id','name')
+                ->get();
     }
 
     public function addStock(Request $request)
@@ -49,8 +57,10 @@ class stockWarehouseController extends Controller
         $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
+            'sub_category_id'  => 'nullable|exists:sub_categories,id',
             'product_id'   => 'required|exists:products,id',
-            'batch_id'     => 'required|exists:product_batches,id',
+            //'batch_id'     => 'required|exists:product_batches,id',
+            'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
         ]);
 
@@ -64,12 +74,32 @@ class stockWarehouseController extends Controller
                 'batch_id'     => $request->batch_id,
             ]);
 
+            // $stock = WarehouseStock::where([
+            //     'warehouse_id' => $request->warehouse_id,
+            //     'category_id'  => $request->category_id,
+            //     'product_id'   => $request->product_id,
+            //     'batch_id'     => $request->batch_id,
+            // ])->first();
             $stock = WarehouseStock::where([
                 'warehouse_id' => $request->warehouse_id,
                 'category_id'  => $request->category_id,
                 'product_id'   => $request->product_id,
-                'batch_id'     => $request->batch_id,
-            ])->first();
+            ]);
+
+            if ($request->filled('sub_category_id')) {
+                $stock->where('sub_category_id', $request->sub_category_id);
+            } else {
+                $stock->whereNull('sub_category_id');
+            }
+
+            if ($request->filled('batch_id')) {
+                $stock->where('batch_id', $request->batch_id);
+            } else {
+                $stock->whereNull('batch_id');
+            }
+
+            $stock = $stock->first();
+
 
             if ($stock) {
                 Log::info('Stock exists, updating quantity', [
@@ -90,8 +120,10 @@ class stockWarehouseController extends Controller
                 $newStock = WarehouseStock::create([
                     'warehouse_id' => $request->warehouse_id,
                     'category_id'  => $request->category_id,
+                    'sub_category_id' => $request->sub_category_id ?? null,
                     'product_id'   => $request->product_id,
-                    'batch_id'     => $request->batch_id,
+                    //'batch_id'     => $request->batch_id,
+                    'batch_id'     => $request->batch_id ?? null,
                     'quantity'     => $request->quantity,
                 ]);
 
@@ -140,14 +172,28 @@ class stockWarehouseController extends Controller
         ));
     }
 
+    
     public function editStockForm(Request $request, $id)
     {
         $mode = 'edit';
-        $warehouse_stock = WarehouseStock::with(['warehouse', 'category', 'product', 'batch'])->findOrFail($id);
+
+        $warehouse_stock = WarehouseStock::with([
+            'warehouse',
+            'category',
+            'product',
+            'batch'
+        ])->findOrFail($id);
+
         $warehouses = Warehouse::all();
         $categories = Category::all();
+
         $products = Product::where('category_id', $warehouse_stock->category_id)->get();
         $product_batches = ProductBatch::where('product_id', $warehouse_stock->product_id)->get();
+
+        // ✅ FIX: Fetch sub categories for selected category
+        $sub_categories = SubCategory::where('category_id', $warehouse_stock->category_id)
+            ->select('id', 'name')
+            ->get();
 
         return view('menus.warehouse.add-stock.add-stock', compact(
             'mode',
@@ -155,9 +201,11 @@ class stockWarehouseController extends Controller
             'warehouses',
             'categories',
             'products',
-            'product_batches'
+            'product_batches',
+            'sub_categories'
         ));
     }
+
 
     public function updateStock(Request $request, $id)
     {
@@ -170,7 +218,8 @@ class stockWarehouseController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
             'product_id'   => 'required|exists:products,id',
-            'batch_id'     => 'required|exists:product_batches,id',
+            //'batch_id'     => 'required|exists:product_batches,id',
+            'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
         ]);
 
@@ -183,7 +232,8 @@ class stockWarehouseController extends Controller
                 'warehouse_id' => $request->warehouse_id,
                 'category_id'  => $request->category_id,
                 'product_id'   => $request->product_id,
-                'batch_id'     => $request->batch_id,
+                //'batch_id'     => $request->batch_id,
+                'batch_id'     => $request->batch_id ?? null,
                 'quantity'     => $request->quantity,
             ]);
 

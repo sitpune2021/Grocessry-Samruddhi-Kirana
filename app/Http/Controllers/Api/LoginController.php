@@ -10,22 +10,28 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Role;
 
 
 class LoginController extends Controller
 {
-
-    public function login(Request $request, $type)
+    public function register(Request $request)
     {
-        $validator = Validator::make(
-            array_merge($request->all(), ['login_type' => $type]),
-            [
-                'mobile'     => 'required|digits:10',
-                'role_id'    => 'required|integer',
-                'login_type' => 'required|in:otp,password',
-                'password'   => 'required_if:login_type,password'
-            ]
-        );
+        $request->merge([
+            'email' => $request->email ?: null
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'nullable|string|max:255',
+            'mobile'     => 'required|digits:10|unique:users,mobile',
+            'email'      => 'nullable|email|unique:users,email',
+            'password'   => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+            ],
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -34,8 +40,64 @@ class LoginController extends Controller
             ], 422);
         }
 
-        $user = User::where('mobile', $request->mobile)
-            ->where('role_id', $request->role_id)
+        $role = Role::where('name', 'customer')->firstOrFail();
+
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'mobile'     => $request->mobile,
+            'email'      => $request->email,
+            'role_id'    => $role->id,
+            'password'   => Hash::make($request->password),
+            'status'     => 1
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer registration successful',
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                'role_id' => $role->id,
+                'role' => ucfirst($role->name)
+            ]
+        ], 201);
+    }
+
+    public function login(Request $request, $type)
+    {
+        /* ================= VALIDATION ================= */
+        $rules = [
+            'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+        ];
+
+        if ($type === 'password') {
+            $rules['password'] = 'required';
+        }
+
+        if ($type === 'otp') {
+            $rules['password'] = 'prohibited'; // 🔥 KEY FIX
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        /* ================= USER CHECK ================= */
+        $user = User::with('role')
+            ->where('mobile', $request->mobile)
             ->first();
 
         if (!$user) {
@@ -45,29 +107,35 @@ class LoginController extends Controller
             ], 404);
         }
 
+        /* ================= ROLE CHECK ================= */
+        if (!in_array(strtolower($user->role->name), ['customer', 'retailer', 'delivery agent'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This role is not allowed to login'
+            ], 403);    
+        }
+
         /* ================= OTP LOGIN ================= */
         if ($type === 'otp') {
 
-            // ✅ Rate limit BEFORE OTP generation
             $key = 'login-otp-' . $request->mobile;
 
             if (RateLimiter::tooManyAttempts($key, 3)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Too many OTP requests. Try again after 5 minutes.'
+                    'message' => 'Too many OTP requests. Try again after 5 minutes'
                 ], 429);
             }
 
-            RateLimiter::hit($key, 300); // 5 minutes
+            RateLimiter::hit($key, 300);
 
             $otp = rand(100000, 999999);
 
+            $user->update([
+                'otp' => $otp,
+                'otp_expires_at' => Carbon::now()->addMinutes(5)
+            ]);
 
-            $user->otp = Hash::make($otp);
-            $user->otp_expires_at = Carbon::now()->addMinutes(5);
-            $user->save();
-
-            $message = "Your OTP for login is $otp";
 
             $response = Http::asForm()->post(
                 'http://redirect.ds3.in/submitsms.jsp',
@@ -75,7 +143,7 @@ class LoginController extends Controller
                     'user'     => env('SMS_USER'),
                     'key'      => env('SMS_KEY'),
                     'mobile'   => '91' . $user->mobile,
-                    'message'  => $message,
+                    'message'  => "Your OTP for login is $otp",
                     'senderid' => env('SMS_SENDERID'),
                     'accusage' => '10',
                 ]
@@ -84,7 +152,7 @@ class LoginController extends Controller
             if (!$response->successful()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Failed to send OTP. Try again.'
+                    'message' => 'Failed to send OTP'
                 ], 500);
             }
 
@@ -102,22 +170,28 @@ class LoginController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('login-token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
             'token' => $token,
-            'user' => $user
-        ]);
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'role' => $user->role->name
+            ]
+        ], 200);
     }
-
 
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'mobile'  => 'required|digits:10',
-            'role_id' => 'required|integer'
+            'mobile' => 'required|digits:10',
         ]);
 
         if ($validator->fails()) {
@@ -127,35 +201,35 @@ class LoginController extends Controller
             ], 422);
         }
 
-        $user = User::where('mobile', $request->mobile)
-            ->where('role_id', $request->role_id)
-            ->first();
+        $user = User::where('mobile', $request->mobile)->first();
 
-        // Do NOT reveal whether user exists (security)
+        // 🔒 Do NOT reveal whether user exists
         if (!$user) {
             return response()->json([
                 'status' => true,
-                'message' => 'If the account exists, OTP has been sent'
+                'message' => 'If an account exists, OTP has been sent to the registered mobile number.'
             ]);
         }
 
-        // Rate limit
+        // ⏱ Rate limiting
         $key = 'forgot-password-' . $request->mobile;
         if (RateLimiter::tooManyAttempts($key, 3)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Too many requests. Try later.'
+                'message' => 'Too many requests. Please try again later.'
             ], 429);
         }
-        RateLimiter::hit($key, 300);
+        RateLimiter::hit($key, 300); // 5 minutes
 
+        // 🔐 Generate OTP (plain text for verification)
         $otp = rand(100000, 999999);
 
-        $user->otp = Hash::make($otp);
-        $user->otp_expires_at = Carbon::now()->addMinutes(5);
-        $user->save();
+        $user->update([
+            'otp' => $otp, // store plain OTP
+            'otp_expires_at' => Carbon::now()->addMinutes(5),
+        ]);
 
-        // Send SMS
+        // 📲 Send SMS
         $message = "Your password reset OTP is $otp";
 
         Http::asForm()->post(
@@ -171,14 +245,14 @@ class LoginController extends Controller
         );
 
         return response()->json([
-            'status' => true,
-            'message' => 'If the account exists, OTP has been sent'
+            'status'  => true,
+            'message' => 'If an account exists, OTP has been sent to the registered mobile number.'
         ]);
     }
 
+    // ================= VERIFY OTP =================
     public function verifyOtp(Request $request, $type)
     {
-        // Allow only valid OTP types
         if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
             return response()->json([
                 'status' => false,
@@ -186,14 +260,10 @@ class LoginController extends Controller
             ], 400);
         }
 
-        $validator = Validator::make(
-            array_merge($request->all(), ['otp_type' => $type]),
-            [
-                'mobile'  => 'required|digits:10',
-                'role_id' => 'required|integer',
-                'otp'     => 'required|digits:6',
-            ]
-        );
+        $validator = Validator::make($request->all(), [
+            'mobile' => 'required|digits:10',
+            'otp'    => 'required|digits:6',
+        ]);
 
         if ($validator->fails()) {
             return response()->json([
@@ -202,9 +272,7 @@ class LoginController extends Controller
             ], 422);
         }
 
-        $user = User::where('mobile', $request->mobile)
-            ->where('role_id', $request->role_id)
-            ->first();
+        $user = User::where('mobile', $request->mobile)->first();
 
         if (!$user) {
             return response()->json([
@@ -213,80 +281,69 @@ class LoginController extends Controller
             ], 404);
         }
 
-        // OTP must exist
-        if (!$user->otp || !$user->otp_expires_at) {
+        $otpField = 'otp';
+        $expiresField = 'otp_expires_at';
+
+        if (!$user->$otpField || !$user->$expiresField) {
             return response()->json([
                 'status' => false,
                 'message' => 'OTP not requested'
             ], 400);
         }
 
-        /* Rate limiting (per mobile + type) */
-        $rateKey = "otp-verify-{$type}-{$request->mobile}";
-
-        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+        if (now()->greaterThan($user->$expiresField)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Too many attempts. Try again later.'
-            ], 429);
-        }
-
-        RateLimiter::hit($rateKey, 300); // 5 minutes
-
-        /* Expired OTP (CHECK FIRST) */
-        if (now()->greaterThan($user->otp_expires_at)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'OTP expired'
+                'message' => 'OTP expired. Please request a new OTP.'
             ], 400);
         }
 
-        /* Invalid OTP */
-        if (!Hash::check($request->otp, $user->otp)) {
+        if ($request->otp != $user->$otpField) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP'
-            ], 400);
+            ], 401);
         }
 
-        // Clear OTP after successful verification
-        $user->otp = null;
-        $user->otp_expires_at = null;
-        $user->save();
+        // ✅ Clear OTP after successful verification
+        $user->update([
+            $otpField => null,
+            $expiresField => null,
+        ]);
 
-        /* ================= RESPONSE BASED ON TYPE ================= */
-
+        // ================= LOGIN OTP =================
         if ($type === 'login_otp') {
-
-            // $user->otp = null;
-            // $user->otp_expires_at = null;
-            // $user->save();
-
-            $token = $user->createToken('mobile-login')->plainTextToken;
+            $user->tokens()->delete();
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'status' => true,
-                'message' => 'Login successfully',
-                'token' => $token,
-                'user' => $user
-            ]);
+                'status'  => true,
+                'message' => 'Login successful',
+                'token'   => $token,
+                'token_type' => 'Bearer',
+                'user'    => [
+                    'id' => $user->id,
+                    'name' => trim($user->first_name . ' ' . $user->last_name),
+                    'mobile' => $user->mobile,
+                    'email' => $user->email,
+                    'role_id' => $user->role_id,
+                    'role' => optional($user->role)->name
+                ]
+            ], 200);
         }
 
-        // 🔁 FORGOT PASSWORD OTP → allow reset
-        if ($type === 'forgot_password_otp') {
-
-            return response()->json([
-                'status' => true,
-                'message' => 'OTP verified. You may reset your password.'
-            ]);
-        }
+        // ================= FORGOT PASSWORD OTP =================
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified. You may now reset your password.'
+        ], 200);
     }
 
+    // ================= RESET PASSWORD =================
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'mobile'   => 'required|digits:10',
-            // 'otp'      => 'required|digits:6',
             'password' => [
                 'required',
                 'confirmed',
@@ -303,42 +360,29 @@ class LoginController extends Controller
 
         $user = User::where('mobile', $request->mobile)->first();
 
-        //  User / OTP existence check
-        // if (!$user || !$user->otp || !$user->otp_expires_at) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'OTP invalid or expired'
-        //     ], 400);
-        // }
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
 
-        //  OTP expiry check
-        // if (now()->greaterThan($user->otp_expires_at)) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'OTP expired'
-        //     ], 400);
-        // }
-
-        //  OTP mismatch
-        // if (!Hash::check($request->otp, $user->otp)) {
-        //     return response()->json([
-        //         'status' => false,
-        //         'message' => 'Invalid OTP'
-        //     ], 400);
-        // }
-
-        // Update password & clear OTP
-
-        $user->password = Hash::make($request->password);
-        // $user->otp = null;
-        // $user->otp_expires_at = null;
-        $user->save();
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Password reset successful',
-            'user' => $user
-        ]);
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'role' => ucfirst(optional($user->role)->name)
+            ]
+        ], 200);
     }
 
     public function logout(Request $request)

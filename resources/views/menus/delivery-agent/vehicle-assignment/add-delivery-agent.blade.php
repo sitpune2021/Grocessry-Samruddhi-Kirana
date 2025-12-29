@@ -30,17 +30,17 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-category me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Agent
+                                            Add Vehicle Assignemnt
                                         @elseif($mode === 'edit')
-                                            Edit Agent
+                                            Edit Vehicle Assignemnt
                                         @else
-                                            View Agent
+                                            View Vehicle Assignemnt
                                         @endif
                                     </div>
 
                                     <div class="card-body">
                                         <form
-                                            action="{{ isset($driverVehicle) ? route('delivery-agents.update', $driverVehicle->id) : route('delivery-agents.store') }}"
+                                            action="{{ isset($driverVehicle) ? route('vehicle-assignments.update', $driverVehicle->id) : route('vehicle-assignments.store') }}"
                                             method="POST">
                                             @csrf
                                             @if (isset($driverVehicle))
@@ -132,7 +132,7 @@
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('delivery-agents.index') }}"
+                                                <a href="{{ route('vehicle-assignments.index') }}"
                                                     class="btn btn-outline-secondary">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>

@@ -6,7 +6,7 @@
 
     <!-- LEFT : Menu Toggle -->
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" id="menuToggle">
             <i class="icon-base bx bx-menu icon-md"></i>
         </a>
     </div>
@@ -97,5 +97,42 @@
 
         </ul>
     </div>
-
 </nav>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const sidebar  = document.getElementById('layout-menu'); 
+    const openBtn  = document.getElementById('menuToggle');
+    const closeBtn = document.getElementById('sidebarClose');
+
+    if (!sidebar || !openBtn) {
+        console.error('Sidebar or menuToggle missing');
+        return;
+    }
+
+
+    openBtn.addEventListener('click', function (e) {
+        // console.log("hiii");
+        
+        e.preventDefault();
+        sidebar.classList.toggle('show');
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            sidebar.classList.remove('show');
+        });
+    }
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 1200) {
+            sidebar.classList.remove('show');
+        }
+    });
+
+});
+</script>
