@@ -58,10 +58,10 @@
                                         {{ $batch->expiry_date ? \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') : '-' }}
                                     </td>
 
-                                    <td align="center">
+                                    <td align="center" class="text-success">
                                         @if($batch->quantity > 0 && $batch->expiry_date >= now())
-                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product">
-                                            🛒 Sell
+                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product" class="text-success">
+                                            🛒 SELL
                                         </a>
                                         @else
                                         ❌

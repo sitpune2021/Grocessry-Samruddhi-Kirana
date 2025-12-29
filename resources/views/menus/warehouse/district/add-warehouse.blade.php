@@ -168,14 +168,14 @@
 
                                             {{-- Buttons --}}
                                             <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ route('product.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('product.index') }}" class="btn btn-success">
                                                     Back
                                                 </a>
 
                                                 @if($mode === 'add')
-                                                <button type="submit" class="btn btn-outline-primary">Save Product</button>
+                                                <button type="submit" class="btn btn-success">Save Product</button>
                                                 @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-outline-primary">Update Product</button>
+                                                <button type="submit" class="btn btn-success">Update Product</button>
                                                 @endif
                                             </div>
                                         </form>
