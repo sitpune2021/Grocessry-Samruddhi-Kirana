@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\SubCategory;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -21,7 +22,7 @@ class ProductController extends Controller
     public function index()
     {
         Log::info('Product Index Page Loaded', [
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         try {
@@ -50,12 +51,9 @@ class ProductController extends Controller
             Log::info('Product Create Page Loaded');
 
             $mode = 'add';
-            $categories = Category::select('id', 'name')->get();
-            $brands = Brand::where('status', 1)
-                ->orderBy('name')
-                ->get();
-
-            $subCategories = SubCategory::all();
+            $brands = Brand::where('status', 1)->orderBy('name')->get();
+            $categories = collect();
+            $subCategories = collect();
             return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
@@ -76,7 +74,7 @@ class ProductController extends Controller
     {
         Log::info('Product Store Request', [
             'request' => $request->all(),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
 
         try {
@@ -300,7 +298,7 @@ class ProductController extends Controller
     {
         Log::info('Product Delete Request', [
             'product_id' => $id,
-            'user_id'    => auth()->id(),
+            'user_id'    => Auth::id(),
         ]);
 
         try {
@@ -337,11 +335,21 @@ class ProductController extends Controller
         }
     }
 
-    //get product by category
-    public function getProductsByCategory($category_id)
-    {
-        $products = Product::where('category_id', $category_id)->get();
+    //get category by Brand
 
-        return response()->json($products);
-    }
+    public function getCategoriesByBrand($brandId)
+{
+
+    return Category::where('brand_id', $brandId)
+        ->select('id', 'name')
+        ->orderBy('name')
+        ->get();
+}
+
+    // public function getProductsByCategory($category_id)
+    // {
+    //     $products = Product::where('category_id', $category_id)->get();
+
+    //     return response()->json($products);
+    // }
 }

@@ -126,7 +126,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'This role is not allowed to login'
-            ], 403);
+            ], 403);    
         }
 
         /* ================= OTP LOGIN ================= */

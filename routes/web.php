@@ -70,7 +70,10 @@ Route::resource('/product', ProductController::class);
 Route::resource('/warehouse', MasterWarehouseController::class);
 Route::resource('brands', BrandController::class);
 
+Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
 Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
+
+
 
 Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
 Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');

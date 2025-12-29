@@ -15,9 +15,8 @@
 
       <!-- Layout container -->
       <div class="layout-page">
-        @include('layouts.navbar')
-
         <!-- / Navbar -->
+        @include('layouts.navbar')
 
         <!-- Content wrapper -->
         <div class="content-wrapper">
@@ -334,7 +333,7 @@
                   </div>
                   <div class="col-6 mb-6 transactions">
                     <div class="card h-100">
-                       <div class="card-body">
+                      <div class="card-body">
                         <div class="card-title align-items-start justify-content-between mb-4"> Taluka Warehouse
                         </div>
                         <div class="warehouse-list">
@@ -349,7 +348,7 @@
                   </div>
                   <div class="col-6 mb-6 transactions">
                     <div class="card h-100">
-                       <div class="card-body">
+                      <div class="card-body">
                         <div class="card-title align-items-start justify-content-between mb-4"> Shop
                         </div>
                         <div class="warehouse-list">
@@ -367,7 +366,7 @@
             </div>
             <!-- <div class="row">
               <!-- Order Statistics -->
-              <!-- <div class="col-md-6 col-lg-4 col-xl-4 order-0 mb-6">
+            <!-- <div class="col-md-6 col-lg-4 col-xl-4 order-0 mb-6">
                 <div class="card h-100">
                   <div class="card-header d-flex justify-content-between">
                     <div class="card-title mb-0">
@@ -460,10 +459,10 @@
                   </div>
                 </div>
               </div> -->
-              <!--/ Order Statistics -->
+            <!--/ Order Statistics -->
 
-              <!-- Expense Overview -->
-              <!-- <div class="col-md-6 col-lg-4 order-1 mb-6">
+            <!-- Expense Overview -->
+            <!-- <div class="col-md-6 col-lg-4 order-1 mb-6">
                 <div class="card h-100">
                   <div class="card-header nav-align-top">
                     <ul class="nav nav-pills flex-wrap row-gap-2" role="tablist">
@@ -520,10 +519,10 @@
                   </div>
                 </div>
               </div> -->
-              <!--/ Expense Overview -->
+            <!--/ Expense Overview -->
 
-              <!-- Transactions -->
-              <!-- <div class="col-md-6 col-lg-4 order-2 mb-6">
+            <!-- Transactions -->
+            <!-- <div class="col-md-6 col-lg-4 order-2 mb-6">
                 <div class="card h-100">
                   <div class="card-header d-flex align-items-center justify-content-between">
                     <h5 class="card-title m-0 me-2">Transactions</h5>
@@ -640,22 +639,22 @@
                   </div>
                 </div>
               </div> -->
-              <!--/ Transactions -->
-            </div> 
+            <!--/ Transactions -->
           </div>
-          <!-- / Content -->
-
-          @include('layouts.footer')
-
-          <div class="content-backdrop fade"></div>
         </div>
-        <!-- Content wrapper -->
-      </div>
-      <!-- / Layout page -->
-    </div>
+        <!-- / Content -->
 
-    <!-- Overlay -->
-    <div class="layout-overlay layout-menu-toggle"></div>
+        @include('layouts.footer')
+
+        <div class="content-backdrop fade"></div>
+      </div>
+      <!-- Content wrapper -->
+    </div>
+    <!-- / Layout page -->
+  </div>
+
+  <!-- Overlay -->
+  <div class="layout-overlay layout-menu-toggle"></div>
   </div>
   <!-- / Layout wrapper -->
   <!-- Core JS -->
@@ -677,6 +676,8 @@
 
   <!-- GitHub Buttons -->
   <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
 </body>
 
 </html>
