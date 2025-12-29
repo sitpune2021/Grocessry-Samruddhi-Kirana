@@ -98,6 +98,28 @@
 
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
+                                                        <label class="form-label">Sub Category</label>
+                                                        <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                            <option value="">-- Select Sub Category --</option>
+
+                                                            @if(isset($sub_categories))
+                                                                @foreach ($sub_categories as $sub)
+                                                                    <option value="{{ $sub->id }}"
+                                                                        {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                                        {{ $sub->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+
+                                                        @error('sub_category_id')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
                                                         <label for="product_id">Product <span
                                                                 class="text-danger">*</span></label>
 
@@ -120,7 +142,6 @@
                                                         @enderror
                                                     </div>
                                                 </div>
-
 
                                                 {{-- Batch --}}
 
@@ -158,8 +179,6 @@
                                                     </div>
                                                 </div>
 
-
-
                                                 <!-- Buttons (Right Aligned) -->
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
                                                     <a href="{{ route('index.addStock.warehouse') }}"
@@ -178,6 +197,7 @@
                                                 </div>
 
                                             </div>
+                                            
                                         </form>
                                     </div>
 
@@ -239,3 +259,51 @@
 
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+    const categorySelect = document.getElementById('category_id');
+    const subCategorySelect = document.getElementById('sub_category_id');
+    const selectedSubCategory = "{{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') }}";
+
+    function loadSubCategories(categoryId, selectedId = null) {
+
+        if (!categoryId) {
+            subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+            return;
+        }
+
+        fetch(`/get-sub-categories/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+
+                if (data.length === 0) {
+                    subCategorySelect.innerHTML += '<option>No sub category found</option>';
+                }
+
+                data.forEach(item => {
+                    const selected = selectedId == item.id ? 'selected' : '';
+                    subCategorySelect.innerHTML += `
+                        <option value="${item.id}" ${selected}>
+                            ${item.name}
+                        </option>`;
+                });
+            });
+    }
+
+    // 🔹 On category change
+    categorySelect.addEventListener('change', function () {
+        loadSubCategories(this.value);
+    });
+
+    // 🔹 AUTO LOAD on edit page
+    if (categorySelect.value) {
+        loadSubCategories(categorySelect.value, selectedSubCategory);
+    }
+
+});
+</script>
+

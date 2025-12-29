@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockMovement extends Model
 {
+     
      protected $fillable = [
           'product_batch_id',
           'warehouse_id',
@@ -18,12 +19,11 @@ class StockMovement extends Model
           return $this->belongsTo(Warehouse::class, 'warehouse_id');
      }
 
-     // ✅ Batch relation
+     // Batch relation
      public function batch()
      {
           return $this->belongsTo(ProductBatch::class, 'product_batch_id');
      }
-
 
      public function product()
      {
@@ -48,4 +48,5 @@ class StockMovement extends Model
                'category_id'
           );
      }
+
 }
