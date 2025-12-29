@@ -347,6 +347,9 @@ Route::get('/deliveries', [VehicleAssignmentController::class, 'index'])
 
     Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
 
+    Route::get('/purchase-orders/{po}/invoice',
+    [PurchaseOrderController::class, 'invoice'])
+    ->name('purchase.invoice');
 
     
 // PRODUCT BATCH MANAGEMENT

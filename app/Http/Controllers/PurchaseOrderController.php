@@ -45,7 +45,8 @@ class PurchaseOrderController extends Controller
                 ->withInput();
         }
 
-        DB::transaction(function () use ($request, $items) {
+        // IMPORTANT LINE
+        $po = DB::transaction(function () use ($request, $items) {
 
             $po = PurchaseOrder::create([
                 'po_number' => 'PO-' . time(),
@@ -78,9 +79,14 @@ class PurchaseOrderController extends Controller
                 Product::where('id', $item['product_id'])
                     ->increment('stock', $item['qty']);
             }
+
+            return $po; // must return
         });
 
-        return redirect()->back()->with('success', 'Purchase Order Created');
+        // NOW IT WORKS
+        return redirect()
+            ->route('purchase.invoice', $po->id)
+            ->with('success', 'Purchase Order Created');
     }
 
     public function getAllProducts(Request $request)
@@ -102,5 +108,13 @@ class PurchaseOrderController extends Controller
             'available_qty' => $qty
         ]);
     }
+
+    public function invoice(PurchaseOrder $po)
+    {
+        return view('purchase_orders.invoice', [
+            'po' => $po->load('items.product')
+        ]);
+    }
+
 
 }
