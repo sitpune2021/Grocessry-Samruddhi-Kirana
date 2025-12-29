@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DeliveryAgent;
 use App\Models\DriverVehicle;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,12 @@ class VehicleAssignmentController extends Controller
     public function create()
     {
         $mode = 'add';
-
-        // Fetch all delivery agents for dropdown
-        $agents = User::orderBy('first_name')->get();
-
+        
+        $deliveryAgentRoleId = Role::where('name', 'Delivery Agent')->value('id');
+        $agents = User::where('role_id', $deliveryAgentRoleId)
+            ->select('id', 'first_name', 'last_name')
+            ->orderBy('first_name')
+            ->get();
         return view('menus.delivery-agent.vehicle-assignment.add-delivery-agent', compact('mode', 'agents'));
     }
 
@@ -111,7 +114,7 @@ class VehicleAssignmentController extends Controller
 
             $driverVehicle = DriverVehicle::with('driver')->findOrFail($id);
 
-                  $agents = User::orderBy('first_name')->get();
+            $agents = User::orderBy('first_name')->get();
 
 
             return view('menus.delivery-agent.vehicle-assignment.add-delivery-agent', compact('driverVehicle', 'agents'))
@@ -138,7 +141,7 @@ class VehicleAssignmentController extends Controller
         try {
             $mode = 'edit';
             $driverVehicle = DriverVehicle::findOrFail($id);
-        $agents = User::orderBy('first_name')->get();
+            $agents = User::orderBy('first_name')->get();
 
 
             return view('menus.delivery-agent.vehicle-assignment.add-delivery-agent', compact('driverVehicle', 'agents', 'mode'));

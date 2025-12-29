@@ -148,7 +148,7 @@
                                                             placeholder="Enter sku"
                                                             value="{{ old('sku', $product->sku ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
-                                                            placeholder="Enter SKU (optional)">
+                                                            placeholder="Enter SKU (optional)" readonly>
                                                         @error('sku')
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
@@ -344,6 +344,32 @@
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const nameInput = document.querySelector('input[name="name"]');
+    const slugInput = document.querySelector('input[name="sku"]');
+
+    if (!nameInput || !slugInput) return;
+
+    let slugManuallyEdited = false;
+
+    nameInput.addEventListener('input', function () {
+        if (!slugManuallyEdited) {
+            slugInput.value = generateSlug(this.value);
+        }
+    });
+
+    function generateSlug(text) {
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+    }
+});
+</script>
 
 <script>
     $(document).ready(function() {
