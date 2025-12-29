@@ -56,12 +56,12 @@
                 <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
             </div>
             <ul class="submenu" id="ProductMenu">
-                @if(auth()->check() && auth()->user()->role_id == 1)
-                <li><a href="{{ route('brands.index') }}" class="uppercase">Brand</a></li>
-                <li><a href="{{ route('category.index') }}" class="uppercase">Category</a></li>
-                <li><a href="{{ route('sub-category.index') }}" class="uppercase">Sub Category</a></li>
-                <li><a href="{{ route('units.index') }}" class="uppercase">Unit</a></li>
-                <li><a href="{{ route('product.index') }}" class="uppercase">Products</a></li>
+                @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('brands.index') }}" class="uppercase">Brand</a></li>
+                    <li><a href="{{ route('category.index') }}" class="uppercase">Category</a></li>
+                    <li><a href="{{ route('sub-category.index') }}" class="uppercase">Sub Category</a></li>
+                    <li><a href="{{ route('units.index') }}" class="uppercase">Unit</a></li>
+                    <li><a href="{{ route('product.index') }}" class="uppercase">Products</a></li>
                 @endif
             </ul>
         </li>
@@ -89,6 +89,8 @@
 
                 <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                 <li><a href="/expiry-alerts">Expiry Alerts</a></li>
+                <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
+
             </ul>
         </li>
 

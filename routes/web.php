@@ -23,6 +23,8 @@ use App\Http\Controllers\GroceryShopController;
 use App\Http\Controllers\SubCategoryController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VehicleAssignmentController;
+use App\Http\Controllers\SupplierController;
+
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -368,3 +370,21 @@ Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'by
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Route::prefix('supplier')->name('supplier.')->group(function () {
+
+    Route::get('/', [SupplierController::class, 'index'])->name('index');
+
+    // // CREATE
+    Route::get('/create', [SupplierController::class, 'create'])->name('create');
+    Route::post('/store', [SupplierController::class, 'store'])->name('store');
+
+    // // EDIT / UPDATE
+    Route::get('/{id}/edit', [SupplierController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [SupplierController::class, 'update'])->name('update');
+    Route::get('/{id}', [SupplierController::class, 'show'])
+        ->name('show');
+    // // DELETE
+    Route::delete('/{id}', [SupplierController::class, 'destroy'])
+        ->name('destroy');
+});
