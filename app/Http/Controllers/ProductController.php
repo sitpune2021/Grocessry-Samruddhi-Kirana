@@ -80,9 +80,10 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
-                'brand_id'        => 'required',
+                'brand_id'        => 'required|exists:brands,id',
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
+                'sub_category_id' => 'required|exists:sub_categories,id',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
                 'description'     => 'nullable|string',
