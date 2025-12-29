@@ -50,7 +50,8 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse <span
                                                                 class="text-danger">*</span></label>
-                                                        <select  id= "warehouse_id" name="warehouse_id" class="form-select "
+                                                        <select id= "warehouse_id" name="warehouse_id"
+                                                            class="form-select "
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                             <option value="">Select Warehouse</option>
@@ -99,10 +100,11 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Sub Category</label>
-                                                        <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                        <select name="sub_category_id" id="sub_category_id"
+                                                            class="form-select">
                                                             <option value="">-- Select Sub Category --</option>
 
-                                                            @if(isset($sub_categories))
+                                                            @if (isset($sub_categories))
                                                                 @foreach ($sub_categories as $sub)
                                                                     <option value="{{ $sub->id }}"
                                                                         {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
@@ -152,15 +154,15 @@
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Batch No --</option>
                                                             @foreach ($product_batches as $product_batch)
-                                                                <option value="{{ $product_batch->id }}"
+<option value="{{ $product_batch->id }}"
                                                                     {{ old('batch_id', $warehouse_stock->batch_id ?? '') == $product_batch->id ? 'selected' : '' }}>
                                                                     {{ $product_batch->batch_no }}
                                                                 </option>
-                                                            @endforeach
+@endforeach
                                                         </select>
                                                           @error('batch_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
+    <span class="text-danger mt-1">{{ $message }}</span>
+@enderror
                                                     </div>
                                                 </div> -->
 
@@ -173,7 +175,25 @@
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Quantity">
-                                                             @error('quantity')
+                                                        @error('quantity')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Supplier</label>
+                                                        <select name="supplier_id" class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Supplier</option>
+                                                            @foreach ($suppliers as $supplier)
+                                                                <option value="{{ $supplier->id }}"
+                                                                    {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
+                                                                    {{ $supplier->supplier_name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('supplier_id')
                                                             <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
@@ -197,7 +217,7 @@
                                                 </div>
 
                                             </div>
-                                            
+
                                         </form>
                                     </div>
 
@@ -261,49 +281,48 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    const categorySelect = document.getElementById('category_id');
-    const subCategorySelect = document.getElementById('sub_category_id');
-    const selectedSubCategory = "{{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') }}";
+        const categorySelect = document.getElementById('category_id');
+        const subCategorySelect = document.getElementById('sub_category_id');
+        const selectedSubCategory = "{{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') }}";
 
-    function loadSubCategories(categoryId, selectedId = null) {
+        function loadSubCategories(categoryId, selectedId = null) {
 
-        if (!categoryId) {
-            subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
-            return;
-        }
-
-        fetch(`/get-sub-categories/${categoryId}`)
-            .then(res => res.json())
-            .then(data => {
-
+            if (!categoryId) {
                 subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+                return;
+            }
 
-                if (data.length === 0) {
-                    subCategorySelect.innerHTML += '<option>No sub category found</option>';
-                }
+            fetch(`/get-sub-categories/${categoryId}`)
+                .then(res => res.json())
+                .then(data => {
 
-                data.forEach(item => {
-                    const selected = selectedId == item.id ? 'selected' : '';
-                    subCategorySelect.innerHTML += `
+                    subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+
+                    if (data.length === 0) {
+                        subCategorySelect.innerHTML += '<option>No sub category found</option>';
+                    }
+
+                    data.forEach(item => {
+                        const selected = selectedId == item.id ? 'selected' : '';
+                        subCategorySelect.innerHTML += `
                         <option value="${item.id}" ${selected}>
                             ${item.name}
                         </option>`;
+                    });
                 });
-            });
-    }
+        }
 
-    // 🔹 On category change
-    categorySelect.addEventListener('change', function () {
-        loadSubCategories(this.value);
+        // 🔹 On category change
+        categorySelect.addEventListener('change', function() {
+            loadSubCategories(this.value);
+        });
+
+        // 🔹 AUTO LOAD on edit page
+        if (categorySelect.value) {
+            loadSubCategories(categorySelect.value, selectedSubCategory);
+        }
+
     });
-
-    // 🔹 AUTO LOAD on edit page
-    if (categorySelect.value) {
-        loadSubCategories(categorySelect.value, selectedSubCategory);
-    }
-
-});
 </script>
-

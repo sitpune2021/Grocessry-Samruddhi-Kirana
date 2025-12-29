@@ -99,12 +99,12 @@
 
                                                         @foreach ($states as $state)
                                                             <option value="{{ $state->id }}"
-                                                                {{ old('state_id', $warehouse->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                                                {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
                                                                 {{ $state->name }}
                                                             </option>
                                                         @endforeach
-
                                                     </select>
+
 
                                                     @error('state_id')
                                                         <div class="text-danger mt-1">{{ $message }}</div>
@@ -120,12 +120,12 @@
                                                         <option value="">Select District</option>
                                                         @foreach ($districts as $district)
                                                             <option value="{{ $district->id }}"
-                                                                {{ old('district_id', $warehouse->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ old('district_id', $supplier->district_id ?? '') == $district->id ? 'selected' : '' }}>
                                                                 {{ $district->name }}
                                                             </option>
                                                         @endforeach
                                                     </select>
-                                                    @error('type')
+                                                    @error('district_id')
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
@@ -136,15 +136,15 @@
                                                             class="text-danger">*</span></label>
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if (isset($warehouse->taluka))
-                                                            <option value="{{ $warehouse->taluka_id }}" selected>
-                                                                {{ $warehouse->taluka->name }}
+                                                        @if (isset($supplier->taluka))
+                                                            <option value="{{ $supplier->taluka_id }}" selected>
+                                                                {{ $supplier->taluka->name }}
                                                             </option>
                                                         @else
                                                             <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
-                                                    @error('type')
+                                                    @error('district_id')
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
@@ -167,10 +167,7 @@
                                                     {{-- Display existing logo if available --}}
                                                     @if (isset($supplier) && $supplier->logo)
                                                         <div class="mt-2">
-                                                            {{-- Show small preview --}}
-                                                            {{-- <a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">
-                <img src="{{ asset('storage/suppliers/' . $supplier->logo) }}" width="80" class="rounded border" alt="Supplier Logo">
-            </a> --}}
+
                                                             <p class="mt-1"><a
                                                                     href="{{ asset('storage/suppliers/' . $supplier->logo) }}"
                                                                     target="_blank">View Logo</a></p>
@@ -245,5 +242,39 @@
             mobileInput.focus();
             return false;
         }
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+
+        $('#district_id').on('change', function() {
+            let districtId = $(this).val();
+
+            $('#taluka_id').empty();
+            $('#taluka_id').append('<option value="">Select Taluka</option>');
+
+            if (districtId) {
+                $.ajax({
+                    url: '/get-talukas/' + districtId,
+                    type: 'GET',
+                    success: function(data) {
+                        console.log(data); // 👈 YOU ALREADY SEE THIS JSON
+
+                        $.each(data, function(index, taluka) {
+                            $('#taluka_id').append(
+                                '<option value="' + taluka.id + '">' + taluka
+                                .name + '</option>'
+                            );
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+
     });
 </script>

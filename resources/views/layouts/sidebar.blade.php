@@ -70,11 +70,11 @@
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="ProductMenu">
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                    <li><a href="{{ route('category.index') }}">Category</a></li>
-                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    <li><a href="{{ route('product.index') }}">Products</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('brands.index') }}">Brand</a></li>
+                        <li><a href="{{ route('category.index') }}">Category</a></li>
+                        <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                        <li><a href="{{ route('product.index') }}">Products</a></li>
                     @endif
                 </ul>
             </li>
@@ -107,6 +107,8 @@
                 <ul class="submenu" id="inventoryMenu">
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
+                    <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
+
                 </ul>
             </li>
 
@@ -124,24 +126,24 @@
                 </ul>
             </li>
 
-            @if(auth()->check() && auth()->user()->role_id == 1)
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        SHOP MANAGEMENT
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="shopMenu">
-                    <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
-                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                    @endif
-                    <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
-                </ul>
-            </li>
+            @if (auth()->check() && auth()->user()->role_id == 1)
+                <li class="menu-item">
+                    <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                        <span>
+                            <i class="bx bx-store me-2 "></i>
+                            SHOP MANAGEMENT
+                        </span>
+                        <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                    </div>
+                    <ul class="submenu" id="shopMenu">
+                        <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+                        @if (auth()->check() && auth()->user()->role_id == 1)
+                            <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                            <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                        @endif
+                        <li><a href="{{ route('deliveries.index') }}">Deliveries</a></li>
+                    </ul>
+                </li>
             @endif
 
             <li class="menu-item">
@@ -154,8 +156,8 @@
                 </div>
 
                 <ul class="submenu" id="OfferMenu">
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                     @endif
                 </ul>
             </li>

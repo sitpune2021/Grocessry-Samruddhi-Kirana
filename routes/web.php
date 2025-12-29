@@ -400,4 +400,6 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
     // // DELETE
     Route::delete('/{id}', [SupplierController::class, 'destroy'])
         ->name('destroy');
+        Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
+Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
 });

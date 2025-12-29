@@ -8,6 +8,8 @@ use App\Models\Supplier;
 use App\Models\District;
 use App\Models\Talukas;
 use App\Models\State;
+use Illuminate\Support\Facades\Log;
+
 
 class SupplierController extends Controller
 {
@@ -21,18 +23,17 @@ class SupplierController extends Controller
     public function create()
     {
         $districts = District::all();
-        $talukas   = Talukas::all();   
+        $talukas   = Talukas::all();
         $states    = State::all();
 
         return view('supplier.create', [
             'mode'      => 'add',
             'districts' => $districts,
             'talukas'   => $talukas,
-            'states'    => $states,
+            'supplier'  => null,
+            'states'    => State::select('id', 'name')->get(),
         ]);
     }
-
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -40,6 +41,9 @@ class SupplierController extends Controller
             'mobile'        => 'required|digits:10',
             'email'         => 'nullable|email|max:255',
             'address'       => 'nullable|string',
+            'state_id'      => 'required|exists:states,id',
+            'district_id'   => 'required|exists:districts,id',
+            'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -50,18 +54,33 @@ class SupplierController extends Controller
             $validated['logo'] = $filename;
         }
 
-        Supplier::create($validated);
+        $supplier = Supplier::create($validated);
+
+        // ✅ Log creation
+        Log::info('Supplier created', [
+            'id' => $supplier->id,
+            'name' => $supplier->supplier_name,
+            'mobile' => $supplier->mobile,
+            'state_id' => $supplier->state_id,
+            'district_id' => $supplier->district_id,
+            'taluka_id' => $supplier->taluka_id,
+            'email' => $supplier->email,
+        ]);
 
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier created successfully');
     }
+
 
     // VIEW
     public function show(string $id)
     {
         return view('supplier.create', [
             'supplier' => Supplier::findOrFail($id),
-            'mode' => 'view'
+            'mode' => 'view',
+            'states'    => State::select('id', 'name')->get(),
+            'districts' => District::select('id', 'name')->get(),
+            'talukas'   => Talukas::select('id', 'name')->get()
         ]);
     }
 
@@ -70,7 +89,10 @@ class SupplierController extends Controller
     {
         return view('supplier.create', [
             'supplier' => Supplier::findOrFail($id),
-            'mode' => 'edit'
+            'mode' => 'edit',
+            'states'    => State::select('id', 'name')->get(),
+            'districts' => District::select('id', 'name')->get(),
+            'talukas'   => Talukas::select('id', 'name')->get()
         ]);
     }
 
@@ -81,9 +103,12 @@ class SupplierController extends Controller
 
         $validated = $request->validate([
             'supplier_name' => 'required|string|max:255',
-            'mobile'        => 'required|digits:10',
+            'mobile'        => 'required|digits:10|unique:suppliers,mobile,' . $id,
             'email'         => 'nullable|email|max:255',
             'address'       => 'nullable|string',
+            'state_id'      => 'required|exists:states,id',
+            'district_id'   => 'required|exists:districts,id',
+            'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -96,9 +121,21 @@ class SupplierController extends Controller
 
         $supplier->update($validated);
 
+        // ✅ Log update
+        Log::info('Supplier updated', [
+            'id' => $supplier->id,
+            'name' => $supplier->supplier_name,
+            'mobile' => $supplier->mobile,
+            'state_id' => $supplier->state_id,
+            'district_id' => $supplier->district_id,
+            'taluka_id' => $supplier->taluka_id,
+            'email' => $supplier->email,
+        ]);
+
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier updated successfully');
     }
+
 
 
     public function destroy(string $id)
@@ -122,5 +159,18 @@ class SupplierController extends Controller
                 ? response()->json(['status' => false, 'message' => 'Failed to delete supplier', 'error' => $e->getMessage()], 500)
                 : redirect()->route('supplier.index')->with('error', 'Failed to delete supplier. Please try again.');
         }
+    }
+    public function getDistricts($stateId)
+    {
+        return District::where('state_id', $stateId)
+            ->select('id', 'name')
+            ->get();
+    }
+
+    public function getTalukas($districtId)
+    {
+        return Talukas::where('district_id', $districtId)
+            ->select('id', 'name')
+            ->get();
     }
 }
