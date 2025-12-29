@@ -99,48 +99,50 @@ Route::get('/get-states/{country}', [LocationController::class, 'getStates']);
 Route::get('/get-districts/{state}', [LocationController::class, 'getDistricts']);
 Route::get('/get-talukas/{district}', [LocationController::class, 'getTalukas']);
 
+// double route 
 
-// Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
-// Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
-//     ->name('transfer.create');
+    Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
+    Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
+        ->name('transfer.create');
 
-// Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
-// Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
-// Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
-// // Soft delete
-// Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
+    Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
+    Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
+    Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
+    // Soft delete
+    Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
 
-// Route::get(
-//     '/get-products-by-category/{category_id}',
-//     [WarehouseTransferController::class, 'getProductsByCategory']
-// );
-// Route::get(
-//     '/get-batches-by-product/{product_id}',
-//     [WarehouseTransferController::class, 'getBatchesByProduct']
-// );
-// Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+    Route::get(
+        '/get-products-by-category/{category_id}',
+        [WarehouseTransferController::class, 'getProductsByCategory']
+    );
+    Route::get(
+        '/get-batches-by-product/{product_id}',
+        [WarehouseTransferController::class, 'getBatchesByProduct']
+    );
+    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
 
-// Route::get(
-//     '/ajax/warehouse/{warehouse_id}/categories',
-//     [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-// )->name('ajax.warehouse.categories');
+    Route::get(
+        '/ajax/warehouse/{warehouse_id}/categories',
+        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+    )->name('ajax.warehouse.categories');
 
-// Route::get(
-//     '/ajax/warehouse/{warehouse_id}/all-multiselect',
-//     [WarehouseTransferController::class, 'getWarehouseAllData']
-// )->name('warehouse.multiselect');
+    Route::get(
+        '/ajax/warehouse/{warehouse_id}/all-multiselect',
+        [WarehouseTransferController::class, 'getWarehouseAllData']
+    )->name('warehouse.multiselect');
 
-// Route::get(
-//     '/ajax/warehouse-stock-data',
-//     [WarehouseTransferController::class, 'getWarehouseStockData']
-// )->name('ajax.warehouse.stock.data');
+    Route::get(
+        '/ajax/warehouse-stock-data',
+        [WarehouseTransferController::class, 'getWarehouseStockData']
+    )->name('ajax.warehouse.stock.data');
 
-// Route::get(
-//     '/warehouse-transfer/{batch}',
-//     [WarehouseTransferController::class, 'show']
-// )->name('transfer.show');
+    Route::get(
+        '/warehouse-transfer/{batch}',
+        [WarehouseTransferController::class, 'show']
+    )->name('transfer.show');
 
+// double route end
 
 Route::get('/roles/index', [RoleController::class, 'index'])
     ->name('roles.index');
