@@ -17,6 +17,15 @@ class PurchaseOrderController extends Controller
 {
 
 
+    public function index()
+    {
+        $orders = PurchaseOrder::with(['items.product'])
+            ->latest()
+            ->paginate(1);
+
+        return view('purchase_orders.index', compact('orders'));
+    }
+
     public function create()
     {
         return view('purchase_orders.create', [

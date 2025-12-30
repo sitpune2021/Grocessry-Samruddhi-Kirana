@@ -359,6 +359,11 @@ Route::resource('/customer-orders', CustomerOrderController::class);
     [PurchaseOrderController::class, 'invoice'])
     ->name('purchase.invoice');
 
+    Route::get('/purchase-orders', 
+    [PurchaseOrderController::class, 'index'])
+    ->name('purchase.orders.index');
+
+
     
 // PRODUCT BATCH MANAGEMENT
     Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
