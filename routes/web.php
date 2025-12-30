@@ -26,19 +26,20 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 
-// Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-// Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
 
 // Guest-only routes
-Route::middleware('guest')->group(function () {
-    Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-    Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
-});
+// Route::middleware('guest')->group(function () {
+//     Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+//     Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+// });
 
 Route::middleware(['auth'])->group(function () {
 
@@ -359,6 +360,11 @@ Route::resource('/customer-orders', CustomerOrderController::class);
     [PurchaseOrderController::class, 'invoice'])
     ->name('purchase.invoice');
 
+    Route::get('/purchase-orders', 
+    [PurchaseOrderController::class, 'index'])
+    ->name('purchase.orders.index');
+
+
     
 // PRODUCT BATCH MANAGEMENT
     Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
@@ -406,6 +412,14 @@ Route::resource('/customer-orders', CustomerOrderController::class);
             ->sum('quantity');
         return response()->json(['stock' => $stock]);
     });
+
+// Approval
+    Route::get('/warehouse-transfers/approval', 
+        [ApprovalController::class, 'index']
+    )->name('warehouse.transfer.index');
+    Route::post('/warehouse-transfers/{transfer}/approve',
+        [ApprovalController::class, 'approve']
+    )->name('warehouse.transfer.approve');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

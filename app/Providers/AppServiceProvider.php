@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use App\Models\Product;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,8 +18,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        Paginator::useBootstrap();
+        
         // Fix for MySQL key length issue (utf8mb4)
         Schema::defaultStringLength(191);
+        
 
         Blade::if('canPermission', function ($permission) {
 

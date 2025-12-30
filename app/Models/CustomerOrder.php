@@ -10,6 +10,7 @@ class CustomerOrder extends Model
 
     protected $fillable = [
         'customer_id',
+        'agent_id',
         'order_number',
         'subtotal',
         'delivery_charge',
