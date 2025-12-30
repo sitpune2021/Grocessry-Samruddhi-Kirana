@@ -15,10 +15,10 @@ class DistrictSeeder extends Seeder
     public function run(): void
     {
         DB::table('districts')->insert([
-            ['name' => 'Ahmednagar',      'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['name' => 'Ahilyanagar',     'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Akola',           'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Amravati',        'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
-            ['name' => 'Aurangabad',      'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['name' => 'Chhatrapati Sambhajinagar',      'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Beed',            'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Bhandara',        'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Buldhana',        'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
@@ -37,7 +37,7 @@ class DistrictSeeder extends Seeder
             ['name' => 'Nanded',          'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Nandurbar',       'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Nashik',           'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
-            ['name' => 'Osmanabad',       'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
+            ['name' => 'Dharashiv',       'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Palghar',         'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Parbhani',        'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
             ['name' => 'Pune',            'created_at' => Carbon::now(), 'updated_at' => Carbon::now()],
