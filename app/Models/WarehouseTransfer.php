@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WarehouseTransfer extends Model
 {
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'from_warehouse_id',
         'to_warehouse_id',
@@ -13,6 +15,7 @@ class WarehouseTransfer extends Model
         'product_id',
         'batch_id',
         'quantity',
+        'status'
     ];
 
     // app/Models/WarehouseTransfer.php
