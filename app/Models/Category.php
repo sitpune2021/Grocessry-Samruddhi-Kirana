@@ -25,8 +25,9 @@ class Category extends Model
     {
         return $this->belongsTo(Brand::class, 'brand_id');
     }
-    public function offers()
-    {
-        return $this->belongsToMany(Offer::class, 'offer_category');
-    }
+  public function offer()
+{
+    return $this->belongsTo(Offer::class);
+}
+
 }

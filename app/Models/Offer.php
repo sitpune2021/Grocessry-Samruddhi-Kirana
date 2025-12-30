@@ -22,16 +22,15 @@ class Offer extends Model
 
     ];
 
-    public function products()
+    public function product()
     {
-        return $this->belongsToMany(Product::class, 'offer_product');
+        return $this->belongsTo(Product::class);
     }
 
-    public function categories()
+    public function category()
     {
-        return $this->belongsToMany(Category::class, 'offer_category');
+        return $this->belongsTo(Category::class);
     }
-
     public function scopeActive($query)
     {
         return $query->where('status', true)

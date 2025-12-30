@@ -48,13 +48,9 @@
 
                                     <td>{{ $offer->title }}</td>
 
-                                    <td>
-                                        {{ $offer->products->pluck('name')->join(', ') ?: '-' }}
-                                    </td>
+                                    <td>{{ $offer->product->name ?? '-' }}</td>
 
-                                    <td>
-                                        {{ $offer->categories->pluck('name')->join(', ') ?: '-' }}
-                                    </td>
+                                    <td>{{ $offer->category->name ?? '-' }}</td>
 
                                     <td>
                                         {{ $offer->discount_type == 'percentage' ? $offer->discount_value . '%' : '₹' . $offer->discount_value }}

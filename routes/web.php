@@ -443,8 +443,10 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
 
 //product offer 
 
-Route::resource('offer', OfferController::class)->names('offers');
-Route::get('/products-by-category/{id}', [OfferController::class, 'productsByCategory']);
+Route::prefix('offer')->group(function () {
+    Route::resource('offers', OfferController::class);
+    Route::get('products-by-category/{category}', [OfferController::class, 'productsByCategory']);
+});
 
 Route::get('/dev/run/{action}', function ($action) {
     try {

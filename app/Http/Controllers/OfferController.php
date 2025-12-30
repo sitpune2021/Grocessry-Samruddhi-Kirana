@@ -12,10 +12,9 @@ class OfferController extends Controller
 {
     public function index()
     {
-        $offers = Offer::with(['products', 'categories'])->get();
+        $offers = Offer::with(['product', 'category'])->paginate(10);
         return view('offers.index', compact('offers'));
     }
-
     public function create()
     {
 
@@ -24,62 +23,66 @@ class OfferController extends Controller
         return view('offers.create', compact('products', 'categories',))->with('mode', 'add');
     }
 
-   public function store(Request $request)
-{
-    Log::info('Offer Store Request Received', [
-        'user_id' => auth()->id(),
-        'request_data' => $request->all()
-    ]);
-
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'product_id' => 'required|exists:products,id',
-        'discount_type' => 'required|in:percentage,flat',
-        'discount_value' => 'required|numeric|min:0',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
-        'status' => 'required|boolean',
-    ]);
-
-    try {
-        $offer = Offer::create([
-            'title' => $validated['name'],   // 🔥 mapping fixed
-            'category_id' => $validated['category_id'],
-            'product_id' => $validated['product_id'],
-            'discount_type' => $validated['discount_type'],
-            'discount_value' => $validated['discount_value'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
-            'status' => $validated['status'],
+    public function store(Request $request)
+    {
+        Log::info('Offer Store Request Received', [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
         ]);
 
-        Log::info('Offer Created Successfully', [
-            'offer_id' => $offer->id
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'product_id' => 'required|exists:products,id',
+            'discount_type' => 'required|in:percentage,flat',
+            'discount_value' => 'required|numeric|min:0',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'status' => 'required|boolean',
         ]);
 
-        return redirect()
-            ->route('offers.index')
-            ->with('success', 'Offer created successfully');
+        try {
+            $offer = Offer::create([
+                'title' => $validated['name'],   // 🔥 mapping fixed
+                'category_id' => $validated['category_id'],
+                'product_id' => $validated['product_id'],
+                'discount_type' => $validated['discount_type'],
+                'discount_value' => $validated['discount_value'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'status' => $validated['status'],
+            ]);
 
-    } catch (\Exception $e) {
+            Log::info('Offer Created Successfully', [
+                'offer_id' => $offer->id
+            ]);
 
-        Log::error('Offer Creation Failed', [
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ]);
+            return redirect()
+                ->route('offers.index')
+                ->with('success', 'Offer created successfully');
+        } catch (\Exception $e) {
 
-        return back()->withInput()->with('error', 'Offer not saved');
+            Log::error('Offer Creation Failed', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return back()->withInput()->with('error', 'Offer not saved');
+        }
     }
-}
-
+    public function show(Offer $offer)
+    {
+        $products = Product::all();
+        $categories = Category::all();
+        return view('offers.create', compact('offer', 'products', 'categories'))->with('mode', 'view');
+    }
 
     public function edit(Offer $offer)
     {
         $products = Product::all();
         $categories = Category::all();
-        return view('offers.edit', compact('offer', 'products', 'categories'));
+        return view('offers.create', compact('offer', 'products', 'categories'))->with('mode', 'edit');
     }
 
     public function update(Request $request, Offer $offer)
@@ -131,9 +134,9 @@ class OfferController extends Controller
                 'new_data' => $offer->only(array_keys($oldData))
             ]);
 
-            // 🔹 Sync Products
             if ($request->filled('product_ids')) {
-                $offer->products()->sync($request->product_ids);
+                Product::whereIn('id', $request->product_ids)
+                    ->update(['offer_id' => $offer->id]);
 
                 Log::info('Offer Products Updated', [
                     'offer_id' => $offer->id,
@@ -141,9 +144,11 @@ class OfferController extends Controller
                 ]);
             }
 
-            // 🔹 Sync Categories
+            // Update Categories
             if ($request->filled('category_ids')) {
-                $offer->categories()->sync($request->category_ids);
+                Category::whereIn('id', $request->category_ids)
+                    ->update(['offer_id' => $offer->id]);
+
 
                 Log::info('Offer Categories Updated', [
                     'offer_id' => $offer->id,
@@ -175,11 +180,10 @@ class OfferController extends Controller
         $offer->delete();
         return redirect()->route('offers.index')->with('success', 'Offer deleted successfully');
     }
-    public function productsByCategory($id)
-{
-    return Product::where('category_id', $id)
-        ->select('id', 'product_name')
-        ->get();
-}
-
+    public function productsByCategory($categoryId)
+    {
+        return Product::where('category_id', $categoryId)
+            ->select('id', 'name')
+            ->get();
+    }
 }
