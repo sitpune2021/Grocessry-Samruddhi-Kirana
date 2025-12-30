@@ -28,17 +28,17 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use Illuminate\Support\Facades\Artisan;
 
-// Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-// Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
 
 // Guest-only routes
-Route::middleware('guest')->group(function () {
-    Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-    Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
-});
+// Route::middleware('guest')->group(function () {
+//     Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+//     Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+// });
 
 Route::middleware(['auth'])->group(function () {
 
