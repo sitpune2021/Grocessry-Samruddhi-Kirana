@@ -246,7 +246,6 @@ Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
     Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
 });
 
-
 Route::get(
     '/get-products-by-category/{category_id}',
     [WarehouseTransferController::class, 'getProductsByCategory']

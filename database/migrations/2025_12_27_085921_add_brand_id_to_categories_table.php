@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->unsignedBigInteger('brand_id')->after('slug');
+            $table->unsignedBigInteger('brand_id')->nullable()->after('slug');
 
             $table->foreign('brand_id')
                   ->references('id')
