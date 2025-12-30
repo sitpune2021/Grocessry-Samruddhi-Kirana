@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -17,20 +18,33 @@
 
 <body onload="window.print()">
 
-<h2>INVOICE</h2>
+    <h2 style="text-align:center;">INVOICE</h2>
 
-    <p>
-        <strong>Invoice No:</strong> {{ $po->po_number }} <br>
-        <strong>Order Date:</strong> {{ \Carbon\Carbon::parse($po->po_date)->format('d M, Y') }}
-    </p>
+    <table width="100%" style="border:none !important;" cellspacing="0" cellpadding="8">
+        <tr style="text-align: left !important;  padding:10px">
+            <td width="50%" style="border:none !important;">
+                <strong>Invoice No:</strong> {{ $po->po_number }}<br>
+                <strong>Order Date:</strong>
+                {{ \Carbon\Carbon::parse($po->po_date)->format('d M, Y') }}
+            </td>
 
-<hr>
+            <td width="50%" style="text-align: right; border:none; padding:10px;">
+                <img 
+                    src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}" 
+                    alt="Company Logo"
+                    style="max-width:200px; margin-bottom:-20px;"
+                >
 
-    <p>
-        <strong>Smrudh Kirana</strong><br>
-        Hadapser, Pune<br>
-        Phone: +8421309533
-    </p>
+                <p style="border-left:1px solid black; padding-right: 50px;">
+                    <strong>Smrudh Kirana</strong><br>
+                    Hadapser, Pune<br>
+                    Phone: +918421309533
+                </p>
+            </td>
+
+        </tr>
+    </table>
+
 
     <table>
         <thead>
@@ -55,26 +69,26 @@
 
     <br>
 
-    <table>
+    <table style="border-collapse:collapse;">
         <tr>
-            <td class="text-right">Subtotal</td>
-            <td class="text-right">₹{{ $po->subtotal }}</td>
+            
+            <td class="text-right" style="border:none;">Subtotal &nbsp; ₹{{ $po->subtotal }}</td>
         </tr>
         <tr>
-            <td class="text-right">Tax</td>
-            <td class="text-right">₹{{ $po->tax }}</td>
+            
+            <td class="text-right" style="border:none;">Tax &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;  ₹{{ $po->tax }}</td>
         </tr>
         <tr>
-            <td class="text-right">Shipping</td>
-            <td class="text-right">₹{{ $po->shipping_charge }}</td>
+            
+            <td class="text-right" style="border:none;">Shipping &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ₹{{ $po->shipping_charge }}</td>
         </tr>
         <tr>
-            <td class="text-right">Discount</td>
-            <td class="text-right">₹{{ $po->discount }}</td>
+            
+            <td class="text-right" style="border:none;">Discount &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ₹{{ $po->discount }}</td>
         </tr>
         <tr>
-            <td class="text-right"><strong>Grand Total</strong></td>
-            <td class="text-right"><strong>₹{{ $po->grand_total }}</strong></td>
+            
+            <td class="text-right" style="border:none;"><strong>Grand Total</strong>&nbsp;<strong> ₹{{ $po->grand_total }}</strong></td>
         </tr>
     </table>
 
@@ -86,10 +100,10 @@
         contact us.
     </p><br><br>
 
-    <p>
-        Best Regards,
-        Smrudh Kirana
-        Email: smridh@support.com
+    <p style="text-align: left;">
+        Best Regards, <br>
+        Smrudh Kirana <br>
+        Email: smridh@support.com <br>
         Website: http://samrudhi.kirana.com
     </p>
 
