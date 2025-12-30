@@ -22,9 +22,11 @@ class Category extends Model
         return $this->hasMany(Product::class);
     }
     public function brand()
-{
-    return $this->belongsTo(Brand::class, 'brand_id');
-}
-
-
+    {
+        return $this->belongsTo(Brand::class, 'brand_id');
+    }
+    public function offers()
+    {
+        return $this->belongsToMany(Offer::class, 'offer_category');
+    }
 }

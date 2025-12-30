@@ -108,7 +108,7 @@
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
                     <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
-
+                    <li><a href="{{ route('offers.index') }}">Offers</a></li>
                 </ul>
             </li>
 
@@ -126,24 +126,24 @@
                 </ul>
             </li>
 
-            @if(auth()->check() && auth()->user()->role_id == 1)
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        SHOP MANAGEMENT
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="shopMenu">
-                    <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
-                    @if(auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
-                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                    @endif
-                    <li><a href="{{ route('customer-orders.index') }}">Deliveries</a></li>
-                </ul>
-            </li>
+            @if (auth()->check() && auth()->user()->role_id == 1)
+                <li class="menu-item">
+                    <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                        <span>
+                            <i class="bx bx-store me-2 "></i>
+                            SHOP MANAGEMENT
+                        </span>
+                        <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                    </div>
+                    <ul class="submenu" id="shopMenu">
+                        <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+                        @if (auth()->check() && auth()->user()->role_id == 1)
+                            <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                            <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                        @endif
+                        <li><a href="{{ route('customer-orders.index') }}">Deliveries</a></li>
+                    </ul>
+                </li>
             @endif
 
             <li class="menu-item">
@@ -178,10 +178,10 @@
                     <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
                 </ul>
             </li>
-            
+
             <li class="menu-header text-white"><a href="/purchase-orders/create">
-                POS SYSTEM
-            </a></li>
+                    POS SYSTEM
+                </a></li>
 
         </ul>
     </div>

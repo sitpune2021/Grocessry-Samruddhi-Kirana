@@ -53,4 +53,8 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+    public function offers()
+{
+    return $this->belongsToMany(Offer::class, 'offer_product');
+}
 }
