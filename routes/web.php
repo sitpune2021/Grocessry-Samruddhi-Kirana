@@ -26,6 +26,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
@@ -411,6 +412,14 @@ Route::resource('/customer-orders', CustomerOrderController::class);
             ->sum('quantity');
         return response()->json(['stock' => $stock]);
     });
+
+// Approval
+    Route::get('/warehouse-transfers/approval', 
+        [ApprovalController::class, 'index']
+    )->name('warehouse.transfer.index');
+    Route::post('/warehouse-transfers/{transfer}/approve',
+        [ApprovalController::class, 'approve']
+    )->name('warehouse.transfer.approve');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
