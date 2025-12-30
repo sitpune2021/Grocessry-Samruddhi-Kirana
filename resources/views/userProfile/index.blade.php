@@ -18,7 +18,7 @@
 
 
                             <!-- Add User Button -->
-                            <a href="{{ route('user.create') }}" class="btn btn-primary">
+                            <a href="{{ route('user.create') }}" class="btn btn-success">
                                 <i class="bx bx-plus"></i> Add User
                             </a>
                         </div>
