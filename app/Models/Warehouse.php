@@ -51,4 +51,10 @@ class Warehouse extends Model
     {
         return $this->belongsTo(Talukas::class, 'taluka_id');
     }
+
+    public function productBatches()
+    {
+        return $this->hasMany(ProductBatch::class);
+    }
+    
 }
