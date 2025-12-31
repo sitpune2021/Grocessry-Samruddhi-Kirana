@@ -28,8 +28,8 @@ class AdminSeeder extends Seeder
         ]);
 
         User::create([
-            'first_name' => 'Anuradha',
-            'last_name' => 'Jamdade',
+            'first_name' => 'Samruddh',
+            'last_name' => 'Kirana',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('Admin@123'),
             'role_id' => 1,
