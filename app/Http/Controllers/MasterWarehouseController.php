@@ -38,7 +38,7 @@ class MasterWarehouseController extends Controller
     public function store(Request $request)
     {
       $request->validate([
-    'name' => 'required|string|max:255',
+    'name' => 'required|string|max:255|unique:warehouses,name',
     'type' => 'required|in:master,district,taluka',
     'contact_person' => 'required|string|min:3|max:50',
     'email' => 'required|email',

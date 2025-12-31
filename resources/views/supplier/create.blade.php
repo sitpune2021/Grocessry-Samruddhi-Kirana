@@ -183,12 +183,12 @@
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('supplier.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                    class="btn btn-success">
                                                     Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">Save
+                                                    <button type="submit" class="btn btn-success">Save
                                                         Supplier</button>
                                                 @elseif($mode === 'edit')
                                                     <button type="submit" class="btn btn-primary">Update

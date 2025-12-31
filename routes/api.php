@@ -21,6 +21,8 @@ Route::post('/reset-password', [LoginController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 });
+Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
+    ->middleware('auth:sanctum');
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 

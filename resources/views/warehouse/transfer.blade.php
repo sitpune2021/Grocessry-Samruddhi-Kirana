@@ -120,8 +120,8 @@
 
                                         <!-- Buttons -->
                                         <div class="d-flex justify-content-between mb-3">
-                                            <a href="{{ route('transfer.index') }}" class="btn btn-outline-secondary">Back</a>
-                                            <button type="button" class="btn btn-primary" id="addItemBtn">
+                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                            <button type="button" class="btn btn-success" id="addItemBtn">
                                                 Add
                                             </button>
                                         </div>
