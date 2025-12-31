@@ -223,10 +223,10 @@
                                                 {{-- Buttons --}}
                                                 <div class="col-lg-12 text-end">
                                                     <a href="{{ route('user.profile') }}"
-                                                        class="btn btn-info">Cancel</a>
+                                                        class="btn btn-success">Cancel</a>
 
                                                     @if ($mode !== 'view')
-                                                        <button class="btn btn-primary">
+                                                        <button class="btn btn-success">
                                                             {{ $mode === 'edit' ? 'Update User' : 'Save User' }}
                                                         </button>
                                                     @endif
