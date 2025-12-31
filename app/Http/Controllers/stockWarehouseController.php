@@ -14,17 +14,31 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\SubCategory;
 use App\Models\Supplier;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 
 class stockWarehouseController extends Controller
 {
     public function indexWarehouse()
     {
-        $stocks = WarehouseStock::with([
+
+        $user = Auth::user();
+
+        $query = WarehouseStock::with([
             'warehouse:id,name',
             'category:id,name',
             'product:id,name',
             'batch:id,batch_no'
-        ])->orderBy('id', 'desc')->paginate(10);
+        ])->orderBy('id', 'desc');
+
+        if ($user->role_id != 1) { // NOT Super Admin
+            $query->where('warehouse_id', $user->warehouse_id);
+            }
+           
+
+         $stocks = $query->paginate(10);
+
         $supplier = Supplier::select('id', 'supplier_name')->get();
 
         return view('menus.warehouse.add-stock.index', compact('stocks', 'supplier'));
@@ -35,14 +49,22 @@ class stockWarehouseController extends Controller
     public function addStockForm()
     {
         $mode = 'add';
-        $warehouses = Warehouse::all();
+        $user = User::with('warehouse')->find(Auth::id());
+    
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
+        $userWarehouse = $user->warehouse;
+        
+        // $warehouses = Warehouse::all();
         $categories = Category::all();
         $products = Product::all(); // ADD THIS
         $product_batches = ProductBatch::all();
         $sub_categories = []; // initially empty
         $suppliers = Supplier::select('id', 'supplier_name')->get();
 
-        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'warehouses', 'categories', 'product_batches', 'products', 'sub_categories', 'suppliers'));
+        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'userWarehouse', 'categories', 'product_batches', 'products', 'sub_categories', 'suppliers'));
     }
 
     public function byCategory($categoryId)
@@ -164,7 +186,7 @@ class stockWarehouseController extends Controller
     {
         $mode = 'view';
         $warehouse_stock = WarehouseStock::with(['warehouse', 'category', 'product', 'batch'])->findOrFail($id);
-        $warehouses = Warehouse::all();
+        $stockWarehouse = $warehouse_stock->warehouse;
         $categories = Category::all();
         $products = Product::where('category_id', $warehouse_stock->category_id)->get();
         $product_batches = ProductBatch::where('product_id', $warehouse_stock->product_id)->get();
@@ -173,7 +195,7 @@ class stockWarehouseController extends Controller
         return view('menus.warehouse.add-stock.add-stock', compact(
             'mode',
             'warehouse_stock',
-            'warehouses',
+            'stockWarehouse',
             'categories',
             'products',
             'product_batches',
@@ -193,7 +215,7 @@ class stockWarehouseController extends Controller
             'batch'
         ])->findOrFail($id);
 
-        $warehouses = Warehouse::all();
+        $stockWarehouse = $warehouse_stock->warehouse;
         $categories = Category::all();
 
         $products = Product::where('category_id', $warehouse_stock->category_id)->get();
@@ -208,7 +230,7 @@ class stockWarehouseController extends Controller
         return view('menus.warehouse.add-stock.add-stock', compact(
             'mode',
             'warehouse_stock',
-            'warehouses',
+            'stockWarehouse',
             'categories',
             'products',
             'product_batches',

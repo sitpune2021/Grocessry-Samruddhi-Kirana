@@ -60,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])
         ->middleware('permission:product.delete');
-});
+
 
 // User Profile 
 Route::get('/user-profile', [AdminAuthController::class, 'index'])->name('user.profile');
@@ -523,4 +523,8 @@ Route::get('/dev/run/{action}', function ($action) {
     } catch (\Exception $e) {
         return "Error running action [$action]: " . $e->getMessage();
     }
+});
+
+
+//auth closing
 });

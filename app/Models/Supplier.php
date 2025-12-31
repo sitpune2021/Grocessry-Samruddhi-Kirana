@@ -14,7 +14,8 @@ class Supplier extends Model
         'logo',
         'district_id',
         'taluka_id',
-        'state_id'
+        'state_id',
+        'warehouse_id',
     ];
 
     public function state()
@@ -30,5 +31,10 @@ class Supplier extends Model
     public function taluka()
     {
         return $this->belongsTo(Talukas::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }
