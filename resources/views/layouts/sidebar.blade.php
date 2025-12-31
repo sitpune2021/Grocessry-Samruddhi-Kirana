@@ -57,7 +57,7 @@
                 <ul class="submenu" id="CustomerMenu">
 
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
-
+                    <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
                 </ul>
             </li>
 
@@ -71,10 +71,10 @@
                 </div>
                 <ul class="submenu" id="ProductMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                        <li><a href="{{ route('category.index') }}">Category</a></li>
-                        <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                        <li><a href="{{ route('product.index') }}">Products</a></li>
+                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
+                    <li><a href="{{ route('category.index') }}">Category</a></li>
+                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                    <li><a href="{{ route('product.index') }}">Products</a></li>
                     @endif
                 </ul>
             </li>
@@ -108,7 +108,7 @@
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('sale.create') }}">Expiry Sell</a></li>
+                    <li><a href="{{ route('sale.create') }}">Expiry Sell</a></li>
                     @endif
                 </ul>
             </li>
@@ -143,23 +143,23 @@
             </li>
 
             @if (auth()->check() && auth()->user()->role_id == 1)
-                <li class="menu-item">
-                    <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                        <span>
-                            <i class="bx bx-store me-2 "></i>
-                            DISTRIBUTION MANAGEMENT
-                        </span>
-                        <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                    </div>
-                    <ul class="submenu" id="shopMenu">
-                        <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
-                        @if (auth()->check() && auth()->user()->role_id == 1)
-                            <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
-                            <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                        @endif
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                    <span>
+                        <i class="bx bx-store me-2 "></i>
+                        DISTRIBUTION MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                </div>
+                <ul class="submenu" id="shopMenu">
+                    <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                    @endif
 
-                    </ul>
-                </li>
+                </ul>
+            </li>
             @endif
 
             <li class="menu-item">
@@ -173,8 +173,8 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>

@@ -28,6 +28,7 @@ use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\CustomerOrderReturnController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
 
@@ -191,7 +192,7 @@ Route::post(
 
 // Deliveries List
 Route::resource('/customer-orders', CustomerOrderController::class);
-
+Route::resource('/customer-returns', CustomerOrderReturnController::class);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
