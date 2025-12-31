@@ -172,7 +172,10 @@
                 </div>
 
                 <ul class="submenu" id="OfferMenu">
-                    .....
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                    @endif
                 </ul>
             </li>
 

@@ -104,7 +104,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         /* ================= ROLE CHECK ================= */
@@ -167,7 +167,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid password'
-            ], 401);
+            ], 200);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -217,7 +217,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Too many requests. Please try again later.'
-            ], 429);
+            ], 200);
         }
         RateLimiter::hit($key, 300); // 5 minutes
 
@@ -257,7 +257,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP type'
-            ], 400);
+            ], 200);
         }
 
         $validator = Validator::make($request->all(), [
@@ -278,7 +278,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $otpField = 'otp';
@@ -295,14 +295,14 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'OTP expired. Please request a new OTP.'
-            ], 400);
+            ], 200);
         }
 
         if ($request->otp != $user->$otpField) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP'
-            ], 401);
+            ], 200);
         }
 
         // ✅ Clear OTP after successful verification
@@ -364,7 +364,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $user->update([
