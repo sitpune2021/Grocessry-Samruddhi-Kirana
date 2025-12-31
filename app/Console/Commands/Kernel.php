@@ -21,6 +21,11 @@ class Kernel extends ConsoleKernel
 
         // (Optional) auto block expired batches
         // $schedule->command('batches:block-expired')->daily();
+
+        // Daily 9 AM WhatsApp expiry message
+        $schedule->command('expiry:whatsapp')
+        ->dailyAt('09:00');
+        
     }
 
     protected function commands()

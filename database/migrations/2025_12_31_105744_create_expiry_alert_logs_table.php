@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('expiry_alert_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('batch_id');
+            $table->foreignId('product_batch_id')->constrained();
             $table->date('alert_date');
-            $table->tinyInteger('days_before'); // 10 / 15
-            $table->boolean('sent')->default(0);
             $table->timestamps();
+
+            $table->unique(['product_batch_id', 'alert_date']);
         });
     }
 

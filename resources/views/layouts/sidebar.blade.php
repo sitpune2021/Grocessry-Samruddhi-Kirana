@@ -39,9 +39,7 @@
                 </div>
 
                 <ul class="submenu" id="OrderMenu">
-
-                    <li><a href="">TEMPORALY ORDER</a></li>
-
+                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
                 </ul>
             </li>
 
@@ -210,19 +208,6 @@
                 <ul class="submenu" id="PosMenu">
                     <li><a href="/purchase-orders/create">ADD POS</a></li>
                     <li><a href="{{ route('purchase.orders.index') }}">POS HISTORY</a></li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('approvalMenu','approvalArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        Approval
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="approvalArrow"></i>
-                </div>
-                <ul class="submenu" id="approvalMenu">
-                    <li><a href="{{ route('warehouse.transfer.index') }}">Disctrict Warehouse Transfer</a></li>
                 </ul>
             </li>
 

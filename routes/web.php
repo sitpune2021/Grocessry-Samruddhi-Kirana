@@ -440,14 +440,18 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
 });
 
 // Approval
-Route::get(
-    '/warehouse-transfers/approval',
-    [ApprovalController::class, 'index']
-)->name('warehouse.transfer.index');
-Route::post(
-    '/warehouse-transfers/{transfer}/approve',
-    [ApprovalController::class, 'approve']
-)->name('warehouse.transfer.approve');
+    Route::get(
+        '/warehouse-transfers/approval',
+        [ApprovalController::class, 'index']
+    )->name('warehouse.transfer.index');
+    Route::post(
+        '/warehouse-transfers/{transfer}/approve',
+        [ApprovalController::class, 'approve']
+    )->name('warehouse.transfer.approve');
+    Route::post(
+        '/warehouse-transfer/{transfer}/reject',
+        [ApprovalController::class, 'reject']
+    )->name('warehouse.transfer.reject');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
