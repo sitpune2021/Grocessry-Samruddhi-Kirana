@@ -145,9 +145,9 @@
                                                             class="text-danger">*</span></label>
                                                     <textarea name="address" class="form-control" placeholder="address" rows="2"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
-                                                         @error('address')
-                                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                                        @enderror
+                                                    @error('address')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Contact Person --}}
@@ -158,9 +158,9 @@
                                                         placeholder="contact Person Name"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @error('contact_person')
-                                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                                        @enderror
+                                                    @error('contact_person')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Mobile --}}
@@ -200,7 +200,7 @@
                                                             placeholder="Email" value="{{ $warehouse->email ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
 
-                                                             @error('email')
+                                                        @error('email')
                                                             <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>

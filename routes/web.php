@@ -29,6 +29,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\OfferController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -470,6 +471,12 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
     Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
 });
 
+//product offer 
+
+Route::prefix('offer')->group(function () {
+    Route::resource('offers', OfferController::class);
+    Route::get('products-by-category/{category}', [OfferController::class, 'productsByCategory']);
+});
 
 Route::get('/dev/run/{action}', function ($action) {
     try {
