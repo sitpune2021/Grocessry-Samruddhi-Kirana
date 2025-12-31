@@ -207,12 +207,12 @@
                                                 <div class="col-lg-12">
                                                     <div class="text-end">
                                                         <a href="{{ route('warehouse.index') }}"
-                                                            class="btn btn-info">Cancel</a>
+                                                            class="btn btn-success">Cancel</a>
                                                         @if ($mode === 'add')
-                                                            <button type="submit" class="btn btn-primary">Save
+                                                            <button type="submit" class="btn btn-success">Save
                                                                 Warehouse</button>
                                                         @elseif($mode === 'edit')
-                                                            <button type="submit" class="btn btn-primary">Update
+                                                            <button type="submit" class="btn btn-success">Update
                                                                 Warehouse</button>
                                                         @endif
                                                     </div>

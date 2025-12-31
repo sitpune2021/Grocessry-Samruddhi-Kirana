@@ -13,7 +13,7 @@
                     <h5 class="card-title">Batch List</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="/batches/create" class="btn btn-primary">
+                    <a href="/batches/create" class="btn btn-success">
                         <i class="bx bx-plus"></i> Add New Batch
                     </a>
                 </div>

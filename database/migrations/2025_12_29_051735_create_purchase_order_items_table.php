@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customer_orders', function (Blueprint $table) {
+        Schema::create('purchase_order_items', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('warehouse_id');
-            $table->enum('status',['pending','packed','assigned','delivered','cancelled']);
-            $table->decimal('total_amount',10,2);
+            $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained();
+            $table->integer('quantity');
+            $table->decimal('price', 10, 2);
+            $table->decimal('total', 10, 2);
             $table->timestamps();
         });
-
     }
 
     /**
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_orders');
+        Schema::dropIfExists('purchase_order_items');
     }
 };

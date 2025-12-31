@@ -111,13 +111,13 @@
 
                                             </div>
 
-                                            <div class="d-flex justify-content-end gap-2">
+                                            <div class="d-flex justify-content-end gap-2 text-success">
                                                 <a href="{{ route('batches.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                    class="btn btn-success">
                                                     Back
                                                 </a>
-                                                <button type="submit" class="btn btn-primary">
-                                                    Product Sell
+                                                <button type="submit" class="btn btn-success">
+                                                    PRODUCT SELL
                                                 </button>
                                             </div>
 

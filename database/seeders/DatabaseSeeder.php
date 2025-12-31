@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            // AdminSeeder::class,
+            AdminSeeder::class,
             // RolesTableSeeder::class,
             // CountrySeeder::class,
             // StateSeeder::class,  // if you have states

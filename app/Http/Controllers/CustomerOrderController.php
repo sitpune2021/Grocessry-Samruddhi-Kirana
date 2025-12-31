@@ -2,42 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\District;
-use App\Models\State;
-use App\Models\Talukas;
+use App\Models\CustomerOrder;
+use App\Models\DeliveryAgent;
 use Illuminate\Http\Request;
 
-class LocationController extends Controller
+class CustomerOrderController extends Controller
 {
-
-    public function getStates($countryId)
-    {
-
-        return response()->json(
-            State::where('country_id', $countryId)->get()
-        );
-    }
-
-    public function getDistricts($stateId)
-    {
-        return response()->json(
-            District::where('state_id', $stateId)->get()
-        );
-    }
-
-    public function getTalukas($districtId)
-    {
-        return response()->json(
-            Talukas::where('district_id', $districtId)->get()
-        );
-    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $orders = CustomerOrder::with('customerOrderItems')->paginate(10);
+        $deliveryAgents = DeliveryAgent::with('user')
+            ->get();
+
+        return view('menus.delivery-agent.customer-order.index', compact('orders','deliveryAgents'));
     }
 
     /**

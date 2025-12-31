@@ -38,7 +38,7 @@ class SubCategoryController extends Controller
             $validated = $request->validate([
                 'category_id' => 'required|exists:categories,id',
                 'name'        => 'required|string|max:255',
-                'slug'        => 'required|string|max:255|unique:sub_categories,slug',
+                'slug'        => 'required|string|max:255',//|unique:sub_categories,slug
             ]);
 
             // Create Sub Category
