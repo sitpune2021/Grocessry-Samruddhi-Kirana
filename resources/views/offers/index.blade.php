@@ -9,11 +9,11 @@
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title mb-0">Offers</h5>
+                        <h5 class="card-title mb-0">Coupon</h5>
                     </div>
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('offers.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                            <i class="bx bx-plus"></i> Add Offer
+                            <i class="bx bx-plus"></i> Add Coupon
                         </a>
                     </div>
                 </div>
@@ -29,11 +29,13 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="text-center" style="width: 80px;">Sr No</th>
-                                <th>Title</th>
-                                <th>Products</th>
-                                <th>Categories</th>
-                                <th>Discount</th>
-                                <th>Validity</th>
+                                <th>Code</th>
+                                <th>Discount Type</th>
+                                <th>Discount Value</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Minimum Amt</th>
+                                <th>Maximum Amt</th>
                                 <th>Status</th>
                                 <th class="text-center" style="width: 150px;">Actions</th>
                             </tr>
@@ -46,21 +48,18 @@
                                         {{ $offers->firstItem() + $index }}
                                     </td>
 
-                                    <td>{{ $offer->title }}</td>
-
-                                    <td>{{ $offer->product->name ?? '-' }}</td>
-
-                                    <td>{{ $offer->category->name ?? '-' }}</td>
+                                    <td>{{ $offer->code }}</td>
+                                    <td>
+                                        {{ $offer->discount_type }}
+                                    </td>
+                                    <td>{{ $offer->discount_value }}</td>
 
                                     <td>
-                                        {{ $offer->discount_type == 'percentage' ? $offer->discount_value . '%' : '₹' . $offer->discount_value }}
+                                        {{ \Carbon\Carbon::parse($offer->start_date)->format('d M Y') }}</td>
+                                    <td> {{ \Carbon\Carbon::parse($offer->end_date)->format('d M Y') }}
                                     </td>
-
-                                    <td>
-                                        {{ \Carbon\Carbon::parse($offer->start_date)->format('d M Y') }}
-                                        -
-                                        {{ \Carbon\Carbon::parse($offer->end_date)->format('d M Y') }}
-                                    </td>
+                                    <td>{{ $offer->min_amount }}</td>
+                                    <td>{{ $offer->max_usage }}</td>
 
                                     <td>{{ $offer->status ? 'Active' : 'Inactive' }}</td>
 

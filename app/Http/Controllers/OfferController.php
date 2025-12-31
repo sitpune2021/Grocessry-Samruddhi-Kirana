@@ -31,25 +31,35 @@ class OfferController extends Controller
         ]);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'product_id' => 'required|exists:products,id',
+            'code' => 'required|string|unique:offers,code',
+            'title' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'product_id' => 'nullable|exists:products,id',
             'discount_type' => 'required|in:percentage,flat',
             'discount_value' => 'required|numeric|min:0',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'min_amount' => 'required|numeric|min:0',
+            'max_usage' => 'required|integer|min:1',
+            'description' => 'nullable|string',
+            'terms_condition' => 'nullable|string',
             'status' => 'required|boolean',
         ]);
 
         try {
             $offer = Offer::create([
-                'title' => $validated['name'],   // 🔥 mapping fixed
-                'category_id' => $validated['category_id'],
-                'product_id' => $validated['product_id'],
+                'code' => $validated['code'],
+                'title' => $validated['title'],   // ✅ FIXED
+                'category_id' => $validated['category_id'] ?? null,
+                'product_id' => $validated['product_id'] ?? null,
                 'discount_type' => $validated['discount_type'],
                 'discount_value' => $validated['discount_value'],
                 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'],
+                'min_amount' => $validated['min_amount'] ?? null,
+                'max_usage' => $validated['max_usage'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'terms_condition' => $validated['terms_condition'] ?? null,
                 'status' => $validated['status'],
             ]);
 
@@ -71,6 +81,8 @@ class OfferController extends Controller
             return back()->withInput()->with('error', 'Offer not saved');
         }
     }
+
+
     public function show(Offer $offer)
     {
         $products = Product::all();
@@ -87,7 +99,6 @@ class OfferController extends Controller
 
     public function update(Request $request, Offer $offer)
     {
-        // 🔹 Log update request
         Log::info('Offer Update Request Received', [
             'user_id' => auth()->id(),
             'offer_id' => $offer->id,
@@ -95,73 +106,38 @@ class OfferController extends Controller
         ]);
 
         $validated = $request->validate([
-            'title' => 'nullable|string|max:255',
-            'discount_type' => 'nullable|in:percentage,flat',
-            'discount_value' => 'nullable|numeric|min:0',
+            'code' => 'required|string|unique:offers,code,' . $offer->id,
+            'title' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'product_id' => 'nullable|exists:products,id',
+            'discount_type' => 'required|in:percentage,flat',
+            'discount_value' => 'required|numeric|min:0',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'product_ids' => 'nullable|array',
-            'product_ids.*' => 'exists:products,id',
-            'category_ids' => 'nullable|array',
-            'category_ids.*' => 'exists:categories,id',
-            'status' => 'nullable|boolean',
-        ]);
+            'min_amount' => 'required|numeric|min:0',
+            'max_usage' => 'required|integer|min:1',
+            'description' => 'nullable|string',
+            'terms_condition' => 'nullable|string',
+            'status' => 'required|boolean',        ]);
 
         try {
-            // 🔹 Keep old data for audit log
-            $oldData = $offer->only([
-                'title',
-                'discount_type',
-                'discount_value',
-                'start_date',
-                'end_date',
-                'status'
-            ]);
+            // 🔹 Store old data for logs
+            $oldData = $offer->only(array_keys($validated));
 
-            // 🔹 Update Offer
-            $offer->update($request->only([
-                'title',
-                'discount_type',
-                'discount_value',
-                'start_date',
-                'end_date',
-                'status'
-            ]));
+            // 🔹 Update offer (ONLY validated fields)
+            $offer->update($validated);
 
             Log::info('Offer Updated Successfully', [
                 'offer_id' => $offer->id,
                 'old_data' => $oldData,
-                'new_data' => $offer->only(array_keys($oldData))
+                'new_data' => $offer->only(array_keys($validated))
             ]);
-
-            if ($request->filled('product_ids')) {
-                Product::whereIn('id', $request->product_ids)
-                    ->update(['offer_id' => $offer->id]);
-
-                Log::info('Offer Products Updated', [
-                    'offer_id' => $offer->id,
-                    'product_ids' => $request->product_ids
-                ]);
-            }
-
-            // Update Categories
-            if ($request->filled('category_ids')) {
-                Category::whereIn('id', $request->category_ids)
-                    ->update(['offer_id' => $offer->id]);
-
-
-                Log::info('Offer Categories Updated', [
-                    'offer_id' => $offer->id,
-                    'category_ids' => $request->category_ids
-                ]);
-            }
 
             return redirect()
                 ->route('offers.index')
                 ->with('success', 'Offer updated successfully');
         } catch (\Exception $e) {
 
-            // ❌ Error log
             Log::error('Offer Update Failed', [
                 'offer_id' => $offer->id,
                 'error' => $e->getMessage(),

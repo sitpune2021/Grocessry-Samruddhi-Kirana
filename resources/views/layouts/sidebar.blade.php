@@ -108,7 +108,7 @@
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
                     <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
-                    <li><a href="{{ route('offers.index') }}">Offers</a></li>
+                    <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
             </li>
 
