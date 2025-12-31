@@ -30,6 +30,8 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -524,3 +526,18 @@ Route::get('/dev/run/{action}', function ($action) {
         return "Error running action [$action]: " . $e->getMessage();
     }
 });
+
+Route::get('/user-profile', function () {
+    return view('profile');
+})->name('user-profile');
+
+Route::put('/profile/update', [UserController::class, 'updateProfile'])
+    ->name('profile.update');
+Route::get('/users/profile', [UserController::class, 'profile'])
+    ->name('user.profile');
+
+
+
+
+
+
