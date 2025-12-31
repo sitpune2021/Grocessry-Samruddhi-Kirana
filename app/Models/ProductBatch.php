@@ -44,6 +44,11 @@ class ProductBatch extends Model
         return $this->belongsTo(SubCategory::class);
     }
 
+    // Warehouse relation
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 
 }
 

@@ -7,8 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class PurchaseOrder extends Model
 {
     protected $fillable = [
-        'po_number','po_date','subtotal','tax',
-        'shipping_charge','discount','grand_total'
+        'warehouse_id',
+        'supplier_id',
+        'po_number',
+        'po_date',
+        'subtotal',
+        'tax',
+        'shipping_charge',
+        'discount',
+        'grand_total'
     ];
 
     public function items()

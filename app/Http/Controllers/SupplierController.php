@@ -8,17 +8,43 @@ use App\Models\Supplier;
 use App\Models\District;
 use App\Models\Talukas;
 use App\Models\State;
+use App\Models\Warehouse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 
 class SupplierController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $supplier = Supplier::orderBy('id', 'desc')->paginate(10);
-        return view('supplier.index', compact('supplier'));
+        $user = Auth::user();
+
+        // Super Admin → All suppliers
+        if ($user->role_id == 1) {
+            $query = Supplier::with('warehouse');
+
+            //Filter by warehouse from dropdown
+            if ($request->filled('warehouse_id')) {
+                $query->where('warehouse_id', $request->warehouse_id);
+            }
+
+            $suppliers = $query->latest()->paginate(10);
+            $warehouses = Warehouse::select('id', 'name')->get();
+        }
+        // Warehouse Admin → Only own suppliers
+        else {
+            $suppliers = Supplier::with('warehouse')
+                ->where('warehouse_id', $user->warehouse_id)
+                ->latest()
+                ->paginate(10);
+
+            $warehouses = collect(); // empty
+        }
+
+        return view('supplier.index', compact('suppliers', 'warehouses'));
     }
+
 
     public function create()
     {
@@ -45,7 +71,17 @@ class SupplierController extends Controller
             'district_id'   => 'required|exists:districts,id',
             'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
         ]);
+
+        $user = Auth::user();
+
+        if (!$user || !$user->warehouse_id) {
+            return redirect()->back()
+                ->with('error', 'Warehouse not assigned to your account.');
+        }
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
@@ -54,11 +90,14 @@ class SupplierController extends Controller
             $validated['logo'] = $filename;
         }
 
+        $validated['warehouse_id'] = $user->warehouse_id;
+
         $supplier = Supplier::create($validated);
 
-        // ✅ Log creation
+        // Log creation
         Log::info('Supplier created', [
             'id' => $supplier->id,
+            'warehouse_id' => $supplier->warehouse_id,
             'name' => $supplier->supplier_name,
             'mobile' => $supplier->mobile,
             'state_id' => $supplier->state_id,
@@ -70,7 +109,6 @@ class SupplierController extends Controller
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier created successfully');
     }
-
 
     // VIEW
     public function show(string $id)
@@ -110,18 +148,21 @@ class SupplierController extends Controller
             'district_id'   => 'required|exists:districts,id',
             'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
         ]);
 
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $filename =  $file->getClientOriginalExtension();
             $file->storeAs('suppliers', $filename, 'public');
             $validated['logo'] = $filename;
         }
 
         $supplier->update($validated);
 
-        // ✅ Log update
+        // Log update
         Log::info('Supplier updated', [
             'id' => $supplier->id,
             'name' => $supplier->supplier_name,

@@ -154,12 +154,8 @@
             </form>
         </div>
     </div>
-
-
 </div>
 @endsection
-
-
 
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>

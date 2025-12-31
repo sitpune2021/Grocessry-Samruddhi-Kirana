@@ -65,72 +65,48 @@ class WarehouseTransferController extends Controller
     }
 
     // Multiple product store function
-  public function store(Request $request)
-{
-    $request->validate([
-        'items'                         => 'required|array|min:1',
-        'items.*.from_warehouse_id'     => 'required|exists:warehouses,id',
-        'items.*.to_warehouse_id'       => 'required|different:items.*.from_warehouse_id|exists:warehouses,id',
-        'items.*.category_id'           => 'required|exists:categories,id',
-        'items.*.product_id'            => 'required|exists:products,id',
-        'items.*.batch_id'              => 'required|exists:product_batches,id',
-        'items.*.quantity'              => 'required|integer|min:1',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'items'                         => 'required|array|min:1',
+            'items.*.from_warehouse_id'     => 'required|exists:warehouses,id',
+            'items.*.to_warehouse_id'       => 'required|different:items.*.from_warehouse_id|exists:warehouses,id',
+            'items.*.category_id'           => 'required|exists:categories,id',
+            'items.*.product_id'            => 'required|exists:products,id',
+            'items.*.batch_id'              => 'required|exists:product_batches,id',
+            'items.*.quantity'              => 'required|integer|min:1',
+        ]);
 
-    DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
 
-        foreach ($request->items as $item) {
- 
-            $batch = ProductBatch::lockForUpdate()->findOrFail($item['batch_id']);
+            foreach ($request->items as $item) {
 
-            if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
-                throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
+                // ✅ ONLY batch validity (expiry / blocked)
+                $batch = ProductBatch::findOrFail($item['batch_id']);
+
+                if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
+                    throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
+                }
+
+                // ✅ ONLY INSERT (NO STOCK CHECK, NO STOCK UPDATE)
+                WarehouseTransfer::create([
+                    'from_warehouse_id' => $item['from_warehouse_id'],
+                    'to_warehouse_id'   => $item['to_warehouse_id'],
+                    'category_id'       => $item['category_id'],
+                    'product_id'        => $item['product_id'],
+                    'batch_id'          => $item['batch_id'],
+                    'quantity'          => $item['quantity'],
+                    'status'            => 0,                   
+                    'created_by'        => auth()->id(),
+                ]);
             }
+        });
 
-            if ($batch->quantity < $item['quantity']) {
-                throw new \Exception(
-                    "Insufficient stock. Available: {$batch->quantity}"
-                );
-            }
- 
-            $batch->decrement('quantity', $item['quantity']);
- 
-            WarehouseStock::updateOrCreate(
-                [
-                    'warehouse_id' => $item['to_warehouse_id'],
-                    'category_id'  => $item['category_id'],
-                    'product_id'   => $item['product_id'],
-                    'batch_id'     => $item['batch_id'],
-                ],
-                [
-                    'quantity' => DB::raw('quantity + ' . $item['quantity']),
-                ]
-            );
- 
-            $transfer = WarehouseTransfer::create([
-                'from_warehouse_id' => $item['from_warehouse_id'],
-                'to_warehouse_id'   => $item['to_warehouse_id'],
-                'category_id'       => $item['category_id'],
-                'product_id'        => $item['product_id'],
-                'batch_id'          => $item['batch_id'],
-                'quantity'          => $item['quantity'],
-                'created_by'        => auth()->id(),
-            ]);
+        return redirect()
+            ->route('transfer.index')
+            ->with('success', 'Transfer entry saved successfully');
+    }
 
- 
-            StockMovement::create([
-                'type'             => 'transfer',
-                'quantity'         => $item['quantity'],
-                'product_batch_id' => $item['batch_id'],
-                'reference_id'     => $transfer->id,
-            ]);
-        }
-    });
-
-    return redirect()
-        ->route('transfer.index')
-        ->with('success', 'Stock transferred successfully');
-}
 
 
 
@@ -238,29 +214,40 @@ class WarehouseTransferController extends Controller
     }
 
     // Edit Method 
-    public function edit($id)
-    {
-        $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
 
-        $categories = Category::whereIn('id', function ($q) use ($transfer) {
-            $q->select('category_id')
-                ->from('warehouse_stock')
-                ->where('warehouse_id', $transfer->from_warehouse_id)
-                ->where('quantity', '>', 0);
-        })->get();
+public function edit($id)
+{
+    $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
 
-        $products = Product::where('category_id', $transfer->category_id)->get();
-        $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
+    // Log the edit access
+    Log::info('Warehouse Transfer edit accessed', [
+        'transfer_id' => $transfer->id,
+        'from_warehouse_id' => $transfer->from_warehouse_id,
+        'to_warehouse_id' => $transfer->to_warehouse_id,
+        'user_id' => auth()->id(), // logs the authenticated user
+        'timestamp' => now()
+    ]);
 
-        return view('warehouse.transfer', compact(
-            'transfer',
-            'categories',
-            'products',
-            'batches'
-        ) + [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-        ]);
-    }
+    $categories = Category::whereIn('id', function ($q) use ($transfer) {
+        $q->select('category_id')
+            ->from('warehouse_stock')
+            ->where('warehouse_id', $transfer->from_warehouse_id)
+            ->where('quantity', '>', 0);
+    })->get();
+
+    $products = Product::where('category_id', $transfer->category_id)->get();
+    $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
+
+    return view('warehouse.transfer', compact(
+        'transfer',
+        'categories',
+        'products',
+        'batches'
+    ) + [
+        'warehouses' => Warehouse::where('status', 'active')->get(),
+    ]);
+}
+
 
     // Update Method
     public function update(Request $request, $id)
@@ -424,7 +411,7 @@ class WarehouseTransferController extends Controller
         return response()->json($categories);
     }
 
- 
+
     public function getWarehouseStockData(Request $request)
     {
         /* -------- WAREHOUSE → PRODUCTS -------- */
@@ -486,15 +473,14 @@ class WarehouseTransferController extends Controller
 
 
     public function getBatchStock($batchId)
-{
-    $batch = ProductBatch::where('id', $batchId)
-        ->where('is_blocked', 0)
-        ->whereDate('expiry_date', '>=', now())
-        ->first();
+    {
+        $batch = ProductBatch::where('id', $batchId)
+            ->where('is_blocked', 0)
+            ->whereDate('expiry_date', '>=', now())
+            ->first();
 
-    return response()->json([
-        'quantity' => $batch->quantity ?? 0
-    ]);
-}
-
+        return response()->json([
+            'quantity' => $batch->quantity ?? 0
+        ]);
+    }
 }

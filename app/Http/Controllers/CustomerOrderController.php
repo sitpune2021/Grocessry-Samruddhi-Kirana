@@ -17,7 +17,7 @@ class CustomerOrderController extends Controller
         $deliveryAgents = DeliveryAgent::with('user')
             ->get();
 
-        return view('menus.delivery-agent.customer-order.index', compact('orders','deliveryAgents'));
+        return view('menus.customer-management.customer-order.index', compact('orders','deliveryAgents'));
     }
 
     /**

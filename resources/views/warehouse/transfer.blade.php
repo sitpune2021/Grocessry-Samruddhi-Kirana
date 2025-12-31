@@ -113,7 +113,7 @@
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
-                                                <input type="text" id="quantity" class="form-control" placeholder="Comma separated qty">
+                                                <input type="text" id="quantity" class="form-control" placeholder="qty">
                                                 <small id="qtyError" class="text-danger" style="display:none;"></small>
                                             </div>
                                         </div>
@@ -131,11 +131,12 @@
                                             <table class="table table-bordered" id="workOrderTable">
                                                 <thead class="bg-light">
                                                     <tr>
+                                                        <th style="width:100px;">Sr No </th>
                                                         <th>From Warehouse</th>
                                                         <th>To Warehouse</th>
                                                         <th>Product</th>
                                                         <th>Batch</th>
-                                                        <th>Quantity</th>
+                                                        <th style="width:10%;">Quantity</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -168,165 +169,144 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-$(document).ready(function() {
-
-    $('#product_id').select2({ placeholder: 'Select Product', closeOnSelect: false, width: '100%' });
-    $('#batch_id').select2({ placeholder: 'Select Batch', closeOnSelect: false, width: '100%' });
-
-    const fromWarehouseEl = $('#from_warehouse_id');
-    const toWarehouseEl = $('#to_warehouse_id');
-    const productEl = $('#product_id');
-    const batchEl = $('#batch_id');
-    const qtyEl = $('#quantity');
-    const tableWrapper = $('#workOrderTableWrapper');
-    const tableBody = $('#workOrderTable tbody');
-    const itemsContainer = $('#itemsContainer');
-    let index = 0;
-
-    /* ================= GET PRODUCTS ON WAREHOUSE CHANGE ================= */
-    fromWarehouseEl.on('change', function() {
-        const warehouseId = $(this).val();
-        if (!warehouseId) return;
-        $.get("{{ route('ajax.warehouse.stock.data') }}", { warehouse_id: warehouseId }, function(res) {
-            if (res.type === 'products') {
-                let options = '';
-                res.data.forEach(p => { options += `<option value="${p.id}">${p.name}</option>`; });
-                $('#product_id').html(options).trigger('change');
-                $('#batch_id').html('').trigger('change');
-            }
+    $(document).ready(function() {
+        $('#product_id').select2({
+            placeholder: 'Select Product',
+            closeOnSelect: false,
+            width: '100%'
         });
-    });
-
-    /* ================= GET BATCHES ON PRODUCT CHANGE ================= */
-    productEl.on('change', function() {
-        const productIds = $(this).val();
-        if (!productIds || productIds.length === 0) return;
-        $.get("{{ route('ajax.product.batches') }}", { product_ids: productIds }, function(res) {
-            if (res.type === 'batches') {
-                let options = '';
-                res.data.forEach(b => { options += `<option value="${b.id}">${b.batch_no}</option>`; });
-                $('#batch_id').html(options).trigger('change');
-            }
+        $('#batch_id').select2({
+            placeholder: 'Select Batch',
+            closeOnSelect: false,
+            width: '100%'
         });
-    });
 
-    /* ================= GET QTY ON BATCH CHANGE ================= */
-    batchEl.on('change', function() {
-        const batchIds = $(this).val();
-        if (!batchIds || batchIds.length === 0) { qtyEl.val(''); return; }
+        let index = 0;
 
-        let qtyList = [];
-        let requests = batchIds.map(batchId => {
-            return $.get(`/get-batch-stock/${batchId}`, function(res) {
-                qtyList.push(res.quantity ?? 0);
+        const fromWarehouseEl = $('#from_warehouse_id');
+        const toWarehouseEl = $('#to_warehouse_id');
+        const productEl = $('#product_id');
+        const batchEl = $('#batch_id');
+        const qtyEl = $('#quantity');
+        const tableBody = $('#workOrderTable tbody');
+        const tableWrapper = $('#workOrderTableWrapper');
+        const itemsContainer = $('#itemsContainer');
+
+        /* ========= PRODUCTS ========= */
+        fromWarehouseEl.on('change', function() {
+            const wid = $(this).val();
+            if (!wid) return;
+
+            $.get("{{ route('ajax.warehouse.stock.data') }}", {
+                warehouse_id: wid
+            }, function(res) {
+                let opt = '';
+                res.data.forEach(p => opt += `<option value="${p.id}">${p.name}</option>`);
+                productEl.html(opt).val(null).trigger('change');
+                batchEl.html('').trigger('change');
             });
         });
 
-        Promise.all(requests).then(() => {
-            qtyEl.val(qtyList.join(','));
+        /* ========= BATCHES ========= */
+        productEl.on('change', function() {
+            const ids = $(this).val();
+            if (!ids?.length) return;
+
+            $.get("{{ route('ajax.product.batches') }}", {
+                product_ids: ids
+            }, function(res) {
+                let opt = '';
+                res.data.forEach(b => opt += `<option value="${b.id}">${b.batch_no}</option>`);
+                batchEl.html(opt).trigger('change');
+            });
         });
-    });
 
-    /* ================= ADD ITEM ================= */
-    $('#addItemBtn').on('click', function() {
+        /* ========= QTY ========= */
+        batchEl.on('change', function() {
+            const ids = $(this).val();
+            if (!ids?.length) return qtyEl.val('');
 
-        const fromWarehouse = fromWarehouseEl.val();
-        const toWarehouse = toWarehouseEl.val();
-        const productIds = productEl.val();
-        const batchIds = batchEl.val();
-        const quantity = qtyEl.val();
+            let q = [];
+            Promise.all(ids.map(id =>
+                $.get(`/get-batch-stock/${id}`, r => q.push(r.quantity ?? 0))
+            )).then(() => qtyEl.val(q.join(',')));
+        });
 
-        if (!fromWarehouse || !toWarehouse || !productIds || !batchIds || !quantity) {
-            alert('Please fill all fields');
-            return;
-        }
+        /* ========= ADD ROW ========= */
+        $('#addItemBtn').on('click', function() {
+            const fw = fromWarehouseEl.val();
+            const tw = toWarehouseEl.val();
+            const pids = productEl.val();
+            const bids = batchEl.val();
+            const qtys = qtyEl.val().split(',');
 
-        const qtyList = quantity.split(',').map(q => q.trim());
-        if (productIds.length !== batchIds.length || batchIds.length !== qtyList.length) {
-            alert('Product, Batch and Quantity count mismatch');
-            return;
-        }
+            if (!fw || !tw || !pids || !bids || !qtys.length) {
+                alert('Fill all fields');
+                return;
+            }
 
-        productIds.forEach((productId, i) => {
-            const batchId = batchIds[i];
-            const qty = qtyList[i];
-            const rowIndex = index++;
+            if (pids.length !== bids.length || bids.length !== qtys.length) {
+                alert('Product / Batch / Qty mismatch');
+                return;
+            }
 
-            const row = `<tr id="row_${rowIndex}">
-                <td>${fromWarehouseEl.find('option:selected').text()}</td>
-                <td>${toWarehouseEl.find('option:selected').text()}</td>
-                <td>${$('#product_id option[value="' + productId + '"]').text()}</td>
-                <td>${$('#batch_id option[value="' + batchId + '"]').text()}</td>
-                <td>${qty}</td>
-                <td>
-                    <button type="button" class="btn btn-warning btn-sm edit-row" data-index="${rowIndex}">Edit</button>
-                    <button type="button" class="btn btn-danger btn-sm remove-row" data-index="${rowIndex}">Remove</button>
-                </td>
-            </tr>`;
-            tableWrapper.show();
-            tableBody.append(row);
+            pids.forEach((pid, i) => {
+                const rid = index++;
 
-            itemsContainer.append(`
-                <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
-                <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
-                <input type="hidden" name="items[${rowIndex}][category_id]" value="1">
-                <input type="hidden" name="items[${rowIndex}][product_id]" value="${productId}">
-                <input type="hidden" name="items[${rowIndex}][batch_id]" value="${batchId}">
-                <input type="hidden" name="items[${rowIndex}][quantity]" value="${qty}">
+                tableBody.append(`
+                <tr id="row_${rid}">
+                    <td>${rid + 1}</td>
+                    <td>${fromWarehouseEl.find(':selected').text()}</td>
+                    <td>${toWarehouseEl.find(':selected').text()}</td>
+                    <td>${$('#product_id option[value="'+pid+'"]').text()}</td>
+                    <td>${$('#batch_id option[value="'+bids[i]+'"]').text()}</td>
+                    <td>
+                        <input type="number"class="form-control form-control-sm qty-input"value="${qtys[i]}" data-index="${rid}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm remove-row" data-i="${rid}">Remove</button>
+                    </td>
+                </tr>
             `);
-        });
 
-        resetFullForm();
-        toggleButtons();
-    });
-
-    /* ================= EDIT / REMOVE ROW ================= */
-    $(document).on('click', '.edit-row', function() {
-        const i = $(this).data('index');
-        const getVal = name => $(`[name="items[${i}][${name}]"]`).val();
-
-        fromWarehouseEl.val(getVal('from_warehouse_id')).trigger('change');
-        toWarehouseEl.val(getVal('to_warehouse_id')).trigger('change');
-
-        const waitOptions = (el, val) => new Promise(res => {
-            const interval = setInterval(() => {
-                if ([...el[0].options].some(o => o.value == val)) { clearInterval(interval); res(); }
-            }, 100);
-        });
-
-        waitOptions(productEl, getVal('product_id')).then(() => {
-            productEl.val([getVal('product_id')]).trigger('change');
-            waitOptions(batchEl, getVal('batch_id')).then(() => {
-                batchEl.val([getVal('batch_id')]).trigger('change');
-                qtyEl.val(getVal('quantity'));
+                itemsContainer.append(`
+                <input type="hidden" name="items[${rid}][from_warehouse_id]" value="${fw}">
+                <input type="hidden" name="items[${rid}][to_warehouse_id]" value="${tw}">
+                <input type="hidden" name="items[${rid}][category_id]" value="1">
+                <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
+                <input type="hidden" name="items[${rid}][batch_id]" value="${bids[i]}">
+                <input type="hidden" name="items[${rid}][quantity]" value="${qtys[i]}" class="hidden-qty" data-index="${rid}">
+            `);
             });
+
+            tableWrapper.show();
+            resetForm();
+            toggleSubmit();
         });
 
-        removeRow(i);
+        /* ========= REMOVE ROW ========= */
+        $(document).on('click', '.remove-row', function() {
+            const i = $(this).data('i');
+            $(`#row_${i}`).remove();
+            $(`[name^="items[${i}]"]`).remove();
+            toggleSubmit();
+        });
+
+        /* ========= UPDATE HIDDEN QTY ON CHANGE ========= */
+        $(document).on('input', '.qty-input', function() {  
+            const i = $(this).data('index');
+            const val = $(this).val();
+            $(`.hidden-qty[data-index="${i}"]`).val(val);
+        });
+
+        function resetForm() {
+            productEl.val(null).trigger('change');
+            batchEl.val(null).trigger('change');
+            qtyEl.val('');
+        }
+
+        function toggleSubmit() {
+            $('button[type="submit"]').toggle(tableBody.children().length > 0);
+        }
     });
-
-    $(document).on('click', '.remove-row', function() {
-        removeRow($(this).data('index'));
-    });
-
-    function removeRow(i) {
-        $(`#row_${i}`).remove();
-        $(`[name^="items[${i}]"]`).remove();
-        toggleButtons();
-    }
-
-    function resetFullForm() {
-        productEl.val(null).trigger('change');
-        batchEl.val(null).trigger('change');
-        qtyEl.val('');
-    }
-
-    function toggleButtons() {
-        const hasRows = tableBody.children().length > 0;
-        $('#addItemBtn').toggle(!hasRows);
-        $('button[type="submit"]').toggle(hasRows);
-    }
-
-    toggleButtons(); // initial
-});
 </script>
