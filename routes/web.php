@@ -31,6 +31,7 @@ use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RetailerOfferController;
+use App\Http\Controllers\ReportsController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -487,6 +488,9 @@ Route::prefix('retailer-offers')->name('retailer-offers.')->group(function () {
     Route::put('{id}', [RetailerOfferController::class, 'update'])->name('update');
     Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
 });
+
+Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    ->name('warehouse-stock.report');
 
 Route::get('/dev/run/{action}', function ($action) {
     try {
