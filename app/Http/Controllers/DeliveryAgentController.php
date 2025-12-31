@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CustomerOrder;
 use Illuminate\Http\Request;
 use App\Models\DeliveryAgent;
 use App\Models\GroceryShop;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class DeliveryAgentController extends Controller
 {
@@ -46,7 +48,7 @@ class DeliveryAgentController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         Log::info('Delivery Agent store process started', [
             'requested_by' => Auth::id(),
             'ip' => $request->ip()
@@ -83,10 +85,9 @@ class DeliveryAgentController extends Controller
                     ->back()
                     ->withErrors($validated)   // 🔥 THIS is required
                     ->withInput();
-                    
             }
 
-dd("hi");
+            dd("hi");
 
             // Log::info('Validation passed', [
             //     'mobile' => $validated['mobile'],
@@ -456,17 +457,71 @@ dd("hi");
 
     public function assignDelivery(Request $request)
     {
-        $request->validate([
-            'order_id' => 'required|exists:customer_orders,id',
-            'delivery_agent_id' => 'required|exists:delivery_agents,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'order_id' => 'required|exists:customer_orders,id',
+                'delivery_agent_id' => 'required|exists:delivery_agents,id',
+            ]);
 
-        DeliveryAgent::create([
-            'order_id' => $request->order_id,
-            'delivery_agent_id' => $request->delivery_agent_id,
-            'status' => 'assigned',
-        ]);
+            DB::beginTransaction();
 
-        return back()->with('success', 'Delivery agent assigned successfully');
+            $order = CustomerOrder::lockForUpdate()->findOrFail($validated['order_id']);
+
+            if ($order->agent_id) {
+
+                Log::warning('Reassignment attempt blocked', [
+                    'order_id' => $order->id,
+                    'current_agent_id' => $order->agent_id,
+                    'attempted_agent_id' => $validated['delivery_agent_id'],
+                    'user_id' => Auth::id(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'order_id' => 'Delivery agent already assigned to this order.'
+                ]);
+            }
+
+            // ✅ Assign agent
+            $order->agent_id    = $validated['delivery_agent_id'];
+            $order->status      = 'accepted';
+            $order->accepted_by = Auth::id();
+            $order->save();
+
+            DB::commit();
+
+            Log::info('Delivery agent assigned successfully', [
+                'order_id' => $order->id,
+                'agent_id' => $validated['delivery_agent_id'],
+                'assigned_by' => Auth::id(),
+            ]);
+
+            return back()->with('success', 'Delivery agent assigned successfully.');
+        } catch (ValidationException $e) {
+
+            DB::rollBack();
+
+            // Validation-specific log
+            Log::notice('Validation failed while assigning delivery agent', [
+                'errors' => $e->errors(),
+                'user_id' => Auth::id(),
+            ]);
+
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            Log::error('Unexpected error while assigning delivery agent', [
+                'order_id' => $request->order_id ?? null,
+                'agent_id' => $request->delivery_agent_id ?? null,
+                'user_id'  => Auth::id(),
+                'message'  => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors('Something went wrong. Please try again.');
+        }
     }
 }

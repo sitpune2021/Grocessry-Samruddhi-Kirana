@@ -26,6 +26,7 @@ use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VehicleAssignmentController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
 
@@ -370,7 +371,12 @@ Route::get(
 )
     ->name('purchase.invoice');
 
+    Route::get('/purchase-orders', 
+    [PurchaseOrderController::class, 'index'])
+    ->name('purchase.orders.index');
 
+
+    
 // PRODUCT BATCH MANAGEMENT
 Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
 Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
@@ -417,6 +423,14 @@ Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productI
         ->sum('quantity');
     return response()->json(['stock' => $stock]);
 });
+
+// Approval
+    Route::get('/warehouse-transfers/approval', 
+        [ApprovalController::class, 'index']
+    )->name('warehouse.transfer.index');
+    Route::post('/warehouse-transfers/{transfer}/approve',
+        [ApprovalController::class, 'approve']
+    )->name('warehouse.transfer.approve');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

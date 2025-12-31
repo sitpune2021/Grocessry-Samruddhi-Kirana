@@ -56,7 +56,7 @@
 
                 <ul class="submenu" id="CustomerMenu">
 
-                    <li><a href="">TEMPORALY</a></li>
+                    <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
 
                 </ul>
             </li>
@@ -107,8 +107,24 @@
                 <ul class="submenu" id="inventoryMenu">
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
-                    <li><a href="{{ route('supplier.index') }}">Supplier</a></li>
-                    <li><a href="{{ route('offers.index') }}">Coupon</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                        <li><a href="{{ route('sale.create') }}">Expiry Sell</a></li>
+                    @endif
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('suppplierMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        SUPPLIER MANAGEMENT
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
+                </div>
+
+                <ul class="submenu" id="suppplierMenu">
+                    <li><a href="{{ route('supplier.index') }}">Supplier Details</a></li>
+
                 </ul>
             </li>
 
@@ -131,7 +147,7 @@
                     <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
                         <span>
                             <i class="bx bx-store me-2 "></i>
-                            SHOP MANAGEMENT
+                            DISTRIBUTION MANAGEMENT
                         </span>
                         <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                     </div>
@@ -141,7 +157,7 @@
                             <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
                             <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
                         @endif
-                        <li><a href="{{ route('customer-orders.index') }}">Deliveries</a></li>
+
                     </ul>
                 </li>
             @endif
@@ -156,9 +172,7 @@
                 </div>
 
                 <ul class="submenu" id="OfferMenu">
-                    @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                    @endif
+                    <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
             </li>
 
@@ -179,9 +193,34 @@
                 </ul>
             </li>
 
-            <li class="menu-header text-white"><a href="/purchase-orders/create">
-                    POS SYSTEM
-                </a></li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('PosMenu','PosArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        POS SYSTEM
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
+                </div>
+
+                <ul class="submenu" id="PosMenu">
+                    <li><a href="/purchase-orders/create">ADD POS</a></li>
+                    <li><a href="{{ route('purchase.orders.index') }}">POS HISTORY</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('approvalMenu','approvalArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        Approval
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="approvalArrow"></i>
+                </div>
+                <ul class="submenu" id="approvalMenu">
+                    <li><a href="{{ route('warehouse.transfer.index') }}">Disctrict Warehouse Transfer</a></li>
+                </ul>
+            </li>
 
         </ul>
     </div>
