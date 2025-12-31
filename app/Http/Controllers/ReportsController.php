@@ -17,62 +17,62 @@ class ReportsController extends Controller
 {
 
 
-   public function warehouse_stock_report(Request $request)
-{
-    $warehouses = DB::table('warehouses')->get();
+    public function warehouse_stock_report(Request $request)
+    {
+        $warehouses = DB::table('warehouses')->get();
 
-    // Fetch once (IMPORTANT)
-    $allTransfers = DB::table('warehouse_transfers')->get();
-    $allStocks = DB::table('stock_movements')->get();
+        // Fetch once (IMPORTANT)
+        $allTransfers = DB::table('warehouse_transfers')->get();
+        $allStocks = DB::table('stock_movements')->get();
 
-    $warehouseStock = [];
+        $warehouseStock = [];
 
-    foreach ($warehouses as $wh) {
+        foreach ($warehouses as $wh) {
 
-        // Stock In / Out
-        $stockIn = $allStocks
-            ->where('warehouse_id', $wh->id)
-            ->where('type', 'in')
-            ->sum('quantity');
+            // Stock In / Out
+            $stockIn = $allStocks
+                ->where('warehouse_id', $wh->id)
+                ->where('type', 'in')
+                ->sum('quantity');
 
-        $stockOut = $allStocks
-            ->where('warehouse_id', $wh->id)
-            ->where('type', 'out')
-            ->sum('quantity');
+            $stockOut = $allStocks
+                ->where('warehouse_id', $wh->id)
+                ->where('type', 'out')
+                ->sum('quantity');
 
-        // Transfer In records
-        $transferInRecords = $allTransfers
-            ->where('to_warehouse_id', $wh->id);
+            // Transfer In records
+            $transferInRecords = $allTransfers
+                ->where('to_warehouse_id', $wh->id);
 
-        $transferIn = $transferInRecords->sum('quantity');
+            $transferIn = $transferInRecords->sum('quantity');
 
-        $transferOut = $allTransfers
-            ->where('from_warehouse_id', $wh->id)
-            ->sum('quantity');
+            $transferOut = $allTransfers
+                ->where('from_warehouse_id', $wh->id)
+                ->sum('quantity');
 
-        // Warehouse From (unique names)
-        $warehouseFrom = $transferInRecords
-            ->pluck('from_warehouse_id')
-            ->unique()
-            ->map(function ($id) {
-                return DB::table('warehouses')->where('id', $id)->value('name');
-            })
-            ->filter()
-            ->implode(', ');
+            // Warehouse From (unique names)
+            $warehouseFrom = $transferInRecords
+                ->pluck('from_warehouse_id')
+                ->unique()
+                ->map(function ($id) {
+                    return DB::table('warehouses')->where('id', $id)->value('name');
+                })
+                ->filter()
+                ->implode(', ');
 
-        $warehouseStock[$wh->id] = [
-            'warehouse_from' => $warehouseFrom ?: '-',
-            'warehouse_name' => $wh->name,
-            'stock_in' => $stockIn,
-            'stock_out' => $stockOut,
-            'transfer_in' => $transferIn,
-            'transfer_out' => $transferOut,
-            'remaining' => ($stockIn + $transferIn) - ($stockOut + $transferOut),
-        ];
+            $warehouseStock[$wh->id] = [
+                'warehouse_from' => $warehouseFrom ?: '-',
+                'warehouse_name' => $wh->name,
+                'stock_in' => $stockIn,
+                'stock_out' => $stockOut,
+                'transfer_in' => $transferIn,
+                'transfer_out' => $transferOut,
+                'remaining' => ($stockIn + $transferIn) - ($stockOut + $transferOut),
+            ];
+        }
+
+        return view('reports.warehouse-stock', compact('warehouseStock'));
     }
-
-    return view('reports.warehouse-stock', compact('warehouseStock'));
-}
 
 
     // public function warehouse_stock_report(Request $request)
