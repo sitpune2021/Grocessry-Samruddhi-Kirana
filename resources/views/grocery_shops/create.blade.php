@@ -138,11 +138,11 @@
 
                                             <!-- Buttons -->
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('grocery-shops.index') }}" class="btn btn-outline-secondary">
+                                                <a href="{{ route('grocery-shops.index') }}" class="btn btn-success">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-success">
                                                     {{ isset($shop) ? 'Update Shop' : 'Save Shop' }}
                                                 </button>
                                             </div>

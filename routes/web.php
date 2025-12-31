@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CouponController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\OfferController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -108,46 +110,46 @@ Route::get('/get-talukas/{district}', [LocationController::class, 'getTalukas'])
 
 // double route 
 
-    Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
-    Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
-        ->name('transfer.create');
+Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
+Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
+    ->name('transfer.create');
 
-    Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
-    Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
-    Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
-    // Soft delete
-    Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
+Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
+Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
+Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
+// Soft delete
+Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/all-multiselect',
-        [WarehouseTransferController::class, 'getWarehouseAllData']
-    )->name('warehouse.multiselect');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/all-multiselect',
+    [WarehouseTransferController::class, 'getWarehouseAllData']
+)->name('warehouse.multiselect');
 
-    Route::get(
-        '/ajax/warehouse-stock-data',
-        [WarehouseTransferController::class, 'getWarehouseStockData']
-    )->name('ajax.warehouse.stock.data');
+Route::get(
+    '/ajax/warehouse-stock-data',
+    [WarehouseTransferController::class, 'getWarehouseStockData']
+)->name('ajax.warehouse.stock.data');
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
 // double route end
 
@@ -182,7 +184,9 @@ Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
 Route::resource('/delivery-agents', DeliveryAgentController::class);
 
-Route::post('/admin-assign-delivery',[DeliveryAgentController::class, 'assignDelivery']
+Route::post(
+    '/admin-assign-delivery',
+    [DeliveryAgentController::class, 'assignDelivery']
 )->name('admin.assign.delivery');
 
 // Deliveries List
@@ -193,233 +197,256 @@ Route::resource('/customer-orders', CustomerOrderController::class);
 
 // WAREHOUSE TRANSFER
 
-    Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
+Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
 
-        Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
-        Route::get('/create', [WarehouseTransferController::class, 'create'])->name('create');
-        Route::post('/store', [WarehouseTransferController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
-        Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
-    });
+    Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
+    Route::get('/create', [WarehouseTransferController::class, 'create'])->name('create');
+    Route::post('/store', [WarehouseTransferController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
+    Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
+});
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+Route::get(
+    '/get-products-by-category/{category_id}',
+    [WarehouseTransferController::class, 'getProductsByCategory']
+);
+Route::get(
+    '/get-batches-by-product/{product_id}',
+    [WarehouseTransferController::class, 'getBatchesByProduct']
+);
+Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+Route::get(
+    '/ajax/warehouse/{warehouse_id}/categories',
+    [WarehouseTransferController::class, 'getCategoriesByWarehouse']
+)->name('ajax.warehouse.categories');
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+Route::get(
+    '/warehouse-transfer/{batch}',
+    [WarehouseTransferController::class, 'show']
+)->name('transfer.show');
 
-    Route::get(
-        '/ajax/product-batches',
-        [WarehouseTransferController::class, 'getBatchesByProducts']
-    )->name('ajax.product.batches');
+Route::get(
+    '/ajax/product-batches',
+    [WarehouseTransferController::class, 'getBatchesByProducts']
+)->name('ajax.product.batches');
 
-    Route::get(
-        '/get-batch-stock/{batch}',
-        [WarehouseTransferController::class, 'getBatchStock']
-    );
+Route::get(
+    '/get-batch-stock/{batch}',
+    [WarehouseTransferController::class, 'getBatchStock']
+);
 
 
 // RETAILERS
-    Route::prefix('retailers')->name('retailers.')->group(function () {
+Route::prefix('retailers')->name('retailers.')->group(function () {
 
-        Route::get('/', [RetailerController::class, 'index'])->name('index');
+    Route::get('/', [RetailerController::class, 'index'])->name('index');
 
-        // CREATE
-        Route::get('/create', [RetailerController::class, 'create'])->name('create');
-        Route::post('/store', [RetailerController::class, 'store'])->name('store');
+    // CREATE
+    Route::get('/create', [RetailerController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerController::class, 'store'])->name('store');
 
-        // EDIT / UPDATE
-        Route::get('/{retailer}/edit', [RetailerController::class, 'edit'])->name('edit');
-        Route::put('/{retailer}', [RetailerController::class, 'update'])->name('update');
+    // EDIT / UPDATE
+    Route::get('/{retailer}/edit', [RetailerController::class, 'edit'])->name('edit');
+    Route::put('/{retailer}', [RetailerController::class, 'update'])->name('update');
 
-        // DELETE
-        Route::delete('/{retailer}', [RetailerController::class, 'delete']);
+    // DELETE
+    Route::delete('/{retailer}', [RetailerController::class, 'delete']);
 
-        // ACTIVATE / DEACTIVATE
-        Route::patch('/{retailer}/toggle-status', [RetailerController::class, 'toggleStatus'])
-            ->name('toggle.status');
-    });
+    // ACTIVATE / DEACTIVATE
+    Route::patch('/{retailer}/toggle-status', [RetailerController::class, 'toggleStatus'])
+        ->name('toggle.status');
+});
 
 
 // RETAILER PRICING
-    Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
+Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
 
-        Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
+    Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
 
-        Route::get('/create', [RetailerPricingController::class, 'create'])->name('create');
-        Route::post('/store', [RetailerPricingController::class, 'store'])->name('store');
+    Route::get('/create', [RetailerPricingController::class, 'create'])->name('create');
+    Route::post('/store', [RetailerPricingController::class, 'store'])->name('store');
 
-        Route::get('/{pricing}/edit', [RetailerPricingController::class, 'edit'])->name('edit');
-        Route::put('/{pricing}', [RetailerPricingController::class, 'update'])->name('update');
+    Route::get('/{pricing}/edit', [RetailerPricingController::class, 'edit'])->name('edit');
+    Route::put('/{pricing}', [RetailerPricingController::class, 'update'])->name('update');
 
-        Route::delete('/{pricing}', [RetailerPricingController::class, 'destroy'])->name('delete');
+    Route::delete('/{pricing}', [RetailerPricingController::class, 'destroy'])->name('delete');
 
-        Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
-            ->name('bulk.upload');
+    Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
+        ->name('bulk.upload');
 
-        Route::get(
-            '/get-products-by-category/{category}',
-            [RetailerPricingController::class, 'getProductsByCategory']
-        );
-    });
+    Route::get(
+        '/get-products-by-category/{category}',
+        [RetailerPricingController::class, 'getProductsByCategory']
+    );
+});
 
 
 // RETAILER ORDER
-    Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
+Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
 
-        Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
+    Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
 
-        Route::get('/create', [RetailerOrderController::class, 'create'])->name('create');
+    Route::get('/create', [RetailerOrderController::class, 'create'])->name('create');
 
-        Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
+    Route::post('/store', [RetailerOrderController::class, 'store'])->name('store');
 
-        // Auto price fetch
-        Route::get(
-            '/get-retailer-price/{retailer}/{product}',
-            [RetailerOrderController::class, 'getRetailerPrice']
-        )->name('get.price');
+    // Auto price fetch
+    Route::get(
+        '/get-retailer-price/{retailer}/{product}',
+        [RetailerOrderController::class, 'getRetailerPrice']
+    )->name('get.price');
 
-        Route::get(
-            '/get-categories-by-retailer/{retailer}',
-            [RetailerOrderController::class, 'getCategoriesByRetailer']
-        )->name('get.categories');
+    Route::get(
+        '/get-categories-by-retailer/{retailer}',
+        [RetailerOrderController::class, 'getCategoriesByRetailer']
+    )->name('get.categories');
 
-        Route::get(
-            '/get-products-by-retailer/{retailer}/{category}',
-            [RetailerOrderController::class, 'getProductsByRetailerCategory']
-        )->name('get.products');
+    Route::get(
+        '/get-products-by-retailer/{retailer}/{category}',
+        [RetailerOrderController::class, 'getProductsByRetailerCategory']
+    )->name('get.products');
 
-        Route::get(
-            '/ajax/get-warehouses-by-category/{retailer}/{category}',
-            [RetailerOrderController::class, 'getWarehousesByCategory']
-        )->name('ajax.get.warehouses');
-    });
+    Route::get(
+        '/ajax/get-warehouses-by-category/{retailer}/{category}',
+        [RetailerOrderController::class, 'getWarehousesByCategory']
+    )->name('ajax.get.warehouses');
+});
 
+//coupons
+Route::prefix('coupons')->name('coupons.')->group(function () {
 
+    Route::get('/', [CouponController::class, 'index'])->name('index');
+    Route::get('/create', [CouponController::class, 'create'])->name('create');
+    Route::post('/', [CouponController::class, 'store'])->name('store');
+    Route::get('/{coupon}/edit', [CouponController::class, 'edit'])->name('edit');
+    Route::put('/{coupon}', [CouponController::class, 'update'])->name('update');
+    Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
+
+    Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
+});
 // GROCER SHOP
-    Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
+Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
-        Route::get('/', [GroceryShopController::class, 'index'])
-            ->name('index');
+    Route::get('/', [GroceryShopController::class, 'index'])
+        ->name('index');
 
-        Route::get('/create', [GroceryShopController::class, 'create'])
-            ->name('create');
+    Route::get('/create', [GroceryShopController::class, 'create'])
+        ->name('create');
 
-        Route::post('/', [GroceryShopController::class, 'store'])
-            ->name('store');
+    Route::post('/', [GroceryShopController::class, 'store'])
+        ->name('store');
 
-        Route::get('/{groceryShop}/edit', [GroceryShopController::class, 'edit'])
-            ->name('edit');
+    Route::get('/{groceryShop}/edit', [GroceryShopController::class, 'edit'])
+        ->name('edit');
 
-        Route::put('/{groceryShop}', [GroceryShopController::class, 'update'])
-            ->name('update');
+    Route::put('/{groceryShop}', [GroceryShopController::class, 'update'])
+        ->name('update');
 
-        Route::delete('/{groceryShop}', [GroceryShopController::class, 'destroy'])
-            ->name('destroy');
+    Route::delete('/{groceryShop}', [GroceryShopController::class, 'destroy'])
+        ->name('destroy');
 
-        Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
-            ->name('show');
-    });
+    Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
+        ->name('show');
+});
 
-    Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
-        ->name('talukas.by-district');
+Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
+    ->name('talukas.by-district');
 
 
 //  PURCHASE ORDER  
-    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create']);
-    Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
+Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create']);
+Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
-    // PURCHASE ORDER AJAX
-    Route::get('/po/subcategories/{category_id}',
-        [PurchaseOrderController::class, 'getSubCategories']);
+// PURCHASE ORDER AJAX
+Route::get(
+    '/po/subcategories/{category_id}',
+    [PurchaseOrderController::class, 'getSubCategories']
+);
 
-    Route::get('/po/products/{sub_category_id}',
-        [PurchaseOrderController::class, 'getProducts']);
+Route::get(
+    '/po/products/{sub_category_id}',
+    [PurchaseOrderController::class, 'getProducts']
+);
 
-    Route::get('/po/all-products',
-    [PurchaseOrderController::class, 'getAllProducts']);
+Route::get(
+    '/po/all-products',
+    [PurchaseOrderController::class, 'getAllProducts']
+);
 
-    Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
+Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
 
-    Route::get('/purchase-orders/{po}/invoice',
-    [PurchaseOrderController::class, 'invoice'])
+Route::get(
+    '/purchase-orders/{po}/invoice',
+    [PurchaseOrderController::class, 'invoice']
+)
     ->name('purchase.invoice');
 
-    Route::get('/purchase-orders', 
-    [PurchaseOrderController::class, 'index'])
+Route::get(
+    '/purchase-orders',
+    [PurchaseOrderController::class, 'index']
+)
     ->name('purchase.orders.index');
 
 
-    
+
 // PRODUCT BATCH MANAGEMENT
-    Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
-    Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
-    Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
-    Route::get('/get-products/{category_id}',[ProductBatchController::class, 'getProductsByCategory']);
+Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
+Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
+Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
+Route::get('/get-products/{category_id}', [ProductBatchController::class, 'getProductsByCategory']);
 
-    // Edit form
-    Route::get('/batches/{id}/edit', [ProductBatchController::class, 'edit'])->name('batches.edit');
-    // Update
-    Route::put('/batches/{id}', [ProductBatchController::class, 'update'])->name('batches.update');
+// Edit form
+Route::get('/batches/{id}/edit', [ProductBatchController::class, 'edit'])->name('batches.edit');
+// Update
+Route::put('/batches/{id}', [ProductBatchController::class, 'update'])->name('batches.update');
 
-    // Soft delete
-    Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name('batches.destroy');
+// Soft delete
+Route::delete('/batches/{id}', [ProductBatchController::class, 'destroy'])->name('batches.destroy');
 
-    Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
-        ->name('batches.show');
+Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
+    ->name('batches.show');
 
-    Route::get('/ws/categories/{warehouse}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
-    Route::get('/ws/subcategories/{warehouse}/{category}', [ProductBatchController::class, 'getSubCategories']);
-    Route::get('/ws/products-by-sub/{warehouse}/{sub}', [ProductBatchController::class, 'getProductsBySubCategory']);
-    Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
+Route::get('/ws/categories/{warehouse}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+Route::get('/ws/subcategories/{warehouse}/{category}', [ProductBatchController::class, 'getSubCategories']);
+Route::get('/ws/products-by-sub/{warehouse}/{sub}', [ProductBatchController::class, 'getProductsBySubCategory']);
+Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
 
 
 // EXPIRY ALERT
-    Route::get('/expiry-alerts',[ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
+Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
 
 // SELL PRODUCT
-    Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
-    Route::get('/sale/{product?}', [StockController::class, 'create'])
-        ->name('sale.create');
-    Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
+Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
+Route::get('/sale/{product?}', [StockController::class, 'create'])
+    ->name('sale.create');
+Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
-    Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
-    Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
-    Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
-    Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
+Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
+Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
+Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
-    // AJAX route to get products by category
-    Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
+// AJAX route to get products by category
+Route::get('/get-products-by-category/{categoryId}', [StockController::class, 'getProductsByCategory']);
 
-    Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productId) {
-        $stock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
-            ->where('product_id', $productId)
-            ->sum('quantity');
-        return response()->json(['stock' => $stock]);
-    });
+Route::get('/get-stock/{warehouse}/{product}', function ($warehouseId, $productId) {
+    $stock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
+        ->where('product_id', $productId)
+        ->sum('quantity');
+    return response()->json(['stock' => $stock]);
+});
 
 // Approval
-    Route::get('/warehouse-transfers/approval', 
-        [ApprovalController::class, 'index']
-    )->name('warehouse.transfer.index');
-    Route::post('/warehouse-transfers/{transfer}/approve',
-        [ApprovalController::class, 'approve']
-    )->name('warehouse.transfer.approve');
+Route::get(
+    '/warehouse-transfers/approval',
+    [ApprovalController::class, 'index']
+)->name('warehouse.transfer.index');
+Route::post(
+    '/warehouse-transfers/{transfer}/approve',
+    [ApprovalController::class, 'approve']
+)->name('warehouse.transfer.approve');
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,10 +467,16 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
     // // DELETE
     Route::delete('/{id}', [SupplierController::class, 'destroy'])
         ->name('destroy');
-        Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
-Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
+    Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
+    Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
 });
 
+//product offer 
+
+Route::prefix('offer')->group(function () {
+    Route::resource('offers', OfferController::class);
+    Route::get('products-by-category/{category}', [OfferController::class, 'productsByCategory']);
+});
 
 Route::get('/dev/run/{action}', function ($action) {
     try {

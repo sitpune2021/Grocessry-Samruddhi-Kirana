@@ -69,10 +69,10 @@
                                     </div>
 
                                     <div class="text-end">
-                                        <a href="{{ route('roles.index') }}" class="btn btn-info">Cancel</a>
+                                        <a href="{{ route('roles.index') }}" class="btn btn-success">Cancel</a>
                                         @if ($mode != 'show')
                                             <button
-                                                class="btn btn-primary">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
+                                                class="btn btn-success">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
                                         @endif
                                     </div>
                                 </form>

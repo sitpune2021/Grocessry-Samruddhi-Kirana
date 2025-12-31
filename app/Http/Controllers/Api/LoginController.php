@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Role;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class LoginController extends Controller
 {
+    // Customer register
     public function register(Request $request)
     {
         $request->merge([
@@ -69,6 +72,79 @@ class LoginController extends Controller
             ]
         ], 201);
     }
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // Only allow customers to update profile
+        if ($user->role_id != 9) { // Change 9 if your customer role_id is different
+            return response()->json([
+                'status' => false,
+                'message' => 'Only customers can update profile'
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'first_name'    => 'nullable|string|max:255',
+            'last_name'     => 'nullable|string|max:255',
+            'email'         => 'nullable|email|unique:users,email,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Update profile photo
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::delete('public/profile/' . $user->profile_photo);
+            }
+            $imageName = time() . '.' . $request->profile_photo->extension();
+            $request->profile_photo->storeAs('public/profile', $imageName);
+            $user->profile_photo = $imageName;
+        }
+
+        // Update names
+        if ($request->filled('first_name')) {
+            $user->first_name = $request->first_name;
+        }
+        if ($request->filled('last_name')) {
+            $user->last_name = $request->last_name;
+        }
+
+        // Update email
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $user->email = $request->email;
+            $user->email_verified_at = now(); // Optional: mark as verified
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'profile_photo' => $user->profile_photo
+                    ? asset('storage/profile/' . $user->profile_photo)
+                    : null,
+            ]
+        ], 200);
+    }
 
     public function login(Request $request, $type)
     {
@@ -104,7 +180,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         /* ================= ROLE CHECK ================= */
@@ -112,7 +188,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'This role is not allowed to login'
-            ], 403);    
+            ], 403);
         }
 
         /* ================= OTP LOGIN ================= */
@@ -167,7 +243,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid password'
-            ], 401);
+            ], 200);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -217,7 +293,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Too many requests. Please try again later.'
-            ], 429);
+            ], 200);
         }
         RateLimiter::hit($key, 300); // 5 minutes
 
@@ -257,7 +333,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP type'
-            ], 400);
+            ], 200);
         }
 
         $validator = Validator::make($request->all(), [
@@ -278,7 +354,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $otpField = 'otp';
@@ -295,14 +371,14 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'OTP expired. Please request a new OTP.'
-            ], 400);
+            ], 200);
         }
 
         if ($request->otp != $user->$otpField) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP'
-            ], 401);
+            ], 200);
         }
 
         // ✅ Clear OTP after successful verification
@@ -364,7 +440,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $user->update([

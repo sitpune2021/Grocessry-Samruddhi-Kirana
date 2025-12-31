@@ -66,9 +66,9 @@
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Type</option>
-                                                        <option value="master"
+                                                        <!-- <option value="master"
                                                             {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>
-                                                            Master</option>
+                                                            Master</option> -->
                                                         <option value="district"
                                                             {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>
                                                             District</option>
@@ -141,24 +141,26 @@
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
-                                                    <label class="form-label">Address</label>
+                                                    <label class="form-label">Address<span
+                                                            class="text-danger">*</span></label>
                                                     <textarea name="address" class="form-control" placeholder="address" rows="2"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
-                                                         @error('address')
-                                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                                        @enderror
+                                                    @error('address')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
-                                                    <label class="form-label">Contact Person</label>
+                                                    <label class="form-label">Contact Person <span
+                                                                class="text-danger">*</span></label>
                                                     <input type="text" name="contact_person" class="form-control"
-                                                        placeholder="contact person"
+                                                        placeholder="contact Person Name"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @error('contact_person')
-                                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                                        @enderror
+                                                    @error('contact_person')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Mobile --}}
@@ -192,12 +194,13 @@
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Email</label>
+                                                        <label class="form-label">Email<span
+                                                            class="text-danger">*</span></label>
                                                         <input type="email" name="email" class="form-control"
                                                             placeholder="Email" value="{{ $warehouse->email ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
 
-                                                             @error('email')
+                                                        @error('email')
                                                             <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>
@@ -267,7 +270,7 @@
 
                     if (selectedType === 'district') {
                         opt.style.display =
-                            (type === 'master' || opt.value === '') ? 'block' : 'none';
+                            (type === 'Master' || opt.value === '') ? 'block' : 'none';
                     } else if (selectedType === 'taluka') {
                         opt.style.display =
                             (type === 'district' || opt.value === '') ? 'block' : 'none';
