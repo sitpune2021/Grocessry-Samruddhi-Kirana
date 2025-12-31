@@ -14,7 +14,10 @@ class Supplier extends Model
         'logo',
         'district_id',
         'taluka_id',
-        'state_id'
+        'state_id',
+        'bill_no',
+        'challan_no',
+        'batch_no',
     ];
 
     public function state()

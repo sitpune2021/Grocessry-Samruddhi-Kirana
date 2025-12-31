@@ -35,6 +35,9 @@
                                 <th class="text-center" style="width: 80px;">Sr No</th>
                                 <th style="width: 15%;">LOGO</th>
                                 <th style="width: 15%;">Name</th>
+                                <th style="width: 15%;">Bill No</th>
+                                <th style="width: 15%;">Challen no</th>
+                                <th style="width: 15%;">Batch No</th>
                                 <th style="width: 15%;">Phone</th>
                                 <th class="text-center" style="width: 150px;">Actions</th>
                             </tr>
@@ -57,6 +60,10 @@
                                     </td>
 
                                     <td>{{ $item->supplier_name }}</td>
+                                    <td>{{ $item->bill_no }}</td>
+                                    <td>{{ $item->challan_no }}</td>
+                                    <td>{{ $item->batch_no }}</td>
+
                                     <td>{{ $item->mobile }}</td>
 
                                     <td>

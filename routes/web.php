@@ -30,6 +30,7 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\RetailerOfferController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -467,8 +468,8 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
     // // DELETE
     Route::delete('/{id}', [SupplierController::class, 'destroy'])
         ->name('destroy');
-    Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
-    Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
+    Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
+    Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
 });
 
 //product offer 
@@ -476,6 +477,15 @@ Route::prefix('supplier')->name('supplier.')->group(function () {
 Route::prefix('offer')->group(function () {
     Route::resource('offers', OfferController::class);
     Route::get('products-by-category/{category}', [OfferController::class, 'productsByCategory']);
+});
+Route::prefix('retailer-offers')->name('retailer-offers.')->group(function () {
+    Route::get('/', [RetailerOfferController::class, 'index'])->name('index');
+    Route::get('create', [RetailerOfferController::class, 'create'])->name('create');
+    Route::post('store', [RetailerOfferController::class, 'store'])->name('store');
+    Route::get('{id}', [RetailerOfferController::class, 'show'])->name('show');
+    Route::get('{id}/edit', [RetailerOfferController::class, 'edit'])->name('edit');
+    Route::put('{id}', [RetailerOfferController::class, 'update'])->name('update');
+    Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
 });
 
 Route::get('/dev/run/{action}', function ($action) {

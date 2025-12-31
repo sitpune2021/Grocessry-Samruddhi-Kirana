@@ -45,6 +45,9 @@ class SupplierController extends Controller
             'district_id'   => 'required|exists:districts,id',
             'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -70,7 +73,6 @@ class SupplierController extends Controller
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier created successfully');
     }
-
 
     // VIEW
     public function show(string $id)
@@ -110,6 +112,9 @@ class SupplierController extends Controller
             'district_id'   => 'required|exists:districts,id',
             'taluka_id'     => 'required|exists:talukas,id',
             'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
         ]);
 
         if ($request->hasFile('logo')) {

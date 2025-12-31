@@ -16,5 +16,8 @@ class Retailer extends Model
         'address',
         'is_active',
     ];
+    public function offers()
+    {
+        return $this->hasMany(RetailerOffer::class);
+    }
 }
-
