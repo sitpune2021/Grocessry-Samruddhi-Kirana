@@ -148,6 +148,39 @@
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Bill No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="bill_no" class="form-control"
+                                                        value="{{ $supplier->bill_no ?? old('bill_no') }}"
+                                                        placeholder="Enter bill number" {{ $readonly }}>
+                                                    @error('bill_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Challan No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="challan_no" class="form-control"
+                                                        value="{{ $supplier->challan_no ?? old('challan_no') }}"
+                                                        placeholder="Enter challan number" {{ $readonly }}>
+                                                    @error('challan_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Batch No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="batch_no" class="form-control"
+                                                        value="{{ $supplier->batch_no ?? old('batch_no') }}"
+                                                        placeholder="Enter batch number" {{ $readonly }}>
+                                                    @error('batch_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-6">
@@ -174,16 +207,11 @@
                                                         </div>
                                                     @endif
                                                 </div>
-
-
-
-
                                             </div>
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('supplier.index') }}"
-                                                    class="btn btn-success">
+                                                <a href="{{ route('supplier.index') }}" class="btn btn-success">
                                                     Back
                                                 </a>
 
@@ -195,9 +223,7 @@
                                                         Supplier</button>
                                                 @endif
                                             </div>
-
                                         </form>
-
 
                                     </div>
                                 </div>

@@ -171,10 +171,29 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                    <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                        <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
+
+                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
+                </ul>
+            </li>
+            <li class="menu-item">
+                <div class="menu-link text-white" onclick="toggleMenu('ReportMenu','reportArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-bar-chart-alt-2 me-2"></i>
+                        REPORTS
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="reportArrow"></i>
+                </div>
+
+                <ul class="submenu" id="ReportMenu">
+                    <li>
+                        <a href="{{ route('warehouse-stock.report') }}">
+                            Warehouse Stock Report
+                        </a>
+                    </li>
                 </ul>
             </li>
 
