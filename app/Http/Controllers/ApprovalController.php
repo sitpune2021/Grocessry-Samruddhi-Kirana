@@ -132,5 +132,20 @@ class ApprovalController extends Controller
         return back()->with('success', 'Transfer approved successfully');
     }
 
+    public function reject(WarehouseTransfer $transfer)
+    {
+        if ($transfer->status != 0) {
+            return back()->with('error', 'Only pending transfers can be rejected');
+        }
+
+        DB::transaction(function () use ($transfer) {
+            $transfer->status = 2; // rejected
+            // $transfer->rejected_at = now(); // optional
+            $transfer->save();
+        });
+
+        return back()->with('success', 'Transfer rejected successfully');
+    }
+
 
 }

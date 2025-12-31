@@ -5,7 +5,7 @@
 
     <div class="container bg-white mt-5 shadow rounded p-3">
 
-        <h5 class="card-title mt-5">District Warehouse Transfer List</h5>
+        <h5 class="card-title mt-5">District-Wise Warehouse Stock Transfer</h5>
 
         <div class="table-responsive mt-5">
 
@@ -30,17 +30,32 @@
                         <td>
                             @if($t->status == 0)
                                 <span class="badge bg-warning">Pending</span>
-                            @else
+                            @elseif($t->status == 1)
                                 <span class="badge bg-success">Approved</span>
+                            @else
+                                <span class="badge bg-danger">Rejected</span>
                             @endif
                         </td>
                         <td>
                             @if($t->status == 0)
-                            <form method="POST"
-                                action="{{ route('warehouse.transfer.approve', $t->id) }}">
-                                @csrf
-                                <button class="btn btn-sm btn-success">Approve</button>
-                            </form>
+                                <div class="d-flex gap-1">
+                                    <form method="POST"
+                                        action="{{ route('warehouse.transfer.approve', $t->id) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-success">
+                                            Approve
+                                        </button>
+                                    </form>
+
+                                    <form method="POST"
+                                        action="{{ route('warehouse.transfer.reject', $t->id) }}"
+                                        onsubmit="return confirm('Are you sure you want to reject this transfer?')">
+                                        @csrf
+                                        <button class="btn btn-sm btn-danger">
+                                            Reject
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
                         </td>
                     </tr>
