@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProductBatch;
+use App\Models\Supplier;
+use App\Models\User;
 
 class PurchaseOrderController extends Controller
 {
@@ -28,9 +30,18 @@ class PurchaseOrderController extends Controller
 
     public function create()
     {
-        return view('purchase_orders.create', [
-            'categories' => Category::all()
-        ]);
+
+        $user = Auth::user();
+
+        $categories = Category::where('warehouse_id', $user->warehouse_id)
+            ->orderBy('name')
+            ->get();
+
+        $suppliers = Supplier::where('warehouse_id', $user->warehouse_id)
+            ->orderBy('supplier_name')
+            ->get();
+
+        return view('purchase_orders.create', compact('categories', 'suppliers'));
     }
 
     public function getSubCategories($category_id)
@@ -54,17 +65,16 @@ class PurchaseOrderController extends Controller
                 ->withInput();
         }
 
+        $user = Auth::user();
         // IMPORTANT LINE
-        $po = DB::transaction(function () use ($request, $items) {
+        $po = DB::transaction(function () use ($request, $items, $user) {
 
             $po = PurchaseOrder::create([
+                'warehouse_id' => $user->warehouse_id,
+                'supplier_id'  => $request->supplier_id,
                 'po_number' => 'PO-' . time(),
                 'po_date' => now(),
-                'subtotal' => $request->subtotal,
-                'tax' => $request->tax,
-                'shipping_charge' => $request->shipping_charge,
-                'discount' => $request->discount,
-                'grand_total' => $request->grand_total,
+
             ]);
 
             foreach ($items as $item) {
@@ -81,8 +91,6 @@ class PurchaseOrderController extends Controller
                 $po->items()->create([
                     'product_id' => $item['product_id'],
                     'quantity'   => $item['qty'],
-                    'price'      => $item['price'],
-                    'total'      => $item['qty'] * $item['price'],
                 ]);
 
                 Product::where('id', $item['product_id'])
@@ -120,10 +128,16 @@ class PurchaseOrderController extends Controller
 
     public function invoice(PurchaseOrder $po)
     {
-        return view('purchase_orders.invoice', [
-            'po' => $po->load('items.product')
-        ]);
+        $po->load('items.product');
+
+        $user = User::with('warehouse')->find(Auth::id());
+
+        $warehouse = $user->warehouse;
+
+        return view('purchase_orders.invoice', compact('po', 'warehouse'));
+
+        // return view('purchase_orders.invoice', [
+        //     'po' => $po->load('items.product')
+        // ]);
     }
-
-
 }

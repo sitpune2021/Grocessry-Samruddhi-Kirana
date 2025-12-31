@@ -32,6 +32,16 @@ class Warehouse extends Model
         return $this->belongsTo(Warehouse::class, 'parent_id');
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class, 'warehouse_id');
+    }
+
+    public function suppliers()
+    {
+        return $this->hasMany(Supplier::class, 'warehouse_id');
+    }
+
     public function country()
     {
         return $this->belongsTo(Country::class, 'country_id');
@@ -57,4 +67,8 @@ class Warehouse extends Model
         return $this->hasMany(ProductBatch::class);
     }
     
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'warehouse_id');
+    }
 }
