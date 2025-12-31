@@ -4,6 +4,15 @@
 <head>
     @include('layouts.header')
 </head>
+<style>
+.modal {
+    z-index: 2000 !important;
+}
+.modal-backdrop {
+    z-index: 1999 !important;
+}
+</style>
+
 
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -25,6 +34,8 @@
 
                 @include('layouts.footer')
             </div>
+
+         
 
         </div>
     </div>
