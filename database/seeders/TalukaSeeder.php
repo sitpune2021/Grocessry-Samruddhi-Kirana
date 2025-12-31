@@ -18,7 +18,7 @@ class TalukaSeeder extends Seeder
             // ================= MAHARASHTRA =================
 
             // Ahmednagar District 14
-            ['district_id' => 1, 'name' => 'Ahmednagar', 'created_at' => now(), 'updated_at' => now()],
+            ['district_id' => 1, 'name' => 'Ahilyanagar', 'created_at' => now(), 'updated_at' => now()],
             ['district_id' => 1, 'name' => 'Shrirampur', 'created_at' => now(), 'updated_at' => now()],
             ['district_id' => 1, 'name' => 'Sangamner', 'created_at' => now(), 'updated_at' => now()],
             ['district_id' => 1, 'name' => 'Rahata', 'created_at' => now(), 'updated_at' => now()],
