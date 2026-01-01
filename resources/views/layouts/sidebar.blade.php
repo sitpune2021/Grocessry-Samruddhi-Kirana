@@ -194,6 +194,16 @@
                             Warehouse Stock Report
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('lowstock.index') }}">
+                            Low Stock Alert
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('lowstock.analytics') }}">
+                            Low Stock Analytics
+                        </a>
+                    </li>
                 </ul>
             </li>
 

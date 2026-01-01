@@ -32,7 +32,7 @@ class WhatsAppService
          */
         if (app()->environment('local')) 
         {
-            Log::info('WHATSAPP TEST MESSAGE', [
+            Log::info('WHATSAPP | EXPIRY ALERT', [
                 'to' => $number,
                 'message' => $message
             ]);
