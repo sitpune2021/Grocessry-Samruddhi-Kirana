@@ -250,7 +250,7 @@
                                                             Selling Price <span class="text-danger">*</span>
                                                         </label>
                                                         <input type="number" step="0.01" name="retailer_price"
-                                                            class="form-control" placeholder="Enter retailer price"
+                                                            class="form-control" placeholder="Enter selling price"
                                                             value="{{ old('retailer_price', $product->retailer_price ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('retailer_price')

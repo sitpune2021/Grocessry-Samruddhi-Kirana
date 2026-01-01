@@ -74,12 +74,15 @@
                             </td>
 
                             {{-- Status --}}
-                            <td class="text-center">
-                                @if($brand->status)
-                                <span class="badge bg-success">Active</span>
-                                @else
-                                <span class="badge bg-danger">Inactive</span>
-                                @endif
+                            <td>
+                                <form action="{{ route('updateStatus') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $brand->id }}">
+                                    <div class="form-check form-switch d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                            onchange="this.form.submit()" {{ $brand->status ? 'checked' : '' }}>
+                                    </div>
+                                </form>
                             </td>
 
                             {{-- Actions --}}

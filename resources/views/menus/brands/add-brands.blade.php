@@ -29,13 +29,13 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                       
+
                                         @if ($mode === 'add')
-                                           <h4> Add Brand </h4>
+                                        <h4> Add Brand </h4>
                                         @elseif($mode === 'edit')
-                                            Edit Brand
+                                        Edit Brand
                                         @else
-                                            View Brand
+                                        View Brand
                                         @endif
                                     </div>
 
@@ -45,7 +45,7 @@
                                             method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @if (isset($brand))
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
@@ -60,7 +60,7 @@
                                                         placeholder="Enter brand name"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('name')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -73,12 +73,12 @@
                                                         placeholder="Auto-generated or manual"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('slug')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Description --}}
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <label class="form-label fw-medium">Description</label>
                                                     <input type="text" name="description"
                                                         class="form-control @error('description') is-invalid @enderror"
@@ -88,26 +88,26 @@
                                                     @error('description')
                                                         <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
-                                                </div>
+                                                </div> -->
 
                                                 {{-- Logo --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Brand Logo</label>
                                                     @if ($mode !== 'view')
-                                                        <input type="file" name="logo"
-                                                            class="form-control @error('logo') is-invalid @enderror"
-                                                            accept="image/*">
+                                                    <input type="file" name="logo"
+                                                        class="form-control @error('logo') is-invalid @enderror"
+                                                        accept="image/*">
                                                     @endif
 
                                                     @if (isset($brand) && $brand->logo)
-                                                        <div class="mt-2">
-                                                            <img src="{{ asset('storage/brands/' . $brand->logo) }}"
-                                                                alt="Brand Logo" width="80" class="rounded border">
-                                                        </div>
+                                                    <div class="mt-2">
+                                                        <img src="{{ asset('storage/brands/' . $brand->logo) }}"
+                                                            alt="Brand Logo" width="80" class="rounded border">
+                                                    </div>
                                                     @endif
 
                                                     @error('logo')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -132,21 +132,27 @@
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('brands.index') }}"
-                                                    class="btn btn-success">
+                                                <a href="{{ route('brands.index') }}" class="btn btn-success">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
+                                                <!-- Status Toggle Button -->
+                                                <button type="button" id="statusToggleBtn"
+                                                    class="btn {{ $brand->status ?? 'btn-danger' }}">
+                                                    {{ ($brand->status ?? 'inactive') === 'active' ? 'Active' : 'Inactive' }}
+                                                </button>
+
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-success">
-                                                        Save Brand
-                                                    </button>
+                                                <button type="submit" class="btn btn-success">
+                                                    Save Brand
+                                                </button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-success">
-                                                        Update Brand
-                                                    </button>
+                                                <button type="submit" class="btn btn-success">
+                                                    Update Brand
+                                                </button>
                                                 @endif
                                             </div>
+
 
                                         </form>
 
