@@ -354,6 +354,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
             ->name('show');
+        Route::get(
+            '/get-taluka-warehouses/{district_warehouse_id}',
+            [GroceryShopController::class, 'getTalukaWarehouses']
+        )->name('get.taluka.warehouses');
     });
 
     Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
