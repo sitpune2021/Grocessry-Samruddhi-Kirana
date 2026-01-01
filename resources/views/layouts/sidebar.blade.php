@@ -191,7 +191,12 @@
                 <ul class="submenu" id="ReportMenu">
                     <li>
                         <a href="{{ route('warehouse-stock.report') }}">
-                            Warehouse Stock Report
+                            Warehouse transfer Report
+                        </a>
+                    </li>
+                      <li>
+                        <a href="{{ route('stock-movement.report') }}">
+                             Stock Movement  Report
                         </a>
                     </li>
                 </ul>
