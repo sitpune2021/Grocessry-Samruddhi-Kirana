@@ -9,22 +9,43 @@
             </div>
 
             <!-- Filters -->
-            <form method="GET" class="row g-2 p-3">
+            <form method="POST" action="{{ route('warehouse-stock.report') }}" class="row g-2 p-3">
+                @csrf
+
                 <div class="col-md-3">
                     <select name="type" class="form-select">
                         <option value="">All Types</option>
-                        <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>IN</option>
-                        <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>OUT</option>
-                        <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>TRANSFER</option>
+                        <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>In</option>
+                        <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>Out</option>
+                        <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>Transfer</option>
                     </select>
                 </div>
 
+                <div class="col-md-3">
+                    <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+                </div>
+
+                <div class="col-md-3">
+                    <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                </div>
 
                 <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-primary btn-sm">Filter</button>
-                    <a href="{{ route('warehouse-stock.report') }}" class="btn btn-secondary btn-sm">Reset</a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Filter
+                    </button>
+
+                    <a href="{{ route('warehouse-stock.report') }}" class="btn btn-secondary btn-sm">
+                        Reset
+                    </a>
+
+                    <!-- ✅ CSV DOWNLOAD BUTTON -->
+                    <button type="submit" name="download" value="csv" class="btn btn-success btn-sm">
+                        Download CSV
+                    </button>
                 </div>
+
             </form>
+
 
             <!-- Table -->
             <div class="table-responsive">
@@ -39,6 +60,8 @@
                             <th>Transfer In</th>
                             <th>Transfer Out</th>
                             <th>Remaining Total Qty</th>
+                            <th>Created Date</th>
+                            <th>Updated Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,10 +75,12 @@
                                 <td>{{ $ws['transfer_in'] }}</td>
                                 <td>{{ $ws['transfer_out'] }}</td>
                                 <td class="fw-bold">{{ $ws['remaining'] }}</td>
+                                <td>{{ \Carbon\Carbon::parse($ws['created_at'])->format('d-m-Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($ws['updated_at'])->format('d-m-Y') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9">No stock data found</td>
+                                <td colspan="10" class="text-muted">No stock data found</td>
                             </tr>
                         @endforelse
                     </tbody>

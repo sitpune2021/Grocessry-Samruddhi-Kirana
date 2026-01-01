@@ -496,8 +496,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
     });
 
-    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    // Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    //     ->name('warehouse-stock.report');
+    Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
         ->name('warehouse-stock.report');
+
 
     Route::get('/dev/run/{action}', function ($action) {
         try {
