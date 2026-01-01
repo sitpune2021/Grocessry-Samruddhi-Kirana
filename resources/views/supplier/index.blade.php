@@ -18,70 +18,7 @@
                     </a>
                 </div>
 
-                <!-- Table -->
-                <div class="table-responsive mt-5">
-                    <table id="batchTable" class="table table-bordered table-striped mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-center" style="width: 80px;">Sr No</th>
-                                <th style="width: 15%;">LOGO</th>
-                                <th style="width: 15%;">Name</th>
-                                <th style="width: 15%;">Bill No</th>
-                                <th style="width: 15%;">Challen no</th>
-                                <th style="width: 15%;">Batch No</th>
-                                <th style="width: 15%;">Phone</th>
-                                <th class="text-center" style="width: 150px;">Actions</th>
-                            </tr>
-                        </thead>
 
-                        <tbody>
-                            @forelse ($supplier as $index => $item)
-                                <tr>
-                                    <td class="text-center fw-semibold">
-                                        {{ $supplier->firstItem() + $index }}
-                                    </td>
-
-                                    <td class="text-center">
-                                        @if ($item->logo)
-                                            <img src="{{ asset('storage/suppliers/' . $item->logo) }}" width="50"
-                                                height="50" class="rounded border">
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </td>
-
-                                    <td>{{ $item->supplier_name }}</td>
-                                    <td>{{ $item->bill_no }}</td>
-                                    <td>{{ $item->challan_no }}</td>
-                                    <td>{{ $item->batch_no }}</td>
-
-                                    <td>{{ $item->mobile }}</td>
-
-                                    <td>
-                                        <x-action-buttons :view-url="route('supplier.show', $item->id)" :edit-url="route('supplier.edit', $item->id)" :delete-url="route('supplier.destroy', $item->id)" />
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">No suppliers found</td>
-                                </tr>
-                            @endforelse
-
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="px-3 py-2">
-                    <x-pagination :from="$supplier->firstItem()" :to="$supplier->lastItem()" :total="$supplier->total()" />
-                </div>
-
-            </div>
-
-            <!-- Search -->
-            <div class="px-3 pt-2">
-                <x-datatable-search />
-            </div>
 
             <!-- Warehouse Filter (Super Admin Only) -->
             @if(auth()->user()->role_id == 1)
