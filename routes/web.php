@@ -34,7 +34,9 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RetailerOfferController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LowStockController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -197,8 +199,9 @@ Route::middleware(['auth'])->group(function () {
     // Deliveries List
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
+    Route::resource('/refund_exchange', RefundExchangeController::class);
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
 
@@ -331,6 +334,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
     });
+
     // GROCER SHOP
     Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
@@ -354,6 +358,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
             ->name('show');
+        Route::get(
+            '/get-taluka-warehouses/{district_warehouse_id}',
+            [GroceryShopController::class, 'getTalukaWarehouses']
+        )->name('get.taluka.warehouses');
     });
 
     Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
@@ -393,7 +401,6 @@ Route::middleware(['auth'])->group(function () {
         [PurchaseOrderController::class, 'index']
     )
         ->name('purchase.orders.index');
-
 
 
     // PRODUCT BATCH MANAGEMENT
@@ -457,8 +464,17 @@ Route::middleware(['auth'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
+    // LOW STOCK ALERTS
+    Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
+        ->name('lowstock.index');
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Analytics (optional API / page)
+    Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
+        ->name('lowstock.analytics');
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
 
@@ -498,6 +514,15 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
         ->name('warehouse-stock.report');
+
+    
+    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
+        ->name('stock-movement.report');
+// Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    //     ->name('warehouse-stock.report');
+
+    // Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    //     ->name('stock-movement.report');
 
     Route::get('/dev/run/{action}', function ($action) {
         try {

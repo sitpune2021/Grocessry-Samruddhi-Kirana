@@ -14,7 +14,7 @@ use Carbon\Carbon;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\SubCategory;
-
+use Illuminate\Support\Facades\Auth;
 
 class ProductBatchController extends Controller
 {
@@ -27,10 +27,14 @@ class ProductBatchController extends Controller
 
     public function create()
     {
+        $user = Auth::user();
+
+        $warehouses = Warehouse::where('id', $user->warehouse_id)->get();
+
         return view('batches.create', [
             'mode'       => 'add',
             'batch'      => null,
-            'warehouses' => Warehouse::all(),   
+            'warehouses' => $warehouses,   
             'categories' => collect(),           // Category::all() hatao
             'products'   => collect(),
         ]);

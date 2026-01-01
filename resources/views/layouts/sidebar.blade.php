@@ -56,6 +56,7 @@
 
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
+                    <li><a href="{{ route('refund_exchange.index') }}">Refund & Exchange</a></li>
                 </ul>
             </li>
 
@@ -171,10 +172,10 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                        <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
 
-                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                    <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
@@ -191,7 +192,22 @@
                 <ul class="submenu" id="ReportMenu">
                     <li>
                         <a href="{{ route('warehouse-stock.report') }}">
-                            Warehouse Stock Report
+                            Warehouse transfer Report
+                        </a>
+                    </li>
+                      <li>
+                        <a href="{{ route('stock-movement.report') }}">
+                             Stock Movement  Report
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('lowstock.index') }}">
+                            Low Stock Alert
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('lowstock.analytics') }}">
+                            Low Stock Analytics
                         </a>
                     </li>
                 </ul>

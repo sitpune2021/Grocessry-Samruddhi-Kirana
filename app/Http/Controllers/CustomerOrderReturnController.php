@@ -73,20 +73,54 @@ class CustomerOrderReturnController extends Controller
         $request->validate([
             'qc_status' => 'required|in:passed,failed,partial',
             'status'    => 'required|in:approved,rejected',
+            'return_type' => 'nullable|in:refund,exchange',
+            'refund_amount' => 'nullable|numeric|min:0',
         ]);
 
         $return = CustomerOrderReturn::findOrFail($id);
 
-        $return->update([
-            'qc_status'  => $request->qc_status,
-            'status'     => $request->status,
-            'received_at' => Carbon::now(),
-        ]);
+        if ($request->qc_status === 'failed') {
 
-        // ✅ OPTIONAL: Stock update logic
-        if ($request->qc_status === 'passed') {
-            // add quantity back to inventory
+            $return->update([
+                'qc_status' => 'failed',
+                'status' => 'rejected',
+                'closed_at' => now(),
+            ]);
+        } else {
+
+            if ($request->return_type === 'refund') {
+                $return->update([
+                    'qc_status' => 'passed',
+                    'status' => 'refunded',
+                    'refund_amount' => $request->refund_amount,
+                    'refunded_at' => now(),
+                    'closed_at' => now(),
+                ]);
+            }
+
+            if ($request->return_type === 'exchange') {
+
+                $exchangeOrderId = null; // create new order
+
+                $return->update([
+                    'qc_status' => 'passed',
+                    'status' => 'approved',
+                    'exchange_order_id' => $exchangeOrderId,
+                    'closed_at' => now(),
+                ]);
+            }
         }
+        // $return->update([
+        //     'qc_status'  => $request->qc_status,
+        //     'status'     => $request->status,
+        //     'received_at' => Carbon::now(),
+        // ]);
+
+        // // ✅ OPTIONAL: Stock update logic
+        // if ($request->qc_status === 'passed') {
+        //     // add quantity back to inventory
+        // }
+
 
         return redirect()
             ->route('customer-returns.index')
