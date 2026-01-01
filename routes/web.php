@@ -36,6 +36,7 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LowStockController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -200,7 +201,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
     Route::resource('/refund_exchange', RefundExchangeController::class);
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
 
@@ -333,6 +334,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
     });
+
     // GROCER SHOP
     Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
@@ -401,7 +403,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('purchase.orders.index');
 
 
-
     // PRODUCT BATCH MANAGEMENT
     Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
     Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
@@ -463,8 +464,17 @@ Route::middleware(['auth'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
+    // LOW STOCK ALERTS
+    Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
+        ->name('lowstock.index');
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Analytics (optional API / page)
+    Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
+        ->name('lowstock.analytics');
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
 

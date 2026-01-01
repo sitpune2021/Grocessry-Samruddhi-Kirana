@@ -105,7 +105,9 @@
         </ul>
     </div>
 </nav>
-    <div class="modal fade" style="width:100%; margin:auto !important;" id="profileModal" tabindex="-1" aria-hidden="true">
+
+
+                <div class="modal fade" style="width:100%; margin:auto !important;" id="profileModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content">
 
@@ -153,14 +155,8 @@
 
                                          <div class="col-md-6">
                                             <label>New Password</label>
-                                            <input type="password" name="password" class="form-control"
+                                            <input type="password" name="new_password" class="form-control"
                                                 placeholder="Leave blank to keep new">
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label>Confirm Password</label>
-                                            <input type="password" name="password" class="form-control"
-                                                placeholder="Leave blank to keep confirm">
                                         </div>
 
                                         <div class="col-md-6">
