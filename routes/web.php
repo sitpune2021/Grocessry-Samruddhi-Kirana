@@ -515,6 +515,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
         ->name('warehouse-stock.report');
 
+    
+    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
+        ->name('stock-movement.report');
+// Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    //     ->name('warehouse-stock.report');
+
+    // Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+    //     ->name('stock-movement.report');
+
     Route::get('/dev/run/{action}', function ($action) {
         try {
             switch ($action) {
