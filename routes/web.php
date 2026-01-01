@@ -34,6 +34,7 @@ use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RetailerOfferController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
@@ -197,6 +198,7 @@ Route::middleware(['auth'])->group(function () {
     // Deliveries List
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
+    Route::resource('/refund_exchange', RefundExchangeController::class);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
