@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
 
+Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
     Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
 
