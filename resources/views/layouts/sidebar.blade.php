@@ -37,15 +37,15 @@
                     </span>
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
-               <ul class="submenu" id="ProductMenu">
-    @if (auth()->check() && auth()->user()->role_id == 1)
-        <li><a href="{{ route('brands.index') }}">Brand</a></li>
-        <li><a href="{{ route('category.index') }}">Category</a></li>
-        <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-        <li><a href="{{ route('units.create') }}">Unit</a></li>
-        <li><a href="{{ route('product.index') }}">Products</a></li>
-    @endif
-</ul>
+                <ul class="submenu" id="ProductMenu">
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
+                    <li><a href="{{ route('category.index') }}">Category</a></li>
+                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                    <li><a href="{{ route('units.create') }}">Unit</a></li>
+                    <li><a href="{{ route('product.index') }}">Products</a></li>
+                    @endif
+                </ul>
 
             </li>
 
@@ -64,7 +64,7 @@
                 </ul>
             </li>
 
-             <!-- Warehouse -->
+            <!-- Warehouse -->
             <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
                     <span>
@@ -123,6 +123,7 @@
 
                 <ul class="submenu" id="OrderMenu">
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
+                    <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
                 </ul>
             </li>
 
@@ -195,10 +196,10 @@
 
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-                    
+
                 </ul>
             </li>
-           
+
             <li class="menu-item">
                 <div class="menu-link text-white" onclick="toggleMenu('ReportMenu','reportArrow')">
                     <span style="padding-left: 10px;">
@@ -214,9 +215,9 @@
                             Warehouse transfer Report
                         </a>
                     </li>
-                      <li>
+                    <li>
                         <a href="{{ route('stock-movement.report') }}">
-                             Stock Movement  Report
+                            Stock Movement Report
                         </a>
                     </li>
                     <li>
@@ -253,7 +254,7 @@
                     <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
                 </ul>
             </li>
-            
+
         </ul>
     </div>
 
