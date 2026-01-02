@@ -195,7 +195,7 @@
 
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-                    <li><a href="{{ route('refund_exchange.index') }}">Refund & Exchange</a></li>
+                    
                 </ul>
             </li>
            
