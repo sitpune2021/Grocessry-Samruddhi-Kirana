@@ -124,8 +124,8 @@ class ReportsController extends Controller
 
         // 🔹 ORDER BY created_at ASC for running balance
         $query = DB::table('stock_movements')
-            ->orderBy('created_at', 'asc')
-            ->orderBy('id', 'asc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
         if ($warehouseId) {
             $query->where('warehouse_id', $warehouseId);
