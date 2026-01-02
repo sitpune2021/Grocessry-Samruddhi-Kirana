@@ -37,6 +37,7 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LowStockController;
+use App\Http\Controllers\WarehouseStockReturnController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -200,7 +201,8 @@ Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('upd
     // Deliveries List
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
-    Route::resource('/refund_exchange', RefundExchangeController::class);
+    Route::resource('/stock-returns', WarehouseStockReturnController::class);
+        // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

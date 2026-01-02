@@ -40,6 +40,7 @@
 
                 <ul class="submenu" id="OrderMenu">
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
+                       <li><a href="{{ route('stock-returns.index') }}">Warehouse to warehouse Stock Return</a></li>
                 </ul>
             </li>
 
@@ -56,7 +57,7 @@
 
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-                    <li><a href="{{ route('refund_exchange.index') }}">Refund & Exchange</a></li>
+                  
                 </ul>
             </li>
 
