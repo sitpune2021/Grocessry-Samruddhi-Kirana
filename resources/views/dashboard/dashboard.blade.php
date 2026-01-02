@@ -53,6 +53,27 @@
                     </a>
                   </div>
 
+<div class="col-lg-4 col-md-6 col-12 mb-4">
+  <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
+    <div class="card h-100 cursor-pointer">
+      <div class="card-body">
+        <p class="mb-1 text-muted">Expiry Alerts</p>
+
+        <h4 class="card-title mb-1 text-danger">
+          {{ $expiredCount }}
+        </h4>
+
+        <small class="text-warning">
+          Expiring in 7 Days: {{ $expiringSoonCount }}
+        </small>
+      </div>
+    </div>
+  </a>
+</div>
+
+
+
+
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href="{{ route('batches.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
