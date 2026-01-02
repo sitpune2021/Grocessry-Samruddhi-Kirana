@@ -210,6 +210,11 @@
                             Low Stock Analytics
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('transfer-challans.index') }}">
+                            Transfer Challen
+                        </a>
+                    </li>
                 </ul>
             </li>
 

@@ -37,6 +37,7 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LowStockController;
+use App\Http\Controllers\TransferChallanController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -89,7 +90,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
 
-Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
+    Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
     Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
 
@@ -202,7 +203,7 @@ Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('upd
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
     Route::resource('/refund_exchange', RefundExchangeController::class);
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
 
@@ -475,7 +476,7 @@ Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('upd
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
 
@@ -516,14 +517,31 @@ Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('upd
     Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
         ->name('warehouse-stock.report');
 
-    
+
     Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
         ->name('stock-movement.report');
-// Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
-    //     ->name('warehouse-stock.report');
 
-    // Route::match(['get', 'post'], 'warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
-    //     ->name('stock-movement.report');
+    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
+
+        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
+
+        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
+        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
+
+        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
+        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
+        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
+        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
+        Route::get(
+            '/{transferChallan}/download-pdf',
+            [TransferChallanController::class, 'downloadPdf']
+        )->name('download.pdf');
+
+        Route::get(
+            '/{transferChallan}/download-csv',
+            [TransferChallanController::class, 'downloadCsv']
+        )->name('download.csv');
+    });
 
     Route::get('/dev/run/{action}', function ($action) {
         try {
