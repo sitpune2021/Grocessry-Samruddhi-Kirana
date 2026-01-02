@@ -133,12 +133,12 @@
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('vehicle-assignments.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                    class="btn btn-success">
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">Save Agent</button>
+                                                    <button type="submit" class="btn btn-success">Save Agent</button>
                                                 @elseif($mode === 'edit')
                                                     <button type="submit" class="btn btn-primary">Update Agent</button>
                                                 @endif

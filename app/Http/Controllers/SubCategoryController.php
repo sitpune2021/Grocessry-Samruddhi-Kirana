@@ -37,7 +37,7 @@ class SubCategoryController extends Controller
             // Validation
             $validated = $request->validate([
                 'category_id' => 'required|exists:categories,id',
-                'name'        => 'required|string|max:255',
+                'name'        => 'required|string|max:255 |unique:sub_categories,name',
                 'slug'        => 'required|string|max:255|unique:sub_categories,slug',
             ]);
 

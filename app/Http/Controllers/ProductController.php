@@ -67,9 +67,6 @@ class ProductController extends Controller
     }
 
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         Log::info('Product Store Request', [
@@ -84,36 +81,49 @@ class ProductController extends Controller
                 'name'            => 'required|string|max:255',
                 'sku'             => 'nullable|string|max:255',
                 'sub_category_id' => 'required|exists:sub_categories,id',
-                // 'effective_date'  => 'required|date',
-                // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
                 'description'     => 'nullable|string',
+
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
                 'gst_percentage'  => 'required|numeric|min:0|max:100',
-                // 'stock'           => 'required|integer',
+
+                // ✅ Discount fields
+                'discount_type'   => 'nullable|in:flat,percentage',
+                'discount_value'  => 'nullable|numeric|min:0',
+
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
+            // 🔐 Extra discount validation (BUSINESS LOGIC)
+            if (!empty($validated['discount_type'])) {
+
+                if ($validated['discount_type'] === 'percentage' && $validated['discount_value'] > 100) {
+                    return back()->withInput()->with('error', 'Discount percentage cannot exceed 100');
+                }
+
+                if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
+                    return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
+                }
+            } else {
+                // No discount selected
+                $validated['discount_value'] = 0;
+            }
+
+            // 📸 Image Upload
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
 
                 foreach ($request->file('product_images') as $image) {
-
                     $originalName = $image->getClientOriginalName();
-                    $fileName = time() . '_' . uniqid() . '_' . $originalName;
-
-                    $image->storeAs('products', $fileName, 'public');
-
-                    $imageNames[] = $fileName;
+                    $image->storeAs('products', $originalName, 'public');
+                    $imageNames[] = $originalName;
                 }
 
-                // store as JSON in DB
                 $validated['product_images'] = json_encode($imageNames);
             }
-
 
             $product = Product::create($validated);
 
@@ -142,6 +152,7 @@ class ProductController extends Controller
                 ->with('error', 'Something went wrong while saving product');
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -339,13 +350,13 @@ class ProductController extends Controller
     //get category by Brand
 
     public function getCategoriesByBrand($brandId)
-{
+    {
 
-    return Category::where('brand_id', $brandId)
-        ->select('id', 'name')
-        ->orderBy('name')
-        ->get();
-}
+        return Category::where('brand_id', $brandId)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+    }
 
     // public function getProductsByCategory($category_id)
     // {

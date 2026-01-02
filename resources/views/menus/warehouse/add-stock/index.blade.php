@@ -1,116 +1,114 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container-xxl flex-grow-1 container-p-y">
 
-    <div class="card">
-        <div class="card-datatable text-nowrap">
+        <div class="card">
+            <div class="card-datatable text-nowrap">
 
-            <!-- Header -->
-            <div class="row card-header flex-column flex-md-row pb-0">
-                <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Stock In Warehouse</h5>
+                <!-- Header -->
+                <div class="row card-header flex-column flex-md-row pb-0">
+                    <div class="col-md-auto me-auto">
+                        <h5 class="card-title">Stock In Warehouse</h5>
+                    </div>
+                    <div class="col-md-auto ms-auto">
+                        <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-success">
+                            <i class="bx bx-plus"></i> Stock In Warehouse
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-auto ms-auto">
-                    <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Stock In Warehouse
-                    </a>
+
+                <!-- Search -->
+                <x-datatable-search />
+
+                <!-- Table -->
+                <div class="table-responsive mt-5 p-3">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead>
+                            <tr class="bg-light">
+                                <th>Sr No</th>
+                                <th>Warehouse</th>
+                                <th>Category</th>
+                                <th>Product Name</th>
+                                <th>Supplier Name</th>
+                                <th>Quantity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($stocks as $stock)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+
+                                    {{-- Warehouse --}}
+                                    <td>{{ $stock->warehouse->name ?? '-' }}</td>
+
+                                    {{-- Category --}}
+                                    <td>{{ $stock->category->name ?? '-' }}</td>
+
+                                    {{-- Product --}}
+                                    <td>{{ $stock->product->name ?? '-' }}</td>
+                                    <td>{{ $stock->supplier->supplier_name ?? '-' }}</td>
+                                    {{-- Quantity --}}
+                                    <td>
+                                        {{ $stock->quantity }}
+                                    </td>
+
+                                    {{-- Actions --}}
+                                    <td class="action-column" style="white-space:nowrap;">
+                                        <x-action-buttons :view-url="route('warehouse.viewStockForm', $stock->id)" :edit-url="route('warehouse.editStockForm', $stock->id)" :delete-url="route('stock.delete', $stock->id)" />
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No stock found
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+
+                    </table>
                 </div>
+
+
             </div>
+        </div>
+    @endsection
 
-            <!-- Search -->
-            <x-datatable-search />
+    @push('scripts')
+        <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
-            <!-- Table -->
-            <div class="table-responsive mt-5 p-3">
-                <table class="table table-bordered table-striped align-middle">
-                    <thead>
-                        <tr class="bg-light">
-                            <th>Sr No</th>
-                            <th>Warehouse</th>
-                            <th>Category</th>
-                            <th>Product Name</th>
-                            <th>Quantity</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($stocks as $stock)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
+        <!-- table search box script -->
 
-                            {{-- Warehouse --}}
-                            <td>{{ $stock->warehouse->name ?? '-' }}</td>
+        @push('scripts')
+            <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
 
-                            {{-- Category --}}
-                            <td>{{ $stock->category->name ?? '-' }}</td>
+                    const searchInput = document.getElementById("dt-search-1");
+                    const table = document.getElementById("batchTable");
 
-                            {{-- Product --}}
-                            <td>{{ $stock->product->name ?? '-' }}</td>
+                    if (!searchInput || !table) return;
 
-                            {{-- Quantity --}}
-                            <td>
-                                {{ $stock->quantity }}
-                            </td>
+                    const rows = table.querySelectorAll("tbody tr");
 
-                            {{-- Actions --}}
-                            <td class="action-column" style="white-space:nowrap;">
-                                <x-action-buttons
-                                    :view-url="route('warehouse.viewStockForm', $stock->id)"
-                                    :edit-url="route('warehouse.editStockForm', $stock->id)"
-                                    :delete-url="route('stock.delete', $stock->id)" />
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">
-                                No stock found
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    searchInput.addEventListener("keyup", function() {
+                        const value = this.value.toLowerCase().trim();
 
-                </table>
-            </div>
+                        rows.forEach(row => {
 
-    
-    </div>
-</div>
-@endsection
+                            // Skip "No role found" row
+                            if (row.cells.length === 1) return;
 
-@push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+                            row.style.display = row.textContent
+                                .toLowerCase()
+                                .includes(value) ?
+                                "" :
+                                "none";
+                        });
+                    });
 
-<!-- table search box script -->
-
-@push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
-
-    if (!searchInput || !table) return;
-
-    const rows = table.querySelectorAll("tbody tr");
-
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
-
-        rows.forEach(row => {
-
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
-
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
-        });
-    });
-
-});
-</script>
-@endpush
+                });
+            </script>
+        @endpush

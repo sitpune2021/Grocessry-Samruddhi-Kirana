@@ -1,8 +1,8 @@
 @include('layouts.header')
 
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme fixed-top"
-     id="layout-navbar"
-     style="display:flex !important; align-items:center !important;">
+    id="layout-navbar"
+    style="display:flex !important; align-items:center !important;">
 
     <!-- LEFT : Menu Toggle -->
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
@@ -16,21 +16,21 @@
 
     <!-- RIGHT : User Profile -->
     <div class="navbar-nav-right d-flex align-items-center"
-         id="navbar-collapse"
-         style="flex-basis:auto !important;">
+        id="navbar-collapse"
+        style="flex-basis:auto !important;">
 
         <ul class="navbar-nav flex-row align-items-center">
 
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0"
-                   href="javascript:void(0);"
-                   data-bs-toggle="dropdown">
+                    href="javascript:void(0);"
+                    data-bs-toggle="dropdown">
 
                     <div class="avatar avatar-online">
                         <img src="{{ asset('admin/assets/img/avatars/1.png') }}"
-                             alt="User Avatar"
-                             class="w-px-40 h-auto rounded-circle" />
+                            alt="User Avatar"
+                            class="w-px-40 h-auto rounded-circle" />
                     </div>
 
                 </a>
@@ -44,27 +44,32 @@
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
                                         <img src="{{ asset('admin/assets/img/avatars/1.png') }}"
-                                             class="w-px-40 h-auto rounded-circle" />
+                                            class="w-px-40 h-auto rounded-circle" />
                                     </div>
                                 </div>
-                             
+
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">
                                         {{ Auth::user()?->first_name ?? 'Guest' }}
-                                    </h6>                                   
+                                    </h6>
                                     <small class="text-body-secondary">{{ Auth::user()?->role?->name ?? 'Guest' }}</small>
                                 </div>
                             </div>
                         </a>
                     </li>
 
-                    <li><div class="dropdown-divider my-1"></div></li>
+                    <li>
+                        <div class="dropdown-divider my-1"></div>
+                    </li>
 
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <button type="button"
+                            class="dropdown-item"
+                            data-bs-toggle="modal"
+                            data-bs-target="#profileModal">
                             <i class="icon-base bx bx-user icon-md me-3"></i>
                             <span>My Profile</span>
-                        </a>
+                        </button>
                     </li>
 
                     <li>
@@ -74,19 +79,21 @@
                         </a>
                     </li>
 
-                    <li><div class="dropdown-divider my-1"></div></li>
+                    <li>
+                        <div class="dropdown-divider my-1"></div>
+                    </li>
 
                     <li>
                         <a href="#" class="dropdown-item"
-                           onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                            onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
                             <i class="icon-base bx bx-power-off icon-md me-3"></i>
                             <span>Log Out</span>
                         </a>
 
                         <form id="logoutForm"
-                              action="{{ route('logout') }}"
-                              method="POST"
-                              class="d-none">
+                            action="{{ route('logout') }}"
+                            method="POST"
+                            class="d-none">
                             @csrf
                         </form>
                     </li>
@@ -100,39 +107,122 @@
 </nav>
 
 
+                <div class="modal fade" style="width:100%; margin:auto !important;" id="profileModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+
+                            <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                                @csrf
+                                @method('PUT')
+
+                                <div class="modal-header">
+                                    <h5 class="modal-title">My Profile</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="row g-3">
+
+                                        <div class="col-md-6">
+                                            <label>First Name</label>
+                                            <input type="text" name="first_name" class="form-control"
+                                                value="{{ Auth::user()->first_name }}">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Last Name</label>
+                                            <input type="text" name="last_name" class="form-control"
+                                                value="{{ Auth::user()->last_name }}">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Email</label>
+                                            <input type="email" class="form-control"
+                                                value="{{ Auth::user()->email }}" disabled>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Mobile</label>
+                                            <input type="text" name="mobile" class="form-control"
+                                                value="{{ Auth::user()->mobile }}">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Current Password</label>
+                                            <input type="password" name="password" class="form-control"
+                                                placeholder="Leave blank to keep old">
+                                        </div>
+
+                                         <div class="col-md-6">
+                                            <label>New Password</label>
+                                            <input type="password" name="new_password" class="form-control"
+                                                placeholder="Leave blank to keep new">
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label>Profile Photo</label>
+                                            <input type="file" name="profile_photo" class="form-control">
+                                        </div>
+<!-- 
+                                        <div class="col-md-12">
+                                            <label>Role</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ Auth::user()->role->name ?? '' }}" disabled>
+                                        </div> -->
+
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bx bx-save me-1"></i> Update Profile
+                                    </button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    const sidebar  = document.getElementById('layout-menu'); 
-    const openBtn  = document.getElementById('menuToggle');
-    const closeBtn = document.getElementById('sidebarClose');
+        const sidebar = document.getElementById('layout-menu');
+        const openBtn = document.getElementById('menuToggle');
+        const closeBtn = document.getElementById('sidebarClose');
 
-    if (!sidebar || !openBtn) {
-        console.error('Sidebar or menuToggle missing');
-        return;
-    }
-
-
-    openBtn.addEventListener('click', function (e) {
-        // console.log("hiii");
-        
-        e.preventDefault();
-        sidebar.classList.toggle('show');
-    });
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            sidebar.classList.remove('show');
-        });
-    }
-
-    window.addEventListener('resize', function () {
-        if (window.innerWidth >= 1200) {
-            sidebar.classList.remove('show');
+        if (!sidebar || !openBtn) {
+            console.error('Sidebar or menuToggle missing');
+            return;
         }
-    });
 
-});
+
+        openBtn.addEventListener('click', function(e) {
+            // console.log("hiii");
+
+            e.preventDefault();
+            sidebar.classList.toggle('show');
+        });
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sidebar.classList.remove('show');
+            });
+        }
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1200) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+    });
 </script>

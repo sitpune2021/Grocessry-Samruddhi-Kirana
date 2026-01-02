@@ -13,7 +13,7 @@
                     <h5 class="card-title">SHOP LIST</h5>
                 </div>
                 <div class="col-md-auto ms-auto mt-5">
-                    <a href="{{ route('grocery-shops.create') }}" class="btn btn-primary">
+                    <a href="{{ route('grocery-shops.create') }}" class="btn btn-success">
                         ADD SHOP
                     </a>
                 </div>
@@ -41,26 +41,11 @@
                             <td>{{ $shopItem->owner_name }}</td>
                             <td>{{ $shopItem->mobile_no }}</td>
                             <td>{{ $shopItem->address }}</td>
-                            <td>
-                                <a href="{{ route('grocery-shops.show', $shopItem->id) }}"
-                                    class="btn btn-info btn-sm">
-                                    View
-                                </a>
-
-                                <a href="{{ route('grocery-shops.edit', $shopItem->id) }}" class="btn btn-info btn-sm">
-                                    Edit
-                                </a>
-
-                                <form action="{{ route('grocery-shops.destroy', $shopItem->id) }}"
-                                    method="POST"
-                                    style="display:inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-info btn-sm"
-                                            onclick="return confirm('Delete this shop?')">
-                                        Delete
-                                    </button>
-                                </form>
+                           <td class="text-center">
+                                <x-action-buttons
+                                    :view-url="route('grocery-shops.show', $shopItem->id)"
+                                    :edit-url="route('grocery-shops.edit', $shopItem->id)"
+                                    :delete-url="route('grocery-shops.destroy', $shopItem->id)" />
                             </td>
                         </tr>
                     @empty

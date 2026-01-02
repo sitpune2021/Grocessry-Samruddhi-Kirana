@@ -13,7 +13,7 @@
                 </div>
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('delivery-agents.create') }}"
-                        class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Agent
                     </a>
                 </div>
@@ -71,11 +71,9 @@
                             </td>
 
                             {{-- Profile Photo --}}
-                            <td>
-                                @if (!empty($agent->profile_image))
-                                <img src="{{ asset('storage/' . $agent->profile_image) }}"
-                                    width="50"
-                                    class="rounded">
+                            <td style="text-align: center;">
+                                @if (!empty($agent->user->profile_photo))
+                                <img src="{{ asset('storage/profile_photos/' . $agent->user->profile_photo) }}" width="80" height="80" class="rounded border">
                                 @else
                                 -
                                 @endif
@@ -83,7 +81,7 @@
 
                             {{-- Status --}}
                             <td>
-                                @if ($agent->active_status)
+                                @if ($agent->status)
                                 <span class="badge bg-success">Active</span>
                                 @else
                                 <span class="badge bg-danger">Inactive</span>

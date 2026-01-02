@@ -23,7 +23,9 @@ class Product extends Model
         'mrp',
         'gst_percentage',
         'stock',
-        'product_images'
+        'product_images',
+        'discount_type',
+        'discount_value',
     ];
 
     protected $casts = [
@@ -52,5 +54,9 @@ class Product extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class);
     }
 }

@@ -14,7 +14,7 @@
                 <div class="col-md-auto ms-auto">
 
                     <a href="{{ route('units.create') }}"
-                        class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Unit
                     </a>
                 </div>

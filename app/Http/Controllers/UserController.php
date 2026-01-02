@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -257,4 +258,64 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+
+    public function updateProfile(Request $request)
+    {
+        // Always get Eloquent model
+        $user = User::findOrFail(Auth::id());
+
+        // Validation (no confirm password)
+        $request->validate([
+            'first_name'     => 'required|string|max:255',
+            'last_name'      => 'required|string|max:255',
+            'mobile'         => 'nullable|string|max:20',
+            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'new_password'   => 'nullable|min:6',
+            'password'       => 'nullable', // current password
+        ]);
+
+        /**
+         * PASSWORD UPDATE
+         */
+        if ($request->filled('new_password')) {
+
+            if (!$request->filled('password')) {
+                return back()->withErrors([
+                    'password' => 'Current password is required'
+                ]);
+            }
+
+            if (!Hash::check($request->password, $user->password)) {
+                return back()->withErrors([
+                    'password' => 'Current password is incorrect'
+                ]);
+            }
+
+            $user->password = Hash::make($request->new_password);
+        }
+
+        /**
+         * PROFILE UPDATE
+         */
+        $user->first_name = $request->first_name;
+        $user->last_name  = $request->last_name;
+        $user->mobile     = $request->mobile;
+
+        /**
+         * PHOTO
+         */
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profiles', 'public');
+            $user->profile_photo = $path;
+        }
+
+        // NOW THIS WILL WORK
+        $user->save();
+
+        return back()->with('success', 'Profile updated successfully');
+    }
+
+
+
 }

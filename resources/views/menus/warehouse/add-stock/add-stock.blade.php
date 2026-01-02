@@ -26,11 +26,11 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Warehouse Stock
+                                        Add Warehouse Stock
                                         @elseif($mode === 'edit')
-                                            Edit Stock
+                                        Edit Stock
                                         @else
-                                            View Stock
+                                        View Stock
                                         @endif
                                     </div>
 
@@ -41,33 +41,39 @@
                                             enctype="multipart/form-data" method="POST">
                                             @csrf
                                             @if ($mode === 'edit')
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row">
                                                 {{-- Warehouse --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Warehouse <span
-                                                                class="text-danger">*</span></label>
-                                                        <select  id= "warehouse_id" name="warehouse_id" class="form-select "
-                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <label class="form-label">Warehouse</label>
+                                                        @if($mode === 'add')
+                                                        <input type="text" class="form-control"
+                                                            value="{{ $userWarehouse->name ?? 'N/A' }}"
+                                                            readonly>
+                                                        {{-- Submit warehouse ID (THIS IS WHAT BACKEND NEEDS) --}}
+                                                        <input type="hidden"
+                                                            name="warehouse_id"
+                                                            value="{{ $userWarehouse->id }}">
+                                                        @endif
 
-                                                            <option value="">Select Warehouse</option>
+                                                        {{-- VIEW / EDIT MODE --}}
 
-                                                            @foreach ($warehouses as $warehouse)
-                                                                <option value="{{ $warehouse->id }}"
-                                                                    {{ old('warehouse_id', $warehouse_stock->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                        @if($mode === 'view' || $mode === 'edit')
+                                                        <input type="text" {{ $mode === 'view' ? 'readonly' : '' }}
+                                                            class="form-control"
+                                                            value="{{ $stockWarehouse->name ?? 'N/A' }}"
+                                                            readonly>
 
-                                                                    {{ $warehouse->name }}
-                                                                </option>
-                                                            @endforeach
+                                                        {{-- SAFE: always available --}}
+                                                        <input type="hidden"
+                                                            name="warehouse_id"
+                                                            value="{{ old('warehouse_id', $warehouse_stock->warehouse_id) }}">
+                                                        @endif
 
-                                                        </select>
 
-                                                        @error('warehouse_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
                                                     </div>
                                                 </div>
 
@@ -82,16 +88,16 @@
                                                             <option value="">Select Category</option>
 
                                                             @foreach ($categories as $category)
-                                                                <option value="{{ $category->id }}"
-                                                                    {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                                    {{ $category->name }}
-                                                                </option>
+                                                            <option value="{{ $category->id }}"
+                                                                {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                                {{ $category->name }}
+                                                            </option>
                                                             @endforeach
 
                                                         </select>
 
                                                         @error('category_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -99,21 +105,22 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Sub Category</label>
-                                                        <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                        <select name="sub_category_id" id="sub_category_id"
+                                                            class="form-select">
                                                             <option value="">-- Select Sub Category --</option>
 
-                                                            @if(isset($sub_categories))
-                                                                @foreach ($sub_categories as $sub)
-                                                                    <option value="{{ $sub->id }}"
-                                                                        {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
-                                                                        {{ $sub->name }}
-                                                                    </option>
-                                                                @endforeach
+                                                            @if (isset($sub_categories))
+                                                            @foreach ($sub_categories as $sub)
+                                                            <option value="{{ $sub->id }}"
+                                                                {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                                {{ $sub->name }}
+                                                            </option>
+                                                            @endforeach
                                                             @endif
                                                         </select>
 
                                                         @error('sub_category_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -129,16 +136,16 @@
                                                             <option value="">-- Select Product --</option>
 
                                                             @foreach ($products as $product)
-                                                                <option value="{{ $product->id }}"
-                                                                    {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
-                                                                    {{ $product->name }}
-                                                                </option>
+                                                            <option value="{{ $product->id }}"
+                                                                {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
                                                             @endforeach
 
                                                         </select>
 
                                                         @error('product_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -152,15 +159,15 @@
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Batch No --</option>
                                                             @foreach ($product_batches as $product_batch)
-                                                                <option value="{{ $product_batch->id }}"
+<option value="{{ $product_batch->id }}"
                                                                     {{ old('batch_id', $warehouse_stock->batch_id ?? '') == $product_batch->id ? 'selected' : '' }}>
                                                                     {{ $product_batch->batch_no }}
                                                                 </option>
-                                                            @endforeach
+@endforeach
                                                         </select>
                                                           @error('batch_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
+    <span class="text-danger mt-1">{{ $message }}</span>
+@enderror
                                                     </div>
                                                 </div> -->
 
@@ -173,8 +180,26 @@
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}
                                                             placeholder="Quantity">
-                                                             @error('quantity')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @error('quantity')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Supplier</label>
+                                                        <select name="supplier_id" class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Supplier</option>
+                                                            @foreach ($suppliers as $supplier)
+                                                            <option value="{{ $supplier->id }}"
+                                                                {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
+                                                                {{ $supplier->supplier_name }}
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('supplier_id')
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -182,22 +207,22 @@
                                                 <!-- Buttons (Right Aligned) -->
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
                                                     <a href="{{ route('index.addStock.warehouse') }}"
-                                                        class="btn btn-outline-secondary">
+                                                        class="btn btn-success">
                                                         <i class="bx bx-arrow-back"></i> Back
                                                     </a>
                                                     @if ($mode === 'add')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Save Stock
-                                                        </button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        Save Stock
+                                                    </button>
                                                     @elseif($mode === 'edit')
-                                                        <button type="submit" class="btn btn-primary">
-                                                            Update Stock
-                                                        </button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        Update Stock
+                                                    </button>
                                                     @endif
                                                 </div>
 
                                             </div>
-                                            
+
                                         </form>
                                     </div>
 
@@ -261,49 +286,48 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    const categorySelect = document.getElementById('category_id');
-    const subCategorySelect = document.getElementById('sub_category_id');
-    const selectedSubCategory = "{{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') }}";
+        const categorySelect = document.getElementById('category_id');
+        const subCategorySelect = document.getElementById('sub_category_id');
+        const selectedSubCategory = "{{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') }}";
 
-    function loadSubCategories(categoryId, selectedId = null) {
+        function loadSubCategories(categoryId, selectedId = null) {
 
-        if (!categoryId) {
-            subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
-            return;
-        }
-
-        fetch(`/get-sub-categories/${categoryId}`)
-            .then(res => res.json())
-            .then(data => {
-
+            if (!categoryId) {
                 subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+                return;
+            }
 
-                if (data.length === 0) {
-                    subCategorySelect.innerHTML += '<option>No sub category found</option>';
-                }
+            fetch(`/get-sub-categories/${categoryId}`)
+                .then(res => res.json())
+                .then(data => {
 
-                data.forEach(item => {
-                    const selected = selectedId == item.id ? 'selected' : '';
-                    subCategorySelect.innerHTML += `
+                    subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+
+                    if (data.length === 0) {
+                        subCategorySelect.innerHTML += '<option>No sub category found</option>';
+                    }
+
+                    data.forEach(item => {
+                        const selected = selectedId == item.id ? 'selected' : '';
+                        subCategorySelect.innerHTML += `
                         <option value="${item.id}" ${selected}>
                             ${item.name}
                         </option>`;
+                    });
                 });
-            });
-    }
+        }
 
-    // 🔹 On category change
-    categorySelect.addEventListener('change', function () {
-        loadSubCategories(this.value);
+        // 🔹 On category change
+        categorySelect.addEventListener('change', function() {
+            loadSubCategories(this.value);
+        });
+
+        // 🔹 AUTO LOAD on edit page
+        if (categorySelect.value) {
+            loadSubCategories(categorySelect.value, selectedSubCategory);
+        }
+
     });
-
-    // 🔹 AUTO LOAD on edit page
-    if (categorySelect.value) {
-        loadSubCategories(categorySelect.value, selectedSubCategory);
-    }
-
-});
 </script>
-

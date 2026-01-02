@@ -28,14 +28,9 @@
                                 </h4>
 
                                 <div class="card-body">
-                                    <form id="transferForm" method="POST"
-                                        action="{{ isset($transfer) 
-                                            ? route('transfer.update', $transfer->id) 
-                                            : route('transfer.store') }}">
-                                        @csrf
-                                        @if(isset($transfer))
-                                        @method('PUT')
-                                        @endif
+                                    <form method="POST" action="{{ route('transfer.store') }}">
+                                         @csrf
+                                        
 
                                         <input type="hidden" name="category_id[]" value="1">
 
@@ -113,15 +108,15 @@
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
-                                                <input type="text" id="quantity" class="form-control" placeholder="Comma separated qty">
+                                                <input type="text" id="quantity" class="form-control" placeholder="qty">
                                                 <small id="qtyError" class="text-danger" style="display:none;"></small>
                                             </div>
                                         </div>
 
                                         <!-- Buttons -->
                                         <div class="d-flex justify-content-between mb-3">
-                                            <a href="{{ route('transfer.index') }}" class="btn btn-outline-secondary">Back</a>
-                                            <button type="button" class="btn btn-primary" id="addItemBtn">
+                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                            <button type="button" class="btn btn-success" id="addItemBtn">
                                                 Add
                                             </button>
                                         </div>
@@ -131,6 +126,7 @@
                                             <table class="table table-bordered" id="workOrderTable">
                                                 <thead class="bg-light">
                                                     <tr>
+                                                        <th>Sr No </th>
                                                         <th>From Warehouse</th>
                                                         <th>To Warehouse</th>
                                                         <th>Product</th>
@@ -166,167 +162,224 @@
 <!-- jQuery + Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-$(document).ready(function() {
+$(document).ready(function () {
 
-    $('#product_id').select2({ placeholder: 'Select Product', closeOnSelect: false, width: '100%' });
-    $('#batch_id').select2({ placeholder: 'Select Batch', closeOnSelect: false, width: '100%' });
+    /* ================= SELECT2 ================= */
+    $('#product_id').select2({
+        placeholder: 'Select Product',
+        closeOnSelect: false,
+        width: '100%'
+    });
+
+    $('#batch_id').select2({
+        placeholder: 'Select Batch',
+        closeOnSelect: false,
+        width: '100%'
+    });
+
+    /* ================= VARIABLES ================= */
+    let index = 0;
+    let editIndex = null;
 
     const fromWarehouseEl = $('#from_warehouse_id');
-    const toWarehouseEl = $('#to_warehouse_id');
-    const productEl = $('#product_id');
-    const batchEl = $('#batch_id');
-    const qtyEl = $('#quantity');
-    const tableWrapper = $('#workOrderTableWrapper');
-    const tableBody = $('#workOrderTable tbody');
-    const itemsContainer = $('#itemsContainer');
-    let index = 0;
+    const toWarehouseEl   = $('#to_warehouse_id');
+    const productEl       = $('#product_id');
+    const batchEl         = $('#batch_id');
+    const qtyEl           = $('#quantity');
 
-    /* ================= GET PRODUCTS ON WAREHOUSE CHANGE ================= */
-    fromWarehouseEl.on('change', function() {
-        const warehouseId = $(this).val();
-        if (!warehouseId) return;
-        $.get("{{ route('ajax.warehouse.stock.data') }}", { warehouse_id: warehouseId }, function(res) {
-            if (res.type === 'products') {
-                let options = '';
-                res.data.forEach(p => { options += `<option value="${p.id}">${p.name}</option>`; });
-                $('#product_id').html(options).trigger('change');
-                $('#batch_id').html('').trigger('change');
-            }
-        });
-    });
+    const tableBody       = $('#workOrderTable tbody');
+    const tableWrapper    = $('#workOrderTableWrapper');
+    const itemsContainer  = $('#itemsContainer');
+    const submitBtn       = $('button[type="submit"]');
 
-    /* ================= GET BATCHES ON PRODUCT CHANGE ================= */
-    productEl.on('change', function() {
-        const productIds = $(this).val();
-        if (!productIds || productIds.length === 0) return;
-        $.get("{{ route('ajax.product.batches') }}", { product_ids: productIds }, function(res) {
-            if (res.type === 'batches') {
-                let options = '';
-                res.data.forEach(b => { options += `<option value="${b.id}">${b.batch_no}</option>`; });
-                $('#batch_id').html(options).trigger('change');
-            }
-        });
-    });
+    /* ================= FROM WAREHOUSE → PRODUCTS ================= */
+    fromWarehouseEl.on('change', function () {
+        const wid = $(this).val();
+        if (!wid) return;
 
-    /* ================= GET QTY ON BATCH CHANGE ================= */
-    batchEl.on('change', function() {
-        const batchIds = $(this).val();
-        if (!batchIds || batchIds.length === 0) { qtyEl.val(''); return; }
+        $.get("{{ route('ajax.warehouse.stock.data') }}", {
+            warehouse_id: wid
+        }, function (res) {
 
-        let qtyList = [];
-        let requests = batchIds.map(batchId => {
-            return $.get(`/get-batch-stock/${batchId}`, function(res) {
-                qtyList.push(res.quantity ?? 0);
+            let options = '';
+            res.data.forEach(p => {
+                options += `<option value="${p.id}">${p.name}</option>`;
             });
-        });
 
-        Promise.all(requests).then(() => {
-            qtyEl.val(qtyList.join(','));
+            productEl.html(options).val(null).trigger('change');
+            batchEl.html('').val(null).trigger('change');
+            qtyEl.val('');
         });
     });
 
-    /* ================= ADD ITEM ================= */
-    $('#addItemBtn').on('click', function() {
+    /* ================= PRODUCTS → BATCHES ================= */
+    productEl.on('change', function () {
+        const productIds = $(this).val();
+        if (!productIds || !productIds.length) return;
 
-        const fromWarehouse = fromWarehouseEl.val();
-        const toWarehouse = toWarehouseEl.val();
-        const productIds = productEl.val();
-        const batchIds = batchEl.val();
-        const quantity = qtyEl.val();
+        $.get("{{ route('ajax.product.batches') }}", {
+            product_ids: productIds
+        }, function (res) {
 
-        if (!fromWarehouse || !toWarehouse || !productIds || !batchIds || !quantity) {
-            alert('Please fill all fields');
+            let options = '';
+            res.data.forEach(b => {
+                options += `<option value="${b.id}">${b.batch_no}</option>`;
+            });
+
+            batchEl.html(options).val(null).trigger('change');
+            qtyEl.val('');
+        });
+    });
+
+    /* ================= BATCH → QTY ================= */
+    batchEl.on('change', function () {
+        const batchIds = $(this).val();
+        if (!batchIds || !batchIds.length) {
+            qtyEl.val('');
             return;
         }
 
-        const qtyList = quantity.split(',').map(q => q.trim());
-        if (productIds.length !== batchIds.length || batchIds.length !== qtyList.length) {
-            alert('Product, Batch and Quantity count mismatch');
+        let qtyArr = [];
+
+        Promise.all(batchIds.map(id =>
+            $.get(`/get-batch-stock/${id}`, function (res) {
+                qtyArr.push(res.quantity ?? 0);
+            })
+        )).then(() => {
+            qtyEl.val(qtyArr.join(','));
+        });
+    });
+
+    /* ================= ADD / UPDATE ROW ================= */
+    $('#addItemBtn').on('click', function () {
+
+        const fw   = fromWarehouseEl.val();
+        const tw   = toWarehouseEl.val();
+        const pids = productEl.val();
+        const bids = batchEl.val();
+        const qtys = qtyEl.val().split(',');
+
+        if (!fw || !tw || !pids || !bids || !qtys.length) {
+            alert('All fields required');
             return;
         }
 
-        productIds.forEach((productId, i) => {
-            const batchId = batchIds[i];
-            const qty = qtyList[i];
-            const rowIndex = index++;
+        if (pids.length !== bids.length || bids.length !== qtys.length) {
+            alert('Product / Batch / Qty mismatch');
+            return;
+        }
 
-            const row = `<tr id="row_${rowIndex}">
-                <td>${fromWarehouseEl.find('option:selected').text()}</td>
-                <td>${toWarehouseEl.find('option:selected').text()}</td>
-                <td>${$('#product_id option[value="' + productId + '"]').text()}</td>
-                <td>${$('#batch_id option[value="' + batchId + '"]').text()}</td>
-                <td>${qty}</td>
-                <td>
-                    <button type="button" class="btn btn-warning btn-sm edit-row" data-index="${rowIndex}">Edit</button>
-                    <button type="button" class="btn btn-danger btn-sm remove-row" data-index="${rowIndex}">Remove</button>
-                </td>
-            </tr>`;
-            tableWrapper.show();
-            tableBody.append(row);
+        /* ---- EDIT MODE REMOVE OLD ROW ---- */
+        if (editIndex !== null) {
+            removeRow(editIndex);
+            editIndex = null;
+        }
+
+        /* ---- ADD ROWS ---- */
+        pids.forEach((pid, i) => {
+
+            const rid = index++;
+
+            tableBody.append(`
+                <tr id="row_${rid}">
+                    <td>${tableBody.children().length + 1}</td>
+                    <td>${fromWarehouseEl.find(':selected').text()}</td>
+                    <td>${toWarehouseEl.find(':selected').text()}</td>
+                    <td>${$('#product_id option[value="'+pid+'"]').text()}</td>
+                    <td>${$('#batch_id option[value="'+bids[i]+'"]').text()}</td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm qty-input"
+                               value="${qtys[i]}"
+                               min="1"
+                               data-index="${rid}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-warning btn-sm edit-row" data-i="${rid}">Edit</button>
+                        <button type="button" class="btn btn-danger btn-sm remove-row" data-i="${rid}">Remove</button>
+                    </td>
+                </tr>
+            `);
 
             itemsContainer.append(`
-                <input type="hidden" name="items[${rowIndex}][from_warehouse_id]" value="${fromWarehouse}">
-                <input type="hidden" name="items[${rowIndex}][to_warehouse_id]" value="${toWarehouse}">
-                <input type="hidden" name="items[${rowIndex}][category_id]" value="1">
-                <input type="hidden" name="items[${rowIndex}][product_id]" value="${productId}">
-                <input type="hidden" name="items[${rowIndex}][batch_id]" value="${batchId}">
-                <input type="hidden" name="items[${rowIndex}][quantity]" value="${qty}">
+                <input type="hidden" name="items[${rid}][from_warehouse_id]" value="${fw}">
+                <input type="hidden" name="items[${rid}][to_warehouse_id]" value="${tw}">
+                <input type="hidden" name="items[${rid}][category_id]" value="1">
+                <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
+                <input type="hidden" name="items[${rid}][batch_id]" value="${bids[i]}">
+                <input type="hidden" name="items[${rid}][quantity]" value="${qtys[i]}">
             `);
         });
 
-        resetFullForm();
-        toggleButtons();
+        tableWrapper.show();
+        resetForm();
+        toggleSubmit();
     });
 
-    /* ================= EDIT / REMOVE ROW ================= */
-    $(document).on('click', '.edit-row', function() {
-        const i = $(this).data('index');
-        const getVal = name => $(`[name="items[${i}][${name}]"]`).val();
+    /* ================= EDIT ROW ================= */
+    $(document).on('click', '.edit-row', function () {
 
-        fromWarehouseEl.val(getVal('from_warehouse_id')).trigger('change');
-        toWarehouseEl.val(getVal('to_warehouse_id')).trigger('change');
+        const i = $(this).data('i');
+        editIndex = i;
 
-        const waitOptions = (el, val) => new Promise(res => {
-            const interval = setInterval(() => {
-                if ([...el[0].options].some(o => o.value == val)) { clearInterval(interval); res(); }
-            }, 100);
-        });
+        const getVal = f => $(`[name="items[${i}][${f}]"]`).val();
 
-        waitOptions(productEl, getVal('product_id')).then(() => {
-            productEl.val([getVal('product_id')]).trigger('change');
-            waitOptions(batchEl, getVal('batch_id')).then(() => {
-                batchEl.val([getVal('batch_id')]).trigger('change');
-                qtyEl.val(getVal('quantity'));
-            });
-        });
+        const fw  = getVal('from_warehouse_id');
+        const tw  = getVal('to_warehouse_id');
+        const pid = getVal('product_id');
+        const bid = getVal('batch_id');
+        const qty = getVal('quantity');
 
-        removeRow(i);
+        fromWarehouseEl.val(fw).trigger('change');
+        toWarehouseEl.val(tw);
+
+        const waitProducts = setInterval(() => {
+            if ($('#product_id option').length) {
+                clearInterval(waitProducts);
+                productEl.val([pid]).trigger('change');
+            }
+        }, 100);
+
+        const waitBatches = setInterval(() => {
+            if ($('#batch_id option').length) {
+                clearInterval(waitBatches);
+                batchEl.val([bid]).trigger('change');
+                qtyEl.val(qty);
+            }
+        }, 150);
+
+        $('#addItemBtn').text('Update');
     });
 
-    $(document).on('click', '.remove-row', function() {
-        removeRow($(this).data('index'));
+    /* ================= REMOVE ROW ================= */
+    $(document).on('click', '.remove-row', function () {
+        removeRow($(this).data('i'));
+        toggleSubmit();
     });
 
     function removeRow(i) {
         $(`#row_${i}`).remove();
         $(`[name^="items[${i}]"]`).remove();
-        toggleButtons();
     }
 
-    function resetFullForm() {
+    /* ================= QTY LIVE SYNC ================= */
+    $(document).on('input', '.qty-input', function () {
+        const i = $(this).data('index');
+        $(`[name="items[${i}][quantity]"]`).val($(this).val());
+    });
+
+    /* ================= HELPERS ================= */
+    function resetForm() {
         productEl.val(null).trigger('change');
         batchEl.val(null).trigger('change');
         qtyEl.val('');
+        $('#addItemBtn').text('Add');
     }
 
-    function toggleButtons() {
-        const hasRows = tableBody.children().length > 0;
-        $('#addItemBtn').toggle(!hasRows);
-        $('button[type="submit"]').toggle(hasRows);
+    function toggleSubmit() {
+        submitBtn.toggle(tableBody.children().length > 0);
     }
 
-    toggleButtons(); // initial
 });
 </script>

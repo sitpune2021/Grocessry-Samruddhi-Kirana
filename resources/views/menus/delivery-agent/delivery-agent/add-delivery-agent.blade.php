@@ -39,6 +39,15 @@
                                     </div>
 
                                     <div class="card-body">
+                                        @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        @endif
                                         <form enctype="multipart/form-data"
                                             action="{{ isset($agent) ? route('delivery-agents.update', $agent->id) : route('delivery-agents.store') }}"
                                             method="POST">
@@ -78,6 +87,7 @@
                                                         First Name <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="text"
+                                                        id="name"
                                                         name="name"
                                                         class="form-control"
                                                         placeholder="Enter first name"
@@ -94,6 +104,7 @@
                                                         Last Name <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="text"
+                                                        id="last_name"
                                                         name="last_name"
                                                         class="form-control"
                                                         placeholder="Enter last name"
@@ -111,6 +122,7 @@
                                                         Mobile <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="text"
+                                                        maxlength="10"
                                                         name="mobile"
                                                         class="form-control"
                                                         placeholder="Enter 10 digit mobile number"
@@ -133,10 +145,10 @@
                                                         placeholder="Enter email address"
                                                         value="{{ old('email', $agent->user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-
+                                                    <!-- 
                                                     @error('email')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
                                                 </div>
 
                                                 {{-- DOB --}}
@@ -150,9 +162,9 @@
                                                         value="{{ old('dob', $agent->dob ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
-                                                    @error('dob')
+                                                    <!-- @error('dob')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
                                                 </div>
 
                                                 {{-- Gender --}}
@@ -181,9 +193,9 @@
                                                         <label class="form-check-label">Female</label>
                                                     </div>
 
-                                                    @error('gender')
+                                                    <!-- @error('gender')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
                                                 </div>
 
                                                 {{-- Address --}}
@@ -195,9 +207,9 @@
                                                         placeholder="Enter complete address"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>{{ old('address', $agent->address ?? '') }}</textarea>
 
-                                                    @error('address')
+                                                    <!-- @error('address')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
                                                 </div>
 
                                                 {{-- Profile Image --}}
@@ -206,7 +218,7 @@
 
                                                     @if(!empty($agent->user->profile_photo))
                                                     <div class="mb-2">
-                                                        <img src="{{ asset('storage/' . $agent->user->profile_photo) }}"
+                                                        <img src="{{ asset('storage/profile_photos/' . $agent->user->profile_photo) }}"
                                                             class="img-thumbnail" width="120">
                                                     </div>
                                                     @endif
@@ -218,9 +230,9 @@
                                                         accept="image/*">
                                                     @endif
 
-                                                    @error('profile_image')
+                                                    <!-- @error('profile_image')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
                                                 </div>
 
                                                 {{-- Aadhaar Card --}}
@@ -237,15 +249,14 @@
                                                         accept="image/*,.pdf">
                                                     @endif
 
-                                                    @error('aadhaar_card')
+                                                    <!-- @error('aadhaar_card')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
 
 
                                                     @if(!empty($agent->aadhaar_card))
                                                     <div class="mb-2">
-                                                        <a href="{{ asset('storage/' . $agent->aadhaar_card) }}" target="_blank"
-                                                            class="">
+                                                        <a href="{{ asset('storage/delivery_agents/aadhaar/' . $agent->aadhaar_card) }}" class="img-thumbnail" width="120">
                                                             View Aadhaar
                                                         </a>
                                                     </div>
@@ -269,14 +280,13 @@
                                                         accept="image/*,.pdf">
                                                     @endif
 
-                                                    @error('driving_license')
+                                                    <!-- @error('driving_license')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
+                                                    @enderror -->
 
                                                     @if(!empty($agent->driving_license))
                                                     <div class="mb-2">
-                                                        <a href="{{ asset('storage/' . $agent->driving_license) }}" target="_blank"
-                                                            class="">
+                                                        <a href="{{ asset('storage/delivery_agents/license/' . $agent->driving_license) }}" class="img-thumbnail" width="120">
                                                             View Driving License
                                                         </a>
                                                     </div>
@@ -320,12 +330,12 @@
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
                                                 <a href="{{ route('delivery-agents.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                    class="btn btn-success">
                                                     Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                <button type="submit" class="btn btn-primary">Save Agent</button>
+                                                <button type="submit" class="btn btn-success">Save Agent</button>
                                                 @elseif($mode === 'edit')
                                                 <button type="submit" class="btn btn-primary">Update Agent</button>
                                                 @endif

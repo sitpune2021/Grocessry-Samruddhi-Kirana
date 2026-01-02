@@ -137,7 +137,7 @@
 
 
                             <div class="mt-3">
-                                <button type="submit" class="btn btn-primary">Save Permissions</button>
+                                <button type="submit" class="btn btn-success">Save Permissions</button>
                             </div>
 
                         </form>

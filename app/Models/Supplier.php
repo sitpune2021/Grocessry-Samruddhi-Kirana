@@ -11,6 +11,33 @@ class Supplier extends Model
         'mobile',
         'email',
         'address',
-        'logo'
+        'logo',
+        'district_id',
+        'taluka_id',
+        'state_id',
+        'bill_no',
+        'challan_no',
+        'batch_no',
+        'warehouse_id',
     ];
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function taluka()
+    {
+        return $this->belongsTo(Talukas::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 }

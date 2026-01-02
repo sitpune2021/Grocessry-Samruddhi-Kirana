@@ -87,6 +87,100 @@
                                                         {{ $readonly }}>
 
                                                 </div>
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">
+                                                        State <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <select name="state_id" id="state_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                        <option value="">Select State</option>
+
+                                                        @foreach ($states as $state)
+                                                            <option value="{{ $state->id }}"
+                                                                {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                                                {{ $state->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+
+
+                                                    @error('state_id')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- District --}}
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">District <span
+                                                            class="text-danger">*</span></label>
+                                                    <select name="district_id" id="district_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select District</option>
+                                                        @foreach ($districts as $district)
+                                                            <option value="{{ $district->id }}"
+                                                                {{ old('district_id', $supplier->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ $district->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('district_id')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- Taluka --}}
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">Taluka <span
+                                                            class="text-danger">*</span></label>
+                                                    <select name="taluka_id" id="taluka_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        @if (isset($supplier->taluka))
+                                                            <option value="{{ $supplier->taluka_id }}" selected>
+                                                                {{ $supplier->taluka->name }}
+                                                            </option>
+                                                        @else
+                                                            <option value="">Select Taluka</option>
+                                                        @endif
+                                                    </select>
+                                                    @error('district_id')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Bill No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="bill_no" class="form-control"
+                                                        value="{{ $supplier->bill_no ?? old('bill_no') }}"
+                                                        placeholder="Enter bill number" {{ $readonly }}>
+                                                    @error('bill_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Challan No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="challan_no" class="form-control"
+                                                        value="{{ $supplier->challan_no ?? old('challan_no') }}"
+                                                        placeholder="Enter challan number" {{ $readonly }}>
+                                                    @error('challan_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Batch No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="batch_no" class="form-control"
+                                                        value="{{ $supplier->batch_no ?? old('batch_no') }}"
+                                                        placeholder="Enter batch number" {{ $readonly }}>
+                                                    @error('batch_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-6">
@@ -96,47 +190,40 @@
                                                 </div>
 
                                                 {{-- Logo --}}
-                                              <div class="col-md-4">
-    <label class="form-label fw-medium">Supplier Logo</label>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Supplier Logo</label>
 
-    {{-- Upload input for edit --}}
-    <input type="file" name="logo" class="form-control" accept="image/*">
+                                                    {{-- Upload input for edit --}}
+                                                    <input type="file" name="logo" class="form-control"
+                                                        accept="image/*">
 
-    {{-- Display existing logo if available --}}
-    @if (isset($supplier) && $supplier->logo)
-        <div class="mt-2">
-            {{-- Show small preview --}}
-            {{-- <a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">
-                <img src="{{ asset('storage/suppliers/' . $supplier->logo) }}" width="80" class="rounded border" alt="Supplier Logo">
-            </a> --}}
-            <p class="mt-1"><a href="{{ asset('storage/suppliers/' . $supplier->logo) }}" target="_blank">View Logo</a></p>
-        </div>
-    @endif
-</div>
+                                                    {{-- Display existing logo if available --}}
+                                                    @if (isset($supplier) && $supplier->logo)
+                                                        <div class="mt-2">
 
-
-
-
+                                                            <p class="mt-1"><a
+                                                                    href="{{ asset('storage/suppliers/' . $supplier->logo) }}"
+                                                                    target="_blank">View Logo</a></p>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('supplier.index') }}"
-                                                    class="btn btn-outline-secondary">
+                                                <a href="{{ route('supplier.index') }}" class="btn btn-success">
                                                     Back
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-primary">Save
+                                                    <button type="submit" class="btn btn-success">Save
                                                         Supplier</button>
                                                 @elseif($mode === 'edit')
                                                     <button type="submit" class="btn btn-primary">Update
                                                         Supplier</button>
                                                 @endif
                                             </div>
-
                                         </form>
-
 
                                     </div>
                                 </div>
@@ -181,5 +268,39 @@
             mobileInput.focus();
             return false;
         }
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+
+        $('#district_id').on('change', function() {
+            let districtId = $(this).val();
+
+            $('#taluka_id').empty();
+            $('#taluka_id').append('<option value="">Select Taluka</option>');
+
+            if (districtId) {
+                $.ajax({
+                    url: '/get-talukas/' + districtId,
+                    type: 'GET',
+                    success: function(data) {
+                        console.log(data); // 👈 YOU ALREADY SEE THIS JSON
+
+                        $.each(data, function(index, taluka) {
+                            $('#taluka_id').append(
+                                '<option value="' + taluka.id + '">' + taluka
+                                .name + '</option>'
+                            );
+                        });
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+        });
+
     });
 </script>

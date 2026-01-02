@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Role;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class LoginController extends Controller
 {
+    // Customer register
     public function register(Request $request)
     {
         $request->merge([
@@ -40,7 +43,9 @@ class LoginController extends Controller
             ], 422);
         }
 
-        $role = Role::where('name', 'customer')->firstOrFail();
+        // ✅ DYNAMIC CUSTOMER (ID CHANGE SAFE)
+        $role = Role::whereRaw('LOWER(name) = ?', ['customer'])
+            ->firstOrFail();
 
         $user = User::create([
             'first_name' => $request->first_name,
@@ -65,13 +70,148 @@ class LoginController extends Controller
                 'mobile' => $user->mobile,
                 'email' => $user->email,
                 'role_id' => $role->id,
-                'role' => ucfirst($role->name)
+                'role' => $role->name
             ]
         ], 201);
     }
 
+    // public function register(Request $request)
+    // {
+    //     $request->merge([
+    //         'email' => $request->email ?: null
+    //     ]);
+
+    //     $validator = Validator::make($request->all(), [
+    //         'first_name' => 'required|string|max:255',
+    //         'last_name'  => 'nullable|string|max:255',
+    //         'mobile'     => 'required|digits:10|unique:users,mobile',
+    //         'email'      => 'nullable|email|unique:users,email',
+    //         'password'   => [
+    //             'required',
+    //             'confirmed',
+    //             'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+    //         ],
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     $role = Role::where('name', 'Customer')->firstOrFail();
+
+    //     $user = User::create([
+    //         'first_name' => $request->first_name,
+    //         'last_name'  => $request->last_name,
+    //         'mobile'     => $request->mobile,
+    //         'email'      => $request->email,
+    //         'role_id'    => $role->id,
+    //         'password'   => Hash::make($request->password),
+    //         'status'     => 1
+    //     ]);
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Customer registration successful',
+    //         'token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => trim($user->first_name . ' ' . $user->last_name),
+    //             'mobile' => $user->mobile,
+    //             'email' => $user->email,
+    //             'role_id' => $role->id,
+    //             'role' => ucfirst($role->name)
+    //         ]
+    //     ], 201);
+    // }
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // ✅ DYNAMIC CUSTOMER CHECK (ID CHANGE SAFE)
+        if (!$user->role || strtolower($user->role->name) !== 'customer') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only customers can update profile'
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'first_name'    => 'nullable|string|max:255',
+            'last_name'     => 'nullable|string|max:255',
+            'email'         => 'nullable|email|unique:users,email,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Update profile photo
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::delete('public/profile/' . $user->profile_photo);
+            }
+            $imageName = time() . '.' . $request->profile_photo->extension();
+            $request->profile_photo->storeAs('public/profile', $imageName);
+            $user->profile_photo = $imageName;
+        }
+
+        if ($request->filled('first_name')) {
+            $user->first_name = $request->first_name;
+        }
+
+        if ($request->filled('last_name')) {
+            $user->last_name = $request->last_name;
+        }
+
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $user->email = $request->email;
+            $user->email_verified_at = now();
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'profile_photo' => $user->profile_photo
+                    ? asset('storage/profile/' . $user->profile_photo)
+                    : null,
+            ]
+        ], 200);
+    }
+
     public function login(Request $request, $type)
     {
+        /* ================= TYPE VALIDATION ================= */
+        if (!in_array($type, ['password', 'otp'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid login type'
+            ], 400);
+        }
+
         /* ================= VALIDATION ================= */
         $rules = [
             'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
@@ -82,7 +222,7 @@ class LoginController extends Controller
         }
 
         if ($type === 'otp') {
-            $rules['password'] = 'prohibited'; // 🔥 KEY FIX
+            $rules['password'] = 'prohibited';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -100,19 +240,25 @@ class LoginController extends Controller
             ->where('mobile', $request->mobile)
             ->first();
 
-        if (!$user) {
+        if (!$user || !$user->role) {
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
-        /* ================= ROLE CHECK ================= */
-        if (!in_array(strtolower($user->role->name), ['customer', 'retailer', 'delivery agent'])) {
+        /* ================= ROLE CHECK (DYNAMIC) ================= */
+        $allowedRoles = [
+            'customer',
+            'retailer',
+            'delivery agent',
+        ];
+
+        if (!in_array(strtolower($user->role->name), $allowedRoles)) {
             return response()->json([
                 'status' => false,
                 'message' => 'This role is not allowed to login'
-            ], 403);    
+            ], 403);
         }
 
         /* ================= OTP LOGIN ================= */
@@ -129,13 +275,12 @@ class LoginController extends Controller
 
             RateLimiter::hit($key, 300);
 
-            $otp = rand(100000, 999999);
+            $otp = random_int(100000, 999999);
 
             $user->update([
                 'otp' => $otp,
-                'otp_expires_at' => Carbon::now()->addMinutes(5)
+                'otp_expires_at' => now()->addMinutes(5)
             ]);
-
 
             $response = Http::asForm()->post(
                 'http://redirect.ds3.in/submitsms.jsp',
@@ -159,7 +304,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'OTP sent successfully'
-            ]);
+            ], 200);
         }
 
         /* ================= PASSWORD LOGIN ================= */
@@ -167,7 +312,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid password'
-            ], 401);
+            ], 200);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -187,6 +332,124 @@ class LoginController extends Controller
             ]
         ], 200);
     }
+
+    // public function login(Request $request, $type)
+    // {
+    //     /* ================= VALIDATION ================= */
+    //     $rules = [
+    //         'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+    //     ];
+
+    //     if ($type === 'password') {
+    //         $rules['password'] = 'required';
+    //     }
+
+    //     if ($type === 'otp') {
+    //         $rules['password'] = 'prohibited'; // 🔥 KEY FIX
+    //     }
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     /* ================= USER CHECK ================= */
+    //     $user = User::with('role')
+    //         ->where('mobile', $request->mobile)
+    //         ->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'User not found'
+    //         ], 200);
+    //     }
+
+    //     /* ================= ROLE CHECK ================= */
+    //     if (!in_array(strtolower($user->role->name), ['customer', 'retailer', 'delivery agent'])) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This role is not allowed to login'
+    //         ], 403);
+    //     }
+
+    //     /* ================= OTP LOGIN ================= */
+    //     if ($type === 'otp') {
+
+    //         $key = 'login-otp-' . $request->mobile;
+
+    //         if (RateLimiter::tooManyAttempts($key, 3)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Too many OTP requests. Try again after 5 minutes'
+    //             ], 429);
+    //         }
+
+    //         RateLimiter::hit($key, 300);
+
+    //         $otp = rand(100000, 999999);
+
+    //         $user->update([
+    //             'otp' => $otp,
+    //             'otp_expires_at' => Carbon::now()->addMinutes(5)
+    //         ]);
+
+
+    //         $response = Http::asForm()->post(
+    //             'http://redirect.ds3.in/submitsms.jsp',
+    //             [
+    //                 'user'     => env('SMS_USER'),
+    //                 'key'      => env('SMS_KEY'),
+    //                 'mobile'   => '91' . $user->mobile,
+    //                 'message'  => "Your OTP for login is $otp",
+    //                 'senderid' => env('SMS_SENDERID'),
+    //                 'accusage' => '10',
+    //             ]
+    //         );
+
+    //         if (!$response->successful()) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Failed to send OTP'
+    //             ], 500);
+    //         }
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'OTP sent successfully'
+    //         ]);
+    //     }
+
+    //     /* ================= PASSWORD LOGIN ================= */
+    //     if (!Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid password'
+    //         ], 200);
+    //     }
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Login successful',
+    //         'token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => trim($user->first_name . ' ' . $user->last_name),
+    //             'mobile' => $user->mobile,
+    //             'email' => $user->email,
+    //             'role_id' => $user->role_id,
+    //             'role' => $user->role->name
+    //         ]
+    //     ], 200);
+    // }
 
     public function forgotPassword(Request $request)
     {
@@ -217,7 +480,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Too many requests. Please try again later.'
-            ], 429);
+            ], 200);
         }
         RateLimiter::hit($key, 300); // 5 minutes
 
@@ -250,14 +513,13 @@ class LoginController extends Controller
         ]);
     }
 
-    // ================= VERIFY OTP =================
     public function verifyOtp(Request $request, $type)
     {
         if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP type'
-            ], 400);
+            ], 200);
         }
 
         $validator = Validator::make($request->all(), [
@@ -278,7 +540,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $otpField = 'otp';
@@ -295,23 +557,21 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'OTP expired. Please request a new OTP.'
-            ], 400);
+            ], 200);
         }
 
         if ($request->otp != $user->$otpField) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid OTP'
-            ], 401);
+            ], 200);
         }
 
-        // ✅ Clear OTP after successful verification
         $user->update([
             $otpField => null,
             $expiresField => null,
         ]);
 
-        // ================= LOGIN OTP =================
         if ($type === 'login_otp') {
             $user->tokens()->delete();
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -332,14 +592,12 @@ class LoginController extends Controller
             ], 200);
         }
 
-        // ================= FORGOT PASSWORD OTP =================
         return response()->json([
             'status' => true,
             'message' => 'OTP verified. You may now reset your password.'
         ], 200);
     }
 
-    // ================= RESET PASSWORD =================
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -364,7 +622,7 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 404);
+            ], 200);
         }
 
         $user->update([

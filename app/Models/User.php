@@ -61,6 +61,12 @@ class User extends Authenticatable
         'permissions' => 'array', // IMPORTANT
     ];
 
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
+    }
+
     protected function casts(): array
     {
         return [
