@@ -38,6 +38,7 @@ use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LowStockController;
 use App\Http\Controllers\WarehouseStockReturnController;
+use App\Http\Controllers\WarehouseTransferRequestController;
 
 Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -474,6 +475,23 @@ Route::post('Brand/status', [BrandController::class, 'updateStatus'])->name('upd
     // Analytics (optional API / page)
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
+
+// Purches Order Request
+    Route::prefix('warehouse-transfer-request')->group(function () {
+    Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+        ->name('warehouse-transfer-request.index');
+
+    Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
+    Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+
+    Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+    Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+    Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+    Route::get(
+    '/purchase-orders/{id}/items',
+    [WarehouseTransferRequestController::class, 'items']
+    );
+});
 
 
 

@@ -54,16 +54,13 @@
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Warehouse</option>
                                                     @foreach ($warehouses as $w)
-                                                    <option value="{{ $w->id }}" selected
-                                                        {{ old('warehouse_id', $batch->warehouse_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                    <option value="{{ $w->id }}"
+                                                        {{ old('warehouse_id', $batch->warehouse_id ?? Auth::user()->warehouse_id) == $w->id ? 'selected' : '' }}>
                                                         {{ $w->name }}
                                                     </option>
                                                     @endforeach
                                                 </select>
-                                            </div>
-
-                                            <input type="hidden" name="warehouse_id" value="{{ $warehouses->first()->id }}">
-
+                                            </div>                                   
 
                                             {{-- Category --}}
                                             <div class="col-md-4">
@@ -296,4 +293,15 @@
         await loadProducts(wid, sid, pid);
         await loadQuantity(wid, pid);
     });
+</script>
+
+<script>
+    $(document).ready(function () {
+    let wid = $('#warehouse_id').val();
+
+    if (wid) {
+        loadCategories(wid);   // ✅ auto load categories
+    }
+});
+
 </script>
