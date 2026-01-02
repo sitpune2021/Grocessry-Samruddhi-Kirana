@@ -50,10 +50,11 @@
                                             {{-- Warehouse --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                                                <select name="warehouse_id" id="warehouse_id" class="form-select">
+                                                <select name="warehouse_id" id="warehouse_id" class="form-select"
+                                                    {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Warehouse</option>
                                                     @foreach ($warehouses as $w)
-                                                    <option value="{{ $w->id }}"
+                                                    <option value="{{ $w->id }}" selected
                                                         {{ old('warehouse_id', $batch->warehouse_id ?? '') == $w->id ? 'selected' : '' }}>
                                                         {{ $w->name }}
                                                     </option>
@@ -61,21 +62,24 @@
                                                 </select>
                                             </div>
 
-              {{-- Category --}}
+                                            <input type="hidden" name="warehouse_id" value="{{ $warehouses->first()->id }}">
+
+
+                                            {{-- Category --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Category <span class="text-danger">*</span></label>
                                                 <select name="category_id" id="category_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Category</option>
                                                     @foreach ($categories as $category)
-                                                        <option value="{{ $category->id }}"
-                                                            {{ old('category_id', $batch->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                            {{ $category->name }}
-                                                        </option>
+                                                    <option value="{{ $category->id }}"
+                                                        {{ old('category_id', $batch->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                        {{ $category->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('category_id')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
  

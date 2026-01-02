@@ -12,6 +12,7 @@ class CustomerOrderReturn extends Model
         'order_id',
         'order_item_id',
         'product_id',
+        'product_images',
         'customer_id ',
         'quantity',
         'reason',
@@ -20,7 +21,11 @@ class CustomerOrderReturn extends Model
         'received_at'
     ];
 
-   public function customer()
+    protected $casts = [
+        'product_images' => 'array',
+    ];
+
+    public function customer()
     {
         return $this->belongsTo(User::class, 'customer_id');
     }

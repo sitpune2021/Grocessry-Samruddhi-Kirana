@@ -9,6 +9,8 @@ use App\Models\Taluka;
 use App\Models\District;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Warehouse;
+
 
 class GroceryShopController extends Controller
 {
@@ -25,9 +27,15 @@ class GroceryShopController extends Controller
 
     public function create()
     {
+        $districtWarehouses = Warehouse::whereNotNull('district_id')
+            ->whereNull('taluka_id')
+            ->select('id', 'name', 'district_id')
+            ->orderBy('name')
+            ->get();
         return view('grocery_shops.create', [
             'shop'      => null,
-            'districts' => District::orderBy('name')->get(),
+            // 'districts' => District::orderBy('name')->get(),
+            'districtWarehouses' => $districtWarehouses,
         ]);
     }
 
@@ -116,5 +124,17 @@ class GroceryShopController extends Controller
             'district' => $district,
             'taluka'   => $taluka,
         ]);
+    }
+
+
+    public function getTalukaWarehouses($district_warehouse_id)
+    {
+        $talukaWarehouses = Warehouse::where('parent_id', $district_warehouse_id)
+            ->where('type', 'taluka')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+// dd($talukaWarehouses);
+        return response()->json($talukaWarehouses);
     }
 }

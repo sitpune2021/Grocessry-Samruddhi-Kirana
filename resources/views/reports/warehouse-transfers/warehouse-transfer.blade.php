@@ -5,43 +5,49 @@
 
         <div class="card shadow-sm">
             <div class="card-header">
-                <h5 class="mb-0">Warehouse Stock Report</h5>
+                <h5 class="mb-0">Warehouse transfer Report</h5>
             </div>
 
             <!-- Filters -->
-            <form method="POST" action="{{ route('warehouse-stock.report') }}" class="row g-2 p-3">
-                @csrf
+            <form method="GET" action="{{ route('warehouse-stock.report') }}" class="row g-2 p-3">
+
 
                 <div class="col-md-3">
-                    <select name="type" class="form-select">
-                        <option value="">All Types</option>
-                        <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>In</option>
-                        <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>Out</option>
-                        <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                    <select name="from_warehouse" class="form-select">
+                        <option value="">From Warehouse (All)</option>
+                        @foreach (DB::table('warehouses')->get() as $wh)
+                            <option value="{{ $wh->id }}"
+                                {{ request('from_warehouse') == $wh->id ? 'selected' : '' }}>
+                                {{ $wh->name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="col-md-3">
+                    <select name="to_warehouse" class="form-select">
+                        <option value="">To Warehouse (All)</option>
+                        @foreach (DB::table('warehouses')->get() as $wh)
+                            <option value="{{ $wh->id }}" {{ request('to_warehouse') == $wh->id ? 'selected' : '' }}>
+                                {{ $wh->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-2">
                     <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                 </div>
 
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        Filter
-                    </button>
-
-                    <a href="{{ route('warehouse-stock.report') }}" class="btn btn-secondary btn-sm">
-                        Reset
-                    </a>
-
-                    <!-- ✅ CSV DOWNLOAD BUTTON -->
-                    <button type="submit" name="download" value="csv" class="btn btn-success btn-sm">
-                        Download CSV
-                    </button>
+                <div class="col-md-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                    <a href="{{ route('warehouse-stock.report') }}" class="btn btn-secondary btn-sm">Reset</a>
+                    <button type="submit" name="download" value="csv" class="btn btn-success btn-sm">Download
+                        CSV</button>
                 </div>
 
             </form>
@@ -55,10 +61,8 @@
                             <th>Sr. No</th>
                             <th>Warehouse From</th>
                             <th>Warehouse To</th>
-                            <th>Stock In</th>
-                            <th>Stock Out</th>
+
                             <th>Transfer In</th>
-                            <th>Transfer Out</th>
                             <th>Remaining Total Qty</th>
                             <th>Created Date</th>
                             <th>Updated Date</th>
@@ -70,11 +74,9 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $ws['warehouse_from'] }}</td>
                                 <td>{{ $ws['warehouse_name'] }}</td>
-                                <td>{{ $ws['stock_in'] }}</td>
-                                <td>{{ $ws['stock_out'] }}</td>
+
                                 <td>{{ $ws['transfer_in'] }}</td>
-                                <td>{{ $ws['transfer_out'] }}</td>
-                                <td class="fw-bold">{{ $ws['remaining'] }}</td>
+                                <td class="fw-bold">{{ $ws['quantity'] }}</td>
                                 <td>{{ \Carbon\Carbon::parse($ws['created_at'])->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($ws['updated_at'])->format('d-m-Y') }}</td>
                             </tr>
