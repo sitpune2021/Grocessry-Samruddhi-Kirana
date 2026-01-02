@@ -195,20 +195,21 @@
 <script>
     let cart = {};
    
-    function addProduc(id, name) {
+   function addProduct(id, name) {
 
     if (cart[id]) {
         cart[id].qty++;
     } else {
         cart[id] = {
             product_id: id,
-            name,
+            name: name,
             qty: 1
         };
     }
 
     renderCart();
 }
+
 
 
     document.getElementById('supplier').addEventListener('change', function() {
@@ -298,6 +299,25 @@
     }
 
 </script>
+
+<!-- store qty as per edit -->
+<script>
+function updateQty(productId, qty) {
+
+    qty = parseInt(qty);
+
+    if (qty < 1 || isNaN(qty)) {
+        qty = 1;
+    }
+
+    if (cart[productId]) {
+        cart[productId].qty = qty;   // 🔥 ACTUAL FIX
+    }
+
+    renderCart(); // re-render + hidden input update
+}
+</script>
+
 
 <!-- All product show -->
 <script>

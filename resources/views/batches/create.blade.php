@@ -54,16 +54,13 @@
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Warehouse</option>
                                                     @foreach ($warehouses as $w)
-                                                    <option value="{{ $w->id }}" selected
-                                                        {{ old('warehouse_id', $batch->warehouse_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                    <option value="{{ $w->id }}"
+                                                        {{ old('warehouse_id', $batch->warehouse_id ?? Auth::user()->warehouse_id) == $w->id ? 'selected' : '' }}>
                                                         {{ $w->name }}
                                                     </option>
                                                     @endforeach
                                                 </select>
-                                            </div>
-
-                                            <input type="hidden" name="warehouse_id" value="{{ $warehouses->first()->id }}">
-
+                                            </div>                                   
 
                                             {{-- Category --}}
                                             <div class="col-md-4">
@@ -82,6 +79,7 @@
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
+ 
 
                                             {{-- Sub Category --}}
                                             <div class="col-md-4">
@@ -138,6 +136,19 @@
                                                 @endif
                                                 @endif
                                             </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Unit <span class="text-danger">*</span></label>
+                                                <select name="unit" id="unit" class="form-select">
+                                                    <option value="">Select Unit</option>
+                                                    <option value="kg" {{ old('unit', $batch->unit ?? '') == 'kg' ? 'selected' : '' }}>Kg</option>
+                                                    <option value="ltr" {{ old('unit', $batch->unit ?? '') == 'ltr' ? 'selected' : '' }}>Ltr</option>
+                                                    <option value="quintal" {{ old('unit', $batch->unit ?? '') == 'quintal' ? 'selected' : '' }}>Quintal</option>
+                                                    <option value="ton" {{ old('unit', $batch->unit ?? '') == 'ton' ? 'selected' : '' }}>Ton</option>
+                                                    <!-- Add more units if needed -->
+                                                </select>
+                                            </div>
+
 
                                             {{-- Batch Number --}}
                                             <div class="col-md-4">
@@ -296,4 +307,15 @@
         await loadProducts(wid, sid, pid);
         await loadQuantity(wid, pid);
     });
+</script>
+
+<script>
+    $(document).ready(function () {
+    let wid = $('#warehouse_id').val();
+
+    if (wid) {
+        loadCategories(wid);   // ✅ auto load categories
+    }
+});
+
 </script>

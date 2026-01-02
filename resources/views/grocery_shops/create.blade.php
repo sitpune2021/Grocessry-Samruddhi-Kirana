@@ -120,7 +120,7 @@
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Mobile No</label>
                                                     <input type="text"
-                                                        name="contact_number"
+                                                        name="mobile_no"
                                                         maxlength="10"
                                                         class="form-control"
                                                         placeholder="Mobile No"

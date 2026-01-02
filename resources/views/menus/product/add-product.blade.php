@@ -124,6 +124,7 @@
                                                         @enderror
                                                     </div>
                                                 </div>
+                                                
 
                                                 {{-- Product Name --}}
                                                 <div class="col-md-4">

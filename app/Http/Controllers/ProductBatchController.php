@@ -34,8 +34,8 @@ class ProductBatchController extends Controller
         return view('batches.create', [
             'mode'       => 'add',
             'batch'      => null,
-            'warehouses' => $warehouses,   
-            'categories' => collect(),           // Category::all() hatao
+            'warehouses' => $warehouses,
+            'categories' => collect(),   // AJAX se load honge
             'products'   => collect(),
         ]);
     }
@@ -53,7 +53,8 @@ class ProductBatchController extends Controller
             $validated = $request->validate([
                 'warehouse_id' => 'required|exists:warehouses,id',
                 //'category_id' => 'required|exists:categories,id',
-                'category_id' => 'required|exists:warehouse_stock,category_id',
+                //'category_id' => 'required|exists:warehouse_stock,category_id',
+                'category_id' => 'required|exists:categories,id',
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'product_id'  => 'required|exists:products,id',
                 'batch_no'    => 'required|string|max:50',
@@ -198,12 +199,18 @@ class ProductBatchController extends Controller
 
     public function getCategoriesByWarehouse($warehouseId)
     {
-        return WarehouseStock::where('warehouse_id', $warehouseId)
-            ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
+        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId) // ✅ FIX
+            ->join(
+                'categories',
+                'categories.id',
+                '=',
+                'warehouse_stock.category_id'
+            )
             ->select('categories.id', 'categories.name')
             ->distinct()
             ->get();
     }
+
 
     public function getProductsByWarehouseCategory($warehouseId, $categoryId)
     {

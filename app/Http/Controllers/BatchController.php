@@ -34,6 +34,7 @@ class BatchController extends Controller
             'product_id' => 'required|exists:products,id',
             'batch_no' => 'required|string|max:50',
             'expiry_date' => 'required|date',
+            'unit'        => 'nullable|string',
             'quantity' => 'required|integer|min:1',
         ]);
 
@@ -199,7 +200,7 @@ class BatchController extends Controller
             'ip'          => request()->ip(),
             'deleted_at'  => now()->toDateTimeString(),
         ]);
-        
+
         return response()->json([
             'status'  => true,
             'message' => 'Batch deleted successfully'

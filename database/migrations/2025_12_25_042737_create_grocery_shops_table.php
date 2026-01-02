@@ -15,7 +15,7 @@ return new class extends Migration
     $table->id();
     $table->string('shop_name');
     $table->string('owner_name')->nullable();
-    $table->string('mobile_no', 15)->nullable();
+    $table->string('mobile_no')->nullable();
 
     $table->text('address')->nullable();
     $table->unsignedBigInteger('state_id')->nullable();
