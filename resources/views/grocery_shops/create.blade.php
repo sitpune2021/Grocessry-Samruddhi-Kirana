@@ -25,10 +25,10 @@
                             <div class="col-12">
 
                                 <div class="card shadow-sm border-0 rounded-3">
-                                       
+
                                     <div class="card-header d-flex align-items-center">
                                         <h4 class="mb-0 flex-grow-1">
-                                           {{ isset($shop) ? 'Update Shop' : 'Create Shop' }}
+                                            {{ isset($shop) ? 'Update Shop' : 'Create Shop' }}
                                         </h4>
                                     </div>
 
@@ -77,9 +77,9 @@
                                             <div class="row">
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Mobile No</label>
-                                                    <input type="text" 
-                                                     name="contact_number" 
-                                                     maxlength="10"
+                                                    <input type="text"
+                                                        name="mobile_no"
+                                                        maxlength="10"
                                                         class="form-control"
                                                         placeholder="Mobile No"
                                                         value="{{ old('mobile_no', $shop->mobile_no ?? '') }}">
@@ -124,12 +124,12 @@
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Address</label>
                                                     <textarea name="address"
-                                                        id= "address"
+                                                        id="address"
                                                         class="form-control"
                                                         rows="2"
                                                         placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
-                                                        
-                                                   @error('address')
+
+                                                    @error('address')
                                                     <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>

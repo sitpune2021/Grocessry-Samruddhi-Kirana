@@ -39,20 +39,20 @@ class GroceryShopController extends Controller
         $request->validate([
             'shop_name'   => 'required|string|max:255',
             'owner_name'  => 'required|string|max:255',
-            'contact_number'   => 'required|digits:10',
-            'district_id' => 'required',
-            'taluka_id'   => 'required',
-            'address'     => 'required|string|max:500'
+            'mobile_no'   => 'required|digits:10', // match input name
+            'district_id' => 'required|exists:districts,id',
+            'taluka_id'   => 'required|exists:talukas,id',
+            'address'     => 'required|string|max:500',
         ]);
 
         GroceryShop::create([
             'shop_name'   => $request->shop_name,
-            'owner_name' => $request->owner_name,
-            'mobile_no'  => $request->mobile_no,
-            'address'    => $request->address,
+            'owner_name'  => $request->owner_name,
+            'mobile_no'   => $request->mobile_no, // use input name here
+            'address'     => $request->address,
             'district_id' => $request->district_id,
-            'taluka_id'  => $request->taluka_id,
-            'status'     => 'active',
+            'taluka_id'   => $request->taluka_id,
+            'status'      => 'active',
         ]);
 
         return redirect()->route('grocery-shops.index')
