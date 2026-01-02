@@ -1,8 +1,8 @@
 
     <?php
 
-use App\Http\Middleware\PermissionMiddleware;
-use Illuminate\Foundation\Application;
+    use App\Http\Middleware\PermissionMiddleware;
+    use Illuminate\Foundation\Application;
     use Illuminate\Foundation\Configuration\Exceptions;
     use Illuminate\Foundation\Configuration\Middleware;
 
@@ -26,6 +26,11 @@ use Illuminate\Foundation\Application;
             ]);
             $middleware->alias([
                 'permission' => PermissionMiddleware::class,
+            ]);
+        })
+        ->withMiddleware(function ($middleware) {
+            $middleware->web(append: [
+                \App\Http\Middleware\VerifyCsrfToken::class,
             ]);
         })
         ->withExceptions(function (Exceptions $exceptions): void {
