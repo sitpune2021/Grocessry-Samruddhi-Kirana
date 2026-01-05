@@ -72,13 +72,18 @@
                                                     <label class="form-label fw-medium">Mobile <span
                                                             class="text-danger">*</span></label>
                                                     <input type="text" id="mobile" name="mobile"
-                                                        class="form-control" value="{{ $supplier->mobile ?? '' }}"
-                                                        placeholder="Enter mobile" maxlength="10" {{ $readonly }}>
-                                                    <div id="mobile-error" class="text-danger mt-1"></div>
+                                                        class="form-control"
+                                                        value="{{ old('mobile', $supplier->mobile ?? '') }}"
+                                                        placeholder="Enter mobile" maxlength="10"
+                                                        pattern="[6-9][0-9]{9}"
+                                                        title="Enter a valid 10-digit mobile number starting with 6-9"
+                                                        {{ $readonly }}>
+                                                    <div id="mobile-error" class="text-danger mt-1">
+                                                        @error('mobile')
+                                                            {{ $message }}
+                                                        @enderror
+                                                    </div>
                                                 </div>
-
-
-
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Email</label>
@@ -148,39 +153,7 @@
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Bill No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="bill_no" class="form-control"
-                                                        value="{{ $supplier->bill_no ?? old('bill_no') }}"
-                                                        placeholder="Enter bill number" {{ $readonly }}>
-                                                    @error('bill_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Challan No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="challan_no" class="form-control"
-                                                        value="{{ $supplier->challan_no ?? old('challan_no') }}"
-                                                        placeholder="Enter challan number" {{ $readonly }}>
-                                                    @error('challan_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Batch No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="batch_no" class="form-control"
-                                                        value="{{ $supplier->batch_no ?? old('batch_no') }}"
-                                                        placeholder="Enter batch number" {{ $readonly }}>
-                                                    @error('batch_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                              
 
                                                 {{-- Address --}}
                                                 <div class="col-md-6">

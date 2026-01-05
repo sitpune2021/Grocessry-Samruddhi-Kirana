@@ -23,10 +23,8 @@ class GroceryShop extends Model
     {
         return $this->belongsTo(District::class);
     }
- public function taluka()
+    public function taluka()
     {
         return $this->belongsTo(Talukas::class); // create Taluka model
     }
 }
-
-

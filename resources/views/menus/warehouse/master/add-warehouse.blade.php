@@ -66,9 +66,9 @@
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Type</option>
-                                                        <!-- <option value="master"
+                                                        <option value="master"
                                                             {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>
-                                                            Master</option> -->
+                                                            Master</option>
                                                         <option value="district"
                                                             {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>
                                                             District</option>

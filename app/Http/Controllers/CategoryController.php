@@ -17,15 +17,19 @@ class CategoryController extends Controller
      */
     public function index()
     {
-         $user = Auth::user();
+        $user = Auth::user();
 
-        $categories = Category::with('brand')
-            ->where('warehouse_id', $user->warehouse_id)
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $query = Category::with('brand')->orderBy('id', 'desc');
+
+        if ($user->role_id != 1) {
+            $query->where('warehouse_id', $user->warehouse_id);
+        }
+
+        $categories = $query->paginate(10);
 
         return view('menus.category.index', compact('categories'));
     }
+
 
 
     /**
@@ -149,28 +153,56 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    // public function edit($id)
+    // {
+    //     Log::info('Category Edit Request Received', ['id' => $id]);
+
+    //     $category = Category::with('brand')->find($id);
+
+    //     if (!$category) {
+    //         Log::warning('Category Not Found for Edit', ['id' => $id]);
+
+    //         return redirect()->route('category.index')
+    //             ->with('error', 'Category not found');
+    //     }
+
+    //     $brands = Brand::all();   // ✅ get all brands
+    //     $mode   = 'edit';
+
+    //     return view('menus.category.add-category', compact(
+    //         'category',
+    //         'brands',
+    //         'mode'
+    //     ));
+    // }
+
     public function edit($id)
     {
         Log::info('Category Edit Request Received', ['id' => $id]);
 
-        $category = Category::with('brand')->find($id);
+        $user = Auth::user();
 
-        if (!$category) {
-            Log::warning('Category Not Found for Edit', ['id' => $id]);
+        $query = Category::with('brand')->where('id', $id);
 
-            return redirect()->route('category.index')
-                ->with('error', 'Category not found');
+        if ($user->role_id != 1) {
+            $query->where('warehouse_id', $user->warehouse_id);
         }
 
-        $brands = Brand::all();   // ✅ get all brands
+        $category = $query->first();
+
+        if (!$category) {
+            Log::warning('Category Not Found or Unauthorized', ['id' => $id]);
+
+            return redirect()->route('category.index')
+                ->with('error', 'Category not found or access denied');
+        }
+
+        $brands = Brand::all();
         $mode   = 'edit';
 
-        return view('menus.category.add-category', compact(
-            'category',
-            'brands',
-            'mode'
-        ));
+        return view('menus.category.add-category', compact('category', 'brands', 'mode'));
     }
+
 
 
 
@@ -189,9 +221,13 @@ class CategoryController extends Controller
             $user = Auth::user();
 
             // Fetch category ONLY from user's warehouse
-            $category = Category::where('id', $id)
-                ->where('warehouse_id', $user->warehouse_id)
-                ->first();
+            $query = Category::where('id', $id);
+
+            if ($user->role_id != 1) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            }
+
+            $category = $query->first();
 
             if (!$category) {
                 Log::warning('Category Not Found or Unauthorized', [
@@ -211,12 +247,13 @@ class CategoryController extends Controller
                     'string',
                     'max:255',
                     Rule::unique('categories')
-                        ->where(
-                            fn($q) =>
-                            $q->where('warehouse_id', $user->warehouse_id)
+                        ->when(
+                            $user->role_id != 1,
+                            fn($q) => $q->where('warehouse_id', $user->warehouse_id)
                         )
                         ->ignore($category->id),
                 ],
+
                 'slug' => 'required|string|max:255',
             ]);
 
@@ -266,7 +303,15 @@ class CategoryController extends Controller
         ]);
 
         // Find category
-        $category = Category::find($id);
+       $user = Auth::user();
+
+        $query = Category::where('id', $id);
+
+        if ($user->role_id != 1) {
+            $query->where('warehouse_id', $user->warehouse_id);
+    }
+
+        $category = $query->first();
 
         if (!$category) {
             Log::warning("Category not found for delete", [

@@ -35,13 +35,11 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <form method="POST"
-                                            action="{{ isset($shop)
-                                                    ? route('grocery-shops.update', $shop->id)
-                                                    : route('grocery-shops.store') }}">
+                                            action="{{ isset($shop) ? route('grocery-shops.update', $shop->id) : route('grocery-shops.store') }}">
 
                                             @csrf
-                                            @if(isset($shop))
-                                            @method('PUT')
+                                            @if (isset($shop))
+                                                @method('PUT')
                                             @endif
 
                                             {{-- Row 1 --}}
@@ -50,20 +48,21 @@
                                                 {{-- District --}}
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">District Warehouse</label>
-                                                    <select name="district_warehouse_id" id="district_id" class="form-select">
+                                                    <select name="district_warehouse_id" id="district_id"
+                                                        class="form-select">
                                                         <option value="">Select District Warehouse</option>
 
-                                                        @foreach($districtWarehouses as $warehouse)
-                                                        <option value="{{ $warehouse->id }}">
-                                                            {{ $warehouse->name }}
-                                                        </option>
+                                                        @foreach ($districtWarehouses as $warehouse)
+                                                            <option value="{{ $warehouse->id }}">
+                                                                {{ $warehouse->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
 
 
 
                                                     @error('district_warehouse_id')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
@@ -76,7 +75,7 @@
                                                         <option value="">Select Taluka</option>
                                                     </select>
                                                     @error('taluka_id')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                        <span class="text-danger">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
@@ -87,27 +86,21 @@
                                             <div class="row">
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Shop Name</label>
-                                                    <input type="text"
-                                                        id="shop_name"
-                                                        name="shop_name"
-                                                        class="form-control"
-                                                        placeholder="Shop Name"
+                                                    <input type="text" id="shop_name" name="shop_name"
+                                                        class="form-control" placeholder="Shop Name"
                                                         value="{{ old('shop_name', $shop->shop_name ?? '') }}">
                                                     @error('shop_name')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Owner Name</label>
-                                                    <input type="text"
-                                                        id="owner_name"
-                                                        name="owner_name"
-                                                        class="form-control"
-                                                        placeholder="Owner Name"
+                                                    <input type="text" id="owner_name" name="owner_name"
+                                                        class="form-control" placeholder="Owner Name"
                                                         value="{{ old('owner_name', $shop->owner_name ?? '') }}">
                                                     @error('owner_name')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
@@ -119,28 +112,21 @@
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Mobile No</label>
-                                                    <input type="text"
-                                                        name="mobile_no"
-                                                        maxlength="10"
-                                                        class="form-control"
-                                                        placeholder="Mobile No"
+                                                    <input type="text" name="mobile_no" maxlength="10"
+                                                        class="form-control" placeholder="Mobile No"
                                                         value="{{ old('mobile_no', $shop->mobile_no ?? '') }}">
                                                     @error('mobile_no')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
 
 
                                                 <div class="col-md-6 col-12 mb-3">
                                                     <label class="form-label">Address</label>
-                                                    <textarea name="address"
-                                                        id="address"
-                                                        class="form-control"
-                                                        rows="2"
-                                                        placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
+                                                    <textarea name="address" id="address" class="form-control" rows="2" placeholder="Address">{{ old('address', $shop->address ?? '') }}</textarea>
 
                                                     @error('address')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
                                             </div>
