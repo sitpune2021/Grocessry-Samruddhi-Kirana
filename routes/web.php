@@ -442,7 +442,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
     Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
-    Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+    Route::get(
+    '/sell/ws/products/{warehouse}/{subCategory}',
+    [StockController::class, 'getProductsBySubCategory']
+)->middleware('auth');
+
+    // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
     // AJAX route to get products by category

@@ -18,7 +18,6 @@ use App\Models\User;
 class PurchaseOrderController extends Controller
 {
 
-
     public function index()
     {
         $orders = PurchaseOrder::with(['items.product'])
@@ -32,14 +31,15 @@ class PurchaseOrderController extends Controller
     {
         $user = Auth::user();
 
-        // Categories (warehouse_stock se)
-        $categories = DB::table('warehouse_stock')
-            ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
-            ->where('warehouse_stock.warehouse_id', $user->warehouse_id)
-            ->select('categories.id', 'categories.name')
-            ->distinct()
-            ->orderBy('categories.name')
+        $categories = Category::whereHas('products', function ($query) use ($user) {
+            if ($user->role_id != 1) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            }
+        })
+            ->select('id', 'name')
+            ->orderBy('name')
             ->get();
+
 
         // CORRECT supplier query
         $suppliers = Supplier::where('warehouse_id', $user->warehouse_id)
@@ -53,27 +53,35 @@ class PurchaseOrderController extends Controller
     {
         $user = Auth::user();
 
-        return DB::table('warehouse_stock')
-            ->join('sub_categories', 'sub_categories.id', '=', 'warehouse_stock.sub_category_id')
-            ->where('warehouse_stock.warehouse_id', $user->warehouse_id)
-            ->where('warehouse_stock.category_id', $category_id)
-            ->select('sub_categories.id', 'sub_categories.name')
-            ->distinct()
+        $subCategories = SubCategory::where('category_id', $category_id)
+            ->whereHas('products', function ($query) use ($user) {
+
+                if ($user->role_id != 1) { // Not Super Admin
+                    $query->where('warehouse_id', $user->warehouse_id);
+                }
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
             ->get();
+
+        return response()->json($subCategories);
     }
 
     public function getProducts($sub_category_id)
     {
         $user = Auth::user();
 
-        return DB::table('warehouse_stock')
-            ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
-            ->where('warehouse_stock.warehouse_id', $user->warehouse_id)
-            ->where('warehouse_stock.sub_category_id', $sub_category_id)
-            ->select('products.id', 'products.name')
-            ->distinct()
+        $products = Product::where('sub_category_id', $sub_category_id)
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
             ->get();
+
+        return response()->json($products);
     }
+
 
     public function store(Request $request)
     {
@@ -100,13 +108,16 @@ class PurchaseOrderController extends Controller
 
             foreach ($items as $item) {
 
+                $product = Product::where('id', $item['product_id'])
+                    ->where('warehouse_id', $user->warehouse_id)
+                    ->firstOrFail(); // 🔒 HARD BLOCK
+
                 $po->items()->create([
-                    'product_id' => $item['product_id'],
+                    'product_id' => $product->id,
                     'quantity'   => $item['qty'],
                 ]);
 
-                Product::where('id', $item['product_id'])
-                    ->increment('stock', $item['qty']);
+                $product->increment('stock', $item['qty']);
             }
 
             return $po; // must return
@@ -120,23 +131,26 @@ class PurchaseOrderController extends Controller
 
     public function getAllProducts(Request $request)
     {
+        $user = Auth::user();
         $perPage = 10;
 
-        $products = Product::select('id', 'name', 'base_price')
+        $products = Product::where('warehouse_id', $user->warehouse_id)
+            ->select('id', 'name')
             ->orderBy('name')
             ->paginate($perPage);
 
         return response()->json($products);
     }
 
-    public function getAvailableQty($productId)
-    {
-        $qty = ProductBatch::where('product_id', $productId)->sum('quantity');
 
-        return response()->json([
-            'available_qty' => $qty
-        ]);
-    }
+    // public function getAvailableQty($productId)
+    // {
+    //     $qty = ProductBatch::where('product_id', $productId)->sum('quantity');
+
+    //     return response()->json([
+    //         'available_qty' => $qty
+    //     ]);
+    // }
 
     public function invoice(PurchaseOrder $po)
     {
@@ -152,6 +166,4 @@ class PurchaseOrderController extends Controller
         //     'po' => $po->load('items.product')
         // ]);
     }
-
-    
 }
