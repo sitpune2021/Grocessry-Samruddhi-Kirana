@@ -15,6 +15,7 @@ use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Unit;
 
 class ProductBatchController extends Controller
 {
@@ -30,6 +31,7 @@ class ProductBatchController extends Controller
         $user = Auth::user();
 
         $warehouses = Warehouse::where('id', $user->warehouse_id)->get();
+        $units = Unit::select('id', 'name')->get();
 
         return view('batches.create', [
             'mode'       => 'add',
@@ -37,6 +39,7 @@ class ProductBatchController extends Controller
             'warehouses' => $warehouses,
             'categories' => collect(),   // AJAX se load honge
             'products'   => collect(),
+            'units' => $units
         ]);
     }
 
@@ -61,6 +64,8 @@ class ProductBatchController extends Controller
                 'mfg_date'    => 'nullable|date',
                 'expiry_date' => 'nullable|date|after:mfg_date',
                 'quantity'    => 'required|integer|min:1',
+                'unit_id' => 'required|exists:units,id',
+
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
@@ -82,6 +87,7 @@ class ProductBatchController extends Controller
                 'mfg_date'    => $validated['mfg_date'],
                 'expiry_date' => $expiryDate,
                 'quantity'    => $validated['quantity'],
+                'unit_id' => $validated['unit_id']
             ]);
 
             // Stock IN entry
@@ -107,25 +113,41 @@ class ProductBatchController extends Controller
 
     public function show($id)
     {
-        $batch = ProductBatch::with('product.category')->findOrFail($id);
+        $user = Auth::user();
+        $batch = ProductBatch::with([
+            'product.category',
+            'subCategory'
+        ])->findOrFail($id);
+        $warehouses = Warehouse::where('id', $user->warehouse_id)->get();
+        $units = Unit::select('id', 'name')->get();
 
-        return view('batches.create', [        // SAME PAGE
-            'mode'       => 'view',          // FIX
+        return view('batches.create', [
+            'mode'       => 'view',
             'batch'      => $batch,
             'categories' => Category::all(),
+            'warehouses' => $warehouses,
+            'units' => $units,
+            'subCategories' => SubCategory::where(
+                'category_id',
+                $batch->product->category_id   // ✅ IMPORTANT
+            )->get(),
             'products'   => Product::where('category_id', $batch->category_id)->get(),
         ]);
     }
 
     public function edit($id)
     {
-        $batch = ProductBatch::findOrFail($id);
-
+        $units = Unit::select('id', 'name')->get();
+        $batch = ProductBatch::with([
+            'product.category',
+            'subCategory'
+        ])->findOrFail($id);
         return view('batches.create', [
             'mode'          => 'edit',
             'batch'         => $batch,
             'warehouses'    => Warehouse::all(),
             'categories'    => Category::all(),
+            'units' => $units,
             'subCategories' => SubCategory::where('category_id', $batch->category_id)->get(), // ✅
             'products'      => Product::where('sub_category_id', $batch->sub_category_id)->get(), // ✅
         ]);
@@ -143,6 +165,8 @@ class ProductBatchController extends Controller
             'mfg_date'         => 'nullable|date',
             'expiry_date'      => 'nullable|date|after:mfg_date',
             'quantity'         => 'required|integer|min:1',
+            'unit_id' => 'required|exists:units,id',
+
         ]);
 
         $oldQty = $batch->quantity;          // 👈 OLD
@@ -215,9 +239,9 @@ class ProductBatchController extends Controller
     public function getProductsByWarehouseCategory($warehouseId, $categoryId)
     {
         return WarehouseStock::where([
-                'warehouse_id' => $warehouseId,
-                'category_id'  => $categoryId,
-            ])
+            'warehouse_id' => $warehouseId,
+            'category_id'  => $categoryId,
+        ])
             ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
             ->select('products.id', 'products.name')
             ->distinct()
@@ -264,7 +288,4 @@ class ProductBatchController extends Controller
             'quantity' => (int) $qty
         ]);
     }
-
-
-
 }

@@ -26,7 +26,7 @@
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>sr no</th>
                             <th>Return No</th>
                             <th>From</th>
                             <th>To</th>

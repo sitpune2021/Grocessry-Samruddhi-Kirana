@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\District;
+use Illuminate\Validation\Rule;
 
 class MasterWarehouseController extends Controller
 {
@@ -35,134 +36,32 @@ class MasterWarehouseController extends Controller
         return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
     }
 
-    //     public function store(Request $request)
-    //     {
-    //       $request->validate([
-    //     'name' => 'required|string|max:255|unique:warehouses,name',
-    //     'type' => 'required|in:master,district,taluka',
-    //     'contact_person' => 'required|string|min:3|max:50',
-    //     'email' => 'required|email',
-    //     'contact_number' => 'required|digits:10',
-    //     'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-    //     'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-    //     'taluka_id' => 'nullable|required_if:type,taluka|integer',
-    //     'address'  => 'required|string|max:500'
-    // ]);
-
-
-    //         $data = [
-    //             'name'           => $request->name,
-    //             'type'           => $request->type,
-    //             'address'        => $request->address,
-    //             'contact_person' => $request->contact_person,
-    //             'contact_number' => $request->contact_number,
-    //             'email'          => $request->email,
-    //             'country_id'     => $request->country_id,
-    //             'state_id'       => $request->state_id,
-    //             'status'         => 'active',
-    //         ];
-
-    //         if ($request->type === 'master') {
-    //             $data['parent_id']   = null;
-    //             $data['district_id'] = $request->district_id;;
-    //             $data['taluka_id']   = null;
-    //         }
-
-    //         if ($request->type === 'district') {
-    //             $data['parent_id']   = $request->parent_id;
-    //             $data['district_id'] = $request->district_id;
-    //             $data['taluka_id']   = null;
-    //         }
-
-    //         if ($request->type === 'taluka') {
-    //             $data['parent_id']   = $request->parent_id;
-    //             $data['district_id'] = $request->district_id;
-    //             $data['taluka_id']   = $request->taluka_id;
-    //         }
-
-    //         Warehouse::create($data);
-
-    //         User::create([
-    //             'first_name' => 'Samruddh',
-    //             'last_name' => 'Kirana',
-    //             'email' => 'admin@gmail.com',
-    //             'password' => Hash::make('Admin@123'),
-    //             'role_id' => 1,
-    //             'mobile' => 9503654539,
-    //             'warehouse_id' => $warehouse->id
-    //         ]);
-
-    //         return redirect()->route('warehouse.index')
-    //             ->with('success', 'Warehouse created successfully');
-    //     }
-
-
+   
 
     public function store(Request $request)
     {
-        Log::info('Warehouse store request received', [
-            'email' => $request->email,
-            'type'  => $request->type
-        ]);
+        $request->validate(
+            [
+                'name' => 'required|string|max:255|unique:warehouses,name',
+                'type' => 'required|in:master,district,taluka',
+                'contact_person' => 'required|string|min:3|max:50',
+                'email' => 'required|email',
+                'contact_number' => [
+                    'required',
+                    'regex:/^[6-9]\d{9}$/',
+                    Rule::unique('warehouses', 'contact_number'),
+                ],
 
-        $request->validate([
-            'name'            => 'required|string|max:255|unique:warehouses,name',
-            'type'            => 'required|in:master,district,taluka',
-            'contact_person'  => 'required|string|min:3|max:50',
-            'email'           => 'required|email|unique:users,email',
-            'contact_number'  => 'required|digits:10',
-            'parent_id'       => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'district_id'     => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'taluka_id'       => 'nullable|required_if:type,taluka|integer',
-            'address'         => 'required|string|max:500',
-        ]);
-
-        Log::info('Warehouse validation passed', [
-            'name' => $request->name
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            /* ======================
-           Prepare Warehouse Data
-        ====================== */
-            $data = [
-                'name'           => $request->name,
-                'type'           => $request->type,
-                'address'        => $request->address,
-                'contact_person' => $request->contact_person,
-                'contact_number' => $request->contact_number,
-                'email'          => $request->email,
-                'country_id'     => $request->country_id,
-                'state_id'       => $request->state_id,
-                'status'         => 'active',
-            ];
-
-            if ($request->type === 'master') {
-                $data['parent_id']   = null;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = null;
-            }
-
-            if ($request->type === 'district') {
-                $data['parent_id']   = $request->parent_id;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = null;
-            }
-
-            if ($request->type === 'taluka') {
-                $data['parent_id']   = $request->parent_id;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = $request->taluka_id;
-            }
-
-            Log::info('Creating warehouse', $data);
-
-            /* ======================
-           Create Warehouse
-        ====================== */
-            Warehouse::create($data);
+                'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+                'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+                'taluka_id' => 'nullable|required_if:type,taluka|integer',
+                'address'  => 'required|string|max:500'
+            ],
+            [
+                'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+                'contact_number.unique' => 'This mobile number is already registered.',
+            ]
+        );
 
 
             /* ======================
@@ -221,8 +120,7 @@ class MasterWarehouseController extends Controller
                 'error' => 'Something went wrong. Please try again.'
             ])->withInput();
         }
-    }
-
+}
 
 
     public function show($id)
@@ -275,116 +173,36 @@ class MasterWarehouseController extends Controller
         }
     }
 
+
     public function update(Request $request, $id)
     {
-        Log::info('Warehouse update request received', [
-            'warehouse_id' => $id
+        $warehouse = Warehouse::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:master,district,taluka',
+            'address' => 'nullable|string|max:500',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_number' => [
+                'required',
+                'regex:/^[6-9]\d{9}$/',
+                Rule::unique('warehouses', 'contact_number')->ignore($id),
+            ],
+            'email' => 'nullable|email',
+        ], [
+            'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+            'contact_number.unique' => 'This mobile number is already registered.',
         ]);
 
-        $request->validate([
-            'name'            => 'required|string|max:255|unique:warehouses,name,' . $id,
-            'type'            => 'required|in:master,district,taluka',
-            'contact_person'  => 'required|string|min:3|max:50',
-            'email'           => 'required|email',
-            'contact_number'  => 'required|digits:10',
-            'parent_id'       => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'district_id'     => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-            'taluka_id'       => 'nullable|required_if:type,taluka|integer',
-            'address'         => 'required|string|max:500',
-        ]);
+        // Add optional fields
+        $validated['parent_id'] = $request->parent_id ?? null;
+        $validated['district_id'] = $request->district_id ?? null;
+        $validated['taluka_id'] = $request->taluka_id ?? null;
 
-        DB::beginTransaction();
+        $warehouse->update($validated);
 
-        try {
-            $warehouse = Warehouse::findOrFail($id);
-
-            /* ======================
-           Prepare Warehouse Data
-        ====================== */
-            $data = [
-                'name'           => $request->name,
-                'type'           => $request->type,
-                'address'        => $request->address,
-                'contact_person' => $request->contact_person,
-                'contact_number' => $request->contact_number,
-                'email'          => $request->email,
-            ];
-
-            if ($request->type === 'master') {
-                $data['parent_id']   = null;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = null;
-            }
-
-            if ($request->type === 'district') {
-                $data['parent_id']   = $request->parent_id;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = null;
-            }
-
-            if ($request->type === 'taluka') {
-                $data['parent_id']   = $request->parent_id;
-                $data['district_id'] = $request->district_id;
-                $data['taluka_id']   = $request->taluka_id;
-            }
-
-            Log::info('Updating warehouse', [
-                'warehouse_id' => $id,
-                'data'         => $data
-            ]);
-
-            $warehouse->update($data);
-
-            /* ======================
-           Update Linked User
-        ====================== */
-            $user = User::where('warehouse_id', $warehouse->id)->first();
-
-            if ($user) {
-                $fullName  = trim($request->contact_person);
-                $nameParts = preg_split('/\s+/', $fullName);
-
-                $firstName = $nameParts[0];
-                $lastName  = count($nameParts) > 1
-                    ? implode(' ', array_slice($nameParts, 1))
-                    : null;
-
-                $user->update([
-                    'first_name' => $firstName,
-                    'last_name'  => $lastName,
-                    'email'      => $request->email,
-                    'mobile'     => $request->contact_number,
-                ]);
-
-                Log::info('Warehouse user updated', [
-                    'user_id'      => $user->id,
-                    'warehouse_id' => $warehouse->id
-                ]);
-            }
-
-            DB::commit();
-
-            Log::info('Warehouse update committed', [
-                'warehouse_id' => $warehouse->id
-            ]);
-
-            return redirect()
-                ->route('warehouse.index')
-                ->with('success', 'Warehouse updated successfully');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Warehouse update failed', [
-                'warehouse_id' => $id,
-                'message'      => $e->getMessage(),
-                'file'         => $e->getFile(),
-                'line'         => $e->getLine()
-            ]);
-
-            return back()
-                ->with('error', 'Something went wrong while updating warehouse.')
-                ->withInput();
-        }
+        return redirect()->route('warehouse.index')
+            ->with('success', 'Warehouse updated successfully.');
     }
 
 
