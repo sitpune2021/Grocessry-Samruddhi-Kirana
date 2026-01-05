@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
-use App\Models\WarehouseTransfer;
+use App\Models\DistrictToTalukaTransfer;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
 
 
-class WarehouseTransferController extends Controller
+class DistrictToTalukaTransferController extends Controller
 {
 
     public function index()
     {
         // Eager load related models for display
-        $transfers = WarehouseTransfer::with([
+        $transfers = DistrictToTalukaTransfer::with([
             'fromWarehouse',
             'toWarehouse',
             'category',
@@ -29,12 +29,12 @@ class WarehouseTransferController extends Controller
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
-        return view('warehouse.index', compact('transfers'));
+       return view('district-taluka-transfers.index', compact('transfers'));
     }
 
     public function create()
     {
-        return view('warehouse.transfer', [
+        return view('district-taluka-transfers.transfer', [
             'warehouses' => Warehouse::where('status', 'active')->get(),
             'categories' => collect(), // initially empty
             'products'   => collect(), // empty collection to avoid undefined variable
@@ -68,7 +68,7 @@ class WarehouseTransferController extends Controller
     // Multiple product store function
     public function store(Request $request)
     {
-
+        
         $request->validate([
             'items'                         => 'required|array|min:1',
             'items.*.from_warehouse_id'     => 'required|exists:warehouses,id',
@@ -90,7 +90,7 @@ class WarehouseTransferController extends Controller
                     throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
                 }
 
-                WarehouseTransfer::create([
+                DistrictToTalukaTransfer::create([
                     'from_warehouse_id' => $item['from_warehouse_id'],
                     'to_warehouse_id'   => $item['to_warehouse_id'],
                     'category_id'       => $item['category_id'],
@@ -104,10 +104,9 @@ class WarehouseTransferController extends Controller
         });
 
         return redirect()
-            ->route('transfer.index')
+            ->route('district-taluka-transfer.index')
             ->with('success', 'Transfer entry saved successfully');
     }
-
 
     public function getWarehouseStock($warehouse_id, $batch_id)
     {
@@ -124,7 +123,7 @@ class WarehouseTransferController extends Controller
     // Edit Method 
     public function edit($id)
     {
-        $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
+        $transfer = DistrictToTalukaTransfer::with(['product', 'batch'])->findOrFail($id);
 
         $categories = Category::whereIn('id', function ($q) use ($transfer) {
             $q->select('category_id')
@@ -137,7 +136,7 @@ class WarehouseTransferController extends Controller
         $selectedProducts = [$transfer->product_id];
         $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
 
-        return view('warehouse.transfer', compact(
+        return view('district-taluka-transfers.transfer', compact(
             'transfer',
             'categories',
             'products',
@@ -151,7 +150,7 @@ class WarehouseTransferController extends Controller
     // Update Method
   public function update(Request $request, $id)
 {
-    $transfer = WarehouseTransfer::findOrFail($id);
+    $transfer = DistrictToTalukaTransfer::findOrFail($id);
 
     $validated = $request->validate([
         'from_warehouse_id' => 'required',
@@ -176,31 +175,29 @@ class WarehouseTransferController extends Controller
         ]);
     });
 
-    return redirect()->route('transfer.index')
+    return redirect()
+    ->route('district-taluka-transfer.index')
         ->with('success', 'Transfer updated successfully');
 }
 
 
-
-
-
     public function destroy($id)
     {
-        $batch = ProductBatch::findOrFail($id);
+        $batch = DistrictToTalukaTransfer::findOrFail($id);
         $batch->delete(); // soft delete
-        return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
+        return redirect()->route('district-taluka-transfer.index')->with('success', 'Batch deleted successfully');
     }
 
     public function show($id)
     {
-        $transfer = WarehouseTransfer::with([
+        $transfer = DistrictToTalukaTransfer::with([
             'product',
             'batch',
             'fromWarehouse',
             'toWarehouse'
         ])->findOrFail($id);
 
-        return view('warehouse.show', compact('transfer'));
+        return view('district-taluka-transfers.show', compact('transfer'));
     }
 
     public function checkBatchValidity($batch_id)
