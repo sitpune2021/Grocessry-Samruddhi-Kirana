@@ -36,6 +36,8 @@ class MasterWarehouseController extends Controller
         return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
     }
 
+   
+
     public function store(Request $request)
     {
         $request->validate(
@@ -62,41 +64,63 @@ class MasterWarehouseController extends Controller
         );
 
 
-        $data = [
-            'name'           => $request->name,
-            'type'           => $request->type,
-            'address'        => $request->address,
-            'contact_person' => $request->contact_person,
-            'contact_number' => $request->contact_number,
-            'email'          => $request->email,
-            'country_id'     => $request->country_id,
-            'state_id'       => $request->state_id,
-            'status'         => 'active',
-        ];
+            /* ======================
+           Split Contact Person Name
+        ====================== */
+            $fullName  = trim($request->contact_person);
+            $nameParts = preg_split('/\s+/', $fullName);
 
-        if ($request->type === 'master') {
-            $data['parent_id']   = null;
-            $data['district_id'] = $request->district_id;;
-            $data['taluka_id']   = null;
+            $firstName = $nameParts[0];
+            $lastName  = count($nameParts) > 1
+                ? implode(' ', array_slice($nameParts, 1))
+                : null;
+
+            Log::info('User name split', [
+                'full_name' => $fullName,
+                'first'     => $firstName,
+                'last'      => $lastName
+            ]);
+
+            /* ======================
+           Create User
+        ====================== */
+            $user = User::create([
+                'first_name'   => $firstName,
+                'last_name'    => $lastName,
+                'email'        => $request->email,
+                'password'     => Hash::make('Warehouse@123'),
+                'mobile'       => $request->contact_number,
+                'status'       => 1
+            ]);
+
+            Log::info('Warehouse user created successfully', [
+                'user_id'      => $user->id,
+            ]);
+
+            DB::commit();
+
+            Log::info('Warehouse store transaction committed', [
+                'warehouse_id' => Warehouse::latest()->first()->id
+            ]);
+
+            return redirect()
+                ->route('warehouse.index')
+                ->with('success', 'Warehouse & user created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Warehouse store failed', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString()
+            ]);
+
+            return back()->withErrors([
+                'error' => 'Something went wrong. Please try again.'
+            ])->withInput();
         }
-
-        if ($request->type === 'district') {
-            $data['parent_id']   = $request->parent_id;
-            $data['district_id'] = $request->district_id;
-            $data['taluka_id']   = null;
-        }
-
-        if ($request->type === 'taluka') {
-            $data['parent_id']   = $request->parent_id;
-            $data['district_id'] = $request->district_id;
-            $data['taluka_id']   = $request->taluka_id;
-        }
-
-        Warehouse::create($data);
-
-        return redirect()->route('warehouse.index')
-            ->with('success', 'Warehouse created successfully');
-    }
+}
 
 
     public function show($id)
@@ -126,23 +150,23 @@ class MasterWarehouseController extends Controller
 
     public function edit($id)
     {
+        Log::info('Warehouse edit page opened', ['warehouse_id' => $id]);
+
         try {
-            $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])->findOrFail($id);
-            $countries = Country::all();
-            $districts = District::all(); // 🔹 important
+            $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])
+                ->findOrFail($id);
 
             return view('menus.warehouse.master.add-warehouse', [
-                'mode' => 'edit', // edit mode
-                'warehouse' => $warehouse,
-                'countries' => $countries,
+                'mode'       => 'edit',
+                'warehouse'  => $warehouse,
+                'countries'  => Country::all(),
                 'warehouses' => Warehouse::all(),
-                'districts' => $districts,
-
+                'districts'  => District::all(),
             ]);
         } catch (\Exception $e) {
-            Log::error('Warehouse Edit Error', [
-                'id' => $id,
-                'message' => $e->getMessage()
+            Log::error('Warehouse edit failed', [
+                'warehouse_id' => $id,
+                'message'      => $e->getMessage()
             ]);
 
             return back()->with('error', 'Warehouse not found.');
