@@ -9,11 +9,11 @@
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row pb-0">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title">Warehouse Transfers</h5>
+                        <h5 class="card-title"> District  Warehouse Transfers</h5>
                     </div>
                     <div class="col-md-auto ms-auto mt-5">
                         <a href="{{ route('transfer.create') }}" class="btn btn-success">
-                            Transfer Stock
+                           Transfer Stock
                         </a>
                     </div>
                 </div><br><br>

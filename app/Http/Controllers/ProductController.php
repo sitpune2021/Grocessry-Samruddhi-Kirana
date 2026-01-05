@@ -13,33 +13,45 @@ use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        Log::info('Product Index Page Loaded', [
-            'user_id' => Auth::id(),
+   public function index()
+{
+    $user = Auth::user();
+
+    Log::info('Product Index Page Loaded', [
+        'user_id'      => $user->id,
+        'warehouse_id' => $user->warehouse_id,
+        'role_id'      => $user->role_id,
+    ]);
+
+    try {
+        $products = Product::with('category')
+            ->when($user->role_id != 1, function ($query) use ($user) {
+                // If NOT Super Admin → filter by warehouse
+                $query->where('warehouse_id', $user->warehouse_id);
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('menus.product.index', compact('products'));
+
+    } catch (\Throwable $e) {
+
+        Log::error('Product Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
         ]);
 
-        try {
-            $products = Product::with('category')->latest()->paginate(10);
-
-            return view('menus.product.index', compact('products'));
-        } catch (\Throwable $e) {
-
-            Log::error('Product Index Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->with('error', 'Unable to load products');
-        }
+        return redirect()->back()
+            ->with('error', 'Unable to load products');
     }
+}
 
 
     /**
@@ -54,6 +66,7 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)->orderBy('name')->get();
             $categories = collect();
             $subCategories = collect();
+            
             return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
@@ -66,19 +79,42 @@ class ProductController extends Controller
         }
     }
 
-
     public function store(Request $request)
-    {
-        Log::info('Product Store Request', [
-            'request' => $request->all(),
-            'user_id' => Auth::id(),
+{
+    $user = Auth::user();
+
+    Log::info('Product Store Request', [
+        'user_id'      => $user->id,
+        'warehouse_id' => $user->warehouse_id,
+        'request'      => $request->except(['product_images']),
+    ]);
+
+    try {
+        $validated = $request->validate([
+            'category_id'     => 'required|exists:categories,id',
+            'brand_id'        => 'required|exists:brands,id',
+            'name'            => 'required|string|max:255',
+            'sku'             => 'nullable|string|max:255',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+            'description'     => 'nullable|string',
+
+            'base_price'      => 'required|numeric|min:1',
+            'retailer_price'  => 'required|numeric|min:1',
+            'mrp'             => 'required|numeric|min:1',
+            'gst_percentage'  => 'required|numeric|min:0|max:100',
+
+            'discount_type'   => 'nullable|in:flat,percentage',
+            'discount_value'  => 'nullable|numeric|min:0',
+
+            'product_images'   => 'nullable|array',
+            'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required|exists:brands,id',
-                'name'            => 'required|string|max:255',
+                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
                 'sku'             => 'nullable|string|max:255',
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
@@ -94,6 +130,8 @@ class ProductController extends Controller
 
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
 
             // 🔐 Extra discount validation (BUSINESS LOGIC)
@@ -111,53 +149,60 @@ class ProductController extends Controller
                 $validated['discount_value'] = 0;
             }
 
-            // 📸 Image Upload
-            if ($request->hasFile('product_images')) {
-
-                $imageNames = [];
-
-                foreach ($request->file('product_images') as $image) {
-                    $originalName = $image->getClientOriginalName();
-                    $image->storeAs('products', $originalName, 'public');
-                    $imageNames[] = $originalName;
-                }
-
-                $validated['product_images'] = json_encode($imageNames);
+            if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
+                return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
             }
 
-            $product = Product::create($validated);
-
-            Log::info('Product Created Successfully', [
-                'product_id' => $product->id
-            ]);
-
-            return redirect()->route('product.index')
-                ->with('success', 'Product created successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-
-            Log::warning('Product Store Validation Failed', [
-                'errors' => $e->errors()
-            ]);
-
-            throw $e;
-        } catch (\Throwable $e) {
-
-            Log::error('Product Store Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Something went wrong while saving product');
+        } else {
+            $validated['discount_value'] = 0;
         }
+
+        
+        if ($request->hasFile('product_images')) {
+
+            $imageNames = [];
+
+            foreach ($request->file('product_images') as $image) {
+                $name = $image->getClientOriginalName();
+                $image->storeAs('products', $name, 'public');
+                $imageNames[] = $name;
+            }
+
+            $validated['product_images'] = json_encode($imageNames);
+        }
+
+        $validated['warehouse_id'] = $user->warehouse_id;
+
+        $product = Product::create($validated);
+
+        Log::info('Product Created Successfully', [
+            'product_id'  => $product->id,
+            'warehouse_id'=> $product->warehouse_id,
+        ]);
+
+        return redirect()->route('product.index')
+            ->with('success', 'Product created successfully');
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::warning('Product Store Validation Failed', [
+            'errors' => $e->errors()
+        ]);
+        throw $e;
+
+    } catch (\Throwable $e) {
+        Log::error('Product Store Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Something went wrong while saving product');
     }
+}
 
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
+       public function show($id)
     {
         try {
             Log::info('Product View Request', ['id' => $id]);
@@ -244,7 +289,7 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required',
-                'name'            => 'required|string|max:255',
+                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
                 'sku'             => 'nullable|string|max:255',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
@@ -256,8 +301,9 @@ class ProductController extends Controller
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
-
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
@@ -358,10 +404,5 @@ class ProductController extends Controller
             ->get();
     }
 
-    // public function getProductsByCategory($category_id)
-    // {
-    //     $products = Product::where('category_id', $category_id)->get();
-
-    //     return response()->json($products);
-    // }
+  
 }

@@ -13,8 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('districts', function (Blueprint $table) {
-    $table->unsignedBigInteger('state_id')->nullable()->change();
-                
+            $table->unsignedBigInteger('state_id')->nullable()->change();
         });
     }
 
@@ -24,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('districts', function (Blueprint $table) {
-    $table->unsignedBigInteger('state_id')->nullable()->change();
+            $table->unsignedBigInteger('state_id')->nullable()->change();
         });
     }
 };

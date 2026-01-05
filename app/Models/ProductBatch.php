@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProductBatch extends Model
 {
     use SoftDeletes;
-    
-     protected $fillable = [
+
+    protected $fillable = [
         'warehouse_id',
         'category_id',
         'sub_category_id',
@@ -17,7 +17,8 @@ class ProductBatch extends Model
         'batch_no',
         'expiry_date',
         'mfg_date',
-        'quantity'
+        'quantity',
+        'unit_id'
     ];
 
     public function product()
@@ -30,7 +31,8 @@ class ProductBatch extends Model
         return $this->hasMany(StockMovement::class);
     }
 
-    public function category() {
+    public function category()
+    {
         return $this->belongsTo(Category::class);
     }
 
@@ -49,8 +51,8 @@ class ProductBatch extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
-
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
 }
-
-
-

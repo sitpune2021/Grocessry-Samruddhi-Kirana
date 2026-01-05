@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\ProductBatch;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -18,17 +19,26 @@ use Illuminate\Support\Facades\Log;
 class StockController extends Controller
 {
 
-
     public function create()
     {
+        $user = Auth::user();
+
+        // Super Admin → all warehouses
+        // Normal User → only their warehouse
+        $warehouses = $user->role_id == 1
+            ? Warehouse::orderBy('name')->get()
+            : Warehouse::where('id', $user->warehouse_id)->get();
+
         return view('sale.create', [
-            'warehouses'      => Warehouse::all(),
-            'categories'      => collect(),
+            'warehouses'      => $warehouses,
+            'categories'      => Category::orderBy('name')->get(),
             'products'        => collect(),
             'selectedProduct' => null,
             'availableStock'  => 0,
+            'user'            => $user, // pass user to blade
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -102,7 +112,6 @@ class StockController extends Controller
             return redirect()
                 ->route('sell.index')
                 ->with('success', 'Product sold successfully');
-
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Sale error', ['error' => $e->getMessage()]);
@@ -139,16 +148,33 @@ class StockController extends Controller
 
     // Sub Category → Products
     public function getProductsBySubCategory($warehouseId, $subCategoryId)
-    {
-        return WarehouseStock::where([
-                'warehouse_id'    => $warehouseId,
-                'warehouse_stock.sub_category_id' => $subCategoryId
-            ])
-            ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
-            ->select('products.id', 'products.name')
-            ->distinct()
-            ->get();
+{
+    $user = Auth::user();
+
+    if ($user->role_id != 1) {
+        $warehouseId = $user->warehouse_id;
     }
+
+    $products = Product::where('warehouse_id', $warehouseId)
+        ->where('sub_category_id', $subCategoryId)
+        ->select('id', 'name')
+        ->orderBy('name')
+        ->get();
+
+    return response()->json($products);
+}
+
+    // public function getProductsBySubCategory($warehouseId, $subCategoryId)
+    // {
+    //     return WarehouseStock::where([
+    //         'warehouse_id'    => $warehouseId,
+    //         'warehouse_stock.sub_category_id' => $subCategoryId
+    //     ])
+    //         ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
+    //         ->select('products.id', 'products.name')
+    //         ->distinct()
+    //         ->get();
+    // }
 
     // Product → Quantity
     public function getProductQuantity($warehouseId, $productId)
@@ -158,6 +184,4 @@ class StockController extends Controller
             'product_id'   => $productId,
         ])->sum('quantity');
     }
-
-
 }

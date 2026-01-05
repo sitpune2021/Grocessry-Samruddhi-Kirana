@@ -42,9 +42,10 @@
                     <li><a href="{{ route('brands.index') }}">Brand</a></li>
                     <li><a href="{{ route('category.index') }}">Category</a></li>
                     <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                    @endif
                     <li><a href="{{ route('units.create') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
-                    @endif
+                  
                 </ul>
 
             </li>
@@ -92,9 +93,7 @@
                 <ul class="submenu" id="inventoryMenu">
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
-                    @if (auth()->check() && auth()->user()->role_id == 1)
                     <li><a href="{{ route('sale.create') }}">Expiry Sell</a></li>
-                    @endif
                 </ul>
             </li>
 
@@ -108,7 +107,25 @@
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                    <li>
+                        <a href="{{ route('transfer.index') }}">
+                            District Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('taluka.transfer.index') }}">
+                            Taluka Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('district-taluka-transfer.index') }}">
+                            District To Taluka Warehouse Transfers
+                        </a>
+                    </li>
+
+
                 </ul>
             </li>
 
@@ -122,29 +139,31 @@
                 </div>
 
                 <ul class="submenu" id="OrderMenu">
-                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
+                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer
+                            Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
+                    
                 </ul>
             </li>
 
             @if (auth()->check() && auth()->user()->role_id == 1)
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        Distribution Center
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="shopMenu">
-                    <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
-                    @if (auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
-                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                    @endif
+                <li class="menu-item">
+                    <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                        <span>
+                            <i class="bx bx-store me-2 "></i>
+                            Distribution Center
+                        </span>
+                        <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                    </div>
+                    <ul class="submenu" id="shopMenu">
+                        <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
+                        @if (auth()->check() && auth()->user()->role_id == 1)
+                            <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                            <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                        @endif
 
-                </ul>
-            </li>
+                    </ul>
+                </li>
             @endif
 
             <li class="menu-item">
@@ -175,9 +194,10 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                     <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
 
-                    <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
@@ -251,9 +271,11 @@
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
-                    <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
+                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>
                 </ul>
             </li>
+
+            <li class="menu-header">WEBSITE</li>
 
         </ul>
     </div>

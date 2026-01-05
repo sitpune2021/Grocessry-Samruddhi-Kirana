@@ -21,7 +21,12 @@ class WarehouseStockReturn extends Model
 
     public function items()
     {
-        return $this->belongsTo(WarehouseStockReturn::class, 'stock_return_id','id');
+        return $this->belongsTo(WarehouseStockReturnItem::class, 'stock_return_id', 'id');
+    }
+
+    public function WarehouseStockReturnItem()
+    {
+        return $this->hasMany(WarehouseStockReturnItem::class, 'stock_return_id');
     }
 
     public function fromWarehouse()
