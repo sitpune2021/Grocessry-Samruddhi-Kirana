@@ -45,7 +45,7 @@ use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
 
-Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login');
+Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
