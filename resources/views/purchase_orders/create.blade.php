@@ -194,31 +194,23 @@
 <!-- category -> sub category wise product load  -->
 <script>
     let cart = {};
-    let productStock = {};
+   
+   function addProduct(id, name) {
 
-    // limit QTY.
-    function addProductWithLimit(id, name) {
-
-        let currentQty = cart[id] ? cart[id].qty : 0;
-        let maxQty = productStock[id];
-
-        if (currentQty + 1 > maxQty) {
-            alert(`❌ Cannot add more than ${maxQty} quantity`);
-            return;
-        }
-
-        if (cart[id]) {
-            cart[id].qty++;
-        } else {
-            cart[id] = {
-                product_id: id,
-                name,
-                qty: 1
-            };
-        }
-
-        renderCart();
+    if (cart[id]) {
+        cart[id].qty++;
+    } else {
+        cart[id] = {
+            product_id: id,
+            name: name,
+            qty: 1
+        };
     }
+
+    renderCart();
+}
+
+
 
     document.getElementById('supplier').addEventListener('change', function() {
         document.getElementById('supplier_hidden').value = this.value;
@@ -259,14 +251,7 @@
                     return;
                 }
 
-                // data.forEach(p => {
-                //     area.innerHTML += `
-                //         <div class="border p-2 cursor-pointer hover:bg-gray-100"
-                //             onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.base_price})">
-                //             <strong>${p.name}</strong><br>
-                //             ₹${p.base_price}
-                //         </div>`;
-                // });
+               
                 data.forEach(p => {
                     area.innerHTML += `
                     <tr style="border-bottom:1px solid black;">
@@ -283,66 +268,9 @@
             .catch(err => console.error(err));
     });
 
-
-    // function addToCart(id, name, price) {
-    //     if (cart[id]) {
-    //         cart[id].qty++;
-    //     } else {
-    //         cart[id] = { product_id: id, name, price, qty: 1 };
-    //     }
-    //     renderCart();
-    // }
-
     function addToCart(id, name) {
-
-        // If stock not loaded → fetch first
-        if (!productStock[id]) {
-            fetch(`/po/product-available-qty/${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    productStock[id] = data.available_qty;
-
-                    if (data.available_qty <= 0) {
-                        alert('❌ Product out of stock');
-                        return;
-                    }
-
-                    addProductWithLimit(id, name);
-                });
-        } else {
-            addProductWithLimit(id, name);
-        }
-    }
-
-
-    // function changeQty(id, type) {
-    //     if (type === 'plus') cart[id].qty++;
-    //     else cart[id].qty--;
-
-    //     if (cart[id].qty <= 0) delete cart[id];
-    //     renderCart();
-    // }
-    // function changeQty(id, type) {
-
-    //     let maxQty = productStock[id];
-
-    //     if (type === 'plus') {
-    //         if (cart[id].qty + 1 > maxQty) {
-    //             alert(`❌ Max allowed qty is ${maxQty}`);
-    //             return;
-    //         }
-    //         cart[id].qty++;
-    //     } else {
-    //         cart[id].qty--;
-    //     }
-
-    //     if (cart[id].qty <= 0) {
-    //         delete cart[id];
-    //     }
-
-    //     renderCart();
-    // }
-
+    addProduct(id, name);
+}
 
     function renderCart() {
         let tbody = document.getElementById('bill-items');
@@ -351,43 +279,45 @@
         let subtotal = 0;
 
         Object.values(cart).forEach(item => {
-            // subtotal += item.qty * item.price;
             tbody.innerHTML += `
             <tr style="border-bottom:1px solid black;">
                 <td>${item.name}</td>
                 <td>
                     <input type="number"
                         min="1"
-                        max="${productStock[item.product_id]}"
                         value="${item.qty}"
                         class="form-control form-control-sm text-center"
                         style="width:80px"
                         onchange="updateQty(${item.product_id}, this.value)">
+
                     </td>
                 <td><button type="button" onclick="delete cart[${item.product_id}]; renderCart()">X</button></td>
             </tr>`;
         });
 
-        // let tax = 0;
-        // let shipping = Number(document.getElementById('shipping').value);
-        // let discount = Number(document.getElementById('discount').value);
-        // let grand = subtotal + tax + shipping - discount;
-
-        // document.getElementById('subtotal').innerText = subtotal;
-        // document.getElementById('tax').innerText = tax;
-        // document.getElementById('grand-total').innerText = grand;
-
-        // document.getElementById('subtotal_input').value = subtotal;
-        // document.getElementById('tax_input').value = tax;
-        // document.getElementById('shipping_input').value = shipping;
-        // document.getElementById('discount_input').value = discount;
-        // document.getElementById('grand_total_input').value = grand;
         document.getElementById('items_input').value = JSON.stringify(Object.values(cart));
     }
 
-    // document.getElementById('shipping').addEventListener('input', renderCart);
-    // document.getElementById('discount').addEventListener('input', renderCart);
 </script>
+
+<!-- store qty as per edit -->
+<script>
+function updateQty(productId, qty) {
+
+    qty = parseInt(qty);
+
+    if (qty < 1 || isNaN(qty)) {
+        qty = 1;
+    }
+
+    if (cart[productId]) {
+        cart[productId].qty = qty;   // 🔥 ACTUAL FIX
+    }
+
+    renderCart(); // re-render + hidden input update
+}
+</script>
+
 
 <!-- All product show -->
 <script>
@@ -436,39 +366,6 @@
 </script>
 
 <!-- without pagination All product show -->
-<!-- <script>
-    function loadAllProducts() 
-    {
-        fetch(`/po/all-products`)
-            .then(res => res.json())
-            .then(data => {
-                let area = document.getElementById('products-area');
-                area.innerHTML = '';
-
-                // data.forEach(p => {
-                //     area.innerHTML += `
-                //         <div class="border p-2 cursor-pointer hover:bg-gray-100"
-                //             onclick="addToCart(${p.id}, '${p.name}', ${p.base_price})">
-                //             <strong>${p.name}</strong><br>
-                //             ₹${p.base_price}
-                //         </div>`;
-                // });
-                data.forEach(p => {
-                area.innerHTML += `
-                    <tr style="border-bottom:1px solid black;">
-                        <td>${p.name}</td>
-                        <td>₹${p.base_price}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary text-white bg-success border-none rounded"
-                                onclick="addToCart(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.base_price})">
-                                Add 
-                            </button>
-                        </td>
-                    </tr>`;
-            });
-            });
-    }
-</script> -->
 
 <!-- all product show on page reaload -->
 <script>
@@ -498,16 +395,3 @@
     document.getElementById('purchaseOrderForm').submit();
 }
 </script>
-
-<!-- <script>
-    function submitOrder() {
-        let items = document.getElementById('items_input').value;
-
-        if (!items || items === '[]') {
-            alert('❌ Please add at least one product before saving order');
-            return;
-        }
-
-        document.getElementById('purchaseOrderForm').submit();
-    }
-</script> -->

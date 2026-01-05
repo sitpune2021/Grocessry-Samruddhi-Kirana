@@ -66,6 +66,14 @@
                                                         value="{{ $return->product->name ?? '-' }}">
                                                 </div>
 
+                                                <div class="col-md-12">
+                                                    <label class="form-label fw-medium">
+                                                        Product Images (Customer Uploaded)
+                                                    </label>
+
+                                                 
+                                                </div>
+
                                                 {{-- Mobile --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">

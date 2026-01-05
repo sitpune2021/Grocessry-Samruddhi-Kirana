@@ -22,7 +22,7 @@
                 <a href="/dashboard" class="menu-link active text-white">
                     <span style="padding-left:10px">
                         <i class="bx bx-home-smile me-2"></i>
-                        DASHBOARD
+                        Dashboard
                     </span>
                 </a>
             </li>
@@ -30,40 +30,10 @@
             <!-- <li class="menu-header">MANAGEMENT</li> -->
 
             <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('OrderMenu','orderArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        ORDER MANAGEMENT
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="orderArrow"></i>
-                </div>
-
-                <ul class="submenu" id="OrderMenu">
-                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('CustomerMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        CUSTOMER MANAGEMENT
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-                </div>
-
-                <ul class="submenu" id="CustomerMenu">
-
-                    <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
-                    <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('ProductMenu','warehouseArrow')">
                     <span>
                         <i class="bx bx-store me-2 "></i>
-                        PRODUCT MANAGEMENT
+                        Product Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
@@ -72,8 +42,25 @@
                     <li><a href="{{ route('brands.index') }}">Brand</a></li>
                     <li><a href="{{ route('category.index') }}">Category</a></li>
                     <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
+                    <li><a href="{{ route('units.create') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
                     @endif
+                </ul>
+
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('suppplierMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        Supplier Management
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
+                </div>
+
+                <ul class="submenu" id="suppplierMenu">
+                    <li><a href="{{ route('supplier.index') }}">Supplier Details</a></li>
+
                 </ul>
             </li>
 
@@ -82,7 +69,7 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
                     <span>
                         <i class="bx bx-store me-2 "></i>
-                        WAREHOUSE MANAGEMENT
+                        Warehouse Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
@@ -97,7 +84,7 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        INVENTORY MANAGEMENT
+                        Inventory Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
                 </div>
@@ -112,25 +99,10 @@
             </li>
 
             <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('suppplierMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        SUPPLIER MANAGEMENT
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
-                </div>
-
-                <ul class="submenu" id="suppplierMenu">
-                    <li><a href="{{ route('supplier.index') }}">Supplier Details</a></li>
-
-                </ul>
-            </li>
-
-            <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('TransferMenu','inventoryArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        TRANSFER MANAGEMENT
+                        Transfer Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
                 </div>
@@ -156,17 +128,32 @@
                 </ul>
             </li>
 
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('OrderMenu','orderArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        Order Management
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="orderArrow"></i>
+                </div>
+
+                <ul class="submenu" id="OrderMenu">
+                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
+                    <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
+                </ul>
+            </li>
+
             @if (auth()->check() && auth()->user()->role_id == 1)
             <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
                     <span>
                         <i class="bx bx-store me-2 "></i>
-                        DISTRIBUTION MANAGEMENT
+                        Distribution Center
                     </span>
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="shopMenu">
-                    <li><a href="{{ route('grocery-shops.index') }}">Shop Details</a></li>
+                    <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
                     @if (auth()->check() && auth()->user()->role_id == 1)
                     <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
                     <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
@@ -177,10 +164,27 @@
             @endif
 
             <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('PosMenu','PosArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        POS System
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
+                </div>
+
+                <ul class="submenu" id="PosMenu">
+                    <li><a href="/purchase-orders/create">Add Purches List</a></li>
+                    <li><a href="{{ route('purchase.orders.index') }}">Purches History</a></li>
+                    <li><a href="/warehouse-transfer-request/create">Stock Request</a></li>
+                    <li><a href="/warehouse-transfer-request/incoming">Incoming Request</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('OfferMenu','offerArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        OFFER / SCHEME MANAGEMENT
+                        Offer / Scheme Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="offerArrow"></i>
                 </div>
@@ -195,11 +199,29 @@
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
             </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('CustomerMenu','inventoryArrow')">
+                    <span>
+                        <i class="bx bx-package me-2 "></i>
+                        Customer Management
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
+                </div>
+
+                <ul class="submenu" id="CustomerMenu">
+
+                    <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
+                    <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
+
+                </ul>
+            </li>
+
             <li class="menu-item">
                 <div class="menu-link text-white" onclick="toggleMenu('ReportMenu','reportArrow')">
                     <span style="padding-left: 10px;">
                         <i class="bx bx-bar-chart-alt-2 me-2"></i>
-                        REPORTS
+                        Reports
                     </span>
                     <i class="bx bx-chevron-right arrow" id="reportArrow"></i>
                 </div>
@@ -207,7 +229,27 @@
                 <ul class="submenu" id="ReportMenu">
                     <li>
                         <a href="{{ route('warehouse-stock.report') }}">
-                            Warehouse Stock Report
+                            Warehouse transfer Report
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('stock-movement.report') }}">
+                            Stock Movement Report
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('lowstock.index') }}">
+                            Low Stock Alert
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('lowstock.analytics') }}">
+                            Low Stock Analytics
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('transfer-challans.index') }}">
+                            Transfer Challen
                         </a>
                     </li>
                 </ul>
@@ -217,7 +259,7 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('SettingMenu','settingArrow')">
                     <span style="padding-left: 10px;">
                         <i class="bx bx-package me-2 "></i>
-                        SETTINGS
+                        Setting
                     </span>
                     <i class="bx bx-chevron-right arrow" id="settingArrow"></i>
                 </div>
@@ -230,28 +272,10 @@
                 </ul>
             </li>
 
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('PosMenu','PosArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        POS SYSTEM
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
-                </div>
-
-                <ul class="submenu" id="PosMenu">
-                    <li><a href="/purchase-orders/create">ADD POS</a></li>
-                    <li><a href="{{ route('purchase.orders.index') }}">POS HISTORY</a></li>
-                </ul>
-            </li>
-
         </ul>
     </div>
 
 </div>
-
-
 
 
 <script>

@@ -6,6 +6,8 @@ use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+ 
 
 class BrandController extends Controller
 {
@@ -139,4 +141,18 @@ class BrandController extends Controller
         return redirect()->route('brands.index')
             ->with('success', 'Brand deleted successfully');
     }
+
+    public function updateStatus(Request $request)
+{
+    // Find brand by ID or fail
+    $brand = Brand::findOrFail($request->id);
+
+    // Toggle status: if 1 -> 0, if 0 -> 1
+    $brand->status = $brand->status ? 0 : 1;
+    $brand->save();
+
+    // Return JSON if called via AJAX, or back() if standard
+   return back();
+}
+
 }

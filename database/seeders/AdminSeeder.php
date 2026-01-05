@@ -12,13 +12,12 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-
         $warehouse = Warehouse::create([
             'name'        => 'Samruddh Kirana Main Warehouse',
-            'country_id'      => 1,
-            'state_id'        => 14,
-            'district_id'     => 317,
-            'taluka_id'       => 2,
+            // 'country_id'      => 1,
+            // 'state_id'        => 14,
+            // 'district_id'     => 317,
+            // 'taluka_id'       => 2,
              'type'            => 'Master',
               'code'            => '422605',
               'address'         => 'sangamner, maharashtra, india',
@@ -36,5 +35,7 @@ class AdminSeeder extends Seeder
             'mobile' => 9503654539,
             'warehouse_id' => $warehouse->id
         ]);
+
+
     }
 }

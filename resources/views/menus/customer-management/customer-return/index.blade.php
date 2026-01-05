@@ -34,6 +34,7 @@
                             <th style="width: 25%;">Customer Name</th>
                             <th style="width: 25%;">Order Number</th>
                             <th style="width: 25%;">Product</th>
+                            <th style="width: 25%;">Product Image</th>
                             <th style="width: 25%;">Price</th>
                             <th style="width: 25%;">total</th>
                             <th style="width: 25%;">Status</th>
@@ -58,6 +59,7 @@
                             <td>
                                 {{ $return->product->name ?? '-' }}
                             </td>
+                            <td></td>
 
                             <td>
                                 ₹{{ number_format($return->orderItem->price ?? 0, 2) }}
@@ -134,6 +136,14 @@
                             <option value="passed">Passed</option>
                             <option value="failed">Failed</option>
                             <option value="partial">Partial</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Action</label>
+                        <select name="return_type" class="form-select" required>
+                            <option value="refund">Refund</option>
+                            <option value="exchange">Exchange</option>
                         </select>
                     </div>
 
