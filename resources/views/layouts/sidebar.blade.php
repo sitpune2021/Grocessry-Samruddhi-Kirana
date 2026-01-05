@@ -136,7 +136,23 @@
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                    <li>
+                        <a href="{{ route('transfer.index') }}">
+                            District Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('taluka.transfer.index') }}">
+                            Taluka Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('taluka.transfer.index') }}">
+                            District To Taluka Warehouse Transfers
+                        </a>
+                    </li>
                 </ul>
             </li>
 
@@ -171,10 +187,10 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                        <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
 
-                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                    <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon</a></li>
                 </ul>
