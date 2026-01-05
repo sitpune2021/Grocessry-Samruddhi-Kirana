@@ -28,68 +28,69 @@
                                 </h4>
 
                                 <div class="card-body">
-<div class="container">
-    <div style="display:flex; gap:10px; margin-bottom:15px;">
-    <select id="po_select">
-    <option value="">Select Purchase Order</option>
-    @foreach($purchaseOrders as $po)
-        <option value="{{ $po->id }}">
-            {{ $po->po_number }}
-        </option>
-    @endforeach
-</select>
+                                    <div class="container">
+                                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                                            <select id="po_select" class="form-control">
+                                                <option value="">Select Purchase Order</option>
+                                                @foreach($purchaseOrders as $po)
+                                                    <option value="{{ $po->id }}">
+                                                        {{ $po->po_number }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
 
+                                            {{-- PRODUCT SELECT --}}
+                                            
+                                            <select id="product_select" class="form-control">
+                                                <option value="">Select Product</option>
+                                            </select>
 
-    {{-- PRODUCT SELECT --}}
-    
-        <select id="product_select">
-    <option value="">Select Product</option>
-</select>
+                                            <input type="number" id="product_qty" value="1" min="1" style="width:80px" class="form-control">
 
+                                            <button type="button" onclick="addProduct()" class="btn btn-success btn-sm" class="form-control">Add</button>
+                                        </div>
 
-        <input type="number" id="product_qty" value="1" min="1" style="width:80px">
+                                        {{-- CART TABLE --}}
+                                        <table border="1" width="100%" cellpadding="8">
+                                            <thead>
+                                                <tr>
+                                                    <th>Product</th>
+                                                    <th width="120">Qty</th>
+                                                    <th width="80">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="cart_table">
+                                                <tr>
+                                                    <td colspan="3" align="center">No products added</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
 
-        <button type="button" onclick="addProduct()">Add</button>
-    </div>
+                                        <br>
 
-    {{-- CART TABLE --}}
-    <table border="1" width="100%" cellpadding="8">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th width="120">Qty</th>
-                <th width="80">Action</th>
-            </tr>
-        </thead>
-        <tbody id="cart_table">
-            <tr>
-                <td colspan="3" align="center">No products added</td>
-            </tr>
-        </tbody>
-    </table>
+                                        {{-- FORM --}}
+                                        <form method="POST"
+                                            action="{{ route('warehouse-transfer-request.store') }}"
+                                            onsubmit="return submitTransferRequest()">
+                                            @csrf
+                                            <label class="mt-3">Request Warehouse</label>
+                                            <select name="to_warehouse_id" class="form-control" required>
+                                                
+                                                <option value="">Select Request Warehouse</option>
+                                                @foreach($warehouses as $w)
+                                                    <option value="{{ $w->id }}">{{ $w->name }}</option>
+                                                @endforeach
+                                            </select>
 
-    <br>
+                                            <input type="hidden" name="items" id="items_input">
 
-    {{-- FORM --}}
-    <form method="POST"
-          action="{{ route('warehouse-transfer-request.store') }}"
-          onsubmit="return submitTransferRequest()">
-        @csrf
+                                            <br><br>
+                                            <button type="submit" class="btn btn-success btn-sm">Send Request</button>
+                                        </form>
+                                    
+                                    </div>
+                                </div>
 
-        <select name="to_warehouse_id" required>
-            <option value="">Select Warehouse</option>
-            @foreach($warehouses as $w)
-                <option value="{{ $w->id }}">{{ $w->name }}</option>
-            @endforeach
-        </select>
-
-        <input type="hidden" name="items" id="items_input">
-
-        <br><br>
-        <button type="submit">Send Request</button>
-    </form>
-</div>
-</div>
                             </div>
                         </div>
                     </div>
@@ -101,6 +102,8 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
+
+
 <script>
 function submitTransferRequest() {
 
