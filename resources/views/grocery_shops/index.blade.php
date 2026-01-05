@@ -25,7 +25,7 @@
             <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
                 <thead class="table-light">
                     <tr>
-                        <th>#</th>
+                        <th>sr no</th>
                         <th>Shop Name</th>
                         <th>Owner</th>
                         <th>Mobile</th>
@@ -50,7 +50,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">No shops found</td>
+                            <td colspan="8">No shops found</td>
                         </tr>
                     @endforelse
                 </tbody>

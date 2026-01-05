@@ -34,10 +34,10 @@ class stockWarehouseController extends Controller
 
         if ($user->role_id != 1) { // NOT Super Admin
             $query->where('warehouse_id', $user->warehouse_id);
-            }
-           
+        }
 
-         $stocks = $query->paginate(10);
+
+        $stocks = $query->paginate(10);
 
         $supplier = Supplier::select('id', 'supplier_name')->get();
 
@@ -50,13 +50,14 @@ class stockWarehouseController extends Controller
     {
         $mode = 'add';
         $user = User::with('warehouse')->find(Auth::id());
-    
+
         if (!$user) {
             abort(401, 'Unauthenticated');
         }
 
         $userWarehouse = $user->warehouse;
-        
+        $readonly = true; // ✅ Make inputs readonly
+
         // $warehouses = Warehouse::all();
         $categories = Category::all();
         $products = Product::all(); // ADD THIS
@@ -64,7 +65,7 @@ class stockWarehouseController extends Controller
         $sub_categories = []; // initially empty
         $suppliers = Supplier::select('id', 'supplier_name')->get();
 
-        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'userWarehouse', 'categories', 'product_batches', 'products', 'sub_categories', 'suppliers'));
+        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'userWarehouse', 'categories', 'product_batches', 'products', 'sub_categories', 'suppliers', 'readonly'));
     }
 
     public function byCategory($categoryId)
@@ -82,12 +83,15 @@ class stockWarehouseController extends Controller
         $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
-            'sub_category_id'  => 'nullable|exists:sub_categories,id',
+            'sub_category_id'  => 'required|exists:sub_categories,id',
             'product_id'   => 'required|exists:products,id',
             //'batch_id'     => 'required|exists:product_batches,id',
             'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
             'supplier_id' => 'required|exists:suppliers,id',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
 
         ]);
 
@@ -153,6 +157,9 @@ class stockWarehouseController extends Controller
                     'batch_id'     => $request->batch_id ?? null,
                     'quantity'     => $request->quantity,
                     'supplier_id' => $request->supplier_id,
+                    'bill_no'       => $request->bill_no,
+                    'challan_no'    =>  $request->challan_no,
+                    'batch_no'      =>  $request->batch_no,
 
                 ]);
 
@@ -199,7 +206,7 @@ class stockWarehouseController extends Controller
             'categories',
             'products',
             'product_batches',
-            'suppliers'
+            'suppliers',
         ));
     }
 
@@ -235,7 +242,7 @@ class stockWarehouseController extends Controller
             'products',
             'product_batches',
             'sub_categories',
-            'suppliers'
+            'suppliers',
         ));
     }
 
@@ -251,10 +258,13 @@ class stockWarehouseController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id',
             'category_id'  => 'required|exists:categories,id',
             'product_id'   => 'required|exists:products,id',
-            //'batch_id'     => 'required|exists:product_batches,id',
+            'sub_category_id'  => 'required|exists:sub_categories,id',
             'batch_id' => 'nullable|exists:product_batches,id',
             'quantity'     => 'required|numeric|min:0.01',
             'supplier_id' => 'required|exists:suppliers,id',
+            'bill_no'       => 'required|string',
+            'challan_no'    => 'required|string',
+            'batch_no'      => 'required|string',
 
         ]);
 
@@ -271,6 +281,9 @@ class stockWarehouseController extends Controller
                 'batch_id'     => $request->batch_id ?? null,
                 'quantity'     => $request->quantity,
                 'supplier_id' => $request->supplier_id,
+                'bill_no'       => $request->bill_no,
+                'challan_no'    =>  $request->challan_no,
+                'batch_no'      =>  $request->batch_no,
 
             ]);
 

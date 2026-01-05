@@ -93,7 +93,7 @@ public function store(Request $request)
         }
     });
 
-    return redirect()->route('warehouse_transfer.create')
+    return redirect()->route('warehouse-transfer-request.index')
         ->with('success', 'Request sent successfully');
 }
 
