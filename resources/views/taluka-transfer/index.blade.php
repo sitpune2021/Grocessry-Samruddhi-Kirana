@@ -48,9 +48,9 @@
                             <td>{{ $t->created_at->format('d-m-Y') }}</td>
                             <td class="action-column" style="white-space:nowrap;">
                                 <x-action-buttons
-                                    :view-url="route('transfer.show', $t->id)"
-                                    :edit-url="route('transfer.edit', $t->id)"
-                                    :delete-url="route('transfer.destroy', $t->id)" />
+                                    :view-url="route('taluka.transfer.show', $t->id)"
+                                    :edit-url="route('taluka.transfer.edit', $t->id)"
+                                    :delete-url="route('taluka.transfer.destroy', $t->id)" />
                             </td>
                         </tr>
                         @empty

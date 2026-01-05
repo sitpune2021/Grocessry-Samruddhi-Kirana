@@ -29,6 +29,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\CustomerOrderReturnController;
+use App\Http\Controllers\DistrictToTalukaTransferController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\RetailerOfferController;
@@ -42,17 +43,11 @@ use App\Http\Controllers\WarehouseStockReturnController;
 use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 
-Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
-
-// Guest-only routes
-// Route::middleware('guest')->group(function () {
-//     Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
-//     Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
-// });
 
 Route::middleware(['auth'])->group(function () {
 
@@ -205,7 +200,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
-        // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
+    // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -218,8 +213,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [WarehouseTransferController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('edit');
         Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
-
-
         Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
     });
 
@@ -253,59 +246,119 @@ Route::middleware(['auth'])->group(function () {
         [WarehouseTransferController::class, 'getBatchStock']
     );
 
+    //taluka-transfe
     Route::prefix('taluka-transfer')
-    ->name('taluka.transfer.')
-    ->group(function () {
+        ->name('taluka.transfer.')
+        ->group(function () {
 
-    Route::get('/', [TalukaTransferController::class, 'index'])
-        ->name('index');
+            Route::get('/', [TalukaTransferController::class, 'index'])
+                ->name('index');
 
-    Route::get('/create', [TalukaTransferController::class, 'create'])
-        ->name('create');
+            Route::get('/create', [TalukaTransferController::class, 'create'])
+                ->name('create');
 
-    Route::post('/store', [TalukaTransferController::class, 'store'])
-        ->name('store');
+            Route::post('/store', [TalukaTransferController::class, 'store'])
+                ->name('store');
 
-    Route::get('/{id}/edit', [TalukaTransferController::class, 'edit'])
-        ->name('edit');
+            Route::get('/{id}/edit', [TalukaTransferController::class, 'edit'])
+                ->name('edit');
 
-    Route::put('/{id}', [TalukaTransferController::class, 'update'])
-        ->name('update');
+            Route::put('/{id}', [TalukaTransferController::class, 'update'])
+                ->name('update');
 
-    Route::delete('/{id}', [TalukaTransferController::class, 'destroy'])
-        ->name('destroy');
+            Route::delete('/{id}', [TalukaTransferController::class, 'destroy'])
+                ->name('destroy');
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [TalukaTransferController::class, 'getProductsByCategory']
-    );
+            Route::get('/{id}', [TalukaTransferController::class, 'show'])
+                ->name('show');    
 
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [TalukaTransferController::class, 'getBatchesByProduct']
-    );
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [TalukaTransferController::class, 'getProductsByCategory']
+            );
 
-    Route::get(
-        '/get-warehouse-stock/{warehouse_id}/{batch_id}',
-        [TalukaTransferController::class, 'getWarehouseStock']
-    );
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [TalukaTransferController::class, 'getBatchesByProduct']
+            );
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [TalukaTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [TalukaTransferController::class, 'getWarehouseStock']
+            );
 
-    Route::get(
-        '/ajax/product-batches',
-        [TalukaTransferController::class, 'getBatchesByProducts']
-    )->name('ajax.product.batches');
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [TalukaTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
 
-    Route::get(
-        '/get-batch-stock/{batch}',
-        [TalukaTransferController::class, 'getBatchStock']
-    );
-});
+            Route::get(
+                '/ajax/product-batches',
+                [TalukaTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
 
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [TalukaTransferController::class, 'getBatchStock']
+            );
+        });
+
+    //district-taluka-transfer
+    Route::prefix('district-taluka-transfer')
+        ->name('district-taluka-transfer.')
+        ->group(function () {
+
+            Route::get('/', [DistrictToTalukaTransferController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [DistrictToTalukaTransferController::class, 'create'])
+                ->name('create');
+
+            Route::post('/store', [DistrictToTalukaTransferController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [DistrictToTalukaTransferController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{id}', [DistrictToTalukaTransferController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [DistrictToTalukaTransferController::class, 'destroy'])
+                ->name('destroy');
+
+              Route::get('/{id}', [DistrictToTalukaTransferController::class, 'show'])
+                ->name('show');   
+
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [DistrictToTalukaTransferController::class, 'getProductsByCategory']
+            );
+
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [DistrictToTalukaTransferController::class, 'getBatchesByProduct']
+            );
+
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [DistrictToTalukaTransferController::class, 'getWarehouseStock']
+            );
+
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [DistrictToTalukaTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
+
+            Route::get(
+                '/ajax/product-batches',
+                [DistrictToTalukaTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
+
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [DistrictToTalukaTransferController::class, 'getBatchStock']
+            );
+        });
 
 
     // RETAILERS
@@ -534,22 +587,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
 
-// Purches Order Request
+    // Purches Order Request
     Route::prefix('warehouse-transfer-request')->group(function () {
-    Route::get('/', [WarehouseTransferRequestController::class, 'index'])
-        ->name('warehouse-transfer-request.index');
+        Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+            ->name('warehouse-transfer-request.index');
 
-    Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
-    Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+        Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
+        Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
 
-    Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
-    Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
-    Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
-    Route::get(
-    '/purchase-orders/{id}/items',
-    [WarehouseTransferRequestController::class, 'items']
-    );
-});
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+        Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+        Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+        Route::get(
+            '/purchase-orders/{id}/items',
+            [WarehouseTransferRequestController::class, 'items']
+        );
+    });
 
 
 

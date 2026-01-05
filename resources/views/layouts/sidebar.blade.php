@@ -121,10 +121,12 @@
                     </li>
 
                     <li>
-                        <a href="{{ route('taluka.transfer.index') }}">
+                        <a href="{{ route('district-taluka-transfer.index') }}">
                             District To Taluka Warehouse Transfers
                         </a>
                     </li>
+
+
                 </ul>
             </li>
 

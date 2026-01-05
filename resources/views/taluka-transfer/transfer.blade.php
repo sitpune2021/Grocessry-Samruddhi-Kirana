@@ -125,7 +125,7 @@
 
                                          @endif
 
-                                         @if (request()->is('warehouse-transfer/*/edit'))
+                                         @if (request()->is('taluka-transfer/*/edit'))
                                          <div class="text-end mt-3">
                                              <button type="submit" class="btn btn-success" style="">
                                                  Update

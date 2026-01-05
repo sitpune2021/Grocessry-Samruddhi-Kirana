@@ -8,7 +8,7 @@
 
             <!-- Logo -->
             <div class="text-center mb-4">
-                <a href="{{ route('login.form') }}">
+                <a href="{{ route('login') }}">
                     <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo.png') }}"
                          alt="Samruddhi Kirana"
                          class="login-logo">
