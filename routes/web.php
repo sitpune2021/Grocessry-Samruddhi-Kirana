@@ -40,8 +40,9 @@ use App\Http\Controllers\LowStockController;
 use App\Http\Controllers\WarehouseStockReturnController;
 use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
+use App\Http\Controllers\WebsiteController;
 
-Route::get('/', [AdminAuthController::class, 'loginForm'])->name('login.form');
+Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
@@ -625,3 +626,11 @@ Route::put('/profile/update', [UserController::class, 'updateProfile'])
     ->name('profile.update');
 Route::get('/users/profile', [UserController::class, 'profile'])
     ->name('user.profile');
+
+
+
+
+/////////////////////////////////////////   WEBSITE START   ////////////////////////////////////////////////////////////
+
+
+Route::get('/', [WebsiteController::class, 'index']);
