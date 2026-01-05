@@ -124,6 +124,7 @@
                 <ul class="submenu" id="OrderMenu">
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
+                    
                 </ul>
             </li>
 
@@ -251,7 +252,7 @@
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
-                    <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
+                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>
                 </ul>
             </li>
 

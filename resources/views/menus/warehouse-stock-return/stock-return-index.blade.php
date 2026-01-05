@@ -26,7 +26,7 @@
                 <table class="table table-bordered table-striped align-middle">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>Sr No</th>
                             <th>Return No</th>
                             <th>From</th>
                             <th>To</th>
@@ -35,7 +35,7 @@
                             <th>Status</th>
                             <th>Created By</th>
                             <th>Created At</th>
-                            <th>Action</th>
+                            <th colspan="2">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,7 +54,8 @@
 
                             <td>
                                 <span class="badge bg-info">
-                                    {{ $return->items->return_qty ?? 0 }} Items
+                                   {{ $return->WarehouseStockReturnItem->sum('return_qty') }} Items
+
                                 </span>
                             </td>
 
@@ -73,13 +74,61 @@
                                 </span>
                             </td>
 
-                            <td>{{ $return->creator->name ?? '-' }}</td>
+                            <td>
+                                {{ $return->creator->first_name ?? '-' }}
+                                <br>
+                                <small class="text-muted">
+                                    ({{ ucfirst(str_replace('_', ' ', $return->creator->role->name ?? 'N/A')) }})
+                                </small>
+                            </td>
 
                             <td>{{ $return->created_at->format('d M Y') }}</td>
 
-                           
+
                             <td>
-                                
+                                <a href="{{ route('warehouse-stock-returns.download-pdf', $return->id) }}"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Download PDF">
+                                    <i class="ri-file-pdf-line"></i>
+                                </a>
+                            </td>
+                            <td>
+                                @if($return->status === 'draft')
+                                <form action="{{ route('stock-returns.send-for-approval', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-warning btn-sm">
+                                        Send for Approval
+                                    </button>
+                                </form>
+                                @endif
+
+                                @if($return->status == 'approved')
+                                <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Dispatch Stock
+                                    </button>
+                                </form>
+                                @endif
+
+                                @if($return->status == 'dispatched')
+                                <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Receive Stock
+                                    </button>
+                                </form>
+                                @endif
+
+
+                                {{-- CLOSE --}}
+                                <!-- @if($return->status == 'received')
+                                <form method="POST" action="{{ route('stock-returns.close', $return->id) }}">
+                                    @csrf
+                                    <button class="btn btn-dark btn-sm">Close</button>
+                                </form>
+                                @endif -->
                             </td>
                         </tr>
                         @empty

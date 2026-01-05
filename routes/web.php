@@ -37,6 +37,7 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\RefundExchangeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LowStockController;
+use App\Http\Controllers\TaxController;
 use App\Http\Controllers\WarehouseStockReturnController;
 use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
@@ -204,7 +205,28 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
-        // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
+    Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
+    Route::post(
+        'stock-returns/{id}/send-for-approval',
+        [WarehouseStockReturnController::class, 'sendForApproval']
+    )->name('stock-returns.send-for-approval');
+
+    Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
+        ->name('stock-returns.dispatch');
+
+    Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
+        ->name('stock-returns.receive');
+
+    Route::post(
+        'stock-returns/{id}/close',
+        [WarehouseStockReturnController::class, 'close']
+    )->name('stock-returns.close');
+
+
+
+
+
+    // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -477,22 +499,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
 
-// Purches Order Request
+    // Purches Order Request
     Route::prefix('warehouse-transfer-request')->group(function () {
-    Route::get('/', [WarehouseTransferRequestController::class, 'index'])
-        ->name('warehouse-transfer-request.index');
+        Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+            ->name('warehouse-transfer-request.index');
 
-    Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
-    Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+        Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
+        Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
 
-    Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
-    Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
-    Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
-    Route::get(
-    '/purchase-orders/{id}/items',
-    [WarehouseTransferRequestController::class, 'items']
-    );
-});
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+        Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+        Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+        Route::get(
+            '/purchase-orders/{id}/items',
+            [WarehouseTransferRequestController::class, 'items']
+        );
+    });
 
 
 
@@ -561,6 +583,11 @@ Route::middleware(['auth'])->group(function () {
             '/{transferChallan}/download-csv',
             [TransferChallanController::class, 'downloadCsv']
         )->name('download.csv');
+    });
+
+    // Taxes
+    Route::prefix('settings')->group(function () {
+        Route::resource('taxes', TaxController::class);
     });
 
     Route::get('/dev/run/{action}', function ($action) {
