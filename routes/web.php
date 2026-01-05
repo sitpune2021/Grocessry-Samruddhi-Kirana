@@ -206,10 +206,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
         // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // WAREHOUSE TRANSFER
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
+// WAREHOUSE TRANSFER
     Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
 
         Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
@@ -251,7 +251,7 @@ Route::middleware(['auth'])->group(function () {
     );
 
 
-    // RETAILERS
+// RETAILERS
     Route::prefix('retailers')->name('retailers.')->group(function () {
 
         Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -273,7 +273,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    // RETAILER PRICING
+// RETAILER PRICING
     Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
 
         Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
@@ -296,7 +296,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-    // RETAILER ORDER
+// RETAILER ORDER
     Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
 
         Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
@@ -327,7 +327,7 @@ Route::middleware(['auth'])->group(function () {
         )->name('ajax.get.warehouses');
     });
 
-    //coupons
+//coupons
     Route::prefix('coupons')->name('coupons.')->group(function () {
 
         Route::get('/', [CouponController::class, 'index'])->name('index');
@@ -340,7 +340,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
     });
 
-    // GROCER SHOP
+// GROCER SHOP
     Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
         Route::get('/', [GroceryShopController::class, 'index'])
@@ -373,7 +373,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('talukas.by-district');
 
 
-    //  PURCHASE ORDER  
+//  PURCHASE ORDER  
     Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create']);
     Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
@@ -408,7 +408,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('purchase.orders.index');
 
 
-    // PRODUCT BATCH MANAGEMENT
+// PRODUCT BATCH MANAGEMENT
     Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
     Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
     Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
@@ -431,10 +431,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
 
 
-    // EXPIRY ALERT
+// EXPIRY ALERT
     Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
 
-    // SELL PRODUCT
+// SELL PRODUCT
     Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
     Route::get('/sale/{product?}', [StockController::class, 'create'])
         ->name('sale.create');
@@ -455,7 +455,8 @@ Route::middleware(['auth'])->group(function () {
         return response()->json(['stock' => $stock]);
     });
 
-    // Approval
+
+// Approval
     Route::get(
         '/warehouse-transfers/approval',
         [ApprovalController::class, 'index']
@@ -469,7 +470,8 @@ Route::middleware(['auth'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-    // LOW STOCK ALERTS
+
+// LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
         ->name('lowstock.index');
 
@@ -477,22 +479,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
 
+
 // Purches Order Request
     Route::prefix('warehouse-transfer-request')->group(function () {
-    Route::get('/', [WarehouseTransferRequestController::class, 'index'])
-        ->name('warehouse-transfer-request.index');
+        Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+            ->name('warehouse-transfer-request.index');
 
-    Route::get('/create', [WarehouseTransferRequestController::class, 'create']);
-    Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+        Route::get('/create', [WarehouseTransferRequestController::class, 'create'])
+            ->name('warehouse_transfer.create');
+        Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
 
-    Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
-    Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
-    Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
-    Route::get(
-    '/purchase-orders/{id}/items',
-    [WarehouseTransferRequestController::class, 'items']
-    );
-});
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+        Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+        Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+        Route::get(
+        '/purchase-orders/{id}/items',
+        [WarehouseTransferRequestController::class, 'items']
+        );
+    });
 
 
 
