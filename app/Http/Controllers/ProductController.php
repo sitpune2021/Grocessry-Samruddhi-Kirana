@@ -13,6 +13,7 @@ use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -54,6 +55,7 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)->orderBy('name')->get();
             $categories = collect();
             $subCategories = collect();
+            
             return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
@@ -78,7 +80,7 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required|exists:brands,id',
-                'name'            => 'required|string|max:255',
+                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
                 'sku'             => 'nullable|string|max:255',
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
@@ -94,6 +96,8 @@ class ProductController extends Controller
 
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
 
             // 🔐 Extra discount validation (BUSINESS LOGIC)
@@ -244,7 +248,7 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required',
-                'name'            => 'required|string|max:255',
+                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
                 'sku'             => 'nullable|string|max:255',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
@@ -256,8 +260,9 @@ class ProductController extends Controller
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
-
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];

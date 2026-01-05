@@ -27,11 +27,11 @@
                             <div class="card mb-4" style="max-width:1200px;margin:auto;">
                                 <h4 class="card-header">
                                     @if ($mode === 'add')
-                                    Add Batch
+                                        Add Batch
                                     @elseif ($mode === 'edit')
-                                    Edit Batch
+                                        Edit Batch
                                     @else
-                                    View Batch
+                                        View Batch
                                     @endif
                                 </h4>
 
@@ -42,159 +42,176 @@
 
                                         @csrf
                                         @if ($mode === 'edit')
-                                        @method('PUT')
+                                            @method('PUT')
                                         @endif
 
                                         <div class="row g-3 mb-3">
 
                                             {{-- Warehouse --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                                                <label class="form-label">Warehouse <span
+                                                        class="text-danger">*</span></label>
                                                 <select name="warehouse_id" id="warehouse_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Warehouse</option>
                                                     @foreach ($warehouses as $w)
-                                                    <option value="{{ $w->id }}"
-                                                        {{ old('warehouse_id', $batch->warehouse_id ?? Auth::user()->warehouse_id) == $w->id ? 'selected' : '' }}>
-                                                        {{ $w->name }}
-                                                    </option>
+                                                        <option value="{{ $w->id }}"
+                                                            {{ old('warehouse_id', $batch->warehouse_id ?? Auth::user()->warehouse_id) == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
-                                            </div>                                   
+                                            </div>
 
                                             {{-- Category --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Category <span class="text-danger">*</span></label>
-                                                <select name="category_id" id="category_id" class="form-select"
+                                                <label class="form-label">Category <span
+                                                        class="text-danger">*</span></label>
+                                                <select name="category_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Category</option>
+
                                                     @foreach ($categories as $category)
-                                                    <option value="{{ $category->id }}"
-                                                        {{ old('category_id', $batch->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                        {{ $category->name }}
-                                                    </option>
+                                                        <option value="{{ $category->id }}"
+                                                            {{ old('category_id', $batch->product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                            {{ $category->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
+
                                                 @error('category_id')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
- 
+
 
                                             {{-- Sub Category --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Sub Category <span class="text-danger">*</span></label>
+                                                <label class="form-label">Sub Category <span
+                                                        class="text-danger">*</span></label>
                                                 <select name="sub_category_id" id="sub_category_id" class="form-select">
                                                     <option value="">Select Sub Category</option>
 
-                                                    @if(isset($subCategories))
-                                                    @foreach ($subCategories as $sub)
-                                                    <option value="{{ $sub->id }}"
-                                                        {{ old('sub_category_id', $batch->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
-                                                        {{ $sub->name }}
-                                                    </option>
-                                                    @endforeach
+                                                    @if (isset($subCategories))
+                                                        @foreach ($subCategories as $sub)
+                                                            <option value="{{ $sub->id }}"
+                                                                {{ old('sub_category_id', $batch->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                                {{ $sub->name }}
+                                                            </option>
+                                                        @endforeach
                                                     @endif
                                                 </select>
                                             </div>
 
                                             {{-- Product --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Product <span class="text-danger">*</span></label>
+                                                <label class="form-label">Product <span
+                                                        class="text-danger">*</span></label>
                                                 <select name="product_id" id="product_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Product</option>
                                                     @if (isset($products))
-                                                    @foreach ($products as $product)
-                                                    <option value="{{ $product->id }}"
-                                                        {{ old('product_id', $batch->product_id ?? '') == $product->id ? 'selected' : '' }}>
-                                                        {{ $product->name }}
-                                                    </option>
-                                                    @endforeach
+                                                        @foreach ($products as $product)
+                                                            <option value="{{ $product->id }}"
+                                                                {{ old('product_id', $batch->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                                {{ $product->name }}
+                                                            </option>
+                                                        @endforeach
                                                     @endif
                                                 </select>
                                                 @error('product_id')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
 
                                                 {{-- View / Edit → Product Image --}}
                                                 @if (isset($batch->product->image))
-                                                @php
-                                                $imgUrl = asset('storage/products/' . $batch->product->image);
-                                                @endphp
+                                                    @php
+                                                        $imgUrl = asset('storage/products/' . $batch->product->image);
+                                                    @endphp
 
-                                                @if ($mode === 'view')
-                                                <a href="{{ $imgUrl }}" target="_blank"
-                                                    class="d-block mt-2 text-primary text-decoration-underline">
-                                                    View Product Image
-                                                </a>
-                                                @elseif ($mode === 'edit')
-                                                <a href="{{ $imgUrl }}" target="_blank">
-                                                    <img src="{{ $imgUrl }}" width="80"
-                                                        class="rounded border mt-2">
-                                                </a>
-                                                @endif
+                                                    @if ($mode === 'view')
+                                                        <a href="{{ $imgUrl }}" target="_blank"
+                                                            class="d-block mt-2 text-primary text-decoration-underline">
+                                                            View Product Image
+                                                        </a>
+                                                    @elseif ($mode === 'edit')
+                                                        <a href="{{ $imgUrl }}" target="_blank">
+                                                            <img src="{{ $imgUrl }}" width="80"
+                                                                class="rounded border mt-2">
+                                                        </a>
+                                                    @endif
                                                 @endif
                                             </div>
 
                                             <div class="col-md-4">
-                                                <label class="form-label">Unit <span class="text-danger">*</span></label>
-                                                <select name="unit" id="unit" class="form-select">
-                                                    <option value="">Select Unit</option>
-                                                    <option value="kg" {{ old('unit', $batch->unit ?? '') == 'kg' ? 'selected' : '' }}>Kg</option>
-                                                    <option value="ltr" {{ old('unit', $batch->unit ?? '') == 'ltr' ? 'selected' : '' }}>Ltr</option>
-                                                    <option value="quintal" {{ old('unit', $batch->unit ?? '') == 'quintal' ? 'selected' : '' }}>Quintal</option>
-                                                    <option value="ton" {{ old('unit', $batch->unit ?? '') == 'ton' ? 'selected' : '' }}>Ton</option>
-                                                    <!-- Add more units if needed -->
-                                                </select>
-                                            </div>
+                                                <label class="form-label">
+                                                    Unit <span class="text-danger">*</span>
+                                                </label>
 
+                                                <select name="unit_id" id="unit_id" class="form-select"
+                                                    {{ $readonly ?? false ? 'disabled' : '' }}>
+                                                    <option value="">Select Unit</option>
+
+                                                    @foreach ($units as $unit)
+                                                        <option value="{{ $unit->id }}"
+                                                            {{ old('unit_id', $batch->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
+                                                            {{ $unit->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                @error('unit_id')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
 
                                             {{-- Batch Number --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Batch Number <span class="text-danger">*</span></label>
+                                                <label class="form-label">Batch Number <span
+                                                        class="text-danger">*</span></label>
                                                 <input type="text" name="batch_no"
                                                     value="{{ old('batch_no', $batch->batch_no ?? '') }}"
                                                     class="form-control" placeholder="Enter batch no"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('batch_no')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- Quantity --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                                <label class="form-label">Quantity <span
+                                                        class="text-danger">*</span></label>
                                                 <input type="number" name="quantity" id="quantity" readonly
                                                     value="{{ old('quantity', $batch->quantity ?? '') }}"
                                                     class="form-control" placeholder="Enter quantity"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('quantity')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- MFG --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">MFG Date<span class="text-danger">*</span></label>
+                                                <label class="form-label">MFG Date<span
+                                                        class="text-danger">*</span></label>
                                                 <input type="date" name="mfg_date"
                                                     value="{{ old('mfg_date', $batch->mfg_date ?? '') }}"
-                                                    class="form-control"
-                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    class="form-control" {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('mfg_date')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
                                             {{-- Expiry --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Expiry Date<span class="text-danger">*</span></label>
+                                                <label class="form-label">Expiry Date<span
+                                                        class="text-danger">*</span></label>
                                                 <input type="date" name="expiry_date"
                                                     value="{{ old('expiry_date', $batch->expiry_date ?? '') }}"
-                                                    class="form-control "
-                                                    {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    class="form-control " {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('expiry_date')
-                                                <span class="text-danger">{{ $message }}</span>
+                                                    <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -207,9 +224,9 @@
                                             </a>
 
                                             @if ($mode !== 'view')
-                                            <button type="submit" class="btn btn-success">
-                                                {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
-                                            </button>
+                                                <button type="submit" class="btn btn-success">
+                                                    {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
+                                                </button>
                                             @endif
                                         </div>
 
@@ -237,7 +254,8 @@
         return $.get('/ws/categories/' + wid, function(data) {
             let html = '<option value="">Select Category</option>';
             data.forEach(c => {
-                html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
+                html +=
+                    `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
             });
             $('#category_id').html(html);
         });
@@ -247,7 +265,8 @@
         return $.get('/ws/subcategories/' + wid + '/' + cid, function(data) {
             let html = '<option value="">Select Sub Category</option>';
             data.forEach(s => {
-                html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
+                html +=
+                    `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
             });
             $('#sub_category_id').html(html);
         });
@@ -257,7 +276,8 @@
         return $.get('/ws/products-by-sub/' + wid + '/' + sid, function(data) {
             let html = '<option value="">Select Product</option>';
             data.forEach(p => {
-                html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
+                html +=
+                    `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
             });
             $('#product_id').html(html);
         });
@@ -295,10 +315,10 @@
         let mode = "{{ $mode }}";
         if (mode !== 'edit') return;
 
-        let wid = "{{ $batch->warehouse_id ?? ''}}";
-        let cid = "{{ $batch->category_id ?? ''}}";
-        let sid = "{{ $batch->sub_category_id ?? ''}}";
-        let pid = "{{ $batch->product_id ?? ''}}";
+        let wid = "{{ $batch->warehouse_id ?? '' }}";
+        let cid = "{{ $batch->category_id ?? '' }}";
+        let sid = "{{ $batch->sub_category_id ?? '' }}";
+        let pid = "{{ $batch->product_id ?? '' }}";
 
         $('#warehouse_id').val(wid);
 
@@ -310,12 +330,11 @@
 </script>
 
 <script>
-    $(document).ready(function () {
-    let wid = $('#warehouse_id').val();
+    $(document).ready(function() {
+        let wid = $('#warehouse_id').val();
 
-    if (wid) {
-        loadCategories(wid);   // ✅ auto load categories
-    }
-});
-
+        if (wid) {
+            loadCategories(wid); // ✅ auto load categories
+        }
+    });
 </script>

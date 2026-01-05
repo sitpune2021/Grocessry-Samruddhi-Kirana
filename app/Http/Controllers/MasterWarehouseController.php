@@ -15,14 +15,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\District;
+use Illuminate\Validation\Rule;
 
 class MasterWarehouseController extends Controller
 {
-   public function index()
-{
-    $warehouses = Warehouse::orderBy('id', 'desc')->paginate(10);
-    return view('menus.warehouse.master.index', compact('warehouses'));
-}
+    public function index()
+    {
+        $warehouses = Warehouse::orderBy('id', 'desc')->paginate(10);
+        return view('menus.warehouse.master.index', compact('warehouses'));
+    }
     public function create()
     {
         $mode = 'add';
@@ -37,17 +38,28 @@ class MasterWarehouseController extends Controller
 
     public function store(Request $request)
     {
-      $request->validate([
-    'name' => 'required|string|max:255|unique:warehouses,name',
-    'type' => 'required|in:master,district,taluka',
-    'contact_person' => 'required|string|min:3|max:50',
-    'email' => 'required|email',
-    'contact_number' => 'required|digits:10',
-    'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-    'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
-    'taluka_id' => 'nullable|required_if:type,taluka|integer',
-    'address'  => 'required|string|max:500'
-]);
+        $request->validate(
+            [
+                'name' => 'required|string|max:255|unique:warehouses,name',
+                'type' => 'required|in:master,district,taluka',
+                'contact_person' => 'required|string|min:3|max:50',
+                'email' => 'required|email',
+                'contact_number' => [
+                    'required',
+                    'regex:/^[6-9]\d{9}$/',
+                    Rule::unique('warehouses', 'contact_number'),
+                ],
+
+                'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+                'district_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+                'taluka_id' => 'nullable|required_if:type,taluka|integer',
+                'address'  => 'required|string|max:500'
+            ],
+            [
+                'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+                'contact_number.unique' => 'This mobile number is already registered.',
+            ]
+        );
 
 
         $data = [
@@ -137,40 +149,38 @@ class MasterWarehouseController extends Controller
         }
     }
 
+
     public function update(Request $request, $id)
     {
-        try {
-            $warehouse = Warehouse::findOrFail($id);
+        $warehouse = Warehouse::findOrFail($id);
 
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'type' => 'required|in:master,district,taluka',
-                'address' => 'nullable|string|max:500',
-                'contact_person' => 'nullable|string|max:255',
-                'contact_number' => 'nullable|string|max:15',
-                'email' => 'nullable|email',
-            ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:master,district,taluka',
+            'address' => 'nullable|string|max:500',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_number' => [
+                'required',
+                'regex:/^[6-9]\d{9}$/',
+                Rule::unique('warehouses', 'contact_number')->ignore($id),
+            ],
+            'email' => 'nullable|email',
+        ], [
+            'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+            'contact_number.unique' => 'This mobile number is already registered.',
+        ]);
 
-            $warehouse->update([
-                'name' => $request->name,
-                'type' => $request->type,
-                'parent_id' => $request->parent_id,
-                'district_id' => $request->district_id,
-                'taluka_id' => $request->taluka_id,
-                'address' => $request->address,
-                'contact_number' => $request->mobile,
-                'email' => $request->email,
-            ]);
+        // Add optional fields
+        $validated['parent_id'] = $request->parent_id ?? null;
+        $validated['district_id'] = $request->district_id ?? null;
+        $validated['taluka_id'] = $request->taluka_id ?? null;
 
-            return redirect()->route('warehouse.index')->with('success', 'Warehouse updated successfully.');
-        } catch (\Exception $e) {
-            Log::error('Warehouse Update Error', [
-                'id' => $id,
-                'message' => $e->getMessage()
-            ]);
-            return back()->with('error', 'Something went wrong.');
-        }
+        $warehouse->update($validated);
+
+        return redirect()->route('warehouse.index')
+            ->with('success', 'Warehouse updated successfully.');
     }
+
 
 
     public function destroy($id)

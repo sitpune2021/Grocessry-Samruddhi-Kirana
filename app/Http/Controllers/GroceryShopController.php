@@ -43,7 +43,6 @@ class GroceryShopController extends Controller
     public function store(Request $request)
     {
         Log::info('Grocery Shop Store Hit', $request->all());
-
         $request->validate([
             'shop_name'   => 'required|string|max:255',
             'owner_name'  => 'required|string|max:255',
