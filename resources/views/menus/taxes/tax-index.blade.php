@@ -29,20 +29,50 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>Sr No</th>
                         <th>Name</th>
                         <th>CGST</th>
                         <th>SGST</th>
                         <th>IGST</th>
                         <th>Status</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-
+                    @forelse($taxes as $key => $tax)
+                    <tr>
+                        <td class="text-center">{{ $key + 1 }}</td>
+                        <td>{{ $tax->name }}</td>
+                        <td>{{ $tax->cgst }}%</td>
+                        <td>{{ $tax->sgst }}%</td>
+                        <td>{{ $tax->igst }}%</td>
+                        <td>
+                            @if($tax->is_active)
+                            <span class="badge bg-success">Active</span>
+                            @else
+                            <span class="badge bg-danger">Inactive</span>
+                            @endif
+                        </td>
+                         <td>
+                                <x-action-buttons
+                                    :view-url="route('taxes.show', $tax->id)"
+                                    :edit-url="route('taxes.edit', $tax->id)"
+                                    :delete-url="route('taxes.destroy', $tax->id)" />
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            No tax records found
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
-
+  <!-- Pagination -->
+            <x-pagination :from="$taxes->firstItem()" :to="$taxes->lastItem()" :total="$taxes->total()" />
 </div>
 @endsection
 
