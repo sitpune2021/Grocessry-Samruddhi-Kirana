@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\SubCategory;
+use App\Models\Tax;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,38 +21,36 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    $user = Auth::user();
+    public function index()
+    {
+        $user = Auth::user();
 
-    Log::info('Product Index Page Loaded', [
-        'user_id'      => $user->id,
-        'warehouse_id' => $user->warehouse_id,
-        'role_id'      => $user->role_id,
-    ]);
-
-    try {
-        $products = Product::with('category')
-            ->when($user->role_id != 1, function ($query) use ($user) {
-                // If NOT Super Admin → filter by warehouse
-                $query->where('warehouse_id', $user->warehouse_id);
-            })
-            ->latest()
-            ->paginate(10);
-
-        return view('menus.product.index', compact('products'));
-
-    } catch (\Throwable $e) {
-
-        Log::error('Product Index Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
+        Log::info('Product Index Page Loaded', [
+            'user_id'      => $user->id,
+            'warehouse_id' => $user->warehouse_id,
+            'role_id'      => $user->role_id,
         ]);
 
-        return redirect()->back()
-            ->with('error', 'Unable to load products');
+        try {
+            $products = Product::with(['category','tax'])
+                ->when($user->role_id != 1, function ($query) use ($user) {
+                    $query->where('warehouse_id', $user->warehouse_id);
+                })
+                ->latest()
+                ->paginate(10);
+
+            return view('menus.product.index', compact('products'));
+        } catch (\Throwable $e) {
+
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
     }
-}
 
 
     /**
@@ -66,8 +65,9 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)->orderBy('name')->get();
             $categories = collect();
             $subCategories = collect();
-            
-            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
+            $taxes = Tax::where('is_active', 1)->get();
+
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -79,42 +79,26 @@ class ProductController extends Controller
         }
     }
 
+
     public function store(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    Log::info('Product Store Request', [
-        'user_id'      => $user->id,
-        'warehouse_id' => $user->warehouse_id,
-        'request'      => $request->except(['product_images']),
-    ]);
-
-    try {
-        $validated = $request->validate([
-            'category_id'     => 'required|exists:categories,id',
-            'brand_id'        => 'required|exists:brands,id',
-            'name'            => 'required|string|max:255',
-            'sku'             => 'nullable|string|max:255',
-            'sub_category_id' => 'required|exists:sub_categories,id',
-            'description'     => 'nullable|string',
-
-            'base_price'      => 'required|numeric|min:1',
-            'retailer_price'  => 'required|numeric|min:1',
-            'mrp'             => 'required|numeric|min:1',
-            'gst_percentage'  => 'required|numeric|min:0|max:100',
-
-            'discount_type'   => 'nullable|in:flat,percentage',
-            'discount_value'  => 'nullable|numeric|min:0',
-
-            'product_images'   => 'nullable|array',
-            'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        Log::info('Product Store Request', [
+            'user_id'      => $user->id,
+            'warehouse_id' => $user->warehouse_id,
         ]);
 
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required|exists:brands,id',
-                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
+                'name'            => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name'),
+                ],
                 'sku'             => 'nullable|string|max:255',
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
@@ -122,92 +106,88 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
 
-                // ✅ Discount fields
                 'discount_type'   => 'nullable|in:flat,percentage',
                 'discount_value'  => 'nullable|numeric|min:0',
 
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+                'tax_id' => 'required|exists:taxes,id',
+             
             ], [
                 'name.unique' => 'This product name already exists!',
             ]);
 
-            // 🔐 Extra discount validation (BUSINESS LOGIC)
             if (!empty($validated['discount_type'])) {
 
-                if ($validated['discount_type'] === 'percentage' && $validated['discount_value'] > 100) {
-                    return back()->withInput()->with('error', 'Discount percentage cannot exceed 100');
+                if (
+                    $validated['discount_type'] === 'percentage'
+                    && $validated['discount_value'] > 100
+                ) {
+                    return back()->withInput()
+                        ->with('error', 'Discount percentage cannot exceed 100');
                 }
 
-                if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
-                    return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
+                if (
+                    $validated['discount_type'] === 'flat'
+                    && $validated['discount_value'] > $validated['mrp']
+                ) {
+                    return back()->withInput()
+                        ->with('error', 'Flat discount cannot exceed MRP');
                 }
             } else {
-                // No discount selected
                 $validated['discount_value'] = 0;
             }
 
-            if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
-                return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
+            if ($request->hasFile('product_images')) {
+
+                $imageNames = [];
+
+                foreach ($request->file('product_images') as $image) {
+                    $name = time() . '_' . $image->getClientOriginalName();
+                    $image->storeAs('products', $name, 'public');
+                    $imageNames[] = $name;
+                }
+
+                $validated['product_images'] = json_encode($imageNames);
             }
 
-        } else {
-            $validated['discount_value'] = 0;
+            $validated['warehouse_id'] = $user->warehouse_id;
+
+            $product = Product::create($validated);
+
+            Log::info('Product Created Successfully', [
+                'product_id' => $product->id,
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('success', 'Product created successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Product Store Validation Failed', [
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        } catch (\Throwable $e) {
+
+            Log::error('Product Store Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return back()->withInput()
+                ->with('error', 'Something went wrong while saving product');
         }
-
-        
-        if ($request->hasFile('product_images')) {
-
-            $imageNames = [];
-
-            foreach ($request->file('product_images') as $image) {
-                $name = $image->getClientOriginalName();
-                $image->storeAs('products', $name, 'public');
-                $imageNames[] = $name;
-            }
-
-            $validated['product_images'] = json_encode($imageNames);
-        }
-
-        $validated['warehouse_id'] = $user->warehouse_id;
-
-        $product = Product::create($validated);
-
-        Log::info('Product Created Successfully', [
-            'product_id'  => $product->id,
-            'warehouse_id'=> $product->warehouse_id,
-        ]);
-
-        return redirect()->route('product.index')
-            ->with('success', 'Product created successfully');
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::warning('Product Store Validation Failed', [
-            'errors' => $e->errors()
-        ]);
-        throw $e;
-
-    } catch (\Throwable $e) {
-        Log::error('Product Store Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
-
-        return redirect()->back()
-            ->withInput()
-            ->with('error', 'Something went wrong while saving product');
     }
-}
 
 
-       public function show($id)
+    public function show($id)
     {
         try {
             Log::info('Product View Request', ['id' => $id]);
 
-            $product = Product::find($id);
+             $product = Product::with('tax')->findOrFail($id);
 
             if (!$product) {
                 Log::warning('Product Not Found', ['id' => $id]);
@@ -252,10 +232,10 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)
                 ->orderBy('name')
                 ->get();
-
+            $taxes = Tax::where('is_active', 1)->get();
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories','taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -300,6 +280,7 @@ class ProductController extends Controller
                 'gst_percentage'  => 'required|numeric|min:0|max:100',
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
+                'tax_id' => 'required|exists:taxes,id',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ], [
                 'name.unique' => 'This product name already exists!',
@@ -403,6 +384,4 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
     }
-
-  
 }
