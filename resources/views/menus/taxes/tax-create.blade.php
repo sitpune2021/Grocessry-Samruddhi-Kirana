@@ -40,18 +40,31 @@
                                     </div>
 
                                     <div class="card-body">
-                                        <form action="{{ route('taxes.store') }}" method="POST">
+                                        <form
+                                            action="{{ $mode === 'edit' ? route('taxes.update', $tax->id) : route('taxes.store') }}"
+                                            method="POST">
                                             @csrf
+                                            @if($mode === 'edit')
+                                            @method('PUT')
+                                            @endif
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
                                                     <label for="name" class="form-label">Tax Name</label>
-                                                    <input type="text" name="name" id="name" class="form-control" placeholder="GST 5%" required>
+                                                    <input type="text" name="name" id="name" class="form-control"
+                                                        value="{{ old('name', $tax->name ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="GST 5%" required>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="is_active" class="form-label">Status</label>
-                                                    <select name="is_active" id="is_active" class="form-control" required>
-                                                        <option value="1">Active</option>
-                                                        <option value="0">Inactive</option>
+                                                    <select name="is_active" id="is_active" class="form-control"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }} required>
+                                                        <option value="1" {{ (old('is_active', $tax->is_active ?? '') == 1) ? 'selected' : '' }}>
+                                                            Active
+                                                        </option>
+                                                        <option value="0" {{ (old('is_active', $tax->is_active ?? '') == 0) ? 'selected' : '' }}>
+                                                            Inactive
+                                                        </option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -59,20 +72,41 @@
                                             <div class="row mb-3">
                                                 <div class="col-md-4">
                                                     <label for="cgst" class="form-label">CGST (%)</label>
-                                                    <input type="number" step="0.01" name="cgst" id="cgst" class="form-control" placeholder="2.5" required>
+                                                    <input type="number" step="0.01" name="cgst" id="cgst" class="form-control"
+                                                        value="{{ old('cgst', $tax->cgst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="2.5" required>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="sgst" class="form-label">SGST (%)</label>
-                                                    <input type="number" step="0.01" name="sgst" id="sgst" class="form-control" placeholder="2.5" required>
+                                                    <input type="number" step="0.01" name="sgst" id="sgst" class="form-control"
+                                                        value="{{ old('sgst', $tax->sgst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="2.5" required>
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="igst" class="form-label">IGST (%)</label>
-                                                    <input type="number" step="0.01" name="igst" id="igst" class="form-control" placeholder="5" required>
+                                                    <input type="number" step="0.01" name="igst" id="igst" class="form-control"
+                                                        value="{{ old('igst', $tax->igst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="5" required>
                                                 </div>
                                             </div>
 
-                                            <button type="submit" class="btn btn-success">Save Tax</button>
-                                            <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a>
+                                            <!-- <button type="submit" class="btn btn-success">Save Tax</button>
+                                            <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
+
+                                            <div class="mt-3">
+                                                @if($mode !== 'show')
+                                                <button type="submit" class="btn btn-success">
+                                                    {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
+                                                </button>
+                                                @endif
+
+                                                <a href="{{ route('taxes.index') }}" class="btn btn-secondary">
+                                                    Back
+                                                </a>
+                                            </div>
                                         </form>
                                     </div>
                                 </div>

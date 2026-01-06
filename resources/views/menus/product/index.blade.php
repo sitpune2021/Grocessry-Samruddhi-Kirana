@@ -74,7 +74,7 @@
                                     <td>₹ {{ number_format($product->base_price, 2) }}</td>
                                     <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                                     <td>₹{{ number_format($product->mrp, 2) }}</td>
-                                    <td>{{ $product->gst_percentage ?? '-' }}</td>
+                                    <td>{{ $product?->tax?->name ?? '-' }}</td>
                                     <!-- <td>{{ $product->stock ?? '-' }}</td> -->
                                     {{-- Actions --}}
                                     <td>
