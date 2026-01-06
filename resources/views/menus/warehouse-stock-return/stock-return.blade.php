@@ -77,7 +77,7 @@
 
                                                     <div class="col-md-6">
                                                         <label>Remarks</label>
-                                                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                                                        <textarea name="remarks" class="form-control" placeholder="Remark" rows="2"></textarea>
                                                     </div>
                                                 </div>
 
@@ -99,22 +99,26 @@
                                                     <tbody>
                                                         <tr>
                                                             <td>
-                                                                <select name="items[0][product_id]" class="form-control product-select" required>
+                                                                <select name="items[0][product_id]"
+                                                                    class="form-control product-select"
+                                                                    required>
+
                                                                     <option value="">Select Product</option>
 
                                                                     @foreach($warehouseStocks->groupBy('product_id') as $productId => $stocks)
                                                                     <option value="{{ $productId }}"
                                                                         data-batches='@json(
-                                                                            $stocks->map(fn($s) => [
-                                                                            "batch_id" => $s->batch_id,
-                                                                            "batch_no" => $s->batch->batch_no ?? "N/A",
-                                                                            "stock" => $s->quantity
-                                                                        ])
+                                                                        $stocks->map(fn($s) => [
+                                                                        "batch_id" => $s->batch_id,
+                                                                        "batch_no" => $s->batch->batch_no ?? "N/A",
+                                                                        "stock"    => $s->quantity
+                                                                    ])
                                                                     )'>
                                                                         {{ $stocks->first()->product->name }}
                                                                     </option>
                                                                     @endforeach
                                                                 </select>
+
 
                                                             </td>
                                                             {{-- Product Image --}}

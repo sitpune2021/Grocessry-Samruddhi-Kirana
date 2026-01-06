@@ -23,10 +23,14 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    
+    public function profile()
     {
-        //
+        $users = User::with('role')->paginate(10);
+
+        return view('userProfile.index', compact('users'));
     }
+
 
     /**
      * Store a newly created resource in storage.

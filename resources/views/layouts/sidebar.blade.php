@@ -107,7 +107,25 @@
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li><a href="{{ route('transfer.index') }}">District Warehouse Transfers</a></li>
+                    <li>
+                        <a href="{{ route('transfer.index') }}">
+                            District Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('taluka.transfer.index') }}">
+                            Taluka Warehouse Transfers
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('district-taluka-transfer.index') }}">
+                            District To Taluka Warehouse Transfers
+                        </a>
+                    </li>
+
+
                 </ul>
             </li>
 
@@ -124,6 +142,7 @@
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer
                             Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
+                    
                 </ul>
             </li>
 
@@ -175,7 +194,8 @@
 
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                        <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
+                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
+                    <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
 
                         <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
                     @endif
@@ -251,9 +271,11 @@
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
-                    <li><a href="{{ route('RolePermission') }}">Tax Management</a></li>
+                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>
                 </ul>
             </li>
+
+            <li class="menu-header">WEBSITE</li>
 
         </ul>
     </div>
