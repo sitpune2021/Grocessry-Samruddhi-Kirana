@@ -4,72 +4,131 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\DeliveryAgent;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Carbon\Carbon;
+use App\Models\Role;
 
 class DeliveryAgentController extends Controller
 {
+
+    public function emailLogin(Request $request)
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+
+        // Fetch user with role
+        $user = User::with('role')
+            ->where('email', $request->email)
+            ->first();
+
+        // User not found or password incorrect
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Invalid email or password'
+            ], 401);
+        }
+
+        // ❌ Role check (dynamic)
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Access denied. Not a delivery agent.'
+            ], 403);
+        }
+
+        // ✅ Login allowed
+        $token = $user->createToken('delivery-agent-token')->plainTextToken;
+
+        // Update last login
+        $user->update([
+            'last_login_at' => now()
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Delivery agent login successful',
+            'token'   => $token,
+            'user'    => [
+                'id'         => $user->id,
+                'name'       => $user->first_name . ' ' . $user->last_name,
+                'email'      => $user->email,
+                'mobile'     => $user->mobile,
+                'role'       => $user->role->name,
+                // 'warehouse'  => $user->warehouse_id,
+            ]
+        ]);
+    }
     public function sendOtp(Request $request)
     {
         $request->validate([
             'mobile' => 'required|digits:10',
         ]);
 
-        $otp      = random_int(100000, 999999); // safer than rand()
+        // Get Delivery Agent role safely
+        $role = Role::where('name', 'Delivery Agent')->first();
+        if (!$role) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Delivery Agent role not found'
+            ], 500);
+        }
+
+        $otp = random_int(100000, 999999);
         $otpToken = (string) Str::uuid();
 
-        // Create or update delivery agent
-        $agent = DeliveryAgent::updateOrCreate(
-            ['mobile' => $request->mobile],
+        // Create / Update user
+        $agent = User::updateOrCreate(
+            [
+                'mobile'  => $request->mobile,
+                'role_id' => $role->id
+            ],
             [
                 'otp'        => $otp,
-                'otp_token'  => $otpToken,
-                'otp_expiry' => now()->addMinutes(5), // IMPORTANT
+                'remember_token'  => $otpToken,
+                'otp_expires_at' => now()->addMinutes(5),
+                'status'     => 1,
             ]
         );
 
         try {
-            Http::asForm()->post(
-                'http://redirect.ds3.in/submitsms.jsp',
-                [
-                    'user'     => env('SMS_USER'),
-                    'key'      => env('SMS_KEY'),
-                    'mobile'   => '91' . $agent->mobile,
-                    'message'  => "Your OTP for login is {$otp}",
-                    'senderid' => env('SMS_SENDERID'),
-                    'accusage' => '10',
-                ]
-            );
+            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $agent->mobile,
+                'message'  => "Your OTP for login is {$otp}",
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => false,
-                'message' => 'OTP send failed',
+                'message' => 'OTP send failed'
             ], 500);
         }
 
         return response()->json([
             'status'   => true,
             'message'  => 'OTP sent successfully',
-            'otpToken' => $otpToken, 
+            'otpToken' => $otpToken,
         ]);
     }
 
-
-    /**
-     * Verify OTP
-     * POST /api/v1/auth/mobile/verify-otp
-     */
     public function verifyOtp(Request $request)
     {
         $request->validate([
-            'otpToken' => 'required',
-            'otp'      => 'required|digits:6',
+            'remember_token' => 'required',
+            'otp' => 'required|digits:6',
         ]);
 
-        $agent = DeliveryAgent::where('otp_token', $request->otpToken)
+        $agent = User::with('role')
+            ->where('remember_token', $request->remember_token)
             ->where('otp', $request->otp)
             ->first();
 
@@ -80,9 +139,25 @@ class DeliveryAgentController extends Controller
             ], 401);
         }
 
+        if (!$agent->otp_expires_at || now()->greaterThan($agent->otp_expires_at)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'OTP expired'
+            ], 401);
+        }
+
+        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
         $agent->update([
-            'otp'       => null,
-            'otp_token' => null,
+            'otp'             => null,
+            'remember_token'  => null,
+            'otp_expires_at'  => null,
+            'last_login_at'   => now(),
         ]);
 
         $token = $agent->createToken('delivery-agent-token')->plainTextToken;
@@ -91,21 +166,23 @@ class DeliveryAgentController extends Controller
             'status'  => true,
             'message' => 'OTP verified successfully',
             'token'   => $token,
-            'agent'   => $agent
+            'agent'   => [
+                'id'     => $agent->id,
+                'name'   => trim($agent->first_name . ' ' . $agent->last_name),
+                'email'  => $agent->email,
+                'mobile' => $agent->mobile,
+                'role'   => $agent->role->name,
+            ]
         ]);
     }
 
-    /**
-     * Resend OTP
-     * POST /api/v1/auth/mobile/resend-otp
-     */
     public function resendOtp(Request $request)
     {
         $request->validate([
             'otpToken' => 'required',
         ]);
 
-        $agent = DeliveryAgent::where('otp_token', $request->otpToken)->first();
+        $agent = User::where('otp_token', $request->otpToken)->first();
 
         if (!$agent) {
             return response()->json([
@@ -114,53 +191,34 @@ class DeliveryAgentController extends Controller
             ], 404);
         }
 
+        $otp = random_int(100000, 999999);
+
         $agent->update([
-            'otp' => rand(100000, 999999)
+            'otp'        => $otp,
+            'otp_expiry' => now()->addMinutes(5),
         ]);
 
-        // TODO: Integrate SMS API here
+        try {
+            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $agent->mobile,
+                'message'  => "Your new OTP for login is {$otp}",
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'OTP resend failed'
+            ], 500);
+        }
 
         return response()->json([
             'status'  => true,
             'message' => 'OTP resent successfully'
         ]);
     }
-
-    /**
-     * Email Login
-     * POST /api/v1/auth/email/login
-     */
-    public function emailLogin(Request $request)
-    {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $agent = DeliveryAgent::where('email', $request->email)->first();
-
-        if (!$agent || !Hash::check($request->password, $agent->password)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Invalid email or password'
-            ], 401);
-        }
-
-        $token = $agent->createToken('delivery-agent-token')->plainTextToken;
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Login successful',
-            'token'   => $token,
-            'agent'   => $agent
-        ]);
-    }
-
-    /**
-     * Logout
-     * POST /api/v1/auth/logout
-     * Middleware: auth:sanctum
-     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
