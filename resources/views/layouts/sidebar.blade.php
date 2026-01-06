@@ -277,6 +277,24 @@
 
             <li class="menu-header">WEBSITE</li>
 
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('BannerMenu','BannerArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        <a href="{{ route('banners.index') }}">Banner Management</a>
+                    </span>
+                </div>
+            </li>
+
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('BannerMenu','BannerArrow')">
+                    <span style="padding-left: 10px;">
+                        <i class="bx bx-package me-2 "></i>
+                        <a href="{{ route('admin.contacts') }}">User Contact Details</a>
+                    </span>
+                </div>
+            </li>
+
         </ul>
     </div>
 
