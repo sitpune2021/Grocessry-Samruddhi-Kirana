@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
 
 class DeliveryAgent extends Model
 {
+    use HasApiTokens;
+
     protected $fillable = [
         'user_id',
         'shop_id',
@@ -17,7 +20,14 @@ class DeliveryAgent extends Model
         'profile_image',
         'aadhaar_card',
         'driving_license',
-        'created_by'
+        'created_by',
+        'name',
+        'mobile',
+        'email',
+        'password',
+        'otp',
+        'otp_token',
+        'otp_expiry',
     ];
 
     public function user()
