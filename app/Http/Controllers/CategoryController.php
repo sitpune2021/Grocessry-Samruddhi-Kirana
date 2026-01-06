@@ -56,18 +56,10 @@ class CategoryController extends Controller
         ]);
 
         try {
-            $user = Auth::user();
+           
             // Validation
             $validated = $request->validate([
-                // 'name'     => 'required|string|max:255|unique:categories,name',
-                'name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('categories')->where(function ($q) use ($user) {
-                        $q->where('warehouse_id', $user->warehouse_id);
-                    }),
-                ],
+                'name'     => 'required|string|max:255|unique:categories,name',
                 'slug'     => 'required|string|max:255',
                 'brand_id' => 'required|exists:brands,id',
             ]);
@@ -77,7 +69,7 @@ class CategoryController extends Controller
                 'name'     => $validated['name'],
                 'slug'     => $validated['slug'],
                 'brand_id' => $validated['brand_id'],
-                'warehouse_id' => $user->warehouse_id,
+        
             ]);
 
             Log::info('Category created successfully', [
@@ -85,7 +77,7 @@ class CategoryController extends Controller
                 'name'        => $category->name,
                 'slug'        => $category->slug,
                 'brand_id'    => $category->brand_id,
-                'warehouse_id' => $category->warehouse_id,
+                
             ]);
 
             return redirect()
@@ -150,31 +142,6 @@ class CategoryController extends Controller
     }
 
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    // public function edit($id)
-    // {
-    //     Log::info('Category Edit Request Received', ['id' => $id]);
-
-    //     $category = Category::with('brand')->find($id);
-
-    //     if (!$category) {
-    //         Log::warning('Category Not Found for Edit', ['id' => $id]);
-
-    //         return redirect()->route('category.index')
-    //             ->with('error', 'Category not found');
-    //     }
-
-    //     $brands = Brand::all();   // ✅ get all brands
-    //     $mode   = 'edit';
-
-    //     return view('menus.category.add-category', compact(
-    //         'category',
-    //         'brands',
-    //         'mode'
-    //     ));
-    // }
 
     public function edit($id)
     {
