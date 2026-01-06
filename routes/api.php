@@ -41,16 +41,17 @@ Route::apiResource('/taluka-warehouses',    TalukaWarehouseController::class);
 Route::apiResource('/users',                UserController::class);
 Route::apiResource('/batch',                BatchController::class);
 
-    Route::prefix('auth')->group(function () {
+Route::prefix('auth')->group(function () {
 
-        // 📱 Mobile OTP
-        Route::post('mobile/send-otp',   [DeliveryAgentController::class, 'sendOtp']);
-        Route::post('mobile/verify-otp', [DeliveryAgentController::class, 'verifyOtp']);
-        Route::post('mobile/resend-otp', [DeliveryAgentController::class, 'resendOtp']);
+    // 📱 Mobile OTP
+    Route::post('mobile/verify-otp/{type}', [DeliveryAgentController::class, 'verifyOtp']);
+    Route::post('mobile/resend-otp', [DeliveryAgentController::class, 'resendOtp']);
 
-        // 📧 Email Login
-        Route::post('email/login', [DeliveryAgentController::class, 'emailLogin']);
+    // 📧 Email Login
+    Route::post('/login/{type}', [DeliveryAgentController::class, 'login']);
+    Route::post('/reset-password', [DeliveryAgentController::class, 'resetPassword']);
+    Route::post('forgot-password/send-otp', [DeliveryAgentController::class, 'forgotPasswordSendOtp']);
 
-        // 🔐 Logout (Protected)
-        Route::middleware('auth:sanctum')->post('logout', [DeliveryAgentController::class, 'logout']);
-    });
+    // 🔐 Logout (Protected)
+    Route::middleware('auth:sanctum')->post('logout', [DeliveryAgentController::class, 'logout']);
+});

@@ -11,220 +11,326 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use App\Models\Role;
+use Illuminate\Support\Facades\Cache;
 
 class DeliveryAgentController extends Controller
 {
-
-    public function emailLogin(Request $request)
+    public function login(Request $request, $type)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
-
-        // Fetch user with role
-        $user = User::with('role')
-            ->where('email', $request->email)
-            ->first();
-
-        // User not found or password incorrect
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        /* ================= TYPE VALIDATION ================= */
+        if (!in_array($type, ['password', 'otp'])) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Invalid email or password'
-            ], 401);
+                'status' => false,
+                'message' => 'Invalid login type'
+            ], 400);
         }
 
-        // ❌ Role check (dynamic)
+        /* ================= PASSWORD LOGIN ================= */
+        if ($type === 'password') {
+
+            $request->validate([
+                'username' => 'required',
+                'password' => 'required',
+            ]);
+
+            $username = trim($request->username);
+
+            $user = User::with('role')
+                ->where(function ($q) use ($username) {
+                    if (is_numeric($username)) {
+                        $q->where('mobile', $username);
+                    } else {
+                        $q->where('email', $username);
+                    }
+                })
+                ->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+        }
+
+        /* ================= OTP LOGIN (SEND OTP) ================= */
+        if ($type === 'otp') {
+
+            $request->validate([
+                'mobile' => 'required|digits:10',
+            ]);
+
+            $user = User::with('role')
+                ->where('mobile', $request->mobile)
+                ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mobile number not registered'
+                ], 404);
+            }
+
+            // Role check
+            if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied'
+                ], 403);
+            }
+
+            $otp = random_int(100000, 999999);
+
+            $user->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5),
+            ]);
+
+            // Send SMS
+            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+                'user' => env('SMS_USER'),
+                'key' => env('SMS_KEY'),
+                'mobile' => '91' . $user->mobile,
+                'message' => "Your OTP is {$otp}",
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP sent successfully'
+            ]);
+        }
+
+        /* ================= COMMON CHECKS ================= */
         if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
-                'status'  => false,
-                'message' => 'Access denied. Not a delivery agent.'
+                'status' => false,
+                'message' => 'Access denied'
             ], 403);
         }
 
-        // ✅ Login allowed
+        if ($user->status != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Account inactive'
+            ], 403);
+        }
+
+        /* ================= TOKEN ================= */
         $token = $user->createToken('delivery-agent-token')->plainTextToken;
 
-        // Update last login
         $user->update([
             'last_login_at' => now()
         ]);
 
         return response()->json([
-            'status'  => true,
-            'message' => 'Delivery agent login successful',
-            'token'   => $token,
-            'user'    => [
-                'id'         => $user->id,
-                'name'       => $user->first_name . ' ' . $user->last_name,
-                'email'      => $user->email,
-                'mobile'     => $user->mobile,
-                'role'       => $user->role->name,
-                // 'warehouse'  => $user->warehouse_id,
+            'status' => true,
+            'message' => 'Login successful',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'email' => $user->email,
+                'mobile' => $user->mobile,
+                'role' => $user->role->name,
             ]
         ]);
     }
-    public function sendOtp(Request $request)
+    public function verifyOtp(Request $request, $type)
     {
-        $request->validate([
-            'mobile' => 'required|digits:10',
-        ]);
-
-        // Get Delivery Agent role safely
-        $role = Role::where('name', 'Delivery Agent')->first();
-        if (!$role) {
+        if (!in_array($type, ['login', 'forgot'])) {
             return response()->json([
                 'status' => false,
-                'message' => 'Delivery Agent role not found'
-            ], 500);
+                'message' => 'Invalid verification type'
+            ], 400);
         }
 
-        $otp = random_int(100000, 999999);
-        $otpToken = (string) Str::uuid();
-
-        // Create / Update user
-        $agent = User::updateOrCreate(
-            [
-                'mobile'  => $request->mobile,
-                'role_id' => $role->id
-            ],
-            [
-                'otp'        => $otp,
-                'remember_token'  => $otpToken,
-                'otp_expires_at' => now()->addMinutes(5),
-                'status'     => 1,
-            ]
-        );
-
-        try {
-            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
-                'user'     => env('SMS_USER'),
-                'key'      => env('SMS_KEY'),
-                'mobile'   => '91' . $agent->mobile,
-                'message'  => "Your OTP for login is {$otp}",
-                'senderid' => env('SMS_SENDERID'),
-                'accusage' => '10',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'OTP send failed'
-            ], 500);
-        }
-
-        return response()->json([
-            'status'   => true,
-            'message'  => 'OTP sent successfully',
-            'otpToken' => $otpToken,
-        ]);
-    }
-
-    public function verifyOtp(Request $request)
-    {
+        // Validate request
         $request->validate([
-            'remember_token' => 'required',
-            'otp' => 'required|digits:6',
+            'mobile' => 'required|digits:10',
+            'otp'    => 'required|digits:6',
         ]);
 
-        $agent = User::with('role')
-            ->where('remember_token', $request->remember_token)
+        $user = User::with('role')
+            ->where('mobile', $request->mobile)
             ->where('otp', $request->otp)
             ->first();
 
-        if (!$agent) {
+        if (!$user) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Invalid OTP'
             ], 401);
         }
 
-        if (!$agent->otp_expires_at || now()->greaterThan($agent->otp_expires_at)) {
+        if (now()->greaterThan($user->otp_expires_at)) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'OTP expired'
             ], 401);
         }
 
-        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+        /* ================= LOGIN OTP ================= */
+        if ($type === 'login') {
+
+            // Role check (only for login)
+            if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Access denied'
+                ], 403);
+            }
+
+            $token = $user->createToken('delivery-agent-token')->plainTextToken;
+
+            $user->update([
+                'otp' => null,
+                'otp_expires_at' => null,
+                'last_login_at' => now(),
+            ]);
+
             return response()->json([
-                'status'  => false,
-                'message' => 'Access denied'
-            ], 403);
+                'status' => true,
+                'message' => 'Login successful',
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => trim($user->first_name . ' ' . $user->last_name),
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'role' => $user->role->name,
+                ]
+            ]);
         }
 
-        $agent->update([
-            'otp'             => null,
-            'remember_token'  => null,
-            'otp_expires_at'  => null,
-            'last_login_at'   => now(),
-        ]);
+        if ($type === 'forgot') {
 
-        $token = $agent->createToken('delivery-agent-token')->plainTextToken;
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'OTP verified successfully',
-            'token'   => $token,
-            'agent'   => [
-                'id'     => $agent->id,
-                'name'   => trim($agent->first_name . ' ' . $agent->last_name),
-                'email'  => $agent->email,
-                'mobile' => $agent->mobile,
-                'role'   => $agent->role->name,
-            ]
-        ]);
+            // DO NOT clear OTP here (needed for reset password)
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP verified. Proceed to reset password'
+            ]);
+        }
     }
 
     public function resendOtp(Request $request)
     {
         $request->validate([
-            'otpToken' => 'required',
+            'mobile' => 'required|digits:10',
         ]);
 
-        $agent = User::where('otp_token', $request->otpToken)->first();
+        $user = User::where('mobile', $request->mobile)->first();
 
-        if (!$agent) {
+        if (!$user) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Invalid OTP token'
+                'status' => false,
+                'message' => 'Mobile number not found'
             ], 404);
         }
 
         $otp = random_int(100000, 999999);
 
-        $agent->update([
-            'otp'        => $otp,
-            'otp_expiry' => now()->addMinutes(5),
+        $user->update([
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(5),
         ]);
 
-        try {
-            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
-                'user'     => env('SMS_USER'),
-                'key'      => env('SMS_KEY'),
-                'mobile'   => '91' . $agent->mobile,
-                'message'  => "Your new OTP for login is {$otp}",
-                'senderid' => env('SMS_SENDERID'),
-                'accusage' => '10',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'OTP resend failed'
-            ], 500);
-        }
+        // Send SMS
+        Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+            'user' => env('SMS_USER'),
+            'key' => env('SMS_KEY'),
+            'mobile' => '91' . $user->mobile,
+            'message' => "Your new OTP is {$otp}",
+            'senderid' => env('SMS_SENDERID'),
+            'accusage' => '10',
+        ]);
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'OTP resent successfully'
         ]);
     }
+    public function forgotPasswordSendOtp(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|digits:10',
+        ]);
+
+        $user = User::where('mobile', $request->mobile)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mobile number not registered'
+            ], 404);
+        }
+
+        $otp = random_int(100000, 999999);
+
+        $user->update([
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(5),
+        ]);
+
+        // Send SMS
+        Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+            'user' => env('SMS_USER'),
+            'key' => env('SMS_KEY'),
+            'mobile' => '91' . $user->mobile,
+            'message' => "Your password reset OTP is {$otp}",
+            'senderid' => env('SMS_SENDERID'),
+            'accusage' => '10',
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent for password reset'
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|digits:10',
+            'reset_token' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $cachedToken = Cache::get('reset_password_' . $request->mobile);
+
+        if (!$cachedToken || $cachedToken !== $request->reset_token) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Reset authorization failed'
+            ], 403);
+        }
+
+        $user = User::where('mobile', $request->mobile)->firstOrFail();
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'otp' => null,
+            'otp_expires_at' => null,
+        ]);
+
+        Cache::forget('reset_password_' . $request->mobile);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password reset successfully'
+        ]);
+    }
+
+
+
+    // ---------------- LOGOUT ----------------
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Logged out successfully'
         ]);
     }
