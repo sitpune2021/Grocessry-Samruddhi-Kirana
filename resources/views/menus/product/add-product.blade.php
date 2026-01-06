@@ -170,37 +170,6 @@
                                                 </div>
 
 
-
-                                                {{-- Effective Date --}}
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">
-                                                            Effective Date <span class="text-danger">*</span>
-                                                        </label>
-                                                        <input type="date" name="effective_date" class="form-control"
-                                                            value="{{ old('effective_date', isset($product) ? \Carbon\Carbon::parse($product->effective_date)->format('Y-m-d') : '') }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @error('effective_date')
-    <span class="text-danger">{{ $message }}</span>
-@enderror
-                                                    </div>
-                                                </div> -->
-
-                                                {{-- Expiry Date --}}
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">
-                                                            Expiry Date <span class="text-danger">*</span>
-                                                        </label>
-                                                        <input type="date" name="expiry_date" class="form-control"
-                                                            value="{{ old('expiry_date', isset($product) ? \Carbon\Carbon::parse($product->expiry_date)->format('Y-m-d') : '') }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @error('expiry_date')
-    <span class="text-danger">{{ $message }}</span>
-@enderror
-                                                    </div>
-                                                </div> -->
-
                                                 {{-- Prices --}}
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
@@ -290,23 +259,6 @@
                                                         @enderror
                                                     </div>
                                                 </div>
-
-                                                {{-- Stock --}}
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">
-                                                            Stock <span class="text-danger">*</span>
-                                                        </label>
-                                                        <input type="number" name="stock" class="form-control"
-                                                            placeholder="Enter stock"
-                                                            value="{{ old('stock', $product->stock ?? '') }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                        @error('stock')
-    <span class="text-danger">{{ $message }}</span>
-@enderror
-                                                    </div>
-                                                </div> -->
-
                                                 {{-- Images --}}
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label">Product Images</label>
