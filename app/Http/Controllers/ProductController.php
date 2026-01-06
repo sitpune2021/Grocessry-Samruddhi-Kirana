@@ -20,38 +20,37 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    $user = Auth::user();
+    public function index()
+    {
+        $user = Auth::user();
 
-    Log::info('Product Index Page Loaded', [
-        'user_id'      => $user->id,
-        'warehouse_id' => $user->warehouse_id,
-        'role_id'      => $user->role_id,
-    ]);
-
-    try {
-        $products = Product::with('category')
-            ->when($user->role_id != 1, function ($query) use ($user) {
-                // If NOT Super Admin → filter by warehouse
-                $query->where('warehouse_id', $user->warehouse_id);
-            })
-            ->latest()
-            ->paginate(10);
-
-        return view('menus.product.index', compact('products'));
-
-    } catch (\Throwable $e) {
-
-        Log::error('Product Index Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
+        Log::info('Product Index Page Loaded', [
+            'user_id'      => $user->id,
+            'warehouse_id' => $user->warehouse_id,
+            'role_id'      => $user->role_id,
         ]);
 
-        return redirect()->back()
-            ->with('error', 'Unable to load products');
+        try {
+            $products = Product::with('category')
+                ->when($user->role_id != 1, function ($query) use ($user) {
+                    // If NOT Super Admin → filter by warehouse
+                    $query->where('warehouse_id', $user->warehouse_id);
+                })
+                ->latest()
+                ->paginate(10);
+
+            return view('menus.product.index', compact('products'));
+        } catch (\Throwable $e) {
+
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
     }
-}
 
 
     /**
@@ -66,7 +65,7 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)->orderBy('name')->get();
             $categories = collect();
             $subCategories = collect();
-            
+
             return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
         } catch (\Throwable $e) {
 
@@ -79,6 +78,7 @@ class ProductController extends Controller
         }
     }
 
+
     public function store(Request $request)
 {
     $user = Auth::user();
@@ -86,14 +86,18 @@ class ProductController extends Controller
     Log::info('Product Store Request', [
         'user_id'      => $user->id,
         'warehouse_id' => $user->warehouse_id,
-        'request'      => $request->except(['product_images']),
     ]);
 
     try {
         $validated = $request->validate([
             'category_id'     => 'required|exists:categories,id',
             'brand_id'        => 'required|exists:brands,id',
-            'name'            => 'required|string|max:255',
+            'name'            => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'name'),
+            ],
             'sku'             => 'nullable|string|max:255',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'description'     => 'nullable|string',
@@ -108,62 +112,38 @@ class ProductController extends Controller
 
             'product_images'   => 'nullable|array',
             'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'name.unique' => 'This product name already exists!',
         ]);
 
-        try {
-            $validated = $request->validate([
-                'category_id'     => 'required|exists:categories,id',
-                'brand_id'        => 'required|exists:brands,id',
-                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
-                'sku'             => 'nullable|string|max:255',
-                'sub_category_id' => 'required|exists:sub_categories,id',
-                'description'     => 'nullable|string',
+        if (!empty($validated['discount_type'])) {
 
-                'base_price'      => 'required|numeric|min:1',
-                'retailer_price'  => 'required|numeric|min:1',
-                'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
-
-                // ✅ Discount fields
-                'discount_type'   => 'nullable|in:flat,percentage',
-                'discount_value'  => 'nullable|numeric|min:0',
-
-                'product_images'   => 'nullable|array',
-                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            ], [
-                'name.unique' => 'This product name already exists!',
-            ]);
-
-            // 🔐 Extra discount validation (BUSINESS LOGIC)
-            if (!empty($validated['discount_type'])) {
-
-                if ($validated['discount_type'] === 'percentage' && $validated['discount_value'] > 100) {
-                    return back()->withInput()->with('error', 'Discount percentage cannot exceed 100');
-                }
-
-                if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
-                    return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
-                }
-            } else {
-                // No discount selected
-                $validated['discount_value'] = 0;
+            if (
+                $validated['discount_type'] === 'percentage'
+                && $validated['discount_value'] > 100
+            ) {
+                return back()->withInput()
+                    ->with('error', 'Discount percentage cannot exceed 100');
             }
 
-            if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
-                return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
+            if (
+                $validated['discount_type'] === 'flat'
+                && $validated['discount_value'] > $validated['mrp']
+            ) {
+                return back()->withInput()
+                    ->with('error', 'Flat discount cannot exceed MRP');
             }
 
         } else {
             $validated['discount_value'] = 0;
         }
 
-        
         if ($request->hasFile('product_images')) {
 
             $imageNames = [];
 
             foreach ($request->file('product_images') as $image) {
-                $name = $image->getClientOriginalName();
+                $name = time().'_'.$image->getClientOriginalName();
                 $image->storeAs('products', $name, 'public');
                 $imageNames[] = $name;
             }
@@ -176,33 +156,33 @@ class ProductController extends Controller
         $product = Product::create($validated);
 
         Log::info('Product Created Successfully', [
-            'product_id'  => $product->id,
-            'warehouse_id'=> $product->warehouse_id,
+            'product_id' => $product->id,
         ]);
 
         return redirect()->route('product.index')
             ->with('success', 'Product created successfully');
 
     } catch (\Illuminate\Validation\ValidationException $e) {
+
         Log::warning('Product Store Validation Failed', [
-            'errors' => $e->errors()
+            'errors' => $e->errors(),
         ]);
         throw $e;
 
     } catch (\Throwable $e) {
+
         Log::error('Product Store Error', [
             'message' => $e->getMessage(),
             'line'    => $e->getLine(),
         ]);
 
-        return redirect()->back()
-            ->withInput()
+        return back()->withInput()
             ->with('error', 'Something went wrong while saving product');
     }
 }
 
 
-       public function show($id)
+    public function show($id)
     {
         try {
             Log::info('Product View Request', ['id' => $id]);
@@ -403,6 +383,4 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
     }
-
-  
 }
