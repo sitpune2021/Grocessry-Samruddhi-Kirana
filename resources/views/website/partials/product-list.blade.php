@@ -2,9 +2,9 @@
     @forelse($products as $product)
         <div class="col-md-6 col-lg-6 col-xl-4">
             <div class="rounded position-relative fruite-item">
-                <div class="fruite-img">
+                <!-- <div class="fruite-img">
                     <img src="" class="img-fluid w-100 rounded-top" alt="">
-                </div>
+                </div> -->
                 <div class="p-4 border border-secondary rounded-bottom">
                     <h4>{{ $product->name }}</h4>
                     <p class="text-dark fs-5 fw-bold mb-0">
