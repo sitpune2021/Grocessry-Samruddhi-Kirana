@@ -11,11 +11,15 @@
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title">Batch List</h5>
                     </div>
+
+                     @if (auth()->check() && auth()->user()->role_id != 1)
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('batches.create') }}" class="btn btn-success">
                             <i class="bx bx-plus"></i> Add New Batch
                         </a>
                     </div>
+                    @endif
+
                 </div>
                 <x-datatable-search />
                 <div class="table-responsive mt-5 p-3">

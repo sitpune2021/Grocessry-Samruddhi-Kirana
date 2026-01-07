@@ -80,9 +80,7 @@
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
                     @endif
-                     @if (auth()->check() && auth()->user()->role_id != 1)
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
-                    @endif
                 </ul>
             </li>
 
