@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'sms' => [
+        'user'     => env('SMS_USER'),
+        'key'      => env('SMS_KEY'),
+        'senderid' => env('SMS_SENDERID'),
+    ],
+
 ];

@@ -35,4 +35,9 @@ class Category extends Model
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
+
+     public function warehouseStocks()
+    {
+        return $this->hasMany(WarehouseStock::class);
+    }
 }
