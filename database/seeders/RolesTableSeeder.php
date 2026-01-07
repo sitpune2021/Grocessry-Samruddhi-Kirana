@@ -10,23 +10,13 @@ class RolesTableSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = [
-            'Super Admin',
-            'Admin',
-            'Master Warehouse',
-            'District Warehouse',
-            'Taluka Warehouse',
-            'Retailer',
-            'Delivery Agent',
-            'Customer'
-        ];
-
-        foreach ($roles as $role) {
-            DB::table('roles')->insert([
-                'name' => $role,
+        DB::table('roles')->updateOrInsert(
+            ['name' => 'Super Admin'],
+            [
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
-        }
+            ]
+        );
+        
     }
 }

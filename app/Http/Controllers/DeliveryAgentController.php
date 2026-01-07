@@ -61,33 +61,32 @@ class DeliveryAgentController extends Controller
             Log::info('Validating delivery agent request');
 
             $validated = Validator::make($request->all(), [
-
                 'name'            => 'required|string|max:255',
                 'last_name'       => 'required|string|max:255',
                 'mobile'          => 'required|digits:10|unique:users,mobile',
                 'email'           => 'nullable|email|unique:users,email',
                 'password'        => 'nullable|min:6',
-
                 'shop_id'         => 'required|exists:grocery_shops,id',
                 'dob'             => 'nullable|date',
                 'gender'          => 'nullable|in:male,female',
                 'address'         => 'nullable|string',
                 'active_status'   => 'required|boolean',
-
                 'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'aadhaar_card'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
-
             if ($validated->fails()) {
                 return redirect()
                     ->back()
-                    ->withErrors($validated)   // 🔥 THIS is required
+                    ->withErrors($validated)
                     ->withInput();
             }
 
-            dd("hi");
+            /* ✅ THIS LINE FIXES EVERYTHING */
+            $validated = $validated->validated();
+
+            // dd("hi");
 
             // Log::info('Validation passed', [
             //     'mobile' => $validated['mobile'],
