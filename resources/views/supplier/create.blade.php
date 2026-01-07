@@ -31,18 +31,18 @@
                                     <div class="card-header bg-white fw-semibold">
 
                                         @if ($mode === 'add')
-                                            <h4> Add Supplier </h4>
+                                        <h4> Add Supplier </h4>
                                         @elseif($mode === 'edit')
-                                            Edit Supplier
+                                        Edit Supplier
                                         @else
-                                            View Supplier
+                                        View Supplier
                                         @endif
                                     </div>
 
                                     <div class="card-body">
                                         @php
-                                            // $mode = add | edit | view
-                                            $readonly = $mode === 'view' ? 'readonly' : '';
+                                        // $mode = add | edit | view
+                                        $readonly = $mode === 'view' ? 'readonly' : '';
                                         @endphp
 
                                         <form
@@ -50,7 +50,7 @@
                                             method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @if ($mode === 'edit')
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
@@ -63,7 +63,7 @@
                                                         value="{{ $supplier->supplier_name ?? '' }}"
                                                         placeholder="Enter supplier name" {{ $readonly }}>
                                                     @error('supplier_name')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -80,17 +80,20 @@
                                                         {{ $readonly }}>
                                                     <div id="mobile-error" class="text-danger mt-1">
                                                         @error('mobile')
-                                                            {{ $message }}
+                                                        {{ $message }}
                                                         @enderror
                                                     </div>
                                                 </div>
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Email</label>
-                                                    <input type="email" name="email" class="form-control"
+                                                    <label class="form-label fw-medium">Email <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="email" name="email" id="email" class="form-control"
                                                         value="{{ $supplier->email ?? '' }}" placeholder="Enter email"
                                                         {{ $readonly }}>
-
+                                                    @error('email')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">
@@ -103,16 +106,16 @@
                                                         <option value="">Select State</option>
 
                                                         @foreach ($states as $state)
-                                                            <option value="{{ $state->id }}"
-                                                                {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
-                                                                {{ $state->name }}
-                                                            </option>
+                                                        <option value="{{ $state->id }}"
+                                                            {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                                            {{ $state->name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
 
 
                                                     @error('state_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -124,14 +127,14 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
                                                         @foreach ($districts as $district)
-                                                            <option value="{{ $district->id }}"
-                                                                {{ old('district_id', $supplier->district_id ?? '') == $district->id ? 'selected' : '' }}>
-                                                                {{ $district->name }}
-                                                            </option>
+                                                        <option value="{{ $district->id }}"
+                                                            {{ old('district_id', $supplier->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                            {{ $district->name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
                                                     @error('district_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -142,44 +145,30 @@
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($supplier->taluka))
-                                                            <option value="{{ $supplier->taluka_id }}" selected>
-                                                                {{ $supplier->taluka->name }}
-                                                            </option>
+                                                        <option value="{{ $supplier->taluka_id }}" selected>
+                                                            {{ $supplier->taluka->name }}
+                                                        </option>
                                                         @else
-                                                            <option value="">Select Taluka</option>
+                                                        <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                     @error('district_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                              
+
 
                                                 {{-- Address --}}
                                                 <div class="col-md-6">
-                                                    <label class="form-label fw-medium">Address</label>
-                                                    <textarea name="address" class="form-control" rows="2" placeholder="Enter address"
+                                                    <label class="form-label fw-medium">Address <span
+                                                            class="text-danger">*</span></label>
+                                                    <textarea name="address" id="address" class="form-control" rows="2" placeholder="Enter address"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $supplier->address ?? '' }}</textarea>
                                                 </div>
+                                                @error('address')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
 
-                                                {{-- Logo --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Supplier Logo</label>
-
-                                                    {{-- Upload input for edit --}}
-                                                    <input type="file" name="logo" class="form-control"
-                                                        accept="image/*">
-
-                                                    {{-- Display existing logo if available --}}
-                                                    @if (isset($supplier) && $supplier->logo)
-                                                        <div class="mt-2">
-
-                                                            <p class="mt-1"><a
-                                                                    href="{{ asset('storage/suppliers/' . $supplier->logo) }}"
-                                                                    target="_blank">View Logo</a></p>
-                                                        </div>
-                                                    @endif
-                                                </div>
                                             </div>
 
                                             {{-- Buttons --}}
@@ -189,11 +178,11 @@
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" class="btn btn-success">Save
-                                                        Supplier</button>
+                                                <button type="submit" class="btn btn-success">Save
+                                                    Supplier</button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">Update
-                                                        Supplier</button>
+                                                <button type="submit" class="btn btn-success">Update
+                                                    Supplier</button>
                                                 @endif
                                             </div>
                                         </form>

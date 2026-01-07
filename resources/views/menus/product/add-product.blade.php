@@ -297,7 +297,6 @@
 
                                                     @if ($mode !== 'view')
                                                     <input type="file" name="product_images[]" multiple
-                                                        value="{{ $product->product_images }}"
                                                         class="form-control @error('product_images') is-invalid @enderror">
                                                     @endif
 
