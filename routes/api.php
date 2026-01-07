@@ -55,3 +55,8 @@ Route::prefix('auth')->group(function () {
     // 🔐 Logout (Protected)
     Route::middleware('auth:sanctum')->post('logout', [DeliveryAgentController::class, 'logout']);
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/partner/status/online', [DeliveryAgentController::class, 'goOnline']);
+    Route::post('/partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
+});
