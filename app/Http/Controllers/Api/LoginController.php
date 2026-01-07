@@ -74,61 +74,7 @@ class LoginController extends Controller
             ]
         ], 201);
     }
-
-    // public function register(Request $request)
-    // {
-    //     $request->merge([
-    //         'email' => $request->email ?: null
-    //     ]);
-
-    //     $validator = Validator::make($request->all(), [
-    //         'first_name' => 'required|string|max:255',
-    //         'last_name'  => 'nullable|string|max:255',
-    //         'mobile'     => 'required|digits:10|unique:users,mobile',
-    //         'email'      => 'nullable|email|unique:users,email',
-    //         'password'   => [
-    //             'required',
-    //             'confirmed',
-    //             'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
-    //         ],
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'errors' => $validator->errors()
-    //         ], 422);
-    //     }
-
-    //     $role = Role::where('name', 'Customer')->firstOrFail();
-
-    //     $user = User::create([
-    //         'first_name' => $request->first_name,
-    //         'last_name'  => $request->last_name,
-    //         'mobile'     => $request->mobile,
-    //         'email'      => $request->email,
-    //         'role_id'    => $role->id,
-    //         'password'   => Hash::make($request->password),
-    //         'status'     => 1
-    //     ]);
-
-    //     $token = $user->createToken('auth_token')->plainTextToken;
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Customer registration successful',
-    //         'token' => $token,
-    //         'token_type' => 'Bearer',
-    //         'user' => [
-    //             'id' => $user->id,
-    //             'name' => trim($user->first_name . ' ' . $user->last_name),
-    //             'mobile' => $user->mobile,
-    //             'email' => $user->email,
-    //             'role_id' => $role->id,
-    //             'role' => ucfirst($role->name)
-    //         ]
-    //     ], 201);
-    // }
+   
     public function updateProfile(Request $request)
     {
         $user = Auth::user();
