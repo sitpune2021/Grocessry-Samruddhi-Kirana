@@ -11,11 +11,14 @@
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title">Product</h5>
                     </div>
+
+                    @if(hasPermission('product', 'create'))
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('product.create') }}" class="btn btn-success">
                             <i class="bx bx-plus"></i> Add Product
                         </a>
                     </div>
+                    @endif
                 </div>
 
                 <!-- Search -->
