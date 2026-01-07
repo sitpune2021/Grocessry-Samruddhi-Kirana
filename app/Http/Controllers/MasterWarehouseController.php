@@ -27,7 +27,7 @@ class MasterWarehouseController extends Controller
     public function create()
     {
         $mode = 'add';
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::with('district')->get();
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
@@ -45,10 +45,10 @@ class MasterWarehouseController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255|unique:warehouses,name',
                 'type' => 'required|in:master,district,taluka',
-                'contact_person' => 'required|string|min:3|max:50',
-                'email' => 'required|email',
+                'contact_person' => 'nullable|string|min:3|max:50',
+                'email' => 'nullable|email',
                 'contact_number' => [
-                    'required',
+                    'nullable',
                     'regex:/^[6-9]\d{9}$/',
                     Rule::unique('warehouses', 'contact_number'),
                 ],
@@ -75,26 +75,26 @@ class MasterWarehouseController extends Controller
             ]);
 
             /* 👤 SPLIT NAME */
-            $nameParts = preg_split('/\s+/', trim($request->contact_person));
-            $firstName = $nameParts[0];
-            $lastName  = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
+            // $nameParts = preg_split('/\s+/', trim($request->contact_person));
+            // $firstName = $nameParts[0];
+            // $lastName  = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
 
-            /* 👤 CREATE USER */
-            $user = User::create([
-                'first_name'  => $firstName,
-                'last_name'   => $lastName,
-                'email'       => $request->email,
-                'password'    => Hash::make('Warehouse@123'),
-                'mobile'      => $request->contact_number,
-                // 'warehouse_id'=> $warehouse->id,
-                'status'      => 1,
-            ]);
+            // /* 👤 CREATE USER */
+            // $user = User::create([
+            //     'first_name'  => $firstName,
+            //     'last_name'   => $lastName,
+            //     'email'       => $request->email,
+            //     'password'    => Hash::make('Warehouse@123'),
+            //     'mobile'      => $request->contact_number,
+            //     // 'warehouse_id'=> $warehouse->id,
+            //     'status'      => 1,
+            // ]);
 
             DB::commit();
 
             Log::info('Warehouse & user created', [
                 'warehouse_id' => $warehouse->id,
-                'user_id'      => $user->id,
+                // 'user_id'      => $user->id,
             ]);
 
             return redirect()
