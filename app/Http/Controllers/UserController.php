@@ -38,149 +38,56 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    // public function Store(Request $request)
-    // {
-    //     // Log: Raw request
-    //     Log::info('User Store Request Received', ['request' => $request->all()]);
-    //     Log::info('RAW BODY', ['body' => $request->getContent()]);
-
-    //     try {
-
-    //         // Log: Starting validation
-    //         Log::info('User Store Validation Started');
-
-    //         $request->validate([
-    //             'first_name' => 'required|string|max:100',
-    //             'last_name'  => 'required|string|max:100',
-    //             'email'      => 'nullable|email|unique:users,email',
-    //             'mobile'     => 'required|digits:10|unique:users,mobile',
-    //             'role'       => 'required|in:admin,user,manager,staff',
-    //             'password'   => 'required|min:8|confirmed',
-    //         ]);
-
-    //         Log::info('User Store Validation Passed');
-
-    //         // Create User
-    //         $admin = User::create([
-    //             'first_name' => $request->first_name,
-    //             'email'      => $request->email,
-    //             'last_name'  => $request->last_name,
-    //             'mobile'     => $request->mobile,
-    //             'role'       => $request->role,
-    //             'password'   => Hash::make($request->password),
-    //         ]);
-
-    //         // Log: After creating user
-    //         Log::info('User Created Successfully', [
-    //             'user_id' => $admin->id,
-    //             'email'   => $admin->email
-    //         ]);
-
-    //         return response()->json([
-    //             'status'  => true,
-    //             'message' => 'User created successfully',
-    //             'data'    => $admin
-    //         ], 200);
-    //     } catch (\Exception $e) {
-
-    //         // Log: Error
-    //         Log::error('User Store Error', [
-    //             'error_message' => $e->getMessage(),
-    //             'line'          => $e->getLine(),
-    //             'file'          => $e->getFile(),
-    //         ]);
-
-    //         return response()->json([
-    //             'status'  => false,
-    //             'message' => 'Something went wrong',
-    //             'error'   => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-
-    public function store(Request $request)
+    public function Store(Request $request)
     {
+        // Log: Raw request
         Log::info('User Store Request Received', ['request' => $request->all()]);
-
-        DB::beginTransaction();
+        Log::info('RAW BODY', ['body' => $request->getContent()]);
 
         try {
 
+            // Log: Starting validation
+            Log::info('User Store Validation Started');
+
             $request->validate([
-                'first_name'   => 'required|string|max:100',
-                'last_name'    => 'required|string|max:100',
-                'email'        => 'required|email|unique:users,email',
-                'mobile'       => 'required|digits:10|unique:users,mobile',
-                'role_id'      => 'required|exists:roles,id',
-                'warehouse_id' => 'nullable|exists:warehouses,id',
-                'status'       => 'required|in:0,1',
-                'password'     => 'required|min:8|confirmed',
+                'first_name' => 'required|string|max:100',
+                'last_name'  => 'required|string|max:100',
+                'email'      => 'nullable|email|unique:users,email',
+                'mobile'     => 'required|digits:10|unique:users,mobile',
+                'role'       => 'required|in:admin,user,manager,staff',
+                'password'   => 'required|min:8|confirmed',
             ]);
 
-            $role = Role::findOrFail($request->role_id);
+            Log::info('User Store Validation Passed');
 
-            $warehouseId = null;
-            $isAdminRole = (
-                Str_contains(strtolower($role->name), 'master admin') ||
-                Str_contains(strtolower($role->name), 'district admin') ||
-                Str_contains(strtolower($role->name), 'taluka admin')
-            );
-
-            if ($isAdminRole) {
-                $warehouseId = $request->warehouse_id;
-            }
-
-
-            $user = User::create([
-                'first_name'   => $request->first_name,
-                'last_name'    => $request->last_name,
-                'email'        => $request->email,
-                'mobile'       => $request->mobile,
-                'role_id'      => $request->role_id,
-                'warehouse_id' => $warehouseId,
-                'status'       => $request->status,
-                'password'     => Hash::make($request->password),
+            // Create User
+            $admin = User::create([
+                'first_name' => $request->first_name,
+                'email'      => $request->email,
+                'last_name'  => $request->last_name,
+                'mobile'     => $request->mobile,
+                'role'       => $request->role,
+                'password'   => Hash::make($request->password),
             ]);
 
-
-            if ($isAdminRole && $warehouseId) {
-
-                $warehouse = Warehouse::find($warehouseId);
-
-                if ($warehouse) {
-                    $warehouse->fill([
-                        'contact_person' => $user->first_name . ' ' . $user->last_name,
-                        'contact_number' => $user->mobile,
-                        'email'          => $user->email,
-                    ]);
-
-                    $warehouse->save();
-                }
-            }
-
-
-            DB::commit();
-
-            Log::info('User Created & Warehouse Updated', [
-                'user_id'      => $user->id,
-                'role'         => $role->name,
-                'warehouse_id' => $warehouseId
+            // Log: After creating user
+            Log::info('User Created Successfully', [
+                'user_id' => $admin->id,
+                'email'   => $admin->email
             ]);
 
             return response()->json([
                 'status'  => true,
-                'message' => 'User created and warehouse updated successfully',
-                'data'    => $user
+                'message' => 'User created successfully',
+                'data'    => $admin
             ], 200);
         } catch (\Exception $e) {
 
-            DB::rollBack();
-
-            Log::error('User Store Failed', [
-                'error' => $e->getMessage(),
-                'line'  => $e->getLine(),
-                'file'  => $e->getFile(),
+            // Log: Error
+            Log::error('User Store Error', [
+                'error_message' => $e->getMessage(),
+                'line'          => $e->getLine(),
+                'file'          => $e->getFile(),
             ]);
 
             return response()->json([
