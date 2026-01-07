@@ -45,8 +45,15 @@ use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
 
-Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login');
+// Website Route
+use App\Http\Controllers\BannerController;
+
+
+Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
+//Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+// Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
+
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
@@ -771,4 +778,34 @@ Route::get('/dev/run/{action}', function ($action) {
 /////////////////////////////////////////   WEBSITE START   ////////////////////////////////////////////////////////////
 
 
-Route::get('/', [WebsiteController::class, 'index']);
+// Banners admin route
+Route::prefix('banners')->group(function () {
+    Route::get('/', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('/create', [BannerController::class, 'create'])->name('banners.create');
+    Route::post('/store', [BannerController::class, 'store'])->name('banners.store');
+
+    // same page for edit
+    Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::post('/update/{id}', [BannerController::class, 'update'])->name('banners.update');
+
+    Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
+});
+
+// Admin contact list
+Route::prefix('contacts-details')->group(function () {
+    Route::get('contacts', [BannerController::class, 'contactList'])
+        ->name('admin.contacts');
+});
+
+// website banner route
+Route::get('/', [WebsiteController::class, 'index'])->name('home');
+
+// website contact details
+Route::get('contact-details', [WebsiteController::class, 'contact'])->name('contact');
+Route::post('contact-details', [WebsiteController::class, 'storeContact'])->name('contact.store');
+
+// webiste shop page
+Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
+Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
+    ->name('shop.filter');
+
