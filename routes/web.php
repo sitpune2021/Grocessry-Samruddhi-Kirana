@@ -49,9 +49,9 @@ use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\BannerController;
 
 
-// Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login');
+Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 //Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
-Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login.form');
+// Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
