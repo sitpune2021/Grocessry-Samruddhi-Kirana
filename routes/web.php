@@ -117,6 +117,7 @@ Route::middleware(['auth'])->group(function () {
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
     );
+    Route::get('/get-products-by-sub-category/{subCategoryId}',[stockWarehouseController::class, 'getProductBySubCategory'])->name('stockProduct.bySubCategory');
 
 
     Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
