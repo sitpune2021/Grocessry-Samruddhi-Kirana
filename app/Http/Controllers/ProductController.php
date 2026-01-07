@@ -32,7 +32,7 @@ class ProductController extends Controller
         ]);
 
         try {
-            $products = Product::with(['category','tax'])
+            $products = Product::with(['category', 'tax'])
                 ->when($user->role_id != 1, function ($query) use ($user) {
                     $query->where('warehouse_id', $user->warehouse_id);
                 })
@@ -114,7 +114,7 @@ class ProductController extends Controller
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
                 'tax_id' => 'required|exists:taxes,id',
-             
+
             ], [
                 'name.unique' => 'This product name already exists!',
             ]);
@@ -187,7 +187,7 @@ class ProductController extends Controller
         try {
             Log::info('Product View Request', ['id' => $id]);
 
-             $product = Product::with('tax')->findOrFail($id);
+            $product = Product::with('tax')->findOrFail($id);
 
             if (!$product) {
                 Log::warning('Product Not Found', ['id' => $id]);
@@ -235,7 +235,7 @@ class ProductController extends Controller
             $taxes = Tax::where('is_active', 1)->get();
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories','taxes'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -269,7 +269,12 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required',
-                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
+                'name'            => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name')->ignore($product->id),
+                ],
                 'sku'             => 'nullable|string|max:255',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
@@ -277,7 +282,7 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'tax_id' => 'required|exists:taxes,id',
@@ -374,14 +379,12 @@ class ProductController extends Controller
         }
     }
 
-    //get category by Brand
-
-    public function getCategoriesByBrand($brandId)
+    public function getCategories()
     {
-
-        return Category::where('brand_id', $brandId)
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        return response()->json(
+            Category::select('id', 'name')
+                ->orderBy('name')
+                ->get()
+        );
     }
 }
