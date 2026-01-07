@@ -227,9 +227,9 @@ Route::middleware(['auth'])->group(function () {
     // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-// WAREHOUSE TRANSFER
+    // WAREHOUSE TRANSFER
     Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
 
         Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
@@ -294,7 +294,7 @@ Route::middleware(['auth'])->group(function () {
                 ->name('destroy');
 
             Route::get('/{id}', [TalukaTransferController::class, 'show'])
-                ->name('show');    
+                ->name('show');
 
             Route::get(
                 '/get-products-by-category/{category_id}',
@@ -350,8 +350,8 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}', [DistrictToTalukaTransferController::class, 'destroy'])
                 ->name('destroy');
 
-              Route::get('/{id}', [DistrictToTalukaTransferController::class, 'show'])
-                ->name('show');   
+            Route::get('/{id}', [DistrictToTalukaTransferController::class, 'show'])
+                ->name('show');
 
             Route::get(
                 '/get-products-by-category/{category_id}',
@@ -385,7 +385,7 @@ Route::middleware(['auth'])->group(function () {
         });
 
 
-// RETAILERS
+    // RETAILERS
     Route::prefix('retailers')->name('retailers.')->group(function () {
 
         Route::get('/', [RetailerController::class, 'index'])->name('index');
@@ -407,7 +407,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-// RETAILER PRICING
+    // RETAILER PRICING
     Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
 
         Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
@@ -430,7 +430,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-// RETAILER ORDER
+    // RETAILER ORDER
     Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {
 
         Route::get('/', [RetailerOrderController::class, 'index'])->name('index');
@@ -461,7 +461,7 @@ Route::middleware(['auth'])->group(function () {
         )->name('ajax.get.warehouses');
     });
 
-//coupons
+    //coupons
     Route::prefix('coupons')->name('coupons.')->group(function () {
 
         Route::get('/', [CouponController::class, 'index'])->name('index');
@@ -474,7 +474,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
     });
 
-// GROCER SHOP
+    // GROCER SHOP
     Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
 
         Route::get('/', [GroceryShopController::class, 'index'])
@@ -507,7 +507,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('talukas.by-district');
 
 
-//  PURCHASE ORDER  
+    //  PURCHASE ORDER  
     Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create']);
     Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
@@ -542,7 +542,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('purchase.orders.index');
 
 
-// PRODUCT BATCH MANAGEMENT
+    // PRODUCT BATCH MANAGEMENT
     Route::get('/batches', [ProductBatchController::class, 'index'])->name('batches.index');
     Route::get('/batches/create', [ProductBatchController::class, 'create'])->name('batches.create');
     Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
@@ -565,10 +565,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
 
 
-// EXPIRY ALERT
+    // EXPIRY ALERT
     Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
 
-// SELL PRODUCT
+    // SELL PRODUCT
     Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
     Route::get('/sale/{product?}', [StockController::class, 'create'])
         ->name('sale.create');
@@ -577,9 +577,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
     Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
     Route::get(
-    '/sell/ws/products/{warehouse}/{subCategory}',
-    [StockController::class, 'getProductsBySubCategory']
-)->middleware('auth');
+        '/sell/ws/products/{warehouse}/{subCategory}',
+        [StockController::class, 'getProductsBySubCategory']
+    )->middleware('auth');
 
     // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
@@ -595,7 +595,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-// Approval
+    // Approval
     Route::get(
         '/warehouse-transfers/approval',
         [ApprovalController::class, 'index']
@@ -610,7 +610,7 @@ Route::middleware(['auth'])->group(function () {
     )->name('warehouse.transfer.reject');
 
 
-// LOW STOCK ALERTS
+    // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
         ->name('lowstock.index');
 
@@ -710,67 +710,63 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('taxes', TaxController::class);
     });
 
-    Route::get('/dev/run/{action}', function ($action) {
-        try {
-            switch ($action) {
-                case 'clear':
-                    Artisan::call('config:clear');
-                    Artisan::call('cache:clear');
-                    Artisan::call('route:clear');
-                    Artisan::call('view:clear');
-                    return "Cleared config, cache, route, and view.";
+    Route::get('/user-profile', function () {
+        return view('profile');
+    })->name('user-profile');
 
-                case 'migrate':
-                    Artisan::call('session:table');
-                    Artisan::call('migrate');
-                    return "Migration completed successfully!";
-
-                case 'migrate-fresh':
-                    Artisan::call('migrate:fresh', ['--seed' => true]);
-                    return "Fresh migration and seed completed!";
-
-                case 'seed':
-                    Artisan::call('db:seed');
-                    return "Database seeding completed!";
-
-                case 'seed-menu':
-                    Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
-                    return "MenuSeeder database seeding completed!";
-
-                case 'seed-role':
-                    Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
-                    return "RoleSeeder database seeding completed!";
-
-                case 'storage-link':
-                    Artisan::call('storage:link');
-                    $output = Artisan::output();
-                    return "Storage link created!"  . nl2br($output);
-
-                case 'install':
-                    exec('composer install');
-                    return "composer install executed!";
-                default:
-                    return "Invalid action: $action";
-            }
-        } catch (\Exception $e) {
-            return "Error running action [$action]: " . $e->getMessage();
-        }
-    });
-
+    Route::put('/profile/update', [UserController::class, 'updateProfile'])
+        ->name('profile.update');
+    Route::get('/users/profile', [UserController::class, 'profile'])
+        ->name('user.profile');
 
     //auth closing
 });
-Route::get('/user-profile', function () {
-    return view('profile');
-})->name('user-profile');
+Route::get('/dev/run/{action}', function ($action) {
+    try {
+        switch ($action) {
+            case 'clear':
+                Artisan::call('config:clear');
+                Artisan::call('cache:clear');
+                Artisan::call('route:clear');
+                Artisan::call('view:clear');
+                return "Cleared config, cache, route, and view.";
 
-Route::put('/profile/update', [UserController::class, 'updateProfile'])
-    ->name('profile.update');
-Route::get('/users/profile', [UserController::class, 'profile'])
-    ->name('user.profile');
+            case 'migrate':
+                Artisan::call('session:table');
+                Artisan::call('migrate');
+                return "Migration completed successfully!";
 
+            case 'migrate-fresh':
+                Artisan::call('migrate:fresh', ['--seed' => true]);
+                return "Fresh migration and seed completed!";
 
+            case 'seed':
+                Artisan::call('db:seed');
+                return "Database seeding completed!";
 
+            case 'seed-menu':
+                Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
+                return "MenuSeeder database seeding completed!";
+
+            case 'seed-role':
+                Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
+                return "RoleSeeder database seeding completed!";
+
+            case 'storage-link':
+                Artisan::call('storage:link');
+                $output = Artisan::output();
+                return "Storage link created!"  . nl2br($output);
+
+            case 'install':
+                exec('composer install');
+                return "composer install executed!";
+            default:
+                return "Invalid action: $action";
+        }
+    } catch (\Exception $e) {
+        return "Error running action [$action]: " . $e->getMessage();
+    }
+});
 
 /////////////////////////////////////////   WEBSITE START   ////////////////////////////////////////////////////////////
 

@@ -13,7 +13,7 @@ use App\Models\TalukaTransfer;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
-
+use Illuminate\Support\Facades\Auth;
 
 class TalukaTransferController extends Controller
 {
@@ -32,16 +32,37 @@ class TalukaTransferController extends Controller
         return view('taluka-transfer.index', compact('transfers'));
     }
 
-    public function create()
-    {
-        return view('taluka-transfer.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-            'categories' => collect(), // initially empty
-            'products'   => collect(), // empty collection to avoid undefined variable
-            'batches'    => collect(), // also empty
-            'transfer'   => null,
-        ]);
+   public function create()
+{
+    $user = Auth::user();
+
+    // Logged-in user's warehouse
+    $fromWarehouse = Warehouse::where('id', $user->warehouse_id)
+                        ->where('status', 'active')
+                        ->first();
+
+    // Safety check
+    if (!$fromWarehouse) {
+        abort(403, 'Warehouse not assigned');
     }
+
+    // Same district other taluka warehouses (exclude self)
+    $toWarehouses = Warehouse::where('status', 'active')
+                        ->where('type', 'taluka')
+                        ->where('district_id', $fromWarehouse->district_id)
+                        ->where('id', '!=', $fromWarehouse->id)
+                        ->get();
+
+    return view('taluka-transfer.transfer', [
+        'fromWarehouse' => $fromWarehouse,
+        'toWarehouses'  => $toWarehouses,
+        'categories'    => collect(),
+        'products'      => collect(),
+        'batches'       => collect(),
+        'transfer'      => null,
+    ]);
+}
+
 
     public function getProductsByCategory($category_id)
     {

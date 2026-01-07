@@ -26,7 +26,15 @@
                                 <h4 class="card-header text-center">
                                     District Wise Warehouse-to-Warehouse Stock Transfer
                                 </h4>
-
+@if ($errors->any())
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
                                 <div class="card-body">
                                     <form method="POST" action="{{ isset($transfer) ? route('transfer.update', $transfer->id) : route('transfer.store') }}">
                                         @csrf
@@ -39,28 +47,30 @@
                                         <!-- Row 1: FROM & TO -->
                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
-                                                <select name="from_warehouse_id" id="from_warehouse_id" class="form-select">
-                                                    <option value="">Select</option>
-                                                    @foreach($warehouses as $w)
-                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->from_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
-                                                    @endforeach
+                                                <label class="form-label">From Warehouse</label>
+
+                                                <select name="from_warehouse_id" class="form-select" readonly>
+                                                    @if($fromWarehouse)
+                                                    <option value="{{ $fromWarehouse->id }}" selected>
+                                                        {{ $fromWarehouse->name }}
+                                                    </option>
+                                                    @endif
                                                 </select>
-                                                @error('from_warehouse_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
-                                                @enderror
                                             </div>
 
                                             <div class="col-md-6">
-                                                <label for="to_warehouse_id" class="form-label">To Warehouse <span class="text-danger">*</span></label>
-                                                <select name="to_warehouse_id" id="to_warehouse_id" class="form-select">
+                                                <label class="form-label">To Warehouse</label>
+
+                                                <select name="to_warehouse_id" class="form-select">
                                                     <option value="">Select</option>
-                                                    @foreach($warehouses as $w)
-                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->to_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                                                    @foreach($toWarehouses as $w)
+                                                    <option value="{{ $w->id }}">
+                                                        {{ $w->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
-                                                @error('to_warehouse_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @error('items.*.to_warehouse_id')
+                                                <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
@@ -81,8 +91,8 @@
                                                     @endforeach
                                                 </select>
 
-                                                @error('product_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @error('items.*.product_id')
+                                                <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -99,8 +109,8 @@
                                                     @endforeach
                                                     @endif
                                                 </select>
-                                                @error('batch_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @error('items.*.batch_id')
+                                                <span class="text-danger mt-1 d-block">{{ $message }}</span>
                                                 @enderror
                                             </div>
                                         </div>
@@ -120,6 +130,9 @@
                                                     class="form-control"
                                                     placeholder="qty"
                                                     value="{{ old('quantity', $transfer->quantity ?? '') }}">
+                                                @error('items.*.quantity')
+                                                <span class="text-danger mt-1 d-block">{{ $message }}</span>
+                                                @enderror
                                             </div>
                                         </div>
 
@@ -136,11 +149,11 @@
 
                                         @else
 
-                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                             <div class="d-flex gap-2">
-                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
 
-                                            
+
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
                                                     Add
                                                 </button>
@@ -321,10 +334,6 @@
             });
         });
 
-
-
-
-
         /* ========= ADD / UPDATE ========= */
         $('#addItemBtn').on('click', function() {
 
@@ -333,11 +342,6 @@
             const pids = productEl.val();
             const bids = batchEl.val();
             const qtys = qtyEl.val().split(',');
-
-            if (!fw || !tw || !pids || !bids || !qtys.length) {
-                alert('Fill all fields');
-                return;
-            }
 
             if (pids.length !== bids.length || bids.length !== qtys.length) {
                 alert('Product / Batch / Qty mismatch');

@@ -187,7 +187,6 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-   
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
@@ -200,7 +199,6 @@ class AdminAuthController extends Controller
         }
 
         $request->session()->regenerate();
-  
         return redirect()->route('dashboard')
             ->with('success', 'Successfully logged in!');
     }

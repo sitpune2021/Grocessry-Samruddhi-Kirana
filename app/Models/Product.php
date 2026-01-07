@@ -60,4 +60,9 @@ class Product extends Model
     {
         return $this->belongsTo(Offer::class);
     }
+
+    public function tax()
+    {
+        return $this->belongsTo(Tax::class);
+    }
 }

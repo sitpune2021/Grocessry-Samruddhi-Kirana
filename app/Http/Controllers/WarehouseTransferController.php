@@ -13,7 +13,7 @@ use App\Models\WarehouseTransfer;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
-
+use Illuminate\Support\Facades\Auth;
 
 class WarehouseTransferController extends Controller
 {
@@ -34,12 +34,26 @@ class WarehouseTransferController extends Controller
 
     public function create()
     {
+        $user = Auth::user();              // login user
+        $fromWarehouseId = $user->warehouse_id;
+
+        // From warehouse (only logged-in user's warehouse)
+        $fromWarehouse = Warehouse::where('id', $fromWarehouseId)
+            ->where('status', 'active')
+            ->first();
+
+        // To warehouses (children of logged-in warehouse)
+        $toWarehouses = Warehouse::where('parent_id', $fromWarehouseId)
+            ->where('status', 'active')
+            ->get();
+
         return view('warehouse.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-            'categories' => collect(), // initially empty
-            'products'   => collect(), // empty collection to avoid undefined variable
-            'batches'    => collect(), // also empty
-            'transfer'   => null,
+            'fromWarehouse' => $fromWarehouse,
+            'toWarehouses'  => $toWarehouses,
+            'categories'    => collect(),
+            'products'      => collect(),
+            'batches'       => collect(),
+            'transfer'      => null,
         ]);
     }
 
@@ -149,36 +163,36 @@ class WarehouseTransferController extends Controller
     }
 
     // Update Method
-  public function update(Request $request, $id)
-{
-    $transfer = WarehouseTransfer::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $transfer = WarehouseTransfer::findOrFail($id);
 
-    $validated = $request->validate([
-        'from_warehouse_id' => 'required',
-        'to_warehouse_id'   => 'required|different:from_warehouse_id',
-        'category_id'       => 'required',
-        'product_id'        => 'required|array|min:1',
-        'batch_id'          => 'required|array|min:1',
-        'quantity'          => 'required|integer|min:1',
-    ]);
-
-    DB::transaction(function () use ($transfer, $validated) {
-
-        $transfer->update([
-            'from_warehouse_id' => $validated['from_warehouse_id'],
-            'to_warehouse_id'   => $validated['to_warehouse_id'],
-            'category_id'       => is_array($validated['category_id'])
-                                    ? $validated['category_id'][0]
-                                    : $validated['category_id'],
-            'product_id'        => $validated['product_id'][0],
-            'batch_id'          => $validated['batch_id'][0],
-            'quantity'          => $validated['quantity'],
+        $validated = $request->validate([
+            'from_warehouse_id' => 'required',
+            'to_warehouse_id'   => 'required|different:from_warehouse_id',
+            'category_id'       => 'required',
+            'product_id'        => 'required|array|min:1',
+            'batch_id'          => 'required|array|min:1',
+            'quantity'          => 'required|integer|min:1',
         ]);
-    });
 
-    return redirect()->route('transfer.index')
-        ->with('success', 'Transfer updated successfully');
-}
+        DB::transaction(function () use ($transfer, $validated) {
+
+            $transfer->update([
+                'from_warehouse_id' => $validated['from_warehouse_id'],
+                'to_warehouse_id'   => $validated['to_warehouse_id'],
+                'category_id'       => is_array($validated['category_id'])
+                    ? $validated['category_id'][0]
+                    : $validated['category_id'],
+                'product_id'        => $validated['product_id'][0],
+                'batch_id'          => $validated['batch_id'][0],
+                'quantity'          => $validated['quantity'],
+            ]);
+        });
+
+        return redirect()->route('transfer.index')
+            ->with('success', 'Transfer updated successfully');
+    }
 
 
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Tax;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TaxController extends Controller
 {
@@ -12,7 +14,7 @@ class TaxController extends Controller
      */
     public function index()
     {
-        $taxes = Tax::all();
+        $taxes = Tax::orderBy('id', 'desc')->paginate(10);
         return view('menus.taxes.tax-index', compact('taxes'));
     }
 
@@ -30,7 +32,68 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+            // ✅ Validation
+            $request->validate([
+                'name'      => 'required|string|max:100|unique:taxes,name',
+                'cgst'      => 'required|numeric|min:0|max:100',
+                'sgst'      => 'required|numeric|min:0|max:100',
+                'igst'      => 'required|numeric|min:0|max:100',
+                'is_active' => 'required|in:0,1',
+            ]);
+
+            DB::beginTransaction();
+
+            // ✅ Create Tax
+            $tax = Tax::create([
+                'name'      => $request->name,
+                'cgst'      => $request->cgst,
+                'sgst'      => $request->sgst,
+                'igst'      => $request->igst,
+                'is_active' => $request->is_active,
+            ]);
+
+            DB::commit();
+
+            // ✅ Success Log
+            Log::info('Tax created successfully', [
+                'tax_id' => $tax->id,
+                'name'   => $tax->name,
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->route('taxes.index')
+                ->with('success', 'Tax added successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            // ❌ Validation Error Log
+            Log::warning('Tax validation failed', [
+                'errors' => $e->errors(),
+                'input'  => $request->all(),
+            ]);
+
+            throw $e; // Laravel will auto-redirect with errors
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            // ❌ Exception Log
+            Log::error('Error while creating tax', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'input'   => $request->all(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
+        }
     }
 
     /**
@@ -38,8 +101,9 @@ class TaxController extends Controller
      */
     public function show(string $id)
     {
-        $mode = "edit";
-        return view('menus.taxes.tax-create', compact('mode'));
+        $mode = "show";
+        $tax  = Tax::findOrFail($id);
+        return view('menus.taxes.tax-create', compact('mode', 'tax'));
     }
 
     /**
@@ -47,7 +111,9 @@ class TaxController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $mode = "edit";
+        $tax  = Tax::findOrFail($id);
+        return view('menus.taxes.tax-create', compact('mode', 'tax'));
     }
 
     /**
@@ -55,7 +121,67 @@ class TaxController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+
+            $request->validate([
+                'name'      => 'required|string|max:100|unique:taxes,name,' . $id,
+                'cgst'      => 'required|numeric|min:0|max:100',
+                'sgst'      => 'required|numeric|min:0|max:100',
+                'igst'      => 'required|numeric|min:0|max:100',
+                'is_active' => 'required|in:0,1',
+            ]);
+
+            DB::beginTransaction();
+
+            // 🔹 Find Tax
+            $tax = Tax::findOrFail($id);
+
+            // 🔹 Update Data
+            $tax->update([
+                'name'      => $request->name,
+                'cgst'      => $request->cgst,
+                'sgst'      => $request->sgst,
+                'igst'      => $request->igst,
+                'is_active' => $request->is_active,
+            ]);
+
+            DB::commit();
+
+            // ✅ Success Log
+            Log::info('Tax updated successfully', [
+                'tax_id'  => $tax->id,
+                'user_id' => auth()->id(),
+                'data'    => $request->only(['name', 'cgst', 'sgst', 'igst', 'is_active']),
+            ]);
+
+            return redirect()
+                ->route('taxes.index')
+                ->with('success', 'Tax updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Tax update validation failed', [
+                'tax_id' => $id,
+                'errors' => $e->errors(),
+            ]);
+
+            throw $e;
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('Error while updating tax', [
+                'tax_id' => $id,
+                'message' => $e->getMessage(),
+                'file'   => $e->getFile(),
+                'line'   => $e->getLine(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Something went wrong while updating tax.');
+        }
     }
 
     /**
