@@ -3,14 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\GroceryShop;
-class WarehouseTransfer extends Model
+
+class TalukashopTransfer extends Model
 {
     protected $primaryKey = 'id';
 
     protected $fillable = [
         'from_warehouse_id',
-        'to_warehouse_id',
+        // 'to_warehouse_id',
+        'grocery_shop_id',
         'category_id',
         'product_id',
         'batch_id',
@@ -45,8 +46,6 @@ class WarehouseTransfer extends Model
         return $this->belongsTo(ProductBatch::class, 'batch_id')
                     ->withTrashed(); // IMPORTANT
     }
-
-    
 
 
 }

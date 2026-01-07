@@ -71,4 +71,9 @@ class Warehouse extends Model
     {
         return $this->hasMany(Category::class, 'warehouse_id');
     }
+
+    public function groceryShop()
+{
+    return $this->belongsTo(GroceryShop::class, 'grocery_shop_id');
+}
 }

@@ -47,7 +47,7 @@ use App\Http\Controllers\WebsiteController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
-
+use App\Http\Controllers\TalukashopTransferController;
 
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 //Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -390,6 +390,66 @@ Route::middleware(['auth'])->group(function () {
                 [DistrictToTalukaTransferController::class, 'getBatchStock']
             );
         });
+
+  //////////////////////////
+
+     //taluka-shop-transfer
+    Route::prefix('taluka-shop')
+        ->name('taluka-shop.')
+        ->group(function () {
+
+            Route::get('/', [TalukashopTransferController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [TalukashopTransferController::class, 'create'])
+                ->name('create');
+
+            Route::post('/store', [TalukashopTransferController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [TalukashopTransferController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{id}', [TalukashopTransferController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [TalukashopTransferController::class, 'destroy'])
+                ->name('destroy');
+
+            Route::get('/{id}', [TalukashopTransferController::class, 'show'])
+                ->name('show');
+
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [TalukashopTransferController::class, 'getProductsByCategory']
+            );
+
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [TalukashopTransferController::class, 'getBatchesByProduct']
+            );
+
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [TalukashopTransferController::class, 'getWarehouseStock']
+            );
+
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [TalukashopTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
+
+            Route::get(
+                '/ajax/product-batches',
+                [TalukashopTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
+
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [TalukashopTransferController::class, 'getBatchStock']
+            );
+        });
+      
 
 
     // RETAILERS
