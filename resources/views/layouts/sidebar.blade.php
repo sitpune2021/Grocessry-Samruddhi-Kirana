@@ -76,7 +76,9 @@
                 </div>
                 <ul class="submenu" id="warehouseMenu">
                     <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
+                     @if (auth()->check() && auth()->user()->role_id != 1)
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
+                    @endif
                 </ul>
             </li>
 

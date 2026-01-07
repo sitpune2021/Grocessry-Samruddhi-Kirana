@@ -246,7 +246,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-     //************Do Not Remove Advance TO Do Later  **********************
+     {{-- //************Do Not Remove Advance TO Do Later  ********************** --}}
     <!-- <script>
         document.addEventListener('DOMContentLoaded', function() {
 
