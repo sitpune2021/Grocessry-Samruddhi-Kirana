@@ -130,7 +130,6 @@
                                                     @enderror
                                                 </div>
 
-
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Warehouse Name <span class="text-danger">*</span></label>
                                                     <select name="warehouse_id" class="form-select">
@@ -138,7 +137,7 @@
                                                         @foreach ($warehouses as $warehouse)
                                                             <option value="{{ $warehouse->id }}"
                                                                 {{ old('warehouse_id', $user->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
-                                                                {{ $warehouse->name }}
+                                                                {{ $warehouse->name }} ({{ ucfirst(strtolower($warehouse->type)) }})
                                                             </option>
                                                         @endforeach
                                                     </select>

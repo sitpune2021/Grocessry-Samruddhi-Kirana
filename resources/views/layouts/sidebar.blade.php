@@ -76,6 +76,10 @@
                 </div>
                 <ul class="submenu" id="warehouseMenu">
                     <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
+                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
+                    @endif
                      @if (auth()->check() && auth()->user()->role_id != 1)
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
                     @endif
@@ -270,8 +274,6 @@
                 </div>
 
                 <ul class="submenu" id="SettingMenu">
-                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
-                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
                     <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>
                 </ul>
