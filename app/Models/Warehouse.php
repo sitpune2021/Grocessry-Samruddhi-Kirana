@@ -21,6 +21,7 @@ class Warehouse extends Model
         'email',
         'contact_number',
         'status',
+        'grocery_shop_id'
     ];
 
     public function product()
@@ -66,7 +67,7 @@ class Warehouse extends Model
     {
         return $this->hasMany(ProductBatch::class);
     }
-    
+
     public function categories()
     {
         return $this->hasMany(Category::class, 'warehouse_id');

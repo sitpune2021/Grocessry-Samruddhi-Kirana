@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DeliveryAgentController extends Controller
 {
@@ -117,7 +118,9 @@ class DeliveryAgentController extends Controller
         $token = $user->createToken('delivery-agent-token')->plainTextToken;
 
         $user->update([
-            'last_login_at' => now()
+            'last_login_at' => now(),
+            'is_online' => 1,
+
         ]);
 
         return response()->json([
@@ -258,6 +261,14 @@ class DeliveryAgentController extends Controller
             ], 404);
         }
 
+        // Prevent inactive delivery agents from resetting password
+        if ($user->role && strtolower($user->role->name) === 'delivery agent' && $user->status != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Account inactive'
+            ], 403);
+        }
+
         $otp = random_int(100000, 999999);
 
         $user->update([
@@ -306,14 +317,124 @@ class DeliveryAgentController extends Controller
             'message' => 'Password reset successfully'
         ]);
     }
-
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        $user->update([
+            'is_online' => 0, // Set offline on logout
+        ]);
+
+        $user->currentAccessToken()->delete();
 
         return response()->json([
             'status' => true,
             'message' => 'Logged out successfully'
+        ]);
+    }
+    // ================= GO ONLINE =================
+    public function goOnline(Request $request)
+    {
+        $agent = $request->user(); // Authenticated user from token
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated. Please login.'
+            ], 401);
+        }
+
+        // ✅ Dynamic role check (case-insensitive)
+        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied. Only delivery agents can go online.'
+            ], 403);
+        }
+
+        // Check if account is active
+        if ($agent->status != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Account inactive'
+            ], 403);
+        }
+
+        // Set online
+        $agent->update(['is_online' => 1]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agent is online',
+            'data' => [
+                'agent_id' => $agent->id,
+                'is_online' => $agent->is_online
+            ]
+        ]);
+    }
+
+    public function goOffline(Request $request)
+    {
+        $agent = $request->user();
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated. Please login.'
+            ], 401);
+        }
+
+        // ✅ Dynamic role check (case-insensitive)
+        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied. Only delivery agents can go offline.'
+            ], 403);
+        }
+
+        // Set offline
+        $agent->update(['is_online' => 0]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agent is offline',
+            'data' => [
+                'agent_id' => $agent->id,
+                'is_online' => $agent->is_online
+            ]
+        ]);
+    }
+
+
+    /* ================= CURRENT ORDER ================= */
+    public function currentOrder(Request $request)
+    {
+        $agent = $request->user();
+
+        if (strtolower($agent->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $order = DB::table('orders')
+            ->where('delivery_agent_id', $agent->id)
+            ->whereIn('status', ['assigned', 'picked_up'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => true,
+                'message' => 'No active order',
+                'data' => null
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Current order fetched',
+            'data' => $order
         ]);
     }
 }

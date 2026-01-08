@@ -25,10 +25,16 @@ class OfferController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Offer Store Request Received', [
-            'user_id' => auth()->id(),
-            'request_data' => $request->all()
-        ]);
+        // convert "all" to null
+        if ($request->category_id === 'all') {
+            $request->merge(['category_id' => null]);
+        }
+
+        if ($request->product_id === 'all') {
+            $request->merge(['product_id' => null]);
+        }
+
+        Log::info('Offer Store Request Received', $request->all());
 
         $validated = $request->validate([
             'code' => 'required|string|unique:offers,code',
@@ -43,44 +49,16 @@ class OfferController extends Controller
             'max_usage' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'terms_condition' => 'nullable|string',
-            'status' => 'required|boolean',
+            'status' => 'required|in:0,1',
         ]);
 
-        try {
-            $offer = Offer::create([
-                'code' => $validated['code'],
-                'title' => $validated['title'],   // ✅ FIXED
-                'category_id' => $validated['category_id'] ?? null,
-                'product_id' => $validated['product_id'] ?? null,
-                'discount_type' => $validated['discount_type'],
-                'discount_value' => $validated['discount_value'],
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'min_amount' => $validated['min_amount'] ?? null,
-                'max_usage' => $validated['max_usage'] ?? null,
-                'description' => $validated['description'] ?? null,
-                'terms_condition' => $validated['terms_condition'] ?? null,
-                'status' => $validated['status'],
-            ]);
+        $offer = Offer::create($validated);
 
-            Log::info('Offer Created Successfully', [
-                'offer_id' => $offer->id
-            ]);
+        Log::info('Offer Created', ['offer_id' => $offer->id]);
 
-            return redirect()
-                ->route('offers.index')
-                ->with('success', 'Offer created successfully');
-        } catch (\Exception $e) {
-
-            Log::error('Offer Creation Failed', [
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
-            ]);
-
-            return back()->withInput()->with('error', 'Offer not saved');
-        }
+        return redirect()->route('offers.index')->with('success', 'Offer created successfully');
     }
+
 
 
     public function show(Offer $offer)
@@ -118,7 +96,8 @@ class OfferController extends Controller
             'max_usage' => 'required|integer|min:1',
             'description' => 'nullable|string',
             'terms_condition' => 'nullable|string',
-            'status' => 'required|boolean',        ]);
+            'status' => 'required|boolean',
+        ]);
 
         try {
             // 🔹 Store old data for logs
