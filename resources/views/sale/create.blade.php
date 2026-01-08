@@ -83,12 +83,27 @@
                                                     @enderror
                                                 </div>
 
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <label class="form-label">Sub Category <span class="text-danger">*</span></label>
                                                     <select name="sub_category_id" id="sub_category_id" class="form-select">
                                                         <option value="">Select Sub Category</option>
                                                     </select>
+                                                </div> -->
+
+                                                <div class="col-md-4">
+                                                    <label for="sub_category_id" class="form-label">
+                                                        Sub Category <span class="text-danger">*</span>
+                                                    </label>
+
+                                                    <select name="sub_category_id" id="sub_category_id" class="form-select" required>
+                                                        <option value="">Select Sub Category</option>
+                                                    </select>
+
+                                                    @error('sub_category_id')
+                                                    <span class="text-danger mt-1 d-block">{{ $message }}</span>
+                                                    @enderror
                                                 </div>
+
 
                                                 <!-- Product Dropdown -->
 
@@ -162,96 +177,75 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+
 <script>
-    /* Warehouse → Category */
-    $('#warehouse_id').change(function() {
+$(document).ready(function () {
 
-        let wid = $(this).val();
-        $('#category_id').html('<option>Loading...</option>');
-        $('#sub_category_id').html('<option value="">Select Sub Category</option>');
-        $('#product_id').html('<option value="">Select Product</option>');
-        $('#quantity').val('');
-        $('#stock-info').text('');
+    $('#category_id').on('change', function () {
+        let categoryId  = $(this).val();
+        let warehouseId = $('#warehouse_id').val(); // must exist
+// console.log('Selected Category ID:', categoryId, warehouseId);
+        $('#sub_category_id').html('<option value="">Loading...</option>');
+console.log('Selected Category ID:', categoryId, warehouseId);
+        if (!categoryId || !warehouseId) {
+            $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+            return;
+        }
 
-        if (!wid) return;
+        $.get(
+            `/sell/ws/subcategories/${warehouseId}/${categoryId}`,
+            function (data) {
+                let options = '<option value="">Select Sub Category</option>';
 
-        $.get('/sell/ws/categories/' + wid, function(data) {
-            let html = '<option value="">Select Category</option>';
-            data.forEach(c => html += `<option value="${c.id}">${c.name}</option>`);
-            $('#category_id').html(html);
-        });
+                data.forEach(sub => {
+                    options += `<option value="${sub.id}">${sub.name}</option>`;
+                });
+
+                $('#sub_category_id').html(options);
+            }
+        );
     });
 
-    /* Category → Sub Category */
-    $('#category_id').change(function() {
+});
+</script>
 
-        let wid = $('#warehouse_id').val();
-        let cid = $(this).val();
-
-        $('#sub_category_id').html('<option>Loading...</option>');
-        $('#product_id').html('<option value="">Select Product</option>');
-        $('#quantity').val('');
-        $('#stock-info').text('');
-
-        if (!cid) return;
-
-        $.get('/sell/ws/subcategories/' + wid + '/' + cid, function(data) {
-            let html = '<option value="">Select Sub Category</option>';
-            data.forEach(s => html += `<option value="${s.id}">${s.name}</option>`);
-            $('#sub_category_id').html(html);
-        });
-    });
-
-    /* Sub Category → Product */
-    // $('#sub_category_id').change(function() {
-
-    //     let wid = $('#warehouse_id').val();
-    //     let sid = $(this).val();
-
-    //     $('#product_id').html('<option>Loading...</option>');
-    //     $('#quantity').val('');
-    //     $('#stock-info').text('');
-
-    //     if (!sid) return;
-
-    //     $.get('/sell/ws/products/' + wid + '/' + sid, function(data) {
-    //         let html = '<option value="">Select Product</option>';
-    //         data.forEach(p => html += `<option value="${p.id}">${p.name}</option>`);
-    //         $('#product_id').html(html);
-    //     });
-    // });
-
-    /* Sub Category → Product */
-$('#sub_category_id').change(function() {
+<script>
+/* Sub Category → Product */
+$('#sub_category_id').change(function () {
 
     let wid = $('#warehouse_id').val();
     let sid = $(this).val();
 
-    $('#product_id').html('<option>Loading...</option>');
+    $('#product_id').html('<option value="">Loading...</option>');
     $('#quantity').val('');
     $('#stock-info').text('');
 
-    if (!sid) return;
+    if (!sid || !wid) {
+        $('#product_id').html('<option value="">Select Product</option>');
+        return;
+    }
 
-    $.get('/sell/ws/products/' + wid + '/' + sid, function(data) {
+    $.get('/sell/ws/products/' + wid + '/' + sid, function (data) {
         let html = '<option value="">Select Product</option>';
-        data.forEach(p => html += `<option value="${p.id}">${p.name}</option>`);
+        data.forEach(p => {
+            html += `<option value="${p.id}">${p.name}</option>`;
+        });
         $('#product_id').html(html);
     });
 });
 
 
-    /* Product → Quantity */
-    $('#product_id').change(function() {
+/* Product → Quantity */
+$('#product_id').change(function () {
 
-        let wid = $('#warehouse_id').val();
-        let pid = $(this).val();
+    let wid = $('#warehouse_id').val();
+    let pid = $(this).val();
 
-        if (!pid) return;
+    if (!pid || !wid) return;
 
-        $.get('/sell/ws/quantity/' + wid + '/' + pid, function(qty) {
-            $('#quantity').attr('max', qty);
-            $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
-        });
+    $.get('/sell/ws/quantity/' + wid + '/' + pid, function (qty) {
+        $('#quantity').attr('max', qty);
+        $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
     });
+});
 </script>

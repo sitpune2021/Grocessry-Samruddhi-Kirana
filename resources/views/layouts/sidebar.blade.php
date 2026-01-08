@@ -80,9 +80,7 @@
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
                     @endif
-                     @if (auth()->check() && auth()->user()->role_id != 1)
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
-                    @endif
                 </ul>
             </li>
 
@@ -113,25 +111,11 @@
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li>
-                        <a href="{{ route('transfer.index') }}">
-                            District Warehouse Transfers
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('taluka.transfer.index') }}">
-                            Taluka Warehouse Transfers
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('district-taluka-transfer.index') }}">
-                            District To Taluka Warehouse Transfers
-                        </a>
-                    </li>
-
-
+                    <li><a href="{{ route('transfer.index') }}"> Master to District Warehouse Transfers</a></li>
+                    <li><a href="">District To District Warehouse Transfers</a></li>
+                    <li><a href="{{ route('district-taluka-transfer.index') }}">District To Taluka Warehouse Transfers</a></li>
+                    <li><a href="{{ route('taluka.transfer.index') }}">Taluka to Taluka Warehouse Transfers</a></li>
+                    <li><a href="">Taluka to Distribution Center Warehouse Transfers</a></li>
                 </ul>
             </li>
 
