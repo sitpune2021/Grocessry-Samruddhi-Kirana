@@ -65,23 +65,23 @@ class GroceryShopController extends Controller
         return redirect()->route('grocery-shops.index')
             ->with('success', 'Shop created successfully');
     }
-   public function edit(GroceryShop $groceryShop)
-{
-    return view('grocery_shops.create', [
-        'shop' => $groceryShop,
+    public function edit(GroceryShop $groceryShop)
+    {
+        return view('grocery_shops.create', [
+            'shop' => $groceryShop,
 
-        'districtWarehouses' => Warehouse::whereNotNull('district_id')
-            ->whereNull('taluka_id')
-            ->orderBy('name')
-            ->get(),
+            'districtWarehouses' => Warehouse::whereNotNull('district_id')
+                ->whereNull('taluka_id')
+                ->orderBy('name')
+                ->get(),
 
-        // ⭐ DIRECT VALUES (already warehouse ids)
-        'selectedDistrict' => $groceryShop->district_id,
-        'selectedTaluka'   => $groceryShop->taluka_id,
+            // ⭐ DIRECT VALUES (already warehouse ids)
+            'selectedDistrict' => $groceryShop->district_id,
+            'selectedTaluka'   => $groceryShop->taluka_id,
 
-        'isShow' => false
-    ]);
-}
+            'isShow' => false
+        ]);
+    }
 
 
     public function update(Request $request, GroceryShop $groceryShop)
@@ -110,44 +110,23 @@ class GroceryShopController extends Controller
         return redirect()->route('grocery-shops.index')
             ->with('success', 'Shop updated successfully');
     }
-   public function show(GroceryShop $groceryShop)
-{
-    return view('grocery_shops.create', [
-        'shop' => $groceryShop,
+    public function show(GroceryShop $groceryShop)
+    {
+        return view('grocery_shops.create', [
+            'shop' => $groceryShop,
 
-        'districtWarehouses' => Warehouse::whereNotNull('district_id')
-            ->whereNull('taluka_id')
-            ->orderBy('name')
-            ->get(),
+            'districtWarehouses' => Warehouse::whereNotNull('district_id')
+                ->whereNull('taluka_id')
+                ->orderBy('name')
+                ->get(),
 
-        // ⭐ DIRECT VALUES
-        'selectedDistrict' => $groceryShop->district_id,
-        'selectedTaluka'   => $groceryShop->taluka_id,
+            // ⭐ DIRECT VALUES
+            'selectedDistrict' => $groceryShop->district_id,
+            'selectedTaluka'   => $groceryShop->taluka_id,
 
-        'isShow' => true
-    ]);
-}
-
-
-
-    // public function show(GroceryShop $groceryShop)
-    // {
-    //     return view('grocery_shops.create', [
-    //         'shop' => $groceryShop,
-    //         'districtWarehouses' => Warehouse::whereNotNull('district_id')
-    //             ->whereNull('taluka_id')
-    //             ->orderBy('name')
-    //             ->get(),
-    //         'selectedDistrict' => $groceryShop->districtWarehouse?->id,
-    //         'selectedTaluka' => Warehouse::where('taluka_id', $groceryShop->taluka_id)
-    //             ->whereNotNull('taluka_id')
-    //             ->value('id'),
-    //         // 'selectedTaluka' => $groceryShop->talukaWarehouse?->id,
-    //         'isShow' => true
-    //     ]);
-    // }
-
-
+            'isShow' => true
+        ]);
+    }
 
     public function destroy(GroceryShop $groceryShop)
     {
