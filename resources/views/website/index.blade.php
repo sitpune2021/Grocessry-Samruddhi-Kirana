@@ -5,11 +5,11 @@
 
 @section('content')
 
-    <body>
+<body>
 
-        <!-- Hero Start -->
-        <div class="py-5 mb-5">
-            <div class="py-5" style="
+    <!-- Hero Start -->
+    <div class="py-5 mb-5">
+        <div class="py-5" style="
                 min-height: 500px;
                 margin: 0px auto;
                 background:
@@ -19,32 +19,31 @@
                 background-repeat: no-repeat;
                 background-size: cover;
             ">
-                <div class="row g-5 align-items-center">
-                    <div class="col-md-12 col-lg-7"><br><br><br><br><br><br>
-                        <h4 class="mb-3 text-secondary" style="padding: 0px 70px;">100% Organic Foods</h4>
-                        <h1 class="mb-5 text-primary" style="padding: 0px 70px;">Organic Veggies & Fruits Foods</h1>
-                        <div class="position-relative mx-auto" style="padding: 0px 70px;">
-                            <input class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill" type="number" placeholder="Search">
-                            <button type="submit" class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100" style="top: 0; right: 25%;">Submit Now</button>
-                        </div>
+            <div class="row g-5 align-items-center">
+                <div class="col-md-12 col-lg-7"><br><br><br><br><br><br>
+                    <h4 class="mb-3 text-secondary" style="padding: 0px 70px;">100% Organic Foods</h4>
+                    <h1 class="mb-5 text-primary" style="padding: 0px 70px;">Organic Veggies & Fruits Foods</h1>
+                    <div class="position-relative mx-auto" style="padding: 0px 70px;">
+                        <input class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill" type="number" placeholder="Search">
+                        <button type="submit" class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100" style="top: 0; right: 25%;">Submit Now</button>
                     </div>
-                    <div class="col-md-12 col-lg-5" style="padding: 0px 70px;">
-                        <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
-                            <div class="carousel-inner" role="listbox"><br><br><br><br><br><br>
-                                
-                                    @foreach($banners as $key => $banner)
-                                        <div class="carousel-item {{ $key == 0 ? 'active' : '' }} rounded">
-                                            <img 
-                                                src="{{ asset('storage/'.$banner->image) }}" 
-                                                class="img-fluid w-100 h-100 bg-secondary rounded" 
-                                                alt="{{ $banner->name }}"
-                                            >
-                                            <a href="#" class="btn px-4 py-2 text-white rounded">
-                                                {{ $banner->name }}
-                                            </a>
-                                        </div>
-                                    @endforeach
-                            
+                </div>
+                <div class="col-md-12 col-lg-5" style="padding: 0px 70px;">
+                    <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
+                        <div class="carousel-inner" role="listbox"><br><br><br><br><br><br>
+
+                            @foreach($banners as $key => $banner)
+                            <div class="carousel-item {{ $key == 0 ? 'active' : '' }} rounded">
+                                <img
+                                    src="{{ asset('storage/'.$banner->image) }}"
+                                    class="img-fluid w-100 h-100 bg-secondary rounded"
+                                    alt="{{ $banner->name }}">
+                                <a href="#" class="btn px-4 py-2 text-white rounded">
+                                    {{ $banner->name }}
+                                </a>
+                            </div>
+                            @endforeach
+
                             <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Previous</span>
@@ -113,7 +112,7 @@
         </div>
         <!-- Featurs Section End -->
 
-            <style>
+        <style>
             /* FORCE pagination to horizontal row */
             .pagination {
                 display: flex !important;
@@ -131,7 +130,7 @@
                 align-items: center;
                 justify-content: center;
             }
-            </style>
+        </style>
 
         <!-- Fruits Shop Start-->
         <div class="container-fluid fruite py-5">
@@ -146,37 +145,58 @@
                             <ul class="nav nav-pills d-inline-flex text-center mb-5">
                                 <li class="nav-item">
                                     <a class="d-flex m-2 py-2 bg-light rounded-pill {{ empty($categoryId) ? 'active' : '' }}"
-                                    data-bs-toggle="pill" href="#tab-1">
+                                        data-bs-toggle="pill" href="#tab-1">
                                         <span class="text-dark" style="width: 130px;">All Products</span>
                                     </a>
                                 </li>
 
                                 <li class="nav-item">
                                     <a class="d-flex py-2 m-2 bg-light rounded-pill {{ !empty($categoryId) ? 'active' : '' }}"
-                                    data-bs-toggle="pill" href="#tab-2">
+                                        data-bs-toggle="pill" href="#tab-2">
                                         <span class="text-dark" style="width: 130px;">Category Search</span>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </div>
-                  
+
                     <div class="tab-content">
 
                         <!-- TAB 1 : ALL PRODUCTS -->
                         <div id="tab-1" class="tab-pane fade show {{ empty($categoryId) ? 'active' : '' }}">
                             <div class="row g-4">
                                 @foreach($allProducts as $product)
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>{{ $product->name }}</h4>
-                                                <p>₹ {{ $product->mrp }}</p>
-                                                <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                            </div>
-                                            
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="rounded position-relative fruite-item">
+                                        @php
+                                        $images = $product->product_images; // Already array
+                                        $image = $images[0] ?? null;
+                                        @endphp
+
+                                        <div class="fruite-img">
+                                            @if($image)
+                                            <img
+                                                src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="{{ $product->name }}"
+                                                style="height: 200px; object-fit: cover;">
+                                            @else
+                                            <img
+                                                src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="No Image"
+                                                style="height: 200px; object-fit: cover;">
+                                            @endif
                                         </div>
+
+                                        <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                        </div>
+
                                     </div>
+                                </div>
                                 @endforeach
                             </div>
 
@@ -186,8 +206,8 @@
 
                                 {{-- Showing result text --}}
                                 <div class="mt-2 text-muted">
-                                    Showing {{ $allProducts->firstItem() }} 
-                                    to {{ $allProducts->lastItem() }} 
+                                    Showing {{ $allProducts->firstItem() }}
+                                    to {{ $allProducts->lastItem() }}
                                     of {{ $allProducts->total() }} results
                                 </div>
                             </div>
@@ -203,10 +223,10 @@
                                         <select name="category_id" class="form-select" onchange="this.form.submit()">
                                             <option value="">Select Category</option>
                                             @foreach($categories as $category)
-                                                <option value="{{ $category->id }}"
-                                                    {{ $categoryId == $category->id ? 'selected' : '' }}>
-                                                    {{ $category->name }}
-                                                </option>
+                                            <option value="{{ $category->id }}"
+                                                {{ $categoryId == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -215,28 +235,49 @@
 
                             <div class="row g-4">
                                 @forelse($categoryProducts as $product)
-                                    <div class="col-md-6 col-lg-3">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>{{ $product->name }}</h4>
-                                                <p>₹ {{ $product->mrp }}</p>
-                                                <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
-                                            </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="rounded position-relative fruite-item">
+                                        @php
+                                        $images = $product->product_images; // Already array
+                                        $image = $images[0] ?? null;
+                                        @endphp
+
+                                        <div class="fruite-img">
+                                            @if($image)
+                                            <img
+                                                src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="{{ $product->name }}"
+                                                style="height: 200px; object-fit: cover;">
+                                            @else
+                                            <img
+                                                src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="No Image"
+                                                style="height: 200px; object-fit: cover;">
+                                            @endif
+                                        </div>
+
+                                        <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
                                         </div>
                                     </div>
+                                </div>
                                 @empty
-                                    <p class="text-center">No products found</p>
+                                <p class="text-center">No products found</p>
                                 @endforelse
                             </div>
 
-                             <div class="mt-4 d-flex flex-column align-items-end">
+                            <div class="mt-4 d-flex flex-column align-items-end">
                                 {{-- Pagination --}}
                                 {{ $categoryProducts->links() }}
 
                                 {{-- Showing result text --}}
                                 <div class="mt-2 text-muted">
-                                    Showing {{ $categoryProducts->firstItem() }} 
-                                    to {{ $categoryProducts->lastItem() }} 
+                                    Showing {{ $categoryProducts->firstItem() }}
+                                    to {{ $categoryProducts->lastItem() }}
                                     of {{ $categoryProducts->total() }} results
                                 </div>
                             </div>
@@ -245,18 +286,18 @@
 
                     </div>
 
-                </div>      
+                </div>
             </div>
         </div>
         <!-- Fruits Shop End-->
         <script>
-        document.querySelectorAll('[href="#tab-1"]').forEach(el => {
-            el.addEventListener('click', function () {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('category_id');
-                window.history.pushState({}, '', url);
+            document.querySelectorAll('[href="#tab-1"]').forEach(el => {
+                el.addEventListener('click', function() {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('category_id');
+                    window.history.pushState({}, '', url);
+                });
             });
-        });
         </script>
 
 
@@ -798,6 +839,6 @@
         </div>
         <!-- Tastimonial End -->
 
-        </body>
+</body>
 
 @endsection

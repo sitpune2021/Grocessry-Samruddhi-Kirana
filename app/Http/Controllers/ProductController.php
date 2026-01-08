@@ -140,6 +140,20 @@ class ProductController extends Controller
                 $validated['discount_value'] = 0;
             }
 
+            // if ($request->hasFile('product_images')) {
+
+            //     $imageNames = [];
+
+            //     foreach ($request->file('product_images') as $image) {
+            //         $name = time() . '_' . $image->getClientOriginalName();
+            //         $image->storeAs('products', $name, 'public');
+            //         $imageNames[] = $name;
+            //     }
+
+            //     $validated['product_images'] = json_encode($imageNames);
+            // }
+
+
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
@@ -150,7 +164,8 @@ class ProductController extends Controller
                     $imageNames[] = $name;
                 }
 
-                $validated['product_images'] = json_encode($imageNames);
+                // Save as ARRAY (Laravel will JSON encode)
+                $validated['product_images'] = $imageNames;
             }
 
             $validated['warehouse_id'] = $user->warehouse_id;
