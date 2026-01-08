@@ -201,10 +201,6 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-<<<<<<< HEAD
-=======
-
->>>>>>> 08dfd4843088d84033340d0782a98eb1ceff8bb6
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
@@ -217,10 +213,6 @@ class AdminAuthController extends Controller
         }
 
         $request->session()->regenerate();
-<<<<<<< HEAD
-=======
-
->>>>>>> 08dfd4843088d84033340d0782a98eb1ceff8bb6
         return redirect()->route('dashboard')
             ->with('success', 'Successfully logged in!');
     }

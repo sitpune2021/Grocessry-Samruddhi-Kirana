@@ -44,6 +44,7 @@ use App\Http\Controllers\WarehouseStockReturnController;
 use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\DistrictToDistrictTransferController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
@@ -453,8 +454,63 @@ Route::middleware(['auth'])->group(function () {
                 [TalukashopTransferController::class, 'getBatchStock']
             );
         });
-      
+/////////////////////
+ // district to district-transfer
+    Route::prefix('district-district')
+        ->name('district-district.')
+        ->group(function () {
 
+            Route::get('/', [DistrictToDistrictTransferController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [DistrictToDistrictTransferController::class, 'create'])
+                ->name('create');
+
+            Route::post('/store', [DistrictToDistrictTransferController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [DistrictToDistrictTransferController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{id}', [DistrictToDistrictTransferController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [DistrictToDistrictTransferController::class, 'destroy'])
+                ->name('destroy');
+
+            Route::get('/{id}', [DistrictToDistrictTransferController::class, 'show'])
+                ->name('show');
+
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [DistrictToDistrictTransferController::class, 'getProductsByCategory']
+            );
+
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [DistrictToDistrictTransferController::class, 'getBatchesByProduct']
+            );
+
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [DistrictToDistrictTransferController::class, 'getWarehouseStock']
+            );
+
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [DistrictToDistrictTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
+
+            Route::get(
+                '/ajax/product-batches',
+                [DistrictToDistrictTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
+
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [DistrictToDistrictTransferController::class, 'getBatchStock']
+            );
+        });
 
     // RETAILERS
     Route::prefix('retailers')->name('retailers.')->group(function () {

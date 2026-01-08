@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
-use App\Models\DistrictToTalukaTransfer;
+use App\Models\DistrictToDistrict;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
 
 
-class DistrictToTalukaTransferController extends Controller
+class DistrictToDistrictTransferController extends Controller
 {
 
     public function index()
     {
         // Eager load related models for display
-        $transfers = DistrictToTalukaTransfer::with([
+        $transfers = DistrictToDistrict::with([
             'fromWarehouse',
             'toWarehouse',
             'category',
@@ -29,18 +29,18 @@ class DistrictToTalukaTransferController extends Controller
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
-        return view('district-taluka-transfers.index', compact('transfers'));
+       return view('district_district.index', compact('transfers'));
     }
 
     public function create()
     {
-        return view('district-taluka-transfers.transfer', [
+        return view('district_district.transfer', [
             'warehouses' => Warehouse::where('status', 'active')
                 ->where('type', 'taluka')
                 ->get(),
-            'categories' => collect(), // initially empty
-            'products'   => collect(), // empty collection to avoid undefined variable
-            'batches'    => collect(), // also empty
+            'categories' => collect(),  
+            'products'   => collect(),  
+            'batches'    => collect(),  
             'transfer'   => null,
         ]);
     }
@@ -85,14 +85,14 @@ class DistrictToTalukaTransferController extends Controller
 
             foreach ($request->items as $item) {
 
-                // ✅ ONLY batch validity (expiry / blocked)
+                 
                 $batch = ProductBatch::findOrFail($item['batch_id']);
 
                 if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
                     throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
                 }
 
-                DistrictToTalukaTransfer::create([
+                DistrictToDistrict::create([
                     'from_warehouse_id' => $item['from_warehouse_id'],
                     'to_warehouse_id'   => $item['to_warehouse_id'],
                     'category_id'       => $item['category_id'],
@@ -106,7 +106,7 @@ class DistrictToTalukaTransferController extends Controller
         });
 
         return redirect()
-            ->route('district-taluka-transfer.index')
+            ->route('district-district.index')
             ->with('success', 'Transfer entry saved successfully');
     }
 
@@ -125,7 +125,7 @@ class DistrictToTalukaTransferController extends Controller
     // Edit Method 
     public function edit($id)
     {
-        $transfer = DistrictToTalukaTransfer::with(['product', 'batch'])->findOrFail($id);
+        $transfer = DistrictToDistrict::with(['product', 'batch'])->findOrFail($id);
 
         $categories = Category::whereIn('id', function ($q) use ($transfer) {
             $q->select('category_id')
@@ -138,7 +138,7 @@ class DistrictToTalukaTransferController extends Controller
         $selectedProducts = [$transfer->product_id];
         $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
 
-        return view('district-taluka-transfers.transfer', compact(
+        return view('district_district.transfer', compact(
             'transfer',
             'categories',
             'products',
@@ -152,7 +152,7 @@ class DistrictToTalukaTransferController extends Controller
     // Update Method
     public function update(Request $request, $id)
     {
-        $transfer = DistrictToTalukaTransfer::findOrFail($id);
+        $transfer = DistrictToDistrict::findOrFail($id);
 
         $validated = $request->validate([
             'from_warehouse_id' => 'required',
@@ -178,28 +178,28 @@ class DistrictToTalukaTransferController extends Controller
         });
 
         return redirect()
-            ->route('district-taluka-transfer.index')
+            ->route('district_district.index')
             ->with('success', 'Transfer updated successfully');
     }
 
 
     public function destroy($id)
     {
-        $batch = DistrictToTalukaTransfer::findOrFail($id);
+        $batch = DistrictToDistrict::findOrFail($id);
         $batch->delete(); // soft delete
-        return redirect()->route('district-taluka-transfer.index')->with('success', 'Batch deleted successfully');
+        return redirect()->route('district_district.index')->with('success', 'Batch deleted successfully');
     }
 
     public function show($id)
     {
-        $transfer = DistrictToTalukaTransfer::with([
+        $transfer = DistrictToDistrict::with([
             'product',
             'batch',
             'fromWarehouse',
             'toWarehouse'
         ])->findOrFail($id);
 
-        return view('district-taluka-transfers.show', compact('transfer'));
+        return view('district_district.show', compact('transfer'));
     }
 
     public function checkBatchValidity($batch_id)
