@@ -48,8 +48,8 @@ class GroceryShopController extends Controller
                 'owner_name'  => $request->owner_name,
                 'mobile_no'   => $request->mobile_no,
                 'address'     => $request->address,
-                'district_id' => $districtWarehouse->district_id,
-                'taluka_id'   => $talukaWarehouse->taluka_id,
+                'district_id' => $request->district_warehouse_id, // warehouse id
+                'taluka_id'   => $request->taluka_id,             // warehouse id
                 'status'      => 'active',
             ]);
 
@@ -65,30 +65,23 @@ class GroceryShopController extends Controller
         return redirect()->route('grocery-shops.index')
             ->with('success', 'Shop created successfully');
     }
-    public function edit(GroceryShop $groceryShop)
-    {
-        $districtWarehouseId = Warehouse::where('district_id', $groceryShop->district_id)
+   public function edit(GroceryShop $groceryShop)
+{
+    return view('grocery_shops.create', [
+        'shop' => $groceryShop,
+
+        'districtWarehouses' => Warehouse::whereNotNull('district_id')
             ->whereNull('taluka_id')
-            ->value('id');
+            ->orderBy('name')
+            ->get(),
 
-        $talukaWarehouseId = Warehouse::where('taluka_id', $groceryShop->taluka_id)
-            ->where('parent_id', $districtWarehouseId)
-            ->whereNull('grocery_shop_id') // ONLY taluka warehouse
-            ->value('id');
+        // ⭐ DIRECT VALUES (already warehouse ids)
+        'selectedDistrict' => $groceryShop->district_id,
+        'selectedTaluka'   => $groceryShop->taluka_id,
 
-        return view('grocery_shops.create', [
-            'shop' => $groceryShop,
-            'districtWarehouses' => Warehouse::whereNotNull('district_id')
-                ->whereNull('taluka_id')
-                ->orderBy('name')
-                ->get(),
-
-            'selectedDistrict' => $districtWarehouseId,
-            'selectedTaluka'   => $talukaWarehouseId,
-
-            'isShow' => false
-        ]);
-    }
+        'isShow' => false
+    ]);
+}
 
 
     public function update(Request $request, GroceryShop $groceryShop)
@@ -110,39 +103,31 @@ class GroceryShopController extends Controller
             'owner_name'  => $request->owner_name,
             'mobile_no'   => $request->mobile_no,
             'address'     => $request->address,
-            'district_id' => $districtWarehouse->district_id,
-            'taluka_id'   => $talukaWarehouse->taluka_id,
+            'district_id' => $request->district_warehouse_id,
+            'taluka_id'   => $request->taluka_id,
         ]);
 
         return redirect()->route('grocery-shops.index')
             ->with('success', 'Shop updated successfully');
     }
-    public function show(GroceryShop $groceryShop)
-    {
-        // District warehouse id
-        $districtWarehouseId = Warehouse::where('district_id', $groceryShop->district_id)
+   public function show(GroceryShop $groceryShop)
+{
+    return view('grocery_shops.create', [
+        'shop' => $groceryShop,
+
+        'districtWarehouses' => Warehouse::whereNotNull('district_id')
             ->whereNull('taluka_id')
-            ->value('id');
+            ->orderBy('name')
+            ->get(),
 
-        // Taluka warehouse id (IMPORTANT FIX)
-        $talukaWarehouseId = Warehouse::where('taluka_id', $groceryShop->taluka_id)
-            ->where('parent_id', $districtWarehouseId)
-            ->whereNull('grocery_shop_id') // ⭐ taluka warehouse only
-            ->value('id');
+        // ⭐ DIRECT VALUES
+        'selectedDistrict' => $groceryShop->district_id,
+        'selectedTaluka'   => $groceryShop->taluka_id,
 
-        return view('grocery_shops.create', [
-            'shop' => $groceryShop,
-            'districtWarehouses' => Warehouse::whereNotNull('district_id')
-                ->whereNull('taluka_id')
-                ->orderBy('name')
-                ->get(),
+        'isShow' => true
+    ]);
+}
 
-            'selectedDistrict' => $districtWarehouseId,
-            'selectedTaluka'   => $talukaWarehouseId,
-
-            'isShow' => true
-        ]);
-    }
 
 
     // public function show(GroceryShop $groceryShop)
