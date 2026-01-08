@@ -111,25 +111,11 @@
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li>
-                        <a href="{{ route('transfer.index') }}">
-                            District Warehouse Transfers
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('taluka.transfer.index') }}">
-                            Taluka Warehouse Transfers
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="{{ route('district-taluka-transfer.index') }}">
-                            District To Taluka Warehouse Transfers
-                        </a>
-                    </li>
-
-
+                    <li><a href="{{ route('transfer.index') }}"> Master to District Warehouse Transfers</a></li>
+                    <li><a href="">District To District Warehouse Transfers</a></li>
+                    <li><a href="{{ route('district-taluka-transfer.index') }}">District To Taluka Warehouse Transfers</a></li>
+                    <li><a href="{{ route('taluka.transfer.index') }}">Taluka to Taluka Warehouse Transfers</a></li>
+                    <li><a href="">Taluka to Distribution Center Warehouse Transfers</a></li>
                 </ul>
             </li>
 
