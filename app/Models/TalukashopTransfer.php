@@ -9,15 +9,16 @@ class TalukashopTransfer extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'from_warehouse_id',
-        // 'to_warehouse_id',
-        'grocery_shop_id',
-        'category_id',
-        'product_id',
-        'batch_id',
-        'quantity',
-        'status'
-    ];
+    'from_warehouse_id',
+    'to_warehouse_id',
+    'grocery_shop_id',
+    'category_id',
+    'product_id',
+    'batch_id',
+    'quantity',
+    'status',
+    'created_by',  
+];
 
     // app/Models/WarehouseTransfer.php
 

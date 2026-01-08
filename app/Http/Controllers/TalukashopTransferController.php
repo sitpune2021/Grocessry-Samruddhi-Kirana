@@ -23,37 +23,25 @@ class TalukashopTransferController extends Controller
         // Eager load related models for display
         $transfers = TalukashopTransfer::with([
             'fromWarehouse',
-            'grocery_shop_id',
+            'toWarehouse',
             'category',
             'product',
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
-        return view('taluka-shop.index', compact('transfers'));
+       return view('taluka-shop.index', compact('transfers'));
     }
 
     public function create()
-{
-    $fromWarehouses = Warehouse::where('status', 'active')
-                            ->where('type', 'taluka')
-                            ->get();
-
-
-    $shopWarehouses = Warehouse::where('status', 'active')
-                                ->whereNotNull('grocery_shop_id')
-                                ->get();  
-
-    return view('taluka-shop.transfer', [
-        'fromWarehouses' => $fromWarehouses,
-        'shopWarehouses' => $shopWarehouses,
-        'categories'     => collect(),
-        'products'       => collect(),
-        'batches'        => collect(),
-        'transfer'       => null,
-    ]);
-}
-
-
+    {
+        return view('taluka-shop.transfer', [
+            'warehouses' => Warehouse::where('status', 'active')->get(),
+            'categories' => collect(), // initially empty
+            'products'   => collect(), // empty collection to avoid undefined variable
+            'batches'    => collect(), // also empty
+            'transfer'   => null,
+        ]);
+    }
 
 
     public function getProductsByCategory($category_id)
@@ -81,11 +69,11 @@ class TalukashopTransferController extends Controller
     // Multiple product store function
     public function store(Request $request)
     {
-
+        
         $request->validate([
             'items'                         => 'required|array|min:1',
             'items.*.from_warehouse_id'     => 'required|exists:warehouses,id',
-            'items.*.grocery_shop_id'       => 'required|different:items.*.from_warehouse_id|exists:warehouses,id',
+            'items.*.to_warehouse_id'       => 'required|different:items.*.from_warehouse_id|exists:warehouses,id',
             'items.*.category_id'           => 'required|exists:categories,id',
             'items.*.product_id'            => 'required|exists:products,id',
             'items.*.batch_id'              => 'required|exists:product_batches,id',
@@ -105,19 +93,19 @@ class TalukashopTransferController extends Controller
 
                 TalukashopTransfer::create([
                     'from_warehouse_id' => $item['from_warehouse_id'],
-                    'grocery_shop_id'   => $item['grocery_shop_id'],
+                    'to_warehouse_id'   => $item['to_warehouse_id'],
                     'category_id'       => $item['category_id'],
                     'product_id'        => $item['product_id'],
                     'batch_id'          => $item['batch_id'],
                     'quantity'          => $item['quantity'],
                     'status'            => 0,
-                    'created_by'        => auth()->id(),
+                     
                 ]);
             }
         });
 
         return redirect()
-            ->route('taluka.shop.index')
+            ->route('taluka-shop.index')
             ->with('success', 'Transfer entry saved successfully');
     }
 
@@ -162,36 +150,36 @@ class TalukashopTransferController extends Controller
     }
 
     // Update Method
-    public function update(Request $request, $id)
-    {
-        $transfer = TalukashopTransfer::findOrFail($id);
+  public function update(Request $request, $id)
+{
+    $transfer = TalukashopTransfer::findOrFail($id);
 
-        $validated = $request->validate([
-            'from_warehouse_id' => 'required',
-            'grocery_shop_id'   => 'required|different:from_warehouse_id',
-            'category_id'       => 'required',
-            'product_id'        => 'required|array|min:1',
-            'batch_id'          => 'required|array|min:1',
-            'quantity'          => 'required|integer|min:1',
+    $validated = $request->validate([
+        'from_warehouse_id' => 'required',
+        'to_warehouse_id'   => 'required|different:from_warehouse_id',
+        'category_id'       => 'required',
+        'product_id'        => 'required|array|min:1',
+        'batch_id'          => 'required|array|min:1',
+        'quantity'          => 'required|integer|min:1',
+    ]);
+
+    DB::transaction(function () use ($transfer, $validated) {
+
+        $transfer->update([
+            'from_warehouse_id' => $validated['from_warehouse_id'],
+            'to_warehouse_id'   => $validated['to_warehouse_id'],
+            'category_id'       => is_array($validated['category_id'])
+                                    ? $validated['category_id'][0]
+                                    : $validated['category_id'],
+            'product_id'        => $validated['product_id'][0],
+            'batch_id'          => $validated['batch_id'][0],
+            'quantity'          => $validated['quantity'],
         ]);
+    });
 
-        DB::transaction(function () use ($transfer, $validated) {
-
-            $transfer->update([
-                'from_warehouse_id' => $validated['from_warehouse_id'],
-                'grocery_shop_id'   => $validated['grocery_shop_id'],
-                'category_id'       => is_array($validated['category_id'])
-                    ? $validated['category_id'][0]
-                    : $validated['category_id'],
-                'product_id'        => $validated['product_id'][0],
-                'batch_id'          => $validated['batch_id'][0],
-                'quantity'          => $validated['quantity'],
-            ]);
-        });
-
-        return redirect()->route('taluka.shop.index')
-            ->with('success', 'Transfer updated successfully');
-    }
+    return redirect()->route('taluka.shop.index')
+        ->with('success', 'Transfer updated successfully');
+}
 
 
     public function destroy($id)
@@ -207,7 +195,7 @@ class TalukashopTransferController extends Controller
             'product',
             'batch',
             'fromWarehouse',
-            'grocery_shop_id'
+            'toWarehouse'
         ])->findOrFail($id);
 
         return view('taluka-shop.show', compact('transfer'));

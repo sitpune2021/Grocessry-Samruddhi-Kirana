@@ -24,11 +24,14 @@
                          <div class="col-12 col-md-10 col-lg-12">
                              <div class="card mb-4">
                                  <h4 class="card-header text-center">
-                                     Taluka to Shop Warehouse Stock Transfer
+                                     Taluka to- Shop Warehouse Stock Transfer
                                  </h4>
 
                                  <div class="card-body">
-                                     <form method="POST" action="{{ isset($transfer) ? route('taluka.transfer.update', $transfer->id) : route('taluka.transfer.store') }}">
+                                     <form method="POST"
+                                         action="{{ isset($transfer) 
+                                        ? route('taluka-shop.update', $transfer->id) 
+                                        : route('taluka-shop.store') }}">
                                          @csrf
                                          @if(isset($transfer))
                                          @method('PUT')
@@ -39,50 +42,30 @@
                                          <!-- Row 1: FROM & TO -->
                                          <div class="row g-3 mb-3">
                                              <div class="col-md-6">
-                                                 <label for="from_warehouse_id" class="form-label">
-                                                     From Warehouse <span class="text-danger">*</span>
-                                                 </label>
-
+                                                 <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
                                                  <select name="from_warehouse_id" id="from_warehouse_id" class="form-select">
                                                      <option value="">Select</option>
-
-                                                     @foreach($fromWarehouses as $w)
-                                                     <option value="{{ $w->id }}"
-                                                         {{ isset($transfer) && $transfer->from_warehouse_id == $w->id ? 'selected' : '' }}>
-                                                         {{ $w->name }}
-                                                     </option>
+                                                     @foreach($warehouses as $w)
+                                                     <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->from_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
                                                      @endforeach
                                                  </select>
-
                                                  @error('from_warehouse_id')
                                                  <span class="text-danger mt-1">{{ $message }}</span>
                                                  @enderror
                                              </div>
 
-
                                              <div class="col-md-6">
-                                                 <label for="grocery_shop_id" class="form-label">
-                                                     To Shop <span class="text-danger">*</span>
-                                                 </label>
-
-                                                 <select name="grocery_shop_id" id="grocery_shop_id" class="form-select">
+                                                 <label for="to_warehouse_id" class="form-label">To Warehouse <span class="text-danger">*</span></label>
+                                                 <select name="to_warehouse_id" id="to_warehouse_id" class="form-select">
                                                      <option value="">Select</option>
-
-                                                     @foreach($shopWarehouses as $w)
-                                                     <option value="{{ $w->grocery_shop_id }}"
-                                                         {{ isset($transfer) && $transfer->grocery_shop_id == $w->grocery_shop_id ? 'selected' : '' }}>
-
-                                                         {{ $w->groceryShop->shop_name }}
-
-                                                     </option>
+                                                     @foreach($warehouses as $w)
+                                                     <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->to_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
                                                      @endforeach
                                                  </select>
-
-                                                 @error('grocery_shop_id')
+                                                 @error('to_warehouse_id')
                                                  <span class="text-danger mt-1">{{ $message }}</span>
                                                  @enderror
                                              </div>
-
                                          </div>
 
                                          <!-- Row 2: PRODUCT -->
@@ -233,7 +216,7 @@
          let index = 0;
 
          const fromWarehouseEl = $('#from_warehouse_id');
-         const toWarehouseEl = $('#grocery_shop_id');
+         const toWarehouseEl = $('#to_warehouse_id');
          const productEl = $('#product_id');
          const batchEl = $('#batch_id');
          const qtyEl = $('#quantity');
@@ -391,7 +374,7 @@
 
                  itemsContainer.append(`
                 <input type="hidden" name="items[${rid}][from_warehouse_id]" value="${fw}">
-                <input type="hidden" name="items[${rid}][grocery_shop_id]" value="${tw}">
+                <input type="hidden" name="items[${rid}][to_warehouse_id]" value="${tw}">
                 <input type="hidden" name="items[${rid}][category_id]" value="1">
                 <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
                 <input type="hidden" name="items[${rid}][batch_id]" value="${bids[i]}">
@@ -413,7 +396,7 @@
 
              // from/to warehouse
              fromWarehouseEl.val(get('from_warehouse_id')[0]).trigger('change');
-             toWarehouseEl.val(get('grocery_shop_id')[0]);
+             toWarehouseEl.val(get('to_warehouse_id')[0]);
 
              setTimeout(() => {
                  // product
