@@ -259,20 +259,19 @@ class UserController extends Controller
         }
     }
 
-
     public function updateProfile(Request $request)
     {
-        // Always get Eloquent model
+        // Get current authenticated user
         $user = User::findOrFail(Auth::id());
 
-        // Validation (no confirm password)
+        // Strict validation (profile photo optional)
         $request->validate([
-            'first_name'     => 'required|string|max:255',
-            'last_name'      => 'required|string|max:255',
-            'mobile'         => 'nullable|string|max:20',
-            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'new_password'   => 'nullable|min:6',
-            'password'       => 'nullable', // current password
+            'first_name'    => 'required|string|max:255',
+            'last_name'     => 'required|string|max:255',
+            'mobile'        => 'required|string|max:20|unique:users,mobile,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'password'      => 'nullable|string',
+            'new_password'  => 'nullable|string|min:6|different:password',
         ]);
 
         /**
@@ -280,21 +279,24 @@ class UserController extends Controller
          */
         if ($request->filled('new_password')) {
 
+            // Require current password if changing
             if (!$request->filled('password')) {
                 return back()->withErrors([
-                    'password' => 'Current password is required'
+                    'password' => 'Current password is required to set a new password.'
                 ]);
             }
 
+            // Verify current password
             if (!Hash::check($request->password, $user->password)) {
                 return back()->withErrors([
-                    'password' => 'Current password is incorrect'
+                    'password' => 'Current password is incorrect.'
                 ]);
             }
 
+            // Set new password
             $user->password = Hash::make($request->new_password);
         }
-
+        
         /**
          * PROFILE UPDATE
          */
@@ -303,19 +305,16 @@ class UserController extends Controller
         $user->mobile     = $request->mobile;
 
         /**
-         * PHOTO
+         * PROFILE PHOTO
          */
         if ($request->hasFile('profile_photo')) {
             $path = $request->file('profile_photo')->store('profiles', 'public');
             $user->profile_photo = $path;
         }
 
-        // NOW THIS WILL WORK
+        // Save user
         $user->save();
 
-        return back()->with('success', 'Profile updated successfully');
+        return back()->with('success', 'Profile updated successfully.');
     }
-
-
-
 }
