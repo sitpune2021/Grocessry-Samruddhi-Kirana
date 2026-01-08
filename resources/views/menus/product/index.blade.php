@@ -35,7 +35,6 @@
                             <th>Category</th>
                             <th>Product Name</th>
                             <th>SKU</th>
-                            <th>Description</th>
                             <th>Base Price</th>
                             <th>Selling Price</th>
                             <th>MRP</th>
@@ -73,7 +72,6 @@
 
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->sku ?? '-' }}</td>
-                            <td>{{ $product->description ?? '-' }}</td>
                             <td>₹ {{ number_format($product->base_price, 2) }}</td>
                             <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                             <td>₹{{ number_format($product->mrp, 2) }}</td>

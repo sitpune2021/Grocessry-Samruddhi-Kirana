@@ -21,36 +21,29 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $user = Auth::user();
+   public function index()
+{
+    Log::info('Product Index Page Loaded');
 
-        Log::info('Product Index Page Loaded', [
-            'user_id'      => $user->id,
-            'warehouse_id' => $user->warehouse_id,
-            'role_id'      => $user->role_id,
+    try {
+        $products = Product::with(['category', 'tax'])
+            ->latest()
+            ->paginate(10);
+
+        return view('menus.product.index', compact('products'));
+
+    } catch (\Throwable $e) {
+
+        Log::error('Product Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
         ]);
 
-        try {
-            $products = Product::with(['category', 'tax'])
-                ->when($user->role_id != 1, function ($query) use ($user) {
-                    $query->where('warehouse_id', $user->warehouse_id);
-                })
-                ->latest()
-                ->paginate(10);
-
-            return view('menus.product.index', compact('products'));
-        } catch (\Throwable $e) {
-
-            Log::error('Product Index Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->with('error', 'Unable to load products');
-        }
+        return redirect()->back()
+            ->with('error', 'Unable to load products');
     }
+}
+
 
 
     /**
@@ -82,13 +75,10 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-
         Log::info('Product Store Request', [
-            'user_id'      => $user->id,
-            'warehouse_id' => $user->warehouse_id,
+            'request' => $request->all(),
         ]);
-
+             
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
@@ -168,7 +158,6 @@ class ProductController extends Controller
                 $validated['product_images'] = $imageNames;
             }
 
-            $validated['warehouse_id'] = $user->warehouse_id;
 
             $product = Product::create($validated);
 
