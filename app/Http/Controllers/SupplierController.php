@@ -69,40 +69,24 @@ class SupplierController extends Controller
                 'regex:/^[6-9]\d{9}$/',
                 Rule::unique('suppliers', 'mobile'),
             ],
-            'email'         => 'nullable|email|max:255',
-            'address'       => 'nullable|string',
+            'email'         => 'required|email|max:255',
+            'address'       => 'required|string',
             'state_id'      => 'required|exists:states,id',
             'district_id'   => 'required|exists:districts,id',
             'taluka_id'     => 'required|exists:talukas,id',
-            'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
          
         ], [
             'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
             'mobile.unique' => 'This mobile number is already registered.',
         ]);
 
-        $user = Auth::user();
 
-        if (!$user || !$user->warehouse_id) {
-            return redirect()->back()
-                ->with('error', 'Warehouse not assigned to your account.');
-        }
-
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('suppliers', $filename, 'public');
-            $validated['logo'] = $filename;
-        }
-
-        $validated['warehouse_id'] = $user->warehouse_id;
-
+       
         $supplier = Supplier::create($validated);
 
         // Log creation
         Log::info('Supplier created', [
             'id' => $supplier->id,
-            'warehouse_id' => $supplier->warehouse_id,
             'name' => $supplier->supplier_name,
             'mobile' => $supplier->mobile,
             'state_id' => $supplier->state_id,

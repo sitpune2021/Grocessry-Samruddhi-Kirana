@@ -27,7 +27,7 @@ class MasterWarehouseController extends Controller
     public function create()
     {
         $mode = 'add';
-        $warehouses = Warehouse::all();
+        $warehouses = Warehouse::with('district')->get();
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
@@ -36,85 +36,85 @@ class MasterWarehouseController extends Controller
         return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
     }
 
-   
-public function store(Request $request)
-{
-    DB::beginTransaction();
 
-    try {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:warehouses,name',
-            'type' => 'required|in:master,district,taluka',
-            'contact_person' => 'required|string|min:3|max:50',
-            'email' => 'required|email',
-            'contact_number' => [
-                'required',
-                'regex:/^[6-9]\d{9}$/',
-                Rule::unique('warehouses', 'contact_number'),
-            ],
-            'parent_id'   => 'required_if:type,district|required_if:type,taluka|integer',
-            'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
-            'taluka_id'   => 'required_if:type,taluka|integer',
-            'address'     => 'required|string|max:500',
-        ], [
-            'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
-            'contact_number.unique' => 'This mobile number is already registered.',
-        ]);
 
-       
-        $warehouse = Warehouse::create([
-            'name'           => $request->name,
-            'type'           => $request->type,
-            'parent_id'      => $request->parent_id,
-            'district_id'    => $request->district_id,
-            'taluka_id'      => $request->taluka_id,
-            'contact_person' => $request->contact_person,
-            'contact_number' => $request->contact_number,
-            'email'          => $request->email,
-            'address'        => $request->address,
-        ]);
+    public function store(Request $request)
+    {
+        DB::beginTransaction();
 
-        /* 👤 SPLIT NAME */
-        $nameParts = preg_split('/\s+/', trim($request->contact_person));
-        $firstName = $nameParts[0];
-        $lastName  = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255|unique:warehouses,name',
+                'type' => 'required|in:master,district,taluka',
+                'contact_person' => 'nullable|string|min:3|max:50',
+                'email' => 'nullable|email',
+                'contact_number' => [
+                    'nullable',
+                    'regex:/^[6-9]\d{9}$/',
+                    Rule::unique('warehouses', 'contact_number'),
+                ],
+                'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+                'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
+                'taluka_id'   => 'required_if:type,taluka|integer',
+                'address'     => 'required|string|max:500',
+            ], [
+                'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+                'contact_number.unique' => 'This mobile number is already registered.',
+            ]);
 
-        /* 👤 CREATE USER */
-        $user = User::create([
-            'first_name'  => $firstName,
-            'last_name'   => $lastName,
-            'email'       => $request->email,
-            'password'    => Hash::make('Warehouse@123'),
-            'mobile'      => $request->contact_number,
-            // 'warehouse_id'=> $warehouse->id,
-            'status'      => 1,
-        ]);
 
-        DB::commit();
+            $warehouse = Warehouse::create([
+                'name'           => $request->name,
+                'type'           => $request->type,
+                'parent_id'      => $request->parent_id,
+                'district_id'    => $request->district_id,
+                'taluka_id'      => $request->taluka_id,
+                'contact_person' => $request->contact_person,
+                'contact_number' => $request->contact_number,
+                'email'          => $request->email,
+                'address'        => $request->address,
+            ]);
 
-        Log::info('Warehouse & user created', [
-            'warehouse_id' => $warehouse->id,
-            'user_id'      => $user->id,
-        ]);
+            /* 👤 SPLIT NAME */
+            // $nameParts = preg_split('/\s+/', trim($request->contact_person));
+            // $firstName = $nameParts[0];
+            // $lastName  = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
 
-        return redirect()
-            ->route('warehouse.index')
-            ->with('success', 'Warehouse & user created successfully');
+            // /* 👤 CREATE USER */
+            // $user = User::create([
+            //     'first_name'  => $firstName,
+            //     'last_name'   => $lastName,
+            //     'email'       => $request->email,
+            //     'password'    => Hash::make('Warehouse@123'),
+            //     'mobile'      => $request->contact_number,
+            //     // 'warehouse_id'=> $warehouse->id,
+            //     'status'      => 1,
+            // ]);
 
-    } catch (\Throwable $e) {
+            DB::commit();
 
-        DB::rollBack();
+            Log::info('Warehouse & user created', [
+                'warehouse_id' => $warehouse->id,
+                // 'user_id'      => $user->id,
+            ]);
 
-        Log::error('Warehouse store failed', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
+            return redirect()
+                ->route('warehouse.index')
+                ->with('success', 'Warehouse & user created successfully');
+        } catch (\Throwable $e) {
 
-        return back()->withErrors([
-            'error' => 'Something went wrong. Please try again.'
-        ])->withInput();
+            DB::rollBack();
+
+            Log::error('Warehouse store failed', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return back()->withErrors([
+                'error' => 'Something went wrong. Please try again.'
+            ])->withInput();
+        }
     }
-}
 
 
 

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -23,7 +26,7 @@ class UserController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    
+
     public function profile()
     {
         $users = User::with('role')->paginate(10);
@@ -93,7 +96,9 @@ class UserController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
+        
     }
+
 
 
     public function show(string $id)
@@ -319,7 +324,4 @@ class UserController extends Controller
 
         return back()->with('success', 'Profile updated successfully');
     }
-
-
-
 }

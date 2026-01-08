@@ -98,8 +98,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('brands', BrandController::class);
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
-    Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
+    // Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
+    Route::get('/get-categories', [ProductController::class, 'getCategories']);
+    Route::get('/get-sub-categories/{categoryId}', [ProductController::class, 'getSubCategories']);
+
 
 
     Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
@@ -116,6 +119,7 @@ Route::middleware(['auth'])->group(function () {
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
     );
+    Route::get('/get-products-by-sub-category/{subCategoryId}', [stockWarehouseController::class, 'getProductBySubCategory'])->name('stockProduct.bySubCategory');
 
 
     Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
@@ -641,14 +645,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('sale.create');
     Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
-    Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
-    Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
+    // Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
+     // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+    Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategories']);
+   
     Route::get(
         '/sell/ws/products/{warehouse}/{subCategory}',
         [StockController::class, 'getProductsBySubCategory']
     )->middleware('auth');
 
-    // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
     // AJAX route to get products by category
@@ -868,4 +873,3 @@ Route::post('contact-details', [WebsiteController::class, 'storeContact'])->name
 Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
 Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
     ->name('shop.filter');
-
