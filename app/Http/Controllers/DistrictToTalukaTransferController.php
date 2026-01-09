@@ -13,7 +13,7 @@ use App\Models\DistrictToTalukaTransfer;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
-
+use Illuminate\Support\Facades\Auth;
 
 class DistrictToTalukaTransferController extends Controller
 {
@@ -34,6 +34,7 @@ class DistrictToTalukaTransferController extends Controller
 
     public function create()
     {
+        
         return view('district-taluka-transfers.transfer', [
             'warehouses' => Warehouse::where('status', 'active')->get(),
             'categories' => collect(), // initially empty
@@ -83,7 +84,6 @@ class DistrictToTalukaTransferController extends Controller
 
             foreach ($request->items as $item) {
 
-                // ✅ ONLY batch validity (expiry / blocked)
                 $batch = ProductBatch::findOrFail($item['batch_id']);
 
                 if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
@@ -98,7 +98,7 @@ class DistrictToTalukaTransferController extends Controller
                     'batch_id'          => $item['batch_id'],
                     'quantity'          => $item['quantity'],
                     'status'            => 0,
-                    'created_by'        => auth()->id(),
+                    'created_by'        => Auth::id(),
                 ]);
             }
         });
@@ -141,7 +141,7 @@ class DistrictToTalukaTransferController extends Controller
             'categories',
             'products',
             'batches',
-            'selectedProducts'   // 🔥 THIS WAS MISSING
+            'selectedProducts'   
         ) + [
             'warehouses' => Warehouse::where('status', 'active')->get(),
         ]);
