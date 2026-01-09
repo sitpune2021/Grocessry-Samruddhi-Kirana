@@ -57,9 +57,9 @@
                     </span>
                     <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
                 </div>
-
                 <ul class="submenu" id="suppplierMenu">
                     <li><a href="{{ route('supplier.index') }}">Supplier Management</a></li>
+                    <li><a href="/purchase-orders/create">Add Purches List</a></li>            
                     <li><a href="{{ route('purchase.orders.index') }}">Purchase History</a></li>
                 </ul>
             </li>
@@ -155,7 +155,6 @@
                     <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
                 </div>
                 <ul class="submenu" id="PosMenu">
-                    <li><a href="/purchase-orders/create">Add Purches List</a></li>            
                     <li><a href="/warehouse-transfer-request/create">Stock Request</a></li>
                     <li><a href="/warehouse-transfer-request/incoming">Incoming Stock Requests</a></li>
                 </ul>
