@@ -29,14 +29,16 @@ class DistrictToTalukaTransferController extends Controller
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
-       return view('district-taluka-transfers.index', compact('transfers'));
+        return view('district-taluka-transfers.index', compact('transfers'));
     }
 
     public function create()
     {
         
         return view('district-taluka-transfers.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
+            'warehouses' => Warehouse::where('status', 'active')
+                ->where('type', 'taluka')
+                ->get(),
             'categories' => collect(), // initially empty
             'products'   => collect(), // empty collection to avoid undefined variable
             'batches'    => collect(), // also empty
@@ -69,7 +71,7 @@ class DistrictToTalukaTransferController extends Controller
     // Multiple product store function
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'items'                         => 'required|array|min:1',
             'items.*.from_warehouse_id'     => 'required|exists:warehouses,id',
@@ -148,37 +150,37 @@ class DistrictToTalukaTransferController extends Controller
     }
 
     // Update Method
-  public function update(Request $request, $id)
-{
-    $transfer = DistrictToTalukaTransfer::findOrFail($id);
+    public function update(Request $request, $id)
+    {
+        $transfer = DistrictToTalukaTransfer::findOrFail($id);
 
-    $validated = $request->validate([
-        'from_warehouse_id' => 'required',
-        'to_warehouse_id'   => 'required|different:from_warehouse_id',
-        'category_id'       => 'required',
-        'product_id'        => 'required|array|min:1',
-        'batch_id'          => 'required|array|min:1',
-        'quantity'          => 'required|integer|min:1',
-    ]);
-
-    DB::transaction(function () use ($transfer, $validated) {
-
-        $transfer->update([
-            'from_warehouse_id' => $validated['from_warehouse_id'],
-            'to_warehouse_id'   => $validated['to_warehouse_id'],
-            'category_id'       => is_array($validated['category_id'])
-                                    ? $validated['category_id'][0]
-                                    : $validated['category_id'],
-            'product_id'        => $validated['product_id'][0],
-            'batch_id'          => $validated['batch_id'][0],
-            'quantity'          => $validated['quantity'],
+        $validated = $request->validate([
+            'from_warehouse_id' => 'required',
+            'to_warehouse_id'   => 'required|different:from_warehouse_id',
+            'category_id'       => 'required',
+            'product_id'        => 'required|array|min:1',
+            'batch_id'          => 'required|array|min:1',
+            'quantity'          => 'required|integer|min:1',
         ]);
-    });
 
-    return redirect()
-    ->route('district-taluka-transfer.index')
-        ->with('success', 'Transfer updated successfully');
-}
+        DB::transaction(function () use ($transfer, $validated) {
+
+            $transfer->update([
+                'from_warehouse_id' => $validated['from_warehouse_id'],
+                'to_warehouse_id'   => $validated['to_warehouse_id'],
+                'category_id'       => is_array($validated['category_id'])
+                    ? $validated['category_id'][0]
+                    : $validated['category_id'],
+                'product_id'        => $validated['product_id'][0],
+                'batch_id'          => $validated['batch_id'][0],
+                'quantity'          => $validated['quantity'],
+            ]);
+        });
+
+        return redirect()
+            ->route('district-taluka-transfer.index')
+            ->with('success', 'Transfer updated successfully');
+    }
 
 
     public function destroy($id)

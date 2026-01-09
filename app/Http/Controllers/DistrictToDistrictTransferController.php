@@ -9,19 +9,19 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
-use App\Models\WarehouseTransfer;
+use App\Models\DistrictToDistrict;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
-use Illuminate\Support\Facades\Auth;
 
-class WarehouseTransferController extends Controller
+
+class DistrictToDistrictTransferController extends Controller
 {
 
     public function index()
     {
         // Eager load related models for display
-        $transfers = WarehouseTransfer::with([
+        $transfers = DistrictToDistrict::with([
             'fromWarehouse',
             'toWarehouse',
             'category',
@@ -29,16 +29,18 @@ class WarehouseTransferController extends Controller
             'batch'
         ])->orderBy('created_at', 'desc')->get();
 
-        return view('warehouse.index', compact('transfers'));
+       return view('district_district.index', compact('transfers'));
     }
 
-     public function create()
+    public function create()
     {
-        return view('warehouse.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-            'categories' => collect(), 
-            'products'   => collect(), 
-            'batches'    => collect(), 
+        return view('district_district.transfer', [
+            'warehouses' => Warehouse::where('status', 'active')
+                ->where('type', 'taluka')
+                ->get(),
+            'categories' => collect(),  
+            'products'   => collect(),  
+            'batches'    => collect(),  
             'transfer'   => null,
         ]);
     }
@@ -83,14 +85,14 @@ class WarehouseTransferController extends Controller
 
             foreach ($request->items as $item) {
 
-                // ✅ ONLY batch validity (expiry / blocked)
+                 
                 $batch = ProductBatch::findOrFail($item['batch_id']);
 
                 if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
                     throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
                 }
 
-                WarehouseTransfer::create([
+                DistrictToDistrict::create([
                     'from_warehouse_id' => $item['from_warehouse_id'],
                     'to_warehouse_id'   => $item['to_warehouse_id'],
                     'category_id'       => $item['category_id'],
@@ -98,16 +100,15 @@ class WarehouseTransferController extends Controller
                     'batch_id'          => $item['batch_id'],
                     'quantity'          => $item['quantity'],
                     'status'            => 0,
-                    'created_by'        => Auth::id(),
+                    'created_by'        => auth()->id(),
                 ]);
             }
         });
 
         return redirect()
-            ->route('transfer.index')
+            ->route('district-district.index')
             ->with('success', 'Transfer entry saved successfully');
     }
-
 
     public function getWarehouseStock($warehouse_id, $batch_id)
     {
@@ -124,7 +125,7 @@ class WarehouseTransferController extends Controller
     // Edit Method 
     public function edit($id)
     {
-        $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
+        $transfer = DistrictToDistrict::with(['product', 'batch'])->findOrFail($id);
 
         $categories = Category::whereIn('id', function ($q) use ($transfer) {
             $q->select('category_id')
@@ -137,12 +138,12 @@ class WarehouseTransferController extends Controller
         $selectedProducts = [$transfer->product_id];
         $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
 
-        return view('warehouse.transfer', compact(
+        return view('district_district.transfer', compact(
             'transfer',
             'categories',
             'products',
             'batches',
-            'selectedProducts'   // 🔥 THIS WAS MISSING
+            'selectedProducts'    
         ) + [
             'warehouses' => Warehouse::where('status', 'active')->get(),
         ]);
@@ -151,7 +152,7 @@ class WarehouseTransferController extends Controller
     // Update Method
     public function update(Request $request, $id)
     {
-        $transfer = WarehouseTransfer::findOrFail($id);
+        $transfer = DistrictToDistrict::findOrFail($id);
 
         $validated = $request->validate([
             'from_warehouse_id' => 'required',
@@ -176,31 +177,29 @@ class WarehouseTransferController extends Controller
             ]);
         });
 
-        return redirect()->route('transfer.index')
+        return redirect()
+            ->route('district_district.index')
             ->with('success', 'Transfer updated successfully');
     }
 
 
-
-
-
     public function destroy($id)
     {
-        $batch = ProductBatch::findOrFail($id);
+        $batch = DistrictToDistrict::findOrFail($id);
         $batch->delete(); // soft delete
-        return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
+        return redirect()->route('district_district.index')->with('success', 'Batch deleted successfully');
     }
 
     public function show($id)
     {
-        $transfer = WarehouseTransfer::with([
+        $transfer = DistrictToDistrict::with([
             'product',
             'batch',
             'fromWarehouse',
             'toWarehouse'
         ])->findOrFail($id);
 
-        return view('warehouse.show', compact('transfer'));
+        return view('district_district.show', compact('transfer'));
     }
 
     public function checkBatchValidity($batch_id)

@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\GroceryShop;
-class WarehouseTransfer extends Model
+
+class DistrictToDistrict extends Model
 {
     protected $primaryKey = 'id';
 
@@ -45,8 +45,6 @@ class WarehouseTransfer extends Model
         return $this->belongsTo(ProductBatch::class, 'batch_id')
                     ->withTrashed(); // IMPORTANT
     }
-
-    
 
 
 }
