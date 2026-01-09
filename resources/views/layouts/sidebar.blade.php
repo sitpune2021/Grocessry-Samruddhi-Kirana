@@ -17,6 +17,7 @@
 
     <div class="sidebar-menu" id="sidebarMenu">
         <ul>
+
             <!-- Dashboard -->
             <li class="menu-item">
                 <a href="/dashboard" class="menu-link active text-white">
@@ -52,14 +53,14 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('suppplierMenu','inventoryArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        Supplier Management
+                        Supplier & Purchase Management
                     </span>
                     <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
                 </div>
 
                 <ul class="submenu" id="suppplierMenu">
-                    <li><a href="{{ route('supplier.index') }}">Supplier Details</a></li>
-
+                    <li><a href="{{ route('supplier.index') }}">Supplier Management</a></li>
+                    <li><a href="{{ route('purchase.orders.index') }}">Purchase History</a></li>
                 </ul>
             </li>
 
@@ -73,11 +74,7 @@
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="warehouseMenu">
-                    <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-        
-                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
-                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
-                   
+                    <li><a href="{{ route('warehouse.index') }}">Warehouse Management</a></li>                   
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
                 </ul>
             </li>
@@ -91,11 +88,10 @@
                     </span>
                     <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
                 </div>
-
                 <ul class="submenu" id="inventoryMenu">
                     <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
                     <li><a href="/expiry-alerts">Expiry Alerts</a></li>
-                    <li><a href="{{ route('sale.create') }}">Expiry Sell</a></li>
+                    <li><a href="{{ route('sale.create') }}">Near Expiry Sale</a></li>
                 </ul>
             </li>
 
@@ -103,17 +99,17 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('TransferMenu','inventoryArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        Transfer Management
+                        Stock Transfer
                     </span>
                     <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
                 </div>
 
                 <ul class="submenu" id="TransferMenu">
-                    <li><a href="{{ route('transfer.index') }}"> Master to District Warehouse Transfers</a></li>
-                    <li><a href="{{ route('district-district.index') }}">District To District Warehouse Transfers</a></li>
-                    <li><a href="{{ route('district-taluka-transfer.index') }}">District To Taluka Warehouse Transfers</a></li>
-                    <li><a href="{{ route('taluka.transfer.index') }}">Taluka to Taluka Warehouse Transfers</a></li>
-                    <li><a href="{{ route('taluka-shop.index') }}">Taluka to Distribution Center Warehouse Transfers</a></li>
+                    <li><a href="{{ route('transfer.index') }}">Master → District Transfer</a></li>
+                    <li><a href="{{ route('district-district.index') }}">District → District Transfer</a></li>
+                    <li><a href="{{ route('district-taluka-transfer.index') }}">District → Taluka Transfer</a></li>
+                    <li><a href="{{ route('taluka.transfer.index') }}">Taluka → Taluka Transfer</a></li>
+                    <li><a href="{{ route('taluka-shop.index') }}">Taluka → Distribution Center</a></li>
                 </ul>
             </li>
 
@@ -121,16 +117,13 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('OrderMenu','orderArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        Order Management
+                        Order & Approval
                     </span>
                     <i class="bx bx-chevron-right arrow" id="orderArrow"></i>
                 </div>
-
                 <ul class="submenu" id="OrderMenu">
-                    <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer
-                            Approval</a></li>
+                    <li><a href="{{ route('warehouse.transfer.index') }}">Master → District Transfer Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
-
                 </ul>
             </li>
 
@@ -146,10 +139,9 @@
                 <ul class="submenu" id="shopMenu">
                     <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
                     @if (auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent Management</a></li>
                     <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
                     @endif
-
                 </ul>
             </li>
             @endif
@@ -158,16 +150,14 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('PosMenu','PosArrow')">
                     <span style="padding-left: 10px;">
                         <i class="bx bx-package me-2 "></i>
-                        POS System
+                        POS & Sales
                     </span>
                     <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
                 </div>
-
                 <ul class="submenu" id="PosMenu">
-                    <li><a href="/purchase-orders/create">Add Purches List</a></li>
-                    <li><a href="{{ route('purchase.orders.index') }}">Purches History</a></li>
+                    <li><a href="/purchase-orders/create">Add Purches List</a></li>            
                     <li><a href="/warehouse-transfer-request/create">Stock Request</a></li>
-                    <li><a href="/warehouse-transfer-request/incoming">Incoming Request</a></li>
+                    <li><a href="/warehouse-transfer-request/incoming">Incoming Stock Requests</a></li>
                 </ul>
             </li>
 
@@ -175,16 +165,14 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('OfferMenu','offerArrow')">
                     <span>
                         <i class="bx bx-package me-2 "></i>
-                        Offer / Scheme Management
+                        Offers & Schemes
                     </span>
                     <i class="bx bx-chevron-right arrow" id="offerArrow"></i>
                 </div>
-
                 <ul class="submenu" id="OfferMenu">
                     @if (auth()->check() && auth()->user()->role_id == 1)
                     <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                     <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
-
                         {{-- <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li> --}}
                     @endif
                     <li><a href="{{ route('offers.index') }}">Coupon Management</a></li>
@@ -199,12 +187,9 @@
                     </span>
                     <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
                 </div>
-
                 <ul class="submenu" id="CustomerMenu">
-
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-
                 </ul>
             </li>
 
@@ -212,11 +197,10 @@
                 <div class="menu-link text-white" onclick="toggleMenu('ReportMenu','reportArrow')">
                     <span style="padding-left: 10px;">
                         <i class="bx bx-bar-chart-alt-2 me-2"></i>
-                        Reports
+                        Reports & Analytics
                     </span>
                     <i class="bx bx-chevron-right arrow" id="reportArrow"></i>
                 </div>
-
                 <ul class="submenu" id="ReportMenu">
                     <li>
                         <a href="{{ route('warehouse-stock.report') }}">
@@ -240,7 +224,7 @@
                     </li>
                     <li>
                         <a href="{{ route('transfer-challans.index') }}">
-                            Transfer Challen
+                            Transfer Challan
                         </a>
                     </li>
                 </ul>
@@ -250,18 +234,19 @@
                 <div class="menu-link  text-white" onclick="toggleMenu('SettingMenu','settingArrow')">
                     <span style="padding-left: 10px;">
                         <i class="bx bx-package me-2 "></i>
-                        Setting
+                        Settings
                     </span>
                     <i class="bx bx-chevron-right arrow" id="settingArrow"></i>
                 </div>
-
                 <ul class="submenu" id="SettingMenu">
                     <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
-                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>
+                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
+                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
+                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>              
                 </ul>
             </li>
 
-            <li class="menu-header">WEBSITE</li>
+            <li class="menu-header">Website Management</li>
 
             <li class="menu-item">
                 <div class="menu-link  text-white" onclick="toggleMenu('BannerMenu','BannerArrow')">
