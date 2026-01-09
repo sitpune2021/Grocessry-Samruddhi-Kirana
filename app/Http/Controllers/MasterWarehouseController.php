@@ -37,6 +37,7 @@ class MasterWarehouseController extends Controller
     }
 
 
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -115,8 +116,6 @@ class MasterWarehouseController extends Controller
         }
     }
 
-
-
     public function show($id)
     {
         try {
@@ -193,7 +192,21 @@ class MasterWarehouseController extends Controller
         $validated['district_id'] = $request->district_id ?? null;
         $validated['taluka_id'] = $request->taluka_id ?? null;
 
-        $warehouse->update($validated);
+        DB::transaction(function () use ($warehouse, $validated) {
+
+            // 1️⃣ Update Warehouse
+            $warehouse->update($validated);
+
+            // 2️⃣ Update linked user (warehouse admin / incharge)
+            $user = User::where('warehouse_id', $warehouse->id)->first();
+
+            if ($user) {
+                $user->update([
+                    'email'  => $validated['email'] ?? $user->email,
+                    'mobile' => $validated['contact_number'] ?? $user->mobile,
+                ]);
+            }
+        });
 
         return redirect()->route('warehouse.index')
             ->with('success', 'Warehouse updated successfully.');

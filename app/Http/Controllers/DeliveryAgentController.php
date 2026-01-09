@@ -24,7 +24,6 @@ class DeliveryAgentController extends Controller
      */
     public function index()
     {
-        // Fetch delivery agent vehicles with driver info, paginate 10 per page
         $agents = DeliveryAgent::with(['user', 'shop'])
             ->latest()
             ->paginate(10);
@@ -32,9 +31,7 @@ class DeliveryAgentController extends Controller
         return view('menus.delivery-agent.delivery-agent.index', compact('agents'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
         $mode = 'add';
@@ -85,14 +82,6 @@ class DeliveryAgentController extends Controller
 
             /* ✅ THIS LINE FIXES EVERYTHING */
             $validated = $validated->validated();
-
-            // dd("hi");
-
-            // Log::info('Validation passed', [
-            //     'mobile' => $validated['mobile'],
-            //     'email'  => $validated['email'] ?? null
-            // ]);
-
 
             Log::info('Fetching Delivery Agent role');
 
@@ -278,34 +267,6 @@ class DeliveryAgentController extends Controller
                 ]);
                 throw new \Exception('User not linked with delivery agent');
             }
-
-            // // Profile Image
-            // if ($request->hasFile('profile_image')) {
-
-            //     if ($agent->user->profile_image) {
-            //         Storage::disk('public')
-            //             ->delete('profile_photo/' . $agent->user->profile_image);
-            //     }
-
-            //     $file = $request->file('profile_image');
-            //     $fileName = $file->getClientOriginalName();
-            //     $file->storeAs('profile_photo', $fileName, 'public');
-            //     $agent->user->profile_image = $fileName;
-
-            //     Log::info('Profile image uploaded', ['file' => $fileName]);
-            // }
-
-            // if ($request->hasFile('profile_image')) {
-            //     $profile_image['profile_image'] = $fileName;
-            // }
-
-            // $user->update([
-            //     'first_name' => $validated['name'],
-            //     'last_name'  => $validated['last_name'],
-            //     'mobile'     => $request->mobile, // if coming from form
-            //     'email'      => $request->email ?? null,
-            //     'profile_photo' => $profile_image['profile_image'] ?? $agent->user->profile_image,
-            // ]);
 
             // ---------------- Profile Image ----------------
             $profilePhotoName = $agent->user->profile_photo;
