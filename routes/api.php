@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\DeliveryAgentController;
 use App\Http\Controllers\Api\DeliveryOrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\DeliveryCouponsOffersController;
+use App\Http\Controllers\Api\AddressController;
 
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
@@ -53,6 +54,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [DeliveryCouponsOffersController::class, 'getOffers']);
     Route::post('/apply-coupon', [DeliveryCouponsOffersController::class, 'applyCoupon']);
     Route::post('/remove-coupon', [DeliveryCouponsOffersController::class, 'removeCoupon']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Customer Address APIs
+    Route::get('customer/addresses', [AddressController::class, 'list']);
+    Route::post('customer/addresses', [AddressController::class, 'add']);
+    Route::put('customer/addresses/{id}', [AddressController::class, 'update']);
+    Route::delete('customer/addresses/{id}', [AddressController::class, 'delete']);
 });
 
 //---------------------Delivery Agent Api Routes-----------------------------------------------
