@@ -6,9 +6,9 @@
     <div class="card shadow-sm p-2">
         <div class="card-datatable text-nowrap">
             @php
-            $canView = hasPermission('product.view');
-            $canEdit = hasPermission('product.edit');
-            $canDelete = hasPermission('product.delete');
+            $canView = hasPermission('brands.view');
+            $canEdit = hasPermission('brands.edit');
+            $canDelete = hasPermission('brands.delete');
             @endphp
 
             <!-- Header -->

@@ -7,9 +7,9 @@
         <div class="card-datatable text-nowrap">
 
             @php
-            $canView = hasPermission('product.view');
-            $canEdit = hasPermission('product.edit');
-            $canDelete = hasPermission('product.delete');
+            $canView = hasPermission('unit.view');
+            $canEdit = hasPermission('unit.edit');
+            $canDelete = hasPermission('unit.delete');
             @endphp
 
             <!-- Header -->
