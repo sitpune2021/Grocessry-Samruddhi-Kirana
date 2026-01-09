@@ -35,18 +35,8 @@ class DistrictToTalukaTransferController extends Controller
     public function create()
     {
         
-        $user = Auth::user();
-
-        $fromWarehouse = Warehouse::where('id', $user->warehouse_id)->first();
-
-        $toWarehouses = Warehouse::where('status', 'active')
-            ->where('type', 'taluka') // IMPORTANT
-            ->orderBy('name')
-            ->get();
-
         return view('district-taluka-transfers.transfer', [
-            'fromWarehouse' => $fromWarehouse,
-            'toWarehouses'  => $toWarehouses,
+            'warehouses' => Warehouse::where('status', 'active')->get(),
             'categories' => collect(), // initially empty
             'products'   => collect(), // empty collection to avoid undefined variable
             'batches'    => collect(), // also empty
