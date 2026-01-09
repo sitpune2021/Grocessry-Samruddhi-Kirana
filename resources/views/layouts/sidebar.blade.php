@@ -45,7 +45,7 @@
                     @endif
                     <li><a href="{{ route('units.create') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
-                  
+
                 </ul>
 
             </li>
@@ -112,10 +112,10 @@
 
                 <ul class="submenu" id="TransferMenu">
                     <li><a href="{{ route('transfer.index') }}"> Master to District Warehouse Transfers</a></li>
-                    <li><a href="">District To District Warehouse Transfers</a></li>
+                    <li><a href="{{ route('district-district.index') }}">District To District Warehouse Transfers</a></li>
                     <li><a href="{{ route('district-taluka-transfer.index') }}">District To Taluka Warehouse Transfers</a></li>
                     <li><a href="{{ route('taluka.transfer.index') }}">Taluka to Taluka Warehouse Transfers</a></li>
-                    <li><a href="">Taluka to Distribution Center Warehouse Transfers</a></li>
+                    <li><a href="{{ route('taluka-shop.index') }}">Taluka to Distribution Center Warehouse Transfers</a></li>
                 </ul>
             </li>
 
@@ -132,28 +132,28 @@
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer
                             Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
-                    
+
                 </ul>
             </li>
 
             @if (auth()->check() && auth()->user()->role_id == 1)
-                <li class="menu-item">
-                    <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                        <span>
-                            <i class="bx bx-store me-2 "></i>
-                            Distribution Center
-                        </span>
-                        <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                    </div>
-                    <ul class="submenu" id="shopMenu">
-                        <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
-                        @if (auth()->check() && auth()->user()->role_id == 1)
-                            <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
-                            <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                        @endif
+            <li class="menu-item">
+                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
+                    <span>
+                        <i class="bx bx-store me-2 "></i>
+                        Distribution Center
+                    </span>
+                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
+                </div>
+                <ul class="submenu" id="shopMenu">
+                    <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
+                    @if (auth()->check() && auth()->user()->role_id == 1)
+                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent</a></li>
+                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
+                    @endif
 
-                    </ul>
-                </li>
+                </ul>
+            </li>
             @endif
 
             <li class="menu-item">
@@ -187,9 +187,9 @@
                     <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
                     <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
 
-                        <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li>
+                        {{-- <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li> --}}
                     @endif
-                    <li><a href="{{ route('offers.index') }}">Coupon</a></li>
+                    <li><a href="{{ route('offers.index') }}">Coupon Management</a></li>
                 </ul>
             </li>
 
