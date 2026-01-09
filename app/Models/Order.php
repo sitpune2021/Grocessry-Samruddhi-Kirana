@@ -22,6 +22,9 @@ class Order extends Model
         'coupon_code',
         'order_number',
         'coupon_discount',
+        'cancel_reason',
+        'cancel_comment',
+        'cancelled_at',
     ];
 
     public function items()

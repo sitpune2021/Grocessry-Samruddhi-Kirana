@@ -95,3 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
 });
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
+    Route::post('/orders/{orderId}/cancel',[DeliveryOrderController::class, 'cancelOrder']);
+});

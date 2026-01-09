@@ -232,7 +232,7 @@ class DeliveryOrderController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Pickup proof uploaded',
-            'image_name' => $originalName
+            'pickup_proof' => $originalName
         ]);
     }
 
@@ -246,13 +246,44 @@ class DeliveryOrderController extends Controller
                 'message' => 'Order not found'
             ], 404);
         }
-
         $order->status = 'on_the_way';
         $order->save();
-
         return response()->json([
             'status' => true,
             'message' => 'Pickup confirmed, order is on the way'
+        ]);
+    }
+    public function getCancellationReasons()
+    {
+        $reasons = Order::whereNotNull('cancel_reason')
+            ->distinct()
+            ->pluck('cancel_reason');
+        return response()->json([
+            'status' => true,
+            'data' => $reasons
+        ]);
+    }
+    public function cancelOrder(Request $request, $orderId)
+    {
+        $request->validate([
+            'cancel_reason' => 'required|string',
+            'cancel_comment' => 'nullable|string'
+        ]);
+        $order = Order::find($orderId);
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+        $order->status = 'cancelled';
+        $order->cancel_reason = $request->cancel_reason;
+        $order->cancel_comment = $request->cancel_comment;
+        $order->cancelled_at = now();
+        $order->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'Order cancelled successfully'
         ]);
     }
 }
