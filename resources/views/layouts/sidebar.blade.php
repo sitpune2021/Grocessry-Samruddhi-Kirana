@@ -38,11 +38,9 @@
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="ProductMenu">
-                    @if (auth()->check() && auth()->user()->role_id == 1)
                     <li><a href="{{ route('brands.index') }}">Brand</a></li>
                     <li><a href="{{ route('category.index') }}">Category</a></li>
                     <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    @endif
                     <li><a href="{{ route('units.create') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
 
