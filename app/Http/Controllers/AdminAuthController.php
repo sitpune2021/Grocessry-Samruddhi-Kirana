@@ -31,7 +31,7 @@ class AdminAuthController extends Controller
     }
     public function store(Request $request)
     {
-        // dd($request->all());
+
         // Log the incoming request (excluding sensitive data)
         Log::info('🔹 User Store Request Received', [
             'payload' => $request->except(['password', 'password_confirmation'])
@@ -47,6 +47,7 @@ class AdminAuthController extends Controller
             'role_id'        => 'required|exists:roles,id',
             'status'         => 'required|boolean',
             'profile_photo'  => 'nullable|image',
+            'warehouse_id' => 'required|exists:warehouses,id',
         ]);
         try {
 
@@ -71,6 +72,19 @@ class AdminAuthController extends Controller
                 'profile_photo' => $photoPath,
                 'password'      => Hash::make('pass@123'),
             ]);
+            if ($request->warehouse_id) {
+
+                $warehouse = Warehouse::find($request->warehouse_id);
+
+                if ($warehouse) {
+                    $warehouse->update([
+                        'contact_person' => $user->first_name . ' ' . $user->last_name,
+                        'contact_number' => $user->mobile,
+                        'email'          => $user->email,
+                    ]);
+                }
+            }
+
             Log::info('✅ User created successfully', ['user_id' => $user->id]);
 
             return redirect()->route('user.profile')->with('success', 'User created successfully');
@@ -187,7 +201,7 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-   
+
         $request->validate([
             'email'    => 'required|email',
             'password' => 'required',
@@ -200,7 +214,7 @@ class AdminAuthController extends Controller
         }
 
         $request->session()->regenerate();
-  
+
         return redirect()->route('dashboard')
             ->with('success', 'Successfully logged in!');
     }

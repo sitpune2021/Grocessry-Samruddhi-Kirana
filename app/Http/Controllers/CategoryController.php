@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -19,7 +18,7 @@ class CategoryController extends Controller
     {
         $user = Auth::user();
 
-        $query = Category::with('brand')->orderBy('id', 'desc');
+        $query = Category::orderBy('id', 'desc');
 
         if ($user->role_id != 1) {
             $query->where('warehouse_id', $user->warehouse_id);
@@ -38,8 +37,7 @@ class CategoryController extends Controller
     public function create()
     {
         $mode = 'add';
-        $brands = Brand::all(); // ✅ Pass brands to view
-        return view('menus.category.add-category', compact('brands', 'mode'));
+        return view('menus.category.add-category', compact( 'mode'));
     }
 
     /**
@@ -52,7 +50,6 @@ class CategoryController extends Controller
         Log::info('Category store request received', [
             'request_data' => $request->all(),
             'ip'           => $request->ip(),
-            'user_id'      => Auth::id(),
         ]);
 
         try {
@@ -61,14 +58,12 @@ class CategoryController extends Controller
             $validated = $request->validate([
                 'name'     => 'required|string|max:255|unique:categories,name',
                 'slug'     => 'required|string|max:255',
-                'brand_id' => 'required|exists:brands,id',
             ]);
 
             // Create category
             $category = Category::create([
                 'name'     => $validated['name'],
                 'slug'     => $validated['slug'],
-                'brand_id' => $validated['brand_id'],
         
             ]);
 
@@ -76,7 +71,7 @@ class CategoryController extends Controller
                 'category_id' => $category->id,
                 'name'        => $category->name,
                 'slug'        => $category->slug,
-                'brand_id'    => $category->brand_id,
+              
                 
             ]);
 
@@ -119,7 +114,6 @@ class CategoryController extends Controller
 
             // Fetch category
             $category = Category::find($id);
-            $brands = Brand::all();
 
             if (!$category) {
                 Log::warning("Category Not Found", ['id' => $id]);
@@ -131,7 +125,7 @@ class CategoryController extends Controller
             Log::info('Category Found', ['category' => $category]);
 
             // Return response
-            return view('menus.category.add-category', compact('category', 'brands', 'mode'));
+            return view('menus.category.add-category', compact('category',  'mode'));
         } catch (\Throwable $e) {
 
             Log::error('Category Show Error', ['error' => $e->getMessage()]);
@@ -149,7 +143,7 @@ class CategoryController extends Controller
 
         $user = Auth::user();
 
-        $query = Category::with('brand')->where('id', $id);
+        $query = Category::orderBy('id', 'desc');
 
         if ($user->role_id != 1) {
             $query->where('warehouse_id', $user->warehouse_id);
@@ -164,10 +158,9 @@ class CategoryController extends Controller
                 ->with('error', 'Category not found or access denied');
         }
 
-        $brands = Brand::all();
         $mode   = 'edit';
 
-        return view('menus.category.add-category', compact('category', 'brands', 'mode'));
+        return view('menus.category.add-category', compact('category', 'mode'));
     }
 
 
@@ -208,19 +201,7 @@ class CategoryController extends Controller
 
             // Warehouse-wise unique validation
             $validated = $request->validate([
-                'brand_id' => 'required|exists:brands,id',
-                'name' => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('categories')
-                        ->when(
-                            $user->role_id != 1,
-                            fn($q) => $q->where('warehouse_id', $user->warehouse_id)
-                        )
-                        ->ignore($category->id),
-                ],
-
+                'name' => 'required|string|max:255|unique:categories,name,',
                 'slug' => 'required|string|max:255',
             ]);
 
@@ -230,7 +211,6 @@ class CategoryController extends Controller
             Log::info('Category Updated Successfully', [
                 'category_id'  => $category->id,
                 'name'         => $category->name,
-                'brand_id'     => $category->brand_id,
                 'warehouse_id' => $category->warehouse_id,
             ]);
 

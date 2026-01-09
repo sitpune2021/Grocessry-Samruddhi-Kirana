@@ -29,13 +29,23 @@ class StockController extends Controller
             ? Warehouse::orderBy('name')->get()
             : Warehouse::where('id', $user->warehouse_id)->get();
 
+        $categories = WarehouseStock::where('warehouse_id', $user->warehouse_id)
+            ->whereNull('warehouse_stock.deleted_at')
+            ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
+            ->whereNull('categories.deleted_at')
+            ->select('categories.id', 'categories.name')
+            ->distinct()
+            ->orderBy('categories.name')
+            ->get();
+
         return view('sale.create', [
             'warehouses'      => $warehouses,
-            'categories'      => Category::orderBy('name')->get(),
+            'categories'      => $categories,
+            'subCategories'   => collect(),
             'products'        => collect(),
             'selectedProduct' => null,
             'availableStock'  => 0,
-            'user'            => $user, // pass user to blade
+            'user'            => $user,
         ]);
     }
 
@@ -119,69 +129,100 @@ class StockController extends Controller
         }
     }
 
-    public function getProductsByCategory($categoryId)
-    {
-        $products = Product::where('category_id', $categoryId)->get();
-        return response()->json($products);
-    }
 
     // Warehouse → Categories
-    public function getCategoriesByWarehouse($warehouseId)
-    {
-        return WarehouseStock::where('warehouse_id', $warehouseId)
-            ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
-            ->select('categories.id', 'categories.name')
-            ->distinct()
-            ->get();
-    }
-
-    // Category → Sub Categories
-    public function getSubCategoriesByWarehouse($warehouseId, $categoryId)
-    {
-        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
-            ->where('warehouse_stock.category_id', $categoryId)
-            ->join('sub_categories', 'sub_categories.id', '=', 'warehouse_stock.sub_category_id')
-            ->select('sub_categories.id', 'sub_categories.name')
-            ->distinct()
-            ->get();
-    }
-
-    // Sub Category → Products
-    public function getProductsBySubCategory($warehouseId, $subCategoryId)
-{
-    $user = Auth::user();
-
-    if ($user->role_id != 1) {
-        $warehouseId = $user->warehouse_id;
-    }
-
-    $products = Product::where('warehouse_id', $warehouseId)
-        ->where('sub_category_id', $subCategoryId)
-        ->select('id', 'name')
-        ->orderBy('name')
-        ->get();
-
-    return response()->json($products);
-}
-
-    // public function getProductsBySubCategory($warehouseId, $subCategoryId)
+    // public function getCategoriesByWarehouse($warehouseId)
     // {
-    //     return WarehouseStock::where([
-    //         'warehouse_id'    => $warehouseId,
-    //         'warehouse_stock.sub_category_id' => $subCategoryId
-    //     ])
-    //         ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
-    //         ->select('products.id', 'products.name')
+    //     return WarehouseStock::where('warehouse_id', $warehouseId)
+    //         ->whereNull('warehouse_stock.deleted_at')
+    //         ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
+    //         ->select('categories.id', 'categories.name')
     //         ->distinct()
+    //         ->orderBy('categories.name')
     //         ->get();
     // }
+
+    // Category → Sub Categories
+    // public function getSubCategories($warehouseId, $categoryId)
+    // {
+    //      return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+    //     ->where('warehouse_stock.category_id', $categoryId)
+    //     ->whereNotNull('warehouse_stock.sub_category_id')
+    //     ->whereNull('warehouse_stock.deleted_at')
+    //     ->join('sub_categories', 'sub_categories.id', '=', 'warehouse_stock.sub_category_id')
+    //     ->whereNull('sub_categories.deleted_at')
+    //     ->select('sub_categories.id', 'sub_categories.name')
+    //     ->distinct()
+    //     ->orderBy('sub_categories.name')
+    //     ->get();
+
+    // }
+
+    public function getSubCategories($warehouseId, $categoryId)
+    {
+        // 🔍 Incoming request log
+        Log::info('Fetching subcategories', [
+            'warehouse_id' => $warehouseId,
+            'category_id'  => $categoryId,
+        ]);
+
+        try {
+            $subCategories = WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+                ->where('warehouse_stock.category_id', $categoryId)
+                ->whereNotNull('warehouse_stock.sub_category_id') // IMPORTANT
+                ->whereNull('warehouse_stock.deleted_at')
+                ->join('sub_categories', 'sub_categories.id', '=', 'warehouse_stock.sub_category_id')
+                ->whereNull('sub_categories.deleted_at')
+                ->select('sub_categories.id', 'sub_categories.name')
+                ->distinct()
+                ->orderBy('sub_categories.name')
+                ->get();
+
+            Log::info('Subcategories fetched successfully', [
+                'count' => $subCategories->count(),
+                'data'  => $subCategories,
+            ]);
+
+            return $subCategories;
+        } catch (\Throwable $e) {
+
+
+            Log::error('Error fetching subcategories', [
+                'warehouse_id' => $warehouseId,
+                'category_id'  => $categoryId,
+                'error'        => $e->getMessage(),
+                'line'         => $e->getLine(),
+                'file'         => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to load subcategories'
+            ], 500);
+        }
+    }
+
+
+   public function getProductsBySubCategory($warehouseId, $subCategoryId)
+{
+    return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+        ->where('warehouse_stock.sub_category_id', $subCategoryId)
+        ->whereNotNull('warehouse_stock.product_id')
+        ->whereNull('warehouse_stock.deleted_at')
+        ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
+        ->whereNull('products.deleted_at') // only if products use SoftDeletes
+        ->select('products.id', 'products.name')
+        ->distinct()
+        ->orderBy('products.name')
+        ->get();
+}
+
 
     // Product → Quantity
     public function getProductQuantity($warehouseId, $productId)
     {
-        return WarehouseStock::where([
-            'warehouse_id' => $warehouseId,
-            'product_id'   => $productId,
-        ])->sum('quantity');
+        return WarehouseStock::where('warehouse_id', $warehouseId)
+        ->where('product_id', $productId)
+        ->whereNull('deleted_at')
+        ->sum('quantity');
     }
 }
