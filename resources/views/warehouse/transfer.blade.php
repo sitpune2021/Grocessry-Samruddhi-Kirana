@@ -24,7 +24,7 @@
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
-                                    District Wise Warehouse-to-Warehouse Stock Transfer
+                                    Master Warehouse to District Warehouse Stock Transfer
                                 </h4>
 
                                 <div class="card-body">
@@ -37,7 +37,7 @@
                                         <input type="hidden" name="category_id" value="1">
 
                                         <!-- Row 1: FROM & TO -->
-                                        <div class="row g-3 mb-3">
+                                       <div class="row g-3 mb-3">
                                             <div class="col-md-6">
                                                 <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
                                                 <select name="from_warehouse_id" id="from_warehouse_id" class="form-select">
@@ -136,11 +136,11 @@
 
                                         @else
 
-                                         <div class="d-flex justify-content-between align-items-center mb-3">
-                                             <div class="d-flex gap-2">
-                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
 
-                                            
+
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
                                                     Add
                                                 </button>
@@ -320,10 +320,6 @@
 
             });
         });
-
-
-
-
 
         /* ========= ADD / UPDATE ========= */
         $('#addItemBtn').on('click', function() {

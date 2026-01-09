@@ -22,22 +22,7 @@
                 <div class="px-3 pt-2">
                     <x-datatable-search />
                 </div>
-                <!-- Warehouse Filter (Super Admin Only) -->
-                @if (auth()->user()->role_id == 1)
-                    <form method="GET" action="{{ route('supplier.index') }}" class="row px-3 mb-3">
-                        <div class="col-md-4">
-                            <select name="warehouse_id" class="form-select" onchange="this.form.submit()">
-                                <option value="">All Warehouses</option>
-                                @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}"
-                                        {{ request('warehouse_id') == $warehouse->id ? 'selected' : '' }}>
-                                        {{ $warehouse->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </form>
-                @endif
+             
  
                 <!-- Table -->
                 <div class="table-responsive mt-3">
@@ -45,11 +30,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="text-center" style="width:80px;">Sr No</th>
-                                <th style="width:15%;">Logo</th>
                                 <th style="width:25%;">Name</th>
-                                <th style="width: 15%;">Bill No</th>
-                                <th style="width: 15%;">Challen no</th>
-                                <th style="width: 15%;">Batch No</th>
                                 <th style="width:15%;">Phone</th>
                                 <th class="text-center" style="width:150px;">Actions</th>
                             </tr>
@@ -61,20 +42,7 @@
                                     <td class="text-center fw-semibold">
                                         {{ $suppliers->firstItem() + $index }}
                                     </td>
- 
-                                    <td class="text-center">
-                                        @if ($item->logo)
-                                            <img src="{{ asset('storage/suppliers/' . $item->logo) }}" width="50"
-                                                height="50" class="rounded border">
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </td>
- 
                                     <td>{{ $item->supplier_name }}</td>
-                                    <td>{{ $item->bill_no }}</td>
-                                    <td>{{ $item->challan_no }}</td>
-                                    <td>{{ $item->batch_no }}</td>
                                     <td>{{ $item->mobile }}</td>
  
                                     <td class="text-center">

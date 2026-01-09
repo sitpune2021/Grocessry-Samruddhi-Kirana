@@ -85,7 +85,7 @@
                                                         placeholder="2.5" required>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label for="igst" class="form-label">IGST (%)</label>
+                                                    <label for="igst" class="form-label">GST (%)</label>
                                                     <input type="number" step="0.01" name="igst" id="igst" class="form-control"
                                                         value="{{ old('igst', $tax->igst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
@@ -124,3 +124,25 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const cgstInput = document.getElementById('cgst');
+        const sgstInput = document.getElementById('sgst');
+        const igstInput = document.getElementById('igst');
+
+        function calculateGST() {
+            let cgst = parseFloat(cgstInput.value) || 0;
+            let sgst = parseFloat(sgstInput.value) || 0;
+
+            let gst = cgst + sgst;
+            igstInput.value = gst.toFixed(2);
+        }
+
+        cgstInput.addEventListener('input', calculateGST);
+        sgstInput.addEventListener('input', calculateGST);
+
+        // Calculate on page load (edit mode)
+        calculateGST();
+    });
+</script>

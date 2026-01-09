@@ -49,32 +49,6 @@
 
                                             <div class="row g-3">
 
-                                                <!-- Brand Name -->
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Brand Name <span class="text-danger">*</span>
-                                                    </label>
-
-                                                    <select name="brand_id" class="form-select" {{ $mode === 'show' ? 'disabled' : '' }}>
-                                                        @if($mode !== 'show')
-                                                        <option value="">Select Brand</option>
-                                                        @foreach ($brands as $brand)
-                                                        <option value="{{ $brand->id }}"
-                                                            {{ old('brand_id', $category->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                                            {{ $brand->name }}
-                                                        </option>
-                                                        @endforeach
-                                                        @else
-                                                        {{-- View mode: show only the selected brand --}}
-                                                        <option>{{ $category->brand->name ?? '-' }}</option>
-                                                        @endif
-                                                    </select>
-
-                                                    @error('brand_id')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
                                                 <!-- Category Name -->
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">

@@ -35,7 +35,6 @@
                             <th class="text-center" style="width: 80px;">Sr No</th>
                             <th style="width: 30%;">Category Name</th>
                             <th style="width: 40%;">Slug</th>
-                            <th style="width: 40%;">Brand Name</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
                     </thead>
@@ -51,7 +50,6 @@
                             </td>
                             <td class="text-muted">{{ $category->slug }}</td>
                             
-                            <td>{{ $category->brand?->name ?? '-' }}</td>
                             <td class="text-center">
                                 <x-action-buttons
                                     :view-url="route('category.show', $category->id)"

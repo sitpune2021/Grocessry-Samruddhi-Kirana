@@ -25,11 +25,11 @@
                                     <div class="card-header d-flex align-items-center">
                                         <h4 class="mb-0 flex-grow-1">
                                             @if ($mode === 'add')
-                                            Add Warehouse
+                                                Add Warehouse
                                             @elseif($mode === 'edit')
-                                            Edit Warehouse
+                                                Edit Warehouse
                                             @else
-                                            View Warehouse
+                                                View Warehouse
                                             @endif
                                         </h4>
                                     </div>
@@ -40,7 +40,7 @@
                                             method="POST">
                                             @csrf
                                             @if ($mode === 'edit')
-                                            @method('PUT')
+                                                @method('PUT')
                                             @endif
                                             <div class="row">
 
@@ -54,7 +54,7 @@
                                                             placeholder="Warehouse Name"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('name')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -77,7 +77,7 @@
                                                             Taluka</option>
                                                     </select>
                                                     @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -89,15 +89,38 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
                                                         @foreach ($warehouses as $w)
+<<<<<<< HEAD
+                                                            <option value="{{ $w->id }}"
+                                                                data-type="{{ $w->type }}"
+                                                                {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
+                                                            </option>
+=======
                                                         <option value="{{ $w->id }}"
                                                             data-type="{{ $w->type }}"
+                                                            {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }}({{ $w->district->name ?? 'N/A' }})
+                                                        </option>
+>>>>>>> 08dfd4843088d84033340d0782a98eb1ceff8bb6
+                                                        @endforeach
+                                                    </select>
+
+                                                    <!-- <select name="parent_id" id="parent_id" class="form-select"
+                                                    //******************Do Not Remove Advance TO Do Later******************
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Parent</option>
+                                                        @foreach ($warehouses as $w)
+                                                        <option value="{{ $w->id }}"
+                                                            data-type="{{ $w->type }}"
+                                                            data-district-id="{{ $w->district_id }}"
                                                             {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
                                                             {{ $w->name }} ({{ ucfirst($w->type) }})
                                                         </option>
                                                         @endforeach
-                                                    </select>
+                                                    </select> -->
+
                                                     @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -109,14 +132,14 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
                                                         @foreach ($districts as $district)
-                                                        <option value="{{ $district->id }}"
-                                                            {{ old('district_id', $warehouse->district_id ?? '') == $district->id ? 'selected' : '' }}>
-                                                            {{ $district->name }}
-                                                        </option>
+                                                            <option value="{{ $district->id }}"
+                                                                {{ old('district_id', $warehouse->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                                {{ $district->name }}
+                                                            </option>
                                                         @endforeach
                                                     </select>
                                                     @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -127,15 +150,15 @@
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->taluka))
-                                                        <option value="{{ $warehouse->taluka_id }}" selected>
-                                                            {{ $warehouse->taluka->name }}
-                                                        </option>
+                                                            <option value="{{ $warehouse->taluka_id }}" selected>
+                                                                {{ $warehouse->taluka->name }}
+                                                            </option>
                                                         @else
-                                                        <option value="">Select Taluka</option>
+                                                            <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                     @error('type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -146,20 +169,22 @@
                                                     <textarea name="address" class="form-control" placeholder="address" rows="2"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $warehouse->address ?? '' }}</textarea>
                                                     @error('address')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
+                                                @if($mode !== 'add')
+                                                {{-- GSTIN --}}
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Contact Person <span
-                                                            class="text-danger">*</span></label>
+                                                                class="text-danger">*</span></label>
                                                     <input type="text" name="contact_person" class="form-control"
                                                         placeholder="contact Person Name"
                                                         value="{{ $warehouse->contact_person ?? '' }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                     @error('contact_person')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -175,35 +200,26 @@
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
 
                                                         @error('contact_number')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>
                                                 </div>
 
-                                                {{-- User Name --}}
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">User Name</label>
-                                                        <input type="text" name="user_name" class="form-control"
-                                                            placeholder="User Name"
-                                                            value="{{ $warehouse->contact_person ?? '' }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    </div>
-                                                </div> -->
 
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Email<span
-                                                                class="text-danger">*</span></label>
+                                                            class="text-danger">*</span></label>
                                                         <input type="email" name="email" class="form-control"
                                                             placeholder="Email" value="{{ $warehouse->email ?? '' }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
 
                                                         @error('email')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                            <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>
+                                                    @endif
                                                 </div>
 
                                                 {{-- Buttons --}}
@@ -212,11 +228,11 @@
                                                         <a href="{{ route('warehouse.index') }}"
                                                             class="btn btn-success">Cancel</a>
                                                         @if ($mode === 'add')
-                                                        <button type="submit" class="btn btn-success">Save
-                                                            Warehouse</button>
+                                                            <button type="submit" class="btn btn-success">Save
+                                                                Warehouse</button>
                                                         @elseif($mode === 'edit')
-                                                        <button type="submit" class="btn btn-success">Update
-                                                            Warehouse</button>
+                                                            <button type="submit" class="btn btn-success">Update
+                                                                Warehouse</button>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -237,6 +253,46 @@
     <!-- / Layout wrapper -->
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+     {{-- //************Do Not Remove Advance TO Do Later  ********************** --}}
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const warehouseType = document.getElementById('warehouseType');
+            const parentSelect = document.getElementById('parent_id');
+            const districtSelect = document.getElementById('district_id');
+
+            function autoSetDistrictFromParent() {
+                const selectedParent = parentSelect.options[parentSelect.selectedIndex];
+                if (!selectedParent) return;
+
+                const districtId = selectedParent.getAttribute('data-district-id');
+
+                if (districtId) {
+                    districtSelect.value = districtId;
+                }
+            }
+
+            // When warehouse type changes
+            warehouseType.addEventListener('change', function() {
+                if (this.value === 'district' || this.value === 'taluka') {
+                    autoSetDistrictFromParent();
+                }
+            });
+
+            // When parent warehouse changes
+            parentSelect.addEventListener('change', function() {
+                if (warehouseType.value === 'district' || warehouseType.value === 'taluka') {
+                    autoSetDistrictFromParent();
+                }
+            });
+
+            // Auto-trigger on edit page load
+            if (warehouseType.value === 'district' || warehouseType.value === 'taluka') {
+                autoSetDistrictFromParent();
+            }
+        });
+    </script> -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -270,7 +326,7 @@
 
                     if (selectedType === 'district') {
                         opt.style.display =
-                            (type === 'master' || opt.value === '') ? 'block' : 'none';
+                            (type === 'Master' || opt.value === '') ? 'block' : 'none';
                     } else if (selectedType === 'taluka') {
                         opt.style.display =
                             (type === 'district' || opt.value === '') ? 'block' : 'none';
@@ -289,6 +345,9 @@
             toggleParent(); // page load
 
 
+            /* ===============================
+               Taluka dynamic loading
+            =============================== */
             function loadTalukas(districtId, selectedTalukaId = null) {
                 if (!districtId) {
                     talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
@@ -315,11 +374,11 @@
             });
 
             // ✅ AUTO LOAD ON EDIT PAGE
-            @if(isset($warehouse) && $warehouse -> district_id)
-            loadTalukas(
-                {{$warehouse -> district_id }},
-                {{$warehouse -> taluka_id ?? 'null'}}
-            );
+            @if (isset($warehouse) && $warehouse->district_id)
+                loadTalukas(
+                    {{ $warehouse->district_id }},
+                    {{ $warehouse->taluka_id ?? 'null' }}
+                );
             @endif
 
         });
