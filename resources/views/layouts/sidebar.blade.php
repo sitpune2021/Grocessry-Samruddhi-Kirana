@@ -41,7 +41,7 @@
                     <li><a href="{{ route('brands.index') }}">Brand</a></li>
                     <li><a href="{{ route('category.index') }}">Category</a></li>
                     <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    <li><a href="{{ route('units.create') }}">Unit</a></li>
+                    <li><a href="{{ route('units.index') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
 
                 </ul>
