@@ -77,8 +77,6 @@
                                     'warehouse' => 'Warehouse',
                                     'stock' => 'Stock',
                                     'batches' => 'Batches',
-                                    'expiry_alert' => 'Expiry Alert',
-                                    'sale' => 'Sale',
                                     'warehouse_transfer' => 'Warehouse Transfer',
                                     ];
 
