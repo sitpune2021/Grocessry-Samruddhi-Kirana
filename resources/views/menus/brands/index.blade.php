@@ -11,7 +11,7 @@
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title mb-0">Brands</h5>
                 </div>
-                <div class="col-md-auto ms-auto">
+                {{-- <div class="col-md-auto ms-auto">
                     @if(hasPermission('brands', 'create'))
                     <a href="{{ route('brands.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
@@ -19,6 +19,16 @@
                     </a>
                     @endif
                 </div>
+ --}}
+                <div class="col-md-auto ms-auto">
+                    @if(hasPermission('brands.create'))
+                    <a href="{{ route('brands.create') }}"
+                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        <i class="bx bx-plus"></i> Add Brands
+                    </a>
+                    @endif
+                </div>
+ 
 
             </div>
 
@@ -86,12 +96,30 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="text-center" style="white-space:nowrap;">
+                            <!-- <td class="text-center" style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('brands.show', $brand->id)"
                                     :edit-url="route('brands.edit', $brand->id)"
                                     :delete-url="route('brands.destroy', $brand->id)" />
-                            </td>
+                            </td> -->
+
+                            <td class="text-center" style="white-space:nowrap;" >
+                                @if(hasPermission('brands.view'))
+                                <a href="{{ route('brands.show', $brand->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('brands.edit'))
+                                    <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                 @endif
+                                @if(hasPermission('brands.delete'))
+                                    <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Delete brand?')" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
 
                         </tr>
                         @empty
