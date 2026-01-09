@@ -21,36 +21,29 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $user = Auth::user();
+   public function index()
+{
+    Log::info('Product Index Page Loaded');
 
-        Log::info('Product Index Page Loaded', [
-            'user_id'      => $user->id,
-            'warehouse_id' => $user->warehouse_id,
-            'role_id'      => $user->role_id,
+    try {
+        $products = Product::with(['category', 'tax'])
+            ->latest()
+            ->paginate(10);
+
+        return view('menus.product.index', compact('products'));
+
+    } catch (\Throwable $e) {
+
+        Log::error('Product Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
         ]);
 
-        try {
-            $products = Product::with(['category','tax'])
-                ->when($user->role_id != 1, function ($query) use ($user) {
-                    $query->where('warehouse_id', $user->warehouse_id);
-                })
-                ->latest()
-                ->paginate(10);
-
-            return view('menus.product.index', compact('products'));
-        } catch (\Throwable $e) {
-
-            Log::error('Product Index Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->with('error', 'Unable to load products');
-        }
+        return redirect()->back()
+            ->with('error', 'Unable to load products');
     }
+}
+
 
 
     /**
@@ -82,13 +75,10 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
-
         Log::info('Product Store Request', [
-            'user_id'      => $user->id,
-            'warehouse_id' => $user->warehouse_id,
+            'request' => $request->all(),
         ]);
-
+             
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
@@ -114,7 +104,7 @@ class ProductController extends Controller
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
                 'tax_id' => 'required|exists:taxes,id',
-             
+
             ], [
                 'name.unique' => 'This product name already exists!',
             ]);
@@ -140,6 +130,20 @@ class ProductController extends Controller
                 $validated['discount_value'] = 0;
             }
 
+            // if ($request->hasFile('product_images')) {
+
+            //     $imageNames = [];
+
+            //     foreach ($request->file('product_images') as $image) {
+            //         $name = time() . '_' . $image->getClientOriginalName();
+            //         $image->storeAs('products', $name, 'public');
+            //         $imageNames[] = $name;
+            //     }
+
+            //     $validated['product_images'] = json_encode($imageNames);
+            // }
+
+
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
@@ -150,10 +154,10 @@ class ProductController extends Controller
                     $imageNames[] = $name;
                 }
 
-                $validated['product_images'] = json_encode($imageNames);
+                // Save as ARRAY (Laravel will JSON encode)
+                $validated['product_images'] = $imageNames;
             }
 
-            $validated['warehouse_id'] = $user->warehouse_id;
 
             $product = Product::create($validated);
 
@@ -187,7 +191,7 @@ class ProductController extends Controller
         try {
             Log::info('Product View Request', ['id' => $id]);
 
-             $product = Product::with('tax')->findOrFail($id);
+            $product = Product::with('tax')->findOrFail($id);
 
             if (!$product) {
                 Log::warning('Product Not Found', ['id' => $id]);
@@ -235,7 +239,7 @@ class ProductController extends Controller
             $taxes = Tax::where('is_active', 1)->get();
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories','taxes'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -269,7 +273,12 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required',
-                'name'            => ['required', 'string', 'max:255', Rule::unique('products', 'name')],
+                'name'            => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name')->ignore($product->id),
+                ],
                 'sku'             => 'nullable|string|max:255',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
@@ -277,7 +286,7 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
                 'tax_id' => 'required|exists:taxes,id',
@@ -374,14 +383,12 @@ class ProductController extends Controller
         }
     }
 
-    //get category by Brand
-
-    public function getCategoriesByBrand($brandId)
+    public function getCategories()
     {
-
-        return Category::where('brand_id', $brandId)
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        return response()->json(
+            Category::select('id', 'name')
+                ->orderBy('name')
+                ->get()
+        );
     }
 }

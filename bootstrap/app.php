@@ -5,6 +5,7 @@
     use Illuminate\Foundation\Application;
     use Illuminate\Foundation\Configuration\Exceptions;
     use Illuminate\Foundation\Configuration\Middleware;
+    use App\Http\Middleware\ApiAuthenticate;
 
     return Application::configure(basePath: dirname(__DIR__))
         ->withRouting(
@@ -18,6 +19,8 @@
             ]);
             $middleware->alias([
                 'permission' => PermissionMiddleware::class,
+                'api.auth'   => ApiAuthenticate::class, // 👈 THIS LINE ADD
+
             ]);
         })
         ->withMiddleware(function ($middleware) {

@@ -11,11 +11,14 @@
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title">Stock In Warehouse</h5>
                     </div>
+
+                     @if (auth()->check() && auth()->user()->role_id != 1)
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-success">
                             <i class="bx bx-plus"></i> Stock In Warehouse
                         </a>
                     </div>
+                    @endif
                 </div>
 
                 <!-- Search -->

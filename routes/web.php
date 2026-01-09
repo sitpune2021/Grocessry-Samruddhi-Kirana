@@ -44,10 +44,11 @@ use App\Http\Controllers\WarehouseStockReturnController;
 use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\DistrictToDistrictTransferController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
-
+use App\Http\Controllers\TalukashopTransferController;
 
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 //Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -98,8 +99,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('brands', BrandController::class);
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
-    Route::get('get-categories-by-brand/{brand}', [ProductController::class, 'getCategoriesByBrand']);
+    // Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
+    Route::get('/get-categories', [ProductController::class, 'getCategories']);
+    Route::get('/get-sub-categories/{categoryId}', [ProductController::class, 'getSubCategories']);
+
 
 
     Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
@@ -116,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
     );
+    Route::get('/get-products-by-sub-category/{subCategoryId}', [stockWarehouseController::class, 'getProductBySubCategory'])->name('stockProduct.bySubCategory');
 
 
     Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
@@ -391,6 +396,121 @@ Route::middleware(['auth'])->group(function () {
             );
         });
 
+  //////////////////////////
+
+     //taluka-shop-transfer
+    Route::prefix('taluka-shop')
+        ->name('taluka-shop.')
+        ->group(function () {
+
+            Route::get('/', [TalukashopTransferController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [TalukashopTransferController::class, 'create'])
+                ->name('create');
+
+            Route::post('/store', [TalukashopTransferController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [TalukashopTransferController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{id}', [TalukashopTransferController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [TalukashopTransferController::class, 'destroy'])
+                ->name('destroy');
+
+            Route::get('/{id}', [TalukashopTransferController::class, 'show'])
+                ->name('show');
+
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [TalukashopTransferController::class, 'getProductsByCategory']
+            );
+
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [TalukashopTransferController::class, 'getBatchesByProduct']
+            );
+
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [TalukashopTransferController::class, 'getWarehouseStock']
+            );
+
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [TalukashopTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
+
+            Route::get(
+                '/ajax/product-batches',
+                [TalukashopTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
+
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [TalukashopTransferController::class, 'getBatchStock']
+            );
+        });
+/////////////////////
+ // district to district-transfer
+    Route::prefix('district-district')
+        ->name('district-district.')
+        ->group(function () {
+
+            Route::get('/', [DistrictToDistrictTransferController::class, 'index'])
+                ->name('index');
+
+            Route::get('/create', [DistrictToDistrictTransferController::class, 'create'])
+                ->name('create');
+
+            Route::post('/store', [DistrictToDistrictTransferController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{id}/edit', [DistrictToDistrictTransferController::class, 'edit'])
+                ->name('edit');
+
+            Route::put('/{id}', [DistrictToDistrictTransferController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{id}', [DistrictToDistrictTransferController::class, 'destroy'])
+                ->name('destroy');
+
+            Route::get('/{id}', [DistrictToDistrictTransferController::class, 'show'])
+                ->name('show');
+
+            Route::get(
+                '/get-products-by-category/{category_id}',
+                [DistrictToDistrictTransferController::class, 'getProductsByCategory']
+            );
+
+            Route::get(
+                '/get-batches-by-product/{product_id}',
+                [DistrictToDistrictTransferController::class, 'getBatchesByProduct']
+            );
+
+            Route::get(
+                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
+                [DistrictToDistrictTransferController::class, 'getWarehouseStock']
+            );
+
+            Route::get(
+                '/ajax/warehouse/{warehouse_id}/categories',
+                [DistrictToDistrictTransferController::class, 'getCategoriesByWarehouse']
+            )->name('ajax.warehouse.categories');
+
+            Route::get(
+                '/ajax/product-batches',
+                [DistrictToDistrictTransferController::class, 'getBatchesByProducts']
+            )->name('ajax.product.batches');
+
+            Route::get(
+                '/get-batch-stock/{batch}',
+                [DistrictToDistrictTransferController::class, 'getBatchStock']
+            );
+        });
 
     // RETAILERS
     Route::prefix('retailers')->name('retailers.')->group(function () {
@@ -504,6 +624,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
             ->name('show');
+            
         Route::get(
             '/get-taluka-warehouses/{district_warehouse_id}',
             [GroceryShopController::class, 'getTalukaWarehouses']
@@ -581,14 +702,15 @@ Route::middleware(['auth'])->group(function () {
         ->name('sale.create');
     Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
-    Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
-    Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategoriesByWarehouse']);
+    // Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
+     // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+    Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategories']);
+   
     Route::get(
         '/sell/ws/products/{warehouse}/{subCategory}',
         [StockController::class, 'getProductsBySubCategory']
     )->middleware('auth');
 
-    // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/quantity/{warehouse}/{product}', [StockController::class, 'getProductQuantity']);
 
     // AJAX route to get products by category
@@ -808,4 +930,3 @@ Route::post('contact-details', [WebsiteController::class, 'storeContact'])->name
 Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
 Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
     ->name('shop.filter');
-

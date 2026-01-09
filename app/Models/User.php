@@ -37,8 +37,9 @@ class User extends Authenticatable
         'status',
         'last_login_at',
         'warehouse_id',
-        'otp',              // ✅ ADD
-        'otp_expires_at'
+        'otp',             
+        'otp_expires_at',
+        'is_online',
     ];
 
     /**

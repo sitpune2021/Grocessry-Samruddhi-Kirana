@@ -58,9 +58,9 @@ class stockWarehouseController extends Controller
         $userWarehouse = $user->warehouse;
         $readonly = true; // ✅ Make inputs readonly
 
-        // $warehouses = Warehouse::all();
+       
         $categories = Category::all();
-        $products = Product::all(); // ADD THIS
+        $products = collect(); 
         $product_batches = ProductBatch::all();
         $sub_categories = []; // initially empty
         $suppliers = Supplier::select('id', 'supplier_name')->get();
@@ -335,5 +335,16 @@ class stockWarehouseController extends Controller
         $categories = Category::where('warehouse_id', $warehouseId)->get();
 
         return response()->json($categories);
+    }
+
+     /**
+     * Get products by sub category (AJAX)
+     */
+    public function getProductBySubCategory($subCategoryId)
+    {
+        return Product::where('sub_category_id', $subCategoryId)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
     }
 }
