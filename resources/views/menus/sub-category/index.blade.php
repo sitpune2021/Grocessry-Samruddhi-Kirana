@@ -5,7 +5,11 @@
 
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
-
+ @php
+            $canView = hasPermission('product.view');
+            $canEdit = hasPermission('product.edit');
+            $canDelete = hasPermission('product.delete');
+            @endphp
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
@@ -36,7 +40,9 @@
                             <th style="width: 30%;">Category</th>
                             <th style="width: 30%;">Sub Category</th>
                             <th style="width: 40%;">Slug</th>
+                             @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -58,7 +64,7 @@
                             </td>
 
                             {{-- Actions --}}
-    
+     @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;" >
                                 @if(hasPermission('sub_category.view'))
                                 <a href="{{ route('sub-category.show', $item->id) }}" class="btn btn-sm btn-primary">View</a>
@@ -76,7 +82,7 @@
                                     </form>
                                     @endif
                                 </td>
-
+@endif
                         </tr>
                         @empty
                         <tr>

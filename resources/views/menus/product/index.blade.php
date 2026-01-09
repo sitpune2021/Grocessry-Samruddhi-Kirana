@@ -3,6 +3,12 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
+    @php
+    $canView = hasPermission('product.view');
+    $canEdit = hasPermission('product.edit');
+    $canDelete = hasPermission('product.delete');
+    @endphp
+
     <div class="card">
         <div class="card-datatable text-nowrap">
 
@@ -12,7 +18,7 @@
                     <h5 class="card-title">Product</h5>
                 </div>
 
-                @if(hasPermission('product', 'create'))
+                @if(hasPermission('product.create'))
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('product.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Add Product
@@ -34,13 +40,15 @@
 
                             <th>Category</th>
                             <th>Product Name</th>
-                           
+
                             <th>Base Price</th>
                             <th>Selling Price</th>
                             <th>MRP</th>
                             <th>GST (%)</th>
                             <!-- <th>Stock</th> -->
+                            @if($canView || $canEdit || $canDelete)
                             <th>Actions</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -71,14 +79,14 @@
                             <td>{{ $product->category->name ?? '-' }}</td>
 
                             <td>{{ $product->name }}</td>
-                            
+
                             <td>₹ {{ number_format($product->base_price, 2) }}</td>
                             <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                             <td>₹{{ number_format($product->mrp, 2) }}</td>
                             <td>{{ $product?->tax?->igst ?? '-' }}</td>
                             <!-- <td>{{ $product->stock ?? '-' }}</td> -->
                             {{-- Actions --}}
-
+                            @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('product.view'))
                                 <a href="{{ route('product.show', $product->id) }}" class="btn btn-sm btn-primary">View</a>
@@ -96,6 +104,7 @@
                                 </form>
                                 @endif
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

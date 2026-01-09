@@ -73,9 +73,11 @@
                                     'sub_category' => 'Sub Category',
                                     'unit' => 'Unit',
                                     'product' => 'Product',
-                                    'batches' => 'Batches',
+                                    'supplier' => 'Supplier',
                                     'warehouse' => 'Warehouse',
-                                    'add_stock' => 'Add Stock',
+                                    'stock' => 'Stock',
+                                    'batches' => 'Batches',
+                                    'expiry_alert' => 'Expiry Alert',
                                     'sale' => 'Sale',
                                     'warehouse_transfer' => 'Warehouse Transfer',
                                     ];
@@ -131,7 +133,6 @@
                                         @endif
                                     </tr>
                                     @endforeach
-
 
                                 </tbody>
 
