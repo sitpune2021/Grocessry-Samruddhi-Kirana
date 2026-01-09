@@ -32,24 +32,14 @@ class WarehouseTransferController extends Controller
         return view('warehouse.index', compact('transfers'));
     }
 
-    public function create()
+     public function create()
     {
-        $user = Auth::user();
-
-        $fromWarehouse = Warehouse::where('id', $user->warehouse_id)->first();
-
-        $toWarehouses = Warehouse::where('status', 'active')
-            ->where('type', 'district') // IMPORTANT
-            ->orderBy('name')
-            ->get();
-            
         return view('warehouse.transfer', [
-            'fromWarehouse' => $fromWarehouse,
-            'toWarehouses'  => $toWarehouses,
-            'categories'    => collect(),
-            'products'      => collect(),
-            'batches'       => collect(),
-            'transfer'      => null,
+            'warehouses' => Warehouse::where('status', 'active')->get(),
+            'categories' => collect(), 
+            'products'   => collect(), 
+            'batches'    => collect(), 
+            'transfer'   => null,
         ]);
     }
 

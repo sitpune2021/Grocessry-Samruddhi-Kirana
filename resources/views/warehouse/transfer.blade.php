@@ -24,7 +24,7 @@
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
-                                    Maste Warehouse to District Warehouse Stock Transfer
+                                    Master Warehouse to District Warehouse Stock Transfer
                                 </h4>
 
                                 <div class="card-body">
@@ -37,52 +37,32 @@
                                         <input type="hidden" name="category_id" value="1">
 
                                         <!-- Row 1: FROM & TO -->
-                                        <div class="row g-3 mb-3">
+                                       <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label class="form-label">
-                                                    From Warehouse <span class="text-danger">*</span>
-                                                </label>
-
-                                                <input type="text"
-                                                    class="form-control"
-                                                    value="{{ $fromWarehouse->name }}"
-                                                    readonly>
-
-                                                <input type="hidden"
-                                                    name="from_warehouse_id"
-                                                    value="{{ $fromWarehouse->id }}">
-
+                                                <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
+                                                <select name="from_warehouse_id" id="from_warehouse_id" class="form-select">
+                                                    <option value="">Select</option>
+                                                    @foreach($warehouses as $w)
+                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->from_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                                                    @endforeach
+                                                </select>
                                                 @error('from_warehouse_id')
                                                 <span class="text-danger mt-1">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
-
                                             <div class="col-md-6">
-                                                <label for="to_warehouse_id" class="form-label">
-                                                    To Warehouse <span class="text-danger">*</span>
-                                                </label>
-
-                                                <select name="to_warehouse_id"
-                                                    id="to_warehouse_id"
-                                                    class="form-select"
-                                                    required>
-
-                                                    <option value="">Select District Warehouse</option>
-
-                                                    @foreach($toWarehouses as $w)
-                                                    <option value="{{ $w->id }}"
-                                                        {{ old('to_warehouse_id') == $w->id ? 'selected' : '' }}>
-                                                        {{ $w->name }}
-                                                    </option>
+                                                <label for="to_warehouse_id" class="form-label">To Warehouse <span class="text-danger">*</span></label>
+                                                <select name="to_warehouse_id" id="to_warehouse_id" class="form-select">
+                                                    <option value="">Select</option>
+                                                    @foreach($warehouses as $w)
+                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->to_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
                                                     @endforeach
                                                 </select>
-
                                                 @error('to_warehouse_id')
                                                 <span class="text-danger mt-1">{{ $message }}</span>
                                                 @enderror
                                             </div>
-
                                         </div>
 
                                         <!-- Row 2: PRODUCT -->
