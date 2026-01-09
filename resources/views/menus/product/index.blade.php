@@ -34,7 +34,7 @@
 
                             <th>Category</th>
                             <th>Product Name</th>
-                            <th>SKU</th>
+                           
                             <th>Base Price</th>
                             <th>Selling Price</th>
                             <th>MRP</th>
@@ -71,15 +71,30 @@
                             <td>{{ $product->category->name ?? '-' }}</td>
 
                             <td>{{ $product->name }}</td>
-                            <td>{{ $product->sku ?? '-' }}</td>
+                            
                             <td>₹ {{ number_format($product->base_price, 2) }}</td>
                             <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                             <td>₹{{ number_format($product->mrp, 2) }}</td>
-                            <td>{{ $product?->tax?->name ?? '-' }}</td>
+                            <td>{{ $product?->tax?->igst ?? '-' }}</td>
                             <!-- <td>{{ $product->stock ?? '-' }}</td> -->
                             {{-- Actions --}}
-                            <td>
-                                <x-action-buttons :view-url="route('product.show', $product->id)" :edit-url="route('product.edit', $product->id)" :delete-url="route('product.destroy', $product->id)" />
+
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('product.view'))
+                                <a href="{{ route('product.show', $product->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('product.edit'))
+                                <a href="{{route('product.edit', $product->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if(hasPermission('product.delete'))
+                                <form action="{{ route('product.destroy', $product->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete product?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
                             </td>
                         </tr>
                         @empty

@@ -70,6 +70,8 @@
                                     'role_permission' => 'Role Permission',
                                     'brands' => 'Brands',
                                     'category' => 'Category',
+                                    'sub_category' => 'Sub Category',
+                                    'unit' => 'Unit',
                                     'product' => 'Product',
                                     'batches' => 'Batches',
                                     'warehouse' => 'Warehouse',

@@ -12,7 +12,7 @@
                     <h5 class="card-title mb-0">Sub Category</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    @if(hasPermission('category', 'create'))
+                    @if(hasPermission('sub_category.create'))
                     <a href="{{ route('sub-category.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Sub Category
@@ -58,12 +58,24 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td>
-                                <x-action-buttons
-                                    :view-url="route('sub-category.show', $item->id)"
-                                    :edit-url="route('sub-category.edit', $item->id)"
-                                    :delete-url="route('sub-category.destroy', $item->id)" />
-                            </td>
+    
+                            <td class="text-center" style="white-space:nowrap;" >
+                                @if(hasPermission('sub_category.view'))
+                                <a href="{{ route('sub-category.show', $item->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('sub_category.edit'))
+                                    <a href="{{route('sub-category.edit', $item->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                 @endif
+                                @if(hasPermission('sub_category.delete'))
+                                    <form action="{{ route('sub-category.destroy', $item->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Delete subcategory?')" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
 
                         </tr>
                         @empty
