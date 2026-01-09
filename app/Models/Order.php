@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,7 +16,12 @@ class Order extends Model
         'delivery_charge',
         'discount',
         'total_amount',
-        'status'
+        'status',
+        'delivery_agent_id',
+        'pickup_proof',
+        'coupon_code',
+        'order_number',
+        'coupon_discount',
     ];
 
     public function items()
@@ -26,5 +32,9 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }
