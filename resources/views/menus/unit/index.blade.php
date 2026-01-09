@@ -6,6 +6,12 @@
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
 
+            @php
+            $canView = hasPermission('product.view');
+            $canEdit = hasPermission('product.edit');
+            $canDelete = hasPermission('product.delete');
+            @endphp
+
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
@@ -35,7 +41,9 @@
                             <th>Sr No</th>
                             <th>Unit Name</th>
                             <th>Short Name</th>
+                            @if($canView || $canEdit || $canDelete)
                             <th>Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -47,24 +55,25 @@
                             <td>{{ $unit->short_name }}</td>
 
                             {{-- Actions --}}
-                                         
-                            <td class="text-center" style="white-space:nowrap;" >
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('unit.view'))
                                 <a href="{{ route('units.show', $unit->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
                                 @if(hasPermission('unit.edit'))
-                                    <a href="{{route('units.edit', $unit->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                 @endif
+                                <a href="{{route('units.edit', $unit->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
                                 @if(hasPermission('unit.delete'))
-                                    <form action="{{ route('units.destroy', $unit->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button onclick="return confirm('Delete unit?')" class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
-                                    @endif
-                                </td>
+                                <form action="{{ route('units.destroy', $unit->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete unit?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
