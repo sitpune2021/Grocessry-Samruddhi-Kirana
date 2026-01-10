@@ -4,13 +4,30 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\DeliveryAddress;
+use App\Models\Address;
+
 use Validator;
+
 class AddressController extends Controller
 {
+    private function checkCustomer($user)
+    {
+        if (!$user->role || strtolower($user->role->name) !== 'customer') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only customers can manage addresses'
+            ], 403);
+        }
+        return null;
+    }
+
+    // 📄 List addresses
     public function list(Request $request)
     {
-        $addresses = Addresse::where('user_id', $request->user()->id)
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $addresses = Address::where('user_id', $user->id)
             ->orderByDesc('is_default')
             ->get();
 
@@ -20,33 +37,33 @@ class AddressController extends Controller
         ]);
     }
 
-    // ✅ Add address
+    // ➕ Add address
     public function add(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
+        $user = $request->user();
+
+        // 🔐 Customer role check
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        // ✅ Validation (NO Validator facade)
+        $request->validate([
+            'name' => 'required|string',
             'mobile' => 'required|digits:10',
-            'address_line' => 'required',
-            'city' => 'required',
-            'state' => 'required',
+            'address_line' => 'required|string',
+            'city' => 'required|string',
+            'state' => 'required|string',
             'pincode' => 'required|digits:6'
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ]);
-        }
-
-        // Handle default address
+        // ⭐ Handle default address
         if ($request->is_default == 1) {
-            DeliveryAddress::where('user_id', $request->user()->id)
+            Address::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
-        $address = DeliveryAddress::create([
-            'user_id' => $request->user()->id,
+        // ✅ Create address
+        $address = Address::create([
+            'user_id' => $user->id,
             'name' => $request->name,
             'mobile' => $request->mobile,
             'address_line' => $request->address_line,
@@ -66,26 +83,40 @@ class AddressController extends Controller
         ]);
     }
 
-    // ✅ Update address
+    // ✏️ Update address
     public function update(Request $request, $id)
     {
-        $address = DeliveryAddress::where('id', $id)
-            ->where('user_id', $request->user()->id)
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $address = Address::where('id', $id)
+            ->where('user_id', $user->id)
             ->first();
 
         if (!$address) {
             return response()->json([
                 'status' => false,
                 'message' => 'Address not found'
-            ]);
+            ], 404);
         }
 
         if ($request->is_default == 1) {
-            DeliveryAddress::where('user_id', $request->user()->id)
+            Address::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
-        $address->update($request->all());
+        $address->update($request->only([
+            'name',
+            'mobile',
+            'address_line',
+            'landmark',
+            'city',
+            'state',
+            'pincode',
+            'latitude',
+            'longitude',
+            'is_default'
+        ]));
 
         return response()->json([
             'status' => true,
@@ -94,18 +125,21 @@ class AddressController extends Controller
         ]);
     }
 
-    // ✅ Delete address
+    // ❌ Delete address
     public function delete(Request $request, $id)
     {
-        $address = DeliveryAddress::where('id', $id)
-            ->where('user_id', $request->user()->id)
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $address = Address::where('id', $id)
+            ->where('user_id', $user->id)
             ->first();
 
         if (!$address) {
             return response()->json([
                 'status' => false,
                 'message' => 'Address not found'
-            ]);
+            ], 404);
         }
 
         $address->delete();

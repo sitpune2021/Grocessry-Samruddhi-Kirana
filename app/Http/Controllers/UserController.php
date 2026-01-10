@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 
 class UserController extends Controller
@@ -150,9 +151,9 @@ class UserController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // /**
+    //  * Update the specified resource in storage.
+    //  */
     public function update(Request $request, string $id)
     {
         Log::info('User Update Request Received', [
@@ -271,55 +272,57 @@ class UserController extends Controller
 
     public function updateProfile(Request $request)
     {
-        // Always get Eloquent model
-        $user = User::findOrFail(Auth::id());
-
-        // Validation (no confirm password)
         $request->validate([
             'first_name'     => 'required|string|max:255',
             'last_name'      => 'required|string|max:255',
-            'mobile'         => 'nullable|string|max:20',
-            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'new_password'   => 'nullable|min:6',
-            'password'       => 'nullable', // current password
+            'mobile'         => 'required',
+            'password'       => 'required_with:new_password',
+            'new_password'   => 'nullable|string|min:6',
+            'profile_photo'  => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        /**
-         * PASSWORD UPDATE
-         */
+        $user = User::findOrFail(Auth::id());
+
+        // -----------------------
+        // BASIC PROFILE UPDATE
+        // -----------------------
+        $user->first_name = $request->first_name;
+        $user->last_name  = $request->last_name;
+        $user->mobile     = $request->mobile;
+
+        // -----------------------
+        // PASSWORD UPDATE
+        // -----------------------
         if ($request->filled('new_password')) {
-
-            if (!$request->filled('password')) {
-                return back()->withErrors([
-                    'password' => 'Current password is required'
-                ]);
-            }
-
             if (!Hash::check($request->password, $user->password)) {
                 return back()->withErrors([
                     'password' => 'Current password is incorrect'
                 ]);
             }
-
             $user->password = Hash::make($request->new_password);
         }
 
-        /**
-         * PROFILE UPDATE
-         */
-        $user->first_name = $request->first_name;
-        $user->last_name  = $request->last_name;
-        $user->mobile     = $request->mobile;
-
-        /**
-         * PHOTO
-         */
+        // -----------------------
+        // PROFILE PHOTO UPLOAD
+        // -----------------------
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profiles', 'public');
-            $user->profile_photo = $path;
+
+            // Delete old photo
+            if ($user->profile_photo && Storage::exists('public/' . $user->profile_photo)) {
+                Storage::delete('public/' . $user->profile_photo);
+            }
+
+            // ORIGINAL FILE NAME (NO RENAME)
+            $originalName = $request->file('profile_photo')->getClientOriginalName();
+
+            // Store file
+            $path = $request->file('profile_photo')
+                ->storeAs('public/profiles', $originalName);
+
+            // Save path in DB
+            $user->profile_photo = 'profiles/' . $originalName;
         }
 
-        // NOW THIS WILL WORK
         $user->save();
 
         return back()->with('success', 'Profile updated successfully');

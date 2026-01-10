@@ -32,42 +32,93 @@ class WarehouseTransferController extends Controller
         return view('warehouse.index', compact('transfers'));
     }
 
-     public function create()
-    {
-        return view('warehouse.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-            'categories' => collect(), 
-            'products'   => collect(), 
-            'batches'    => collect(), 
-            'transfer'   => null,
-        ]);
-    }
+    //  public function create()
+    // {
+    //     return view('warehouse.transfer', [
+    //         'warehouses' => Warehouse::where('status', 'active')->get(),
+    //         'categories' => collect(), 
+    //         'products'   => collect(), 
+    //         'batches'    => collect(), 
+    //         'transfer'   => null,
+    //     ]);
+    // }
+
+   public function create()
+{
+    $user = auth()->user();
+
+    // From warehouse = user warehouse
+    $fromWarehouse = Warehouse::where('status', 'active')
+        ->where('id', $user->warehouse_id)
+        ->first();
+
+    $toWarehouses = Warehouse::where('status', 'active')
+        ->where('id', '!=', $user->warehouse_id)
+        ->get();
+
+    return view('warehouse.transfer', [
+        'fromWarehouse' => $fromWarehouse,
+        'toWarehouses'  => $toWarehouses,
+        'categories'    => collect(),
+        'products'      => collect(),
+        'batches'       => collect(),
+        'transfer'      => null,
+    ]);
+}
+
+
+
 
     public function getProductsByCategory($category_id)
     {
         return Product::where('category_id', $category_id)->get();
     }
 
+    // public function getBatchesByProducts(Request $request)
+    // {
+    //     if ($request->has('product_ids')) {
+
+    //         $batches = ProductBatch::whereIn('product_id', $request->product_ids)
+    //             ->where('is_blocked', 0)
+    //             ->whereDate('expiry_date', '>=', now())
+    //             ->select('id', 'product_id', 'batch_no')
+    //             ->get();
+
+    //         return response()->json([
+    //             'type' => 'batches',
+    //             'data' => $batches
+    //         ]);
+    //     }
+    // }
+
     public function getBatchesByProducts(Request $request)
-    {
-        if ($request->has('product_ids')) {
+{
+    if ($request->has('product_ids')) {
 
-            $batches = ProductBatch::whereIn('product_id', $request->product_ids)
-                ->where('is_blocked', 0)
-                ->whereDate('expiry_date', '>=', now())
-                ->select('id', 'product_id', 'batch_no')
-                ->get();
+        $batches = ProductBatch::whereIn('id', function ($query) use ($request) {
+                $query->selectRaw('MIN(id)')
+                      ->from('product_batches')
+                      ->whereIn('product_id', $request->product_ids)
+                      ->where('is_blocked', 0)
+                      ->whereDate('expiry_date', '>=', now())
+                      ->groupBy('product_id');
+            })
+            ->select('id', 'product_id', 'batch_no', 'quantity') // 🔥 ADD quantity
+            ->get();
 
-            return response()->json([
-                'type' => 'batches',
-                'data' => $batches
-            ]);
-        }
+        return response()->json([
+            'type' => 'batches',
+            'data' => $batches
+        ]);
     }
+}
+
+
 
     // Multiple product store function
     public function store(Request $request)
     {
+        // dd($request->items);
 
         $request->validate([
             'items'                         => 'required|array|min:1',
@@ -122,31 +173,45 @@ class WarehouseTransferController extends Controller
     }
 
     // Edit Method 
-    public function edit($id)
-    {
-        $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
+   public function edit($id)
+{
+    $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
 
-        $categories = Category::whereIn('id', function ($q) use ($transfer) {
-            $q->select('category_id')
-                ->from('warehouse_stock')
-                ->where('warehouse_id', $transfer->from_warehouse_id)
-                ->where('quantity', '>', 0);
-        })->get();
+    // 🔥 FROM warehouse (locked)
+    $fromWarehouse = Warehouse::where('id', $transfer->from_warehouse_id)
+        ->where('status', 'active')
+        ->first();
 
-        $products = Product::where('category_id', $transfer->category_id)->get();
-        $selectedProducts = [$transfer->product_id];
-        $batches  = ProductBatch::where('product_id', $transfer->product_id)->get();
+    // 🔥 TO warehouses list
+    $toWarehouses = Warehouse::where('status', 'active')
+        ->where('id', '!=', $transfer->from_warehouse_id)
+        ->get();
 
-        return view('warehouse.transfer', compact(
-            'transfer',
-            'categories',
-            'products',
-            'batches',
-            'selectedProducts'   // 🔥 THIS WAS MISSING
-        ) + [
-            'warehouses' => Warehouse::where('status', 'active')->get(),
-        ]);
-    }
+    // Categories available in from warehouse
+    $categories = Category::whereIn('id', function ($q) use ($transfer) {
+        $q->select('category_id')
+            ->from('warehouse_stock')
+            ->where('warehouse_id', $transfer->from_warehouse_id)
+            ->where('quantity', '>', 0);
+    })->get();
+
+    $products = Product::where('category_id', $transfer->category_id)->get();
+
+    $selectedProducts = [$transfer->product_id];
+
+    $batches = ProductBatch::where('product_id', $transfer->product_id)->get();
+
+    return view('warehouse.transfer', compact(
+        'transfer',
+        'fromWarehouse',
+        'toWarehouses',
+        'categories',
+        'products',
+        'batches',
+        'selectedProducts'
+    ));
+}
+
 
     // Update Method
     public function update(Request $request, $id)
