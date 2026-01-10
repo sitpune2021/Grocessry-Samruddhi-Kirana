@@ -193,7 +193,6 @@
                                                 </div>
 
                                                 {{-- Profile Image --}}
-                                                {{-- Profile Image --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Profile Image</label>
 
@@ -203,12 +202,15 @@
                                                     @else
                                                         <div class="text-muted mb-2">No Profile Image</div>
                                                     @endif
-                                                    <div>
-                                                        <a href="{{ asset('storage/profile_photos/' . $agent->user->profile_photo) }}"
-                                                            target="_blank" class="text-primary">
-                                                            View Profile Image
-                                                        </a>
-                                                    </div>
+                                                    @if ($agent && $agent->user && $agent->user->profile_photo)
+                                                        <div>
+                                                            <a href="{{ asset('storage/profile_photos/' . $agent->user->profile_photo) }}"
+                                                                target="_blank" class="text-primary">
+                                                                View Profile Image
+                                                            </a>
+                                                        </div>
+                                                    @endif
+
                                                     <!-- Always show the file input for upload -->
                                                     <input type="file" name="profile_photo" class="form-control">
                                                 </div>

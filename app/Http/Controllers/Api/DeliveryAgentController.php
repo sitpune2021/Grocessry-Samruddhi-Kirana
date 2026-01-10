@@ -194,17 +194,17 @@ class DeliveryAgentController extends Controller
             ]);
         }
 
-        $resetToken = Str::uuid()->toString();
+        // $resetToken = Str::uuid()->toString();
 
         Cache::put(
             'reset_password_' . $user->mobile,
-            $resetToken,
+            // $resetToken,
             now()->addMinutes(10)
         );
 
         return response()->json([
             'status' => true,
-            'reset_token' => $resetToken,
+            // 'reset_token' => $resetToken,
             'message' => 'OTP verified. Proceed to reset password'
         ]);
     }

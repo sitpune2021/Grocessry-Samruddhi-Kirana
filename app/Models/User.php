@@ -37,7 +37,7 @@ class User extends Authenticatable
         'status',
         'last_login_at',
         'warehouse_id',
-        'otp',             
+        'otp',
         'otp_expires_at',
         'is_online',
     ];
@@ -104,6 +104,11 @@ class User extends Authenticatable
         return in_array($permission, $permissions);
     }
 
+    // 🔗 User has many addresses
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
     // public function hasPermission(string $permission): bool
     // {
 
