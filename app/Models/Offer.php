@@ -22,7 +22,10 @@ class Offer extends Model
         'min_amount',
         'max_usage',
         'terms_condition',
-        'status'
+        'status',
+        'offer_id',
+        'coupon_code',
+        'coupon_discount',
     ];
 
     public function product()
