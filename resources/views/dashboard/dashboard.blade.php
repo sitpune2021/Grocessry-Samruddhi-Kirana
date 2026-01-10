@@ -23,7 +23,6 @@
           <!-- Content -->
           <div class="container-xxl flex-grow-1 container-p-y">
             <div class="row">
-
               <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
                 <div class="row">
                   <div class="col-lg-4 col-md-12 col-4 mb-4">
@@ -38,8 +37,7 @@
                       </div>
                     </a>
                   </div>
-
-
+                 
                   <div class="col-lg-4 col-md-12 col-4 mb-4">
                     <a href="{{ route('product.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -52,14 +50,14 @@
                       </div>
                     </a>
                   </div>
-
+ 
                   <div class="col-lg-4 col-md-6 col-12 mb-4">
                     <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
                         <div class="card-body">
                           <p class="mb-1 text-muted">Expiry Alerts</p>
                           <div style="display: flex; align-items: center; ">
-                            <h4 class="card-title mb-0 text-danger">
+                            <h4 class="card-title mb-3 text-danger">
                               {{ $expiredCount }}
                             </h4>
                             <small class="text-warning" style="margin-left: 10px;">
@@ -70,10 +68,12 @@
                       </div>
                     </a>
                   </div>
-
-
-
-
+                </div>
+              </div>
+ 
+ 
+              <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
+                <div class="row">
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href="{{ route('batches.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -86,7 +86,7 @@
                       </div>
                     </a>
                   </div>
-
+ 
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href="{{ route('index.addStock.warehouse') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -99,11 +99,7 @@
                       </div>
                     </a>
                   </div>
-
-             
-
-              <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
-                <div class="row">
+ 
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href="{{ route('sale.store') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -116,7 +112,7 @@
                       </div>
                     </a>
                   </div>
-
+ 
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href="{{ route('transfer.index') }}" class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -129,7 +125,7 @@
                       </div>
                     </a>
                   </div>
-
+ 
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <a href=" " class="text-decoration-none">
                       <div class="card h-80 cursor-pointer">
@@ -142,10 +138,10 @@
                       </div>
                     </a>
                   </div>
-
+ 
                 </div>
               </div>
-              <!-- <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
+      <!-- <div class="col-xxl-4 col-lg-12 col-md-4 order-1">
                 <div class="row">
                   <div class="col-lg-6 col-md-12 col-6 mb-6">
                     <div class="card h-100">

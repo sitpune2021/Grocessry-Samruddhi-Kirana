@@ -132,6 +132,7 @@
                     <li><a href="{{ route('warehouse.transfer.index') }}">District-Wise Warehouse Stock Transfer
                             Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
+                    <!-- <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return Approval</a></li> -->
 
                 </ul>
             </li>
