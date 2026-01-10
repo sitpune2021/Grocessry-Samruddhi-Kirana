@@ -28,11 +28,16 @@
                     data-bs-toggle="dropdown">
 
                     <div class="avatar avatar-online">
-                        <img src="{{ asset('admin/assets/img/avatars/1.png') }}"
-                            alt="User Avatar"
-                            class="w-px-40 h-auto rounded-circle" />
+                      <img
+        src="{{ Auth::user()->profile_photo
+            ? asset('storage/' . Auth::user()->profile_photo)
+            : asset('admin/assets/img/avatars/1.png') }}"
+        class="rounded-circle"
+        width="40"
+        height="40"
+        alt="User Avatar"
+    >
                     </div>
-
                 </a>
 
                 <!-- Dropdown -->
@@ -106,7 +111,7 @@
     </div>
 </nav>
 
-
+<!-- profile Popup -->
 <div class="modal fade" style="width:110%; margin:auto !important;" id="profileModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -205,6 +210,8 @@
         const sidebar = document.getElementById('layout-menu');
         const openBtn = document.getElementById('menuToggle');
         const closeBtn = document.getElementById('sidebarClose');
+
+
 
         if (!sidebar || !openBtn) {
             console.error('Sidebar or menuToggle missing');
