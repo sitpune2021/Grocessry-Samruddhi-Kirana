@@ -38,12 +38,10 @@
                     <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
                 </div>
                 <ul class="submenu" id="ProductMenu">
-                    @if (auth()->check() && auth()->user()->role_id == 1)
                     <li><a href="{{ route('brands.index') }}">Brand</a></li>
                     <li><a href="{{ route('category.index') }}">Category</a></li>
                     <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    @endif
-                    <li><a href="{{ route('units.create') }}">Unit</a></li>
+                    <li><a href="{{ route('units.index') }}">Unit</a></li>
                     <li><a href="{{ route('product.index') }}">Products</a></li>
 
                 </ul>
@@ -76,10 +74,10 @@
                 </div>
                 <ul class="submenu" id="warehouseMenu">
                     <li><a href="{{ route('warehouse.index') }}">Add Warehouse</a></li>
-                    @if (auth()->check() && auth()->user()->role_id == 1)
+        
                     <li><a href="{{ route('roles.index') }}">Role Management</a></li>
                     <li><a href="{{ route('user.profile') }}">User Management</a></li>
-                    @endif
+                   
                     <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
                 </ul>
             </li>

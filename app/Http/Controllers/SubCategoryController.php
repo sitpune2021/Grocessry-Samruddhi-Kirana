@@ -33,14 +33,14 @@ class SubCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            // Validation
+         // Validation
             $validated = $request->validate([
                 'category_id' => 'required|exists:categories,id',
                 'name'        => 'required|string|max:255 |unique:sub_categories,name',
                 'slug'        => 'required|string|max:255|unique:sub_categories,slug',
             ]);
 
+        try {
             // Create Sub Category
             SubCategory::create([
                 'category_id' => $validated['category_id'],

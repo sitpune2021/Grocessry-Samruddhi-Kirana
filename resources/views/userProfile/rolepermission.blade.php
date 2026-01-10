@@ -70,11 +70,13 @@
                                     'role_permission' => 'Role Permission',
                                     'brands' => 'Brands',
                                     'category' => 'Category',
+                                    'sub_category' => 'Sub Category',
+                                    'unit' => 'Unit',
                                     'product' => 'Product',
-                                    'batches' => 'Batches',
+                                    'supplier' => 'Supplier',
                                     'warehouse' => 'Warehouse',
-                                    'add_stock' => 'Add Stock',
-                                    'sale' => 'Sale',
+                                    'stock' => 'Stock',
+                                    'batches' => 'Batches',
                                     'warehouse_transfer' => 'Warehouse Transfer',
                                     ];
 
@@ -129,7 +131,6 @@
                                         @endif
                                     </tr>
                                     @endforeach
-
 
                                 </tbody>
 

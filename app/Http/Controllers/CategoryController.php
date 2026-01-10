@@ -16,15 +16,10 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
 
-        $query = Category::orderBy('id', 'desc');
 
-        if ($user->role_id != 1) {
-            $query->where('warehouse_id', $user->warehouse_id);
-        }
-
-        $categories = $query->paginate(10);
+        $categories = Category::orderBy('id', 'desc')
+            ->paginate(10);;
 
         return view('menus.category.index', compact('categories'));
     }
@@ -37,7 +32,7 @@ class CategoryController extends Controller
     public function create()
     {
         $mode = 'add';
-        return view('menus.category.add-category', compact( 'mode'));
+        return view('menus.category.add-category', compact('mode'));
     }
 
     /**
@@ -53,7 +48,7 @@ class CategoryController extends Controller
         ]);
 
         try {
-           
+
             // Validation
             $validated = $request->validate([
                 'name'     => 'required|string|max:255|unique:categories,name',
@@ -64,15 +59,15 @@ class CategoryController extends Controller
             $category = Category::create([
                 'name'     => $validated['name'],
                 'slug'     => $validated['slug'],
-        
+
             ]);
 
             Log::info('Category created successfully', [
                 'category_id' => $category->id,
                 'name'        => $category->name,
                 'slug'        => $category->slug,
-              
-                
+
+
             ]);
 
             return redirect()
@@ -135,36 +130,18 @@ class CategoryController extends Controller
         }
     }
 
-
-
     public function edit($id)
     {
+        abort_unless(hasPermission('category.edit'), 403);
+
         Log::info('Category Edit Request Received', ['id' => $id]);
 
-        $user = Auth::user();
+        $category = Category::select('id', 'name')->findOrFail($id);
 
-        $query = Category::orderBy('id', 'desc');
-
-        if ($user->role_id != 1) {
-            $query->where('warehouse_id', $user->warehouse_id);
-        }
-
-        $category = $query->first();
-
-        if (!$category) {
-            Log::warning('Category Not Found or Unauthorized', ['id' => $id]);
-
-            return redirect()->route('category.index')
-                ->with('error', 'Category not found or access denied');
-        }
-
-        $mode   = 'edit';
+        $mode = 'edit';
 
         return view('menus.category.add-category', compact('category', 'mode'));
     }
-
-
-
 
     /**
      * Update the specified resource in storage.
@@ -174,44 +151,34 @@ class CategoryController extends Controller
         Log::info('Category Update Request Received', [
             'id'      => $id,
             'request' => $request->all(),
-            'user_id' => Auth::id(),
+
         ]);
 
         try {
-            $user = Auth::user();
 
-            // Fetch category ONLY from user's warehouse
-            $query = Category::where('id', $id);
-
-            if ($user->role_id != 1) {
-                $query->where('warehouse_id', $user->warehouse_id);
-            }
-
-            $category = $query->first();
+            $category = Category::where('id', $id)
+                ->first();
 
             if (!$category) {
                 Log::warning('Category Not Found or Unauthorized', [
                     'id' => $id,
-                    'warehouse_id' => $user->warehouse_id,
                 ]);
 
                 return redirect()->route('menus.category.index')
                     ->with('error', 'Category not found or access denied');
             }
 
-            // Warehouse-wise unique validation
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:categories,name,',
                 'slug' => 'required|string|max:255',
             ]);
 
-            // Do NOT update warehouse_id here
             $category->update($validated);
 
             Log::info('Category Updated Successfully', [
                 'category_id'  => $category->id,
                 'name'         => $category->name,
-                'warehouse_id' => $category->warehouse_id,
+
             ]);
 
             return redirect()->route('category.index')
@@ -244,21 +211,13 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        // Log request
+
         Log::info('Delete Category Request', [
             'id' => $id
         ]);
 
-        // Find category
-       $user = Auth::user();
-
-        $query = Category::where('id', $id);
-
-        if ($user->role_id != 1) {
-            $query->where('warehouse_id', $user->warehouse_id);
-    }
-
-        $category = $query->first();
+        $category = Category::where('id', $id)
+            ->first();
 
         if (!$category) {
             Log::warning("Category not found for delete", [
