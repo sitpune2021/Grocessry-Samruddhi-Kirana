@@ -202,6 +202,15 @@
 <!-- jQuery + Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@if(isset($transfer))
+<script>
+    window.editTransfer = {
+        product_id: "{{ $transfer->product_id }}",
+        batch_id: "{{ $transfer->batch_id }}",
+        quantity: "{{ $transfer->quantity }}"
+    };
+</script>
+@endif
 
 <script>
     $(document).ready(function() {

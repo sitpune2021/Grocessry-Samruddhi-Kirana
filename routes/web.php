@@ -738,6 +738,7 @@ Route::middleware(['auth'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
+    //////
 
     // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
