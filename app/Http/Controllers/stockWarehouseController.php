@@ -45,28 +45,47 @@ class stockWarehouseController extends Controller
     }
 
 
-    // add stock in warehouse
-    public function addStockForm()
-    {
-        $mode = 'add';
-        $user = User::with('warehouse')->find(Auth::id());
+   public function addStockForm()
+{
+    $mode = 'add';
+    $user = User::with('warehouse')->find(Auth::id());
 
-        if (!$user) {
-            abort(401, 'Unauthenticated');
-        }
-
-        $userWarehouse = $user->warehouse;
-        $readonly = true; // ✅ Make inputs readonly
-
-       
-        $categories = Category::all();
-        $products = collect(); 
-        $product_batches = ProductBatch::all();
-        $sub_categories = []; // initially empty
-        $suppliers = Supplier::select('id', 'supplier_name')->get();
-
-        return view('menus.warehouse.add-stock.add-stock', compact('mode', 'userWarehouse', 'categories', 'product_batches', 'products', 'sub_categories', 'suppliers', 'readonly'));
+    if (!$user) {
+        abort(401, 'Unauthenticated');
     }
+
+    $userWarehouse = $user->warehouse;
+    $readonly = true;
+
+    $categories = Category::all();
+    $products = collect();
+    $product_batches = ProductBatch::all();
+    $sub_categories = [];
+    $suppliers = Supplier::select('id', 'supplier_name')->get();
+
+    // ✅ IMPORTANT: define warehouses always
+    $warehouses = collect();
+
+    // ✅ Only Super Admin gets all warehouses
+    if ($user->role_id == 1) {
+        $warehouses = Warehouse::orderBy('name')->get();
+    }
+
+    return view(
+        'menus.warehouse.add-stock.add-stock',
+        compact(
+            'mode',
+            'userWarehouse',
+            'categories',
+            'product_batches',
+            'products',
+            'sub_categories',
+            'suppliers',
+            'readonly',
+            'warehouses'
+        )
+    );
+}
 
     public function byCategory($categoryId)
     {
