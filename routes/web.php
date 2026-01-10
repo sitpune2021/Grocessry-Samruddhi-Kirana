@@ -49,6 +49,9 @@ use App\Http\Controllers\DistrictToDistrictTransferController;
 // Website Route
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\TalukashopTransferController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckoutController;
+
 
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 //Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -930,3 +933,46 @@ Route::post('contact-details', [WebsiteController::class, 'storeContact'])->name
 Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
 Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
     ->name('shop.filter');
+
+// website product details page
+Route::get('product-details/{id}', [WebsiteController::class, 'productdetails'])
+    ->name('productdetails');
+
+
+// website cart 
+Route::post('add-to-cart', [WebsiteController::class, 'addToCart'])
+    ->name('add_cart')
+    ->middleware('auth');
+
+Route::get('cart', [WebsiteController::class, 'cart'])
+    ->name('cart')
+    ->middleware('auth');
+Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
+    ->name('remove_cart_item');
+
+
+// website checkout
+Route::middleware(['web'])->group(function () {
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])
+        ->name('checkout')
+        ->middleware('auth');
+
+});
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/logout', [AuthController::class, 'websitelogout'])->name('websitelogout');
+
+Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
+    ->middleware('auth');
+
+Route::get('/orders', [CustomerOrderController::class, 'userorder'])
+    ->name('userorder');
+
+Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
+    ->name('orderapprove');

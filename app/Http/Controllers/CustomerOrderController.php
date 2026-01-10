@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CustomerOrder;
 use App\Models\DeliveryAgent;
 use Illuminate\Http\Request;
+use App\Models\Order;
 
 class CustomerOrderController extends Controller
 {
@@ -67,4 +68,23 @@ class CustomerOrderController extends Controller
     {
         //
     }
+
+    public function userorder()
+    {
+        $orders = Order::latest()->get();
+        return view('website.user_order', compact('orders'));
+    }
+
+    public function orderapprove($id)
+    {
+        $order = Order::findOrFail($id);
+
+        $order->update([
+            'status' => 'approved'
+        ]);
+
+        return back()->with('success', 'Order Approved Successfully');
+    }
+
+    
 }
