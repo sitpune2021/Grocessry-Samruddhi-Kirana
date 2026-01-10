@@ -25,7 +25,7 @@ class MenuSeeder extends Seeder
                 foreach ($menu['children'] as $i => $child) {
                     Menu::create([
                         'title'     => $child['title'],
-                        'route'     => $child['route'],
+                        'route'     => $child['route'] ?? null,
                         'type'      => 'single',
                         'parent_id' => $parent->id,
                         'order'     => $i,

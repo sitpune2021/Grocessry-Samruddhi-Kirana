@@ -64,27 +64,31 @@
                                 <tbody>
                                     @php
                                     $modules = [
-                                    'dashboard' => 'Dashboard',
-                                    'roles' => 'Roles',
-                                    'user' => 'User',
-                                    'role_permission' => 'Role Permission',
-                                    'brands' => 'Brands',
-                                    'category' => 'Category',
-                                    'sub_category' => 'Sub Category',
-                                    'unit' => 'Unit',
-                                    'product' => 'Product',
-                                    'supplier' => 'Supplier',
-                                    'warehouse' => 'Warehouse',
-                                    'stock' => 'Stock',
-                                    'batches' => 'Batches',
-                                    'warehouse_transfer' => 'Warehouse Transfer',
+                                    'dashboard'             => 'Dashboard',
+                                    'roles'                 => 'Roles',
+                                    'user'                  => 'User',
+                                    'role_permission'       => 'Role Permission',
+                                    'brands'                => 'Brands',
+                                    'category'              => 'Category',
+                                    'sub_category'          => 'Sub Category',
+                                    'unit'                  => 'Unit',
+                                    'product'               => 'Product',
+                                    'supplier'              => 'Supplier',
+                                    'warehouse'             => 'Warehouse',
+                                    'stock'                 => 'Stock',
+                                    'batches'               => 'Batches',
+                                    'warehouse_transfer'    => 'Warehouse Transfer',
+                                    'disribution_center'    => 'Distribution Center / Shop',
+                                    'delivery_agent'        => 'Delivery Agent',
+                                    'vehical_assignment'    => 'Vehical Assignment',
+                                    'offers'                => 'Offers'
                                     ];
 
                                     $dashboardCards = [
-                                    'total_users' => 'Total Users',
-                                    'total_products' => 'Total Products',
-                                    'total_sales' => 'Total Sales',
-                                    'total_stock' => 'Total Stock',
+                                    'total_users'       => 'Total Users',
+                                    'total_products'    => 'Total Products',
+                                    'total_sales'       => 'Total Sales',
+                                    'total_stock'       => 'Total Stock',
                                     ];
                                     @endphp
 
