@@ -15,13 +15,20 @@ use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Unit;
 
 class ProductBatchController extends Controller
 {
 
     public function index()
     {
-        $batches = ProductBatch::with('product.category')->latest()->get();
+        $user = Auth::user();
+        $warehouseId = $user->warehouse_id;
+
+        $batches = ProductBatch::with('product.category')
+            ->where('warehouse_id', $warehouseId)
+            ->latest()
+            ->get();
         return view('batches.index', compact('batches'));
     }
 
@@ -29,14 +36,28 @@ class ProductBatchController extends Controller
     {
         $user = Auth::user();
 
-        $warehouses = Warehouse::where('id', $user->warehouse_id)->get();
+        $units = Unit::select('id', 'name')->get();
+        $warehouse = Warehouse::query()
+            ->where('id', $user->warehouse_id)
+            ->select('id', 'name')
+            ->get();
+
+        $categories = WarehouseStock::query()
+            ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
+            ->where('warehouse_stock.warehouse_id', $user->warehouse_id)
+            ->whereNull('warehouse_stock.deleted_at')
+            ->select('categories.id', 'categories.name')
+            ->distinct()
+            ->get();
 
         return view('batches.create', [
             'mode'       => 'add',
             'batch'      => null,
-            'warehouses' => $warehouses,
-            'categories' => collect(),   // AJAX se load honge
+            'warehouses' => $warehouse,
+            'categories' =>  $categories,
+
             'products'   => collect(),
+            'units' => $units
         ]);
     }
 
@@ -47,85 +68,141 @@ class ProductBatchController extends Controller
         );
     }
 
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'warehouse_id' => 'required|exists:warehouses,id',
-                //'category_id' => 'required|exists:categories,id',
-                //'category_id' => 'required|exists:warehouse_stock,category_id',
-                'category_id' => 'required|exists:categories,id',
-                'sub_category_id' => 'required|exists:sub_categories,id',
-                'product_id'  => 'required|exists:products,id',
-                'batch_no'    => 'required|string|max:50',
-                'mfg_date'    => 'nullable|date',
-                'expiry_date' => 'nullable|date|after:mfg_date',
-                'quantity'    => 'required|integer|min:1',
-            ]);
+  public function store(Request $request)
+{
+    Log::info('Product batch store request received', [
+        'user_id' => Auth::id(),
+        'payload' => $request->all(),
+    ]);
 
-            $product = Product::findOrFail($validated['product_id']);
+    try {
+        $validated = $request->validate([
+            'category_id'      => 'required|exists:categories,id',
+            'sub_category_id'  => 'required|exists:sub_categories,id',
+            'product_id'       => 'required|exists:products,id',
+            'batch_no'         => 'required|string|max:50',
+            'mfg_date'         => 'nullable|date',
+            'expiry_date'      => 'nullable|date|after:mfg_date',
+            'quantity'         => 'required|integer|min:1',
+            'unit_id'          => 'required|exists:units,id',
+        ]);
 
-            // FIX: Auto expiry calculation
-            $expiryDate = $validated['expiry_date'] ??
-                (
-                    $validated['mfg_date'] && $product->expiry_days
-                    ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
-                    : null
-                );
+        Log::info('Batch validation successful', [
+            'validated_data' => $validated,
+        ]);
 
-            $batch = ProductBatch::create([
-                'warehouse_id' => $validated['warehouse_id'],
-                'category_id' => $validated['category_id'],
-                'sub_category_id' => $validated['sub_category_id'],
-                'product_id'  => $validated['product_id'],
-                'batch_no'    => $validated['batch_no'],
-                'mfg_date'    => $validated['mfg_date'],
-                'expiry_date' => $expiryDate,
-                'quantity'    => $validated['quantity'],
-            ]);
+        $warehouseId = Auth::user()->warehouse_id;
 
-            // Stock IN entry
-            StockMovement::create([
-                'warehouse_id'      => $batch->warehouse_id,
-                'product_batch_id' => $batch->id,
-                'type'             => 'in',
-                'quantity'         => $validated['quantity'],
-            ]);
+        $product = Product::findOrFail($validated['product_id']);
 
-            Log::info('Product batch created', ['batch_id' => $batch->id]);
+        $expiryDate = $validated['expiry_date'] ??
+            (
+                $validated['mfg_date'] && $product->expiry_days
+                ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
+                : null
+            );
 
-            return redirect()
-                ->route('batches.index')     // FIX
-                ->with('success', 'Batch added successfully');
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (Exception $e) {
-            Log::error('Batch create error', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Something went wrong');
-        }
+        Log::info('Expiry date calculated', [
+            'product_id' => $product->id,
+            'expiry_date' => $expiryDate,
+        ]);
+
+        $batch = ProductBatch::create([
+            'warehouse_id'    => $warehouseId,
+            'category_id'     => $validated['category_id'],
+            'sub_category_id' => $validated['sub_category_id'],
+            'product_id'      => $validated['product_id'],
+            'batch_no'        => $validated['batch_no'],
+            'mfg_date'        => $validated['mfg_date'],
+            'expiry_date'     => $expiryDate,
+            'quantity'        => $validated['quantity'],
+            'unit_id'         => $validated['unit_id'],
+        ]);
+
+        Log::info('Product batch created successfully', [
+            'batch_id' => $batch->id,
+            'warehouse_id' => $warehouseId,
+        ]);
+
+        StockMovement::create([
+            'warehouse_id'      => $warehouseId,
+            'product_batch_id' => $batch->id,
+            'type'             => 'in',
+            'quantity'         => $validated['quantity'],
+        ]);
+
+        Log::info('Stock movement entry created', [
+            'batch_id' => $batch->id,
+            'quantity' => $validated['quantity'],
+        ]);
+
+        return redirect()
+            ->route('batches.index')
+            ->with('success', 'Batch added successfully');
+
+    } catch (ValidationException $e) {
+
+        Log::warning('Batch validation failed', [
+            'errors' => $e->errors(),
+            'user_id' => Auth::id(),
+        ]);
+
+        throw $e;
+
+    } catch (\Exception $e) {
+
+        Log::error('Batch create failed', [
+            'message' => $e->getMessage(),
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine(),
+            'user_id' => Auth::id(),
+        ]);
+
+        return back()->with('error', 'Something went wrong');
     }
-
+}
     public function show($id)
     {
-        $batch = ProductBatch::with('product.category')->findOrFail($id);
+        $user = Auth::user();
+        $batch = ProductBatch::where('id', $id)
+            ->where('warehouse_id', Auth::user()->warehouse_id)
+            ->firstOrFail();
 
-        return view('batches.create', [        // SAME PAGE
-            'mode'       => 'view',          // FIX
+        $warehouses = Warehouse::where('id', $user->warehouse_id)->get();
+        $units = Unit::select('id', 'name')->get();
+
+        return view('batches.create', [
+            'mode'       => 'view',
             'batch'      => $batch,
             'categories' => Category::all(),
-            'products'   => Product::where('category_id', $batch->category_id)->get(),
+            'warehouses' => $warehouses,
+            'units' => $units,
+            'subCategories' => SubCategory::where(
+                'category_id',
+                $batch->category_id
+            )->get(),
+
+            'products' => Product::where(
+                'sub_category_id',
+                $batch->sub_category_id
+            )->get(),
         ]);
     }
 
     public function edit($id)
     {
-        $batch = ProductBatch::findOrFail($id);
+        $units = Unit::select('id', 'name')->get();
+        $warehouseId = Auth::user()->warehouse_id;
 
+        $batch = ProductBatch::where('id', $id)
+            ->where('warehouse_id', $warehouseId)
+            ->firstOrFail();
         return view('batches.create', [
             'mode'          => 'edit',
             'batch'         => $batch,
-            'warehouses'    => Warehouse::all(),
+            'warehouses'    => Warehouse::where('id', $warehouseId)->get(),
             'categories'    => Category::all(),
+            'units' => $units,
             'subCategories' => SubCategory::where('category_id', $batch->category_id)->get(), // ✅
             'products'      => Product::where('sub_category_id', $batch->sub_category_id)->get(), // ✅
         ]);
@@ -133,7 +210,11 @@ class ProductBatchController extends Controller
 
     public function update(Request $request, $id)
     {
-        $batch = ProductBatch::findOrFail($id);
+        $warehouseId = Auth::user()->warehouse_id;
+
+        $batch = ProductBatch::where('id', $id)
+            ->where('warehouse_id', $warehouseId)
+            ->firstOrFail();
 
         $validated = $request->validate([
             'category_id'      => 'required|exists:categories,id',
@@ -143,6 +224,8 @@ class ProductBatchController extends Controller
             'mfg_date'         => 'nullable|date',
             'expiry_date'      => 'nullable|date|after:mfg_date',
             'quantity'         => 'required|integer|min:1',
+            'unit_id' => 'required|exists:units,id',
+
         ]);
 
         $oldQty = $batch->quantity;          // 👈 OLD
@@ -150,7 +233,6 @@ class ProductBatchController extends Controller
 
         $product = Product::findOrFail($validated['product_id']);
 
-        // Expiry auto calculation
         $validated['expiry_date'] = $validated['expiry_date'] ??
             (
                 $validated['mfg_date'] && $product->expiry_days
@@ -158,12 +240,8 @@ class ProductBatchController extends Controller
                 : $batch->expiry_date
             );
 
-        // 🔁 UPDATE BATCH
         $batch->update($validated);
 
-        /* ===============================
-        📦 STOCK MOVEMENT LOGIC
-        =============================== */
 
         if ($newQty != $oldQty) {
 
@@ -189,17 +267,29 @@ class ProductBatchController extends Controller
 
     public function expiryAlerts()
     {
-        $batches = ProductBatch::where('quantity', '>', 0)
-            ->whereDate('expiry_date', '<=', now()->addDays(30))
+        $user = Auth::user();
+
+        $query = ProductBatch::with(['product', 'warehouse'])
+            ->where('quantity', '>', 0)
+            ->whereDate('expiry_date', '<=', now()->addDays(30));
+
+        if ($user->role_id != 1) {
+            $query->where('warehouse_id', $user->warehouse_id);
+        }
+
+        // Super Admin → all warehouses (no filter)
+
+        $batches = $query
             ->orderBy('expiry_date')
             ->get();
 
         return view('batches.expiry', compact('batches'));
     }
 
+
     public function getCategoriesByWarehouse($warehouseId)
     {
-        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId) // ✅ FIX
+        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
             ->join(
                 'categories',
                 'categories.id',
@@ -215,9 +305,9 @@ class ProductBatchController extends Controller
     public function getProductsByWarehouseCategory($warehouseId, $categoryId)
     {
         return WarehouseStock::where([
-                'warehouse_id' => $warehouseId,
-                'category_id'  => $categoryId,
-            ])
+            'warehouse_id' => $warehouseId,
+            'category_id'  => $categoryId,
+        ])
             ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
             ->select('products.id', 'products.name')
             ->distinct()
@@ -264,7 +354,4 @@ class ProductBatchController extends Controller
             'quantity' => (int) $qty
         ]);
     }
-
-
-
 }

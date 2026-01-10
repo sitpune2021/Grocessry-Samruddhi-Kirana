@@ -22,12 +22,15 @@ class WarehouseStock extends Model
         'batch_id',
         'quantity',
         'supplier_id',
+        'bill_no',
+        'challan_no',
+        'batch_no',
 
     ];
 
     public function batch()
     {
-        return $this->belongsTo(ProductBatch::class, 'batch_id');
+        return $this->belongsTo(ProductBatch::class, 'batch_no');
     }
     public function category()
     {

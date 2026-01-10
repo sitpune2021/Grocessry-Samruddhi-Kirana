@@ -19,14 +19,32 @@ class GroceryShop extends Model
         'status',
     ];
 
-    public function district()
+    /* ========================
+       Shop warehouse
+    ======================== */
+    public function warehouse()
     {
-        return $this->belongsTo(District::class);
+        return $this->hasOne(Warehouse::class, 'grocery_shop_id');
     }
- public function taluka()
+
+    /* ========================
+       Accessor: District Warehouse
+    ======================== */
+    public function getDistrictWarehouseAttribute()
     {
-        return $this->belongsTo(Talukas::class); // create Taluka model
+        return Warehouse::where('district_id', $this->district_id)
+            ->whereNull('taluka_id')
+            ->first();
+    }
+
+    /* ========================
+       Accessor: Taluka Warehouse
+    ======================== */
+    public function getTalukaWarehouseAttribute()
+    {
+        return Warehouse::where('taluka_id', $this->taluka_id)
+            ->whereNotNull('taluka_id')
+            ->first();
     }
 }
-
 

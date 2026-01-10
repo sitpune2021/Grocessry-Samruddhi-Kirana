@@ -1,7 +1,7 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Supplier;
@@ -11,47 +11,38 @@ use App\Models\State;
 use App\Models\Warehouse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
- 
- 
+use Illuminate\Validation\Rule;
+
 class SupplierController extends Controller
 {
- 
-    public function index(Request $request)
-    {
-        $user = Auth::user();
- 
-        // Super Admin → All suppliers
-        if ($user->role_id == 1) {
-            $query = Supplier::with('warehouse');
- 
-            //Filter by warehouse from dropdown
-            if ($request->filled('warehouse_id')) {
-                $query->where('warehouse_id', $request->warehouse_id);
-            }
- 
-            $suppliers = $query->latest()->paginate(10);
-            $warehouses = Warehouse::select('id', 'name')->get();
-        }
-        // Warehouse Admin → Only own suppliers
-        else {
-            $suppliers = Supplier::with('warehouse')
-                ->where('warehouse_id', $user->warehouse_id)
-                ->latest()
-                ->paginate(10);
- 
-            $warehouses = collect(); // empty
-        }
- 
-        return view('supplier.index', compact('suppliers', 'warehouses'));
+
+   public function index(Request $request)
+{
+    try {
+        $suppliers = Supplier::latest()->paginate(10);
+
+        return view('supplier.index', compact('suppliers'));
+
+    } catch (\Throwable $e) {
+
+        Log::error('Supplier Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
+
+        return redirect()->back()
+            ->with('error', 'Unable to load suppliers');
     }
- 
- 
+}
+
+
+
     public function create()
     {
         $districts = District::all();
         $talukas   = Talukas::all();
         $states    = State::all();
- 
+
         return view('supplier.create', [
             'mode'      => 'add',
             'districts' => $districts,
@@ -60,44 +51,34 @@ class SupplierController extends Controller
             'states'    => State::select('id', 'name')->get(),
         ]);
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'supplier_name' => 'required|string|max:255',
-            'mobile'        => 'required|digits:10',
-            'email'         => 'nullable|email|max:255',
-            'address'       => 'nullable|string',
-            'state_id'      => 'required|exists:states,id',
-            'district_id'   => 'required|exists:districts,id',
-            'taluka_id'     => 'required|exists:talukas,id',
-            'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'bill_no'       => 'required|string',
-            'challan_no'    => 'required|string',
-            'batch_no'      => 'required|string',
+            'mobile' => [
+                'required',
+                'regex:/^[6-9]\d{9}$/',
+                Rule::unique('suppliers', 'mobile'),
+            ],
+            'email'         => 'required|email|max:255',
+            'address'       => 'required|string',
+            'state_id'      => 'nullable|exists:states,id', //temp nullable
+            'district_id'   => 'nullable|exists:districts,id',// "    "
+            'taluka_id'     => 'nullable|exists:talukas,id',// "    "
+         
+        ], [
+            'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+            'mobile.unique' => 'This mobile number is already registered.',
         ]);
- 
-        $user = Auth::user();
- 
-        if (!$user || !$user->warehouse_id) {
-            return redirect()->back()
-                ->with('error', 'Warehouse not assigned to your account.');
-        }
- 
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('suppliers', $filename, 'public');
-            $validated['logo'] = $filename;
-        }
- 
-        $validated['warehouse_id'] = $user->warehouse_id;
- 
+
+
+       
         $supplier = Supplier::create($validated);
- 
+
         // Log creation
         Log::info('Supplier created', [
             'id' => $supplier->id,
-            'warehouse_id' => $supplier->warehouse_id,
             'name' => $supplier->supplier_name,
             'mobile' => $supplier->mobile,
             'state_id' => $supplier->state_id,
@@ -105,11 +86,11 @@ class SupplierController extends Controller
             'taluka_id' => $supplier->taluka_id,
             'email' => $supplier->email,
         ]);
- 
+
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier created successfully');
     }
- 
+
     // VIEW
     public function show(string $id)
     {
@@ -121,7 +102,7 @@ class SupplierController extends Controller
             'talukas'   => Talukas::select('id', 'name')->get()
         ]);
     }
- 
+
     // EDIT
     public function edit(string $id)
     {
@@ -133,35 +114,32 @@ class SupplierController extends Controller
             'talukas'   => Talukas::select('id', 'name')->get()
         ]);
     }
- 
+
     // UPDATE
     public function update(Request $request, string $id)
     {
         $supplier = Supplier::findOrFail($id);
- 
+
         $validated = $request->validate([
             'supplier_name' => 'required|string|max:255',
             'mobile'        => 'required|digits:10|unique:suppliers,mobile,' . $id,
             'email'         => 'nullable|email|max:255',
-            'address'       => 'nullable|string',
-            'state_id'      => 'required|exists:states,id',
-            'district_id'   => 'required|exists:districts,id',
-            'taluka_id'     => 'required|exists:talukas,id',
-            'logo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'bill_no'       => 'required|string',
-            'challan_no'    => 'required|string',
-            'batch_no'      => 'required|string',
+            'address'       => 'required|string',
+            'state_id'      => 'nullable|exists:states,id',
+            'district_id'   => 'nullable|exists:districts,id',
+            'taluka_id'     => 'nullable|exists:talukas,id',
+          
         ]);
- 
+
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $filename =  $file->getClientOriginalExtension();
             $file->storeAs('suppliers', $filename, 'public');
             $validated['logo'] = $filename;
         }
- 
+
         $supplier->update($validated);
- 
+
         // Log update
         Log::info('Supplier updated', [
             'id' => $supplier->id,
@@ -172,26 +150,26 @@ class SupplierController extends Controller
             'taluka_id' => $supplier->taluka_id,
             'email' => $supplier->email,
         ]);
- 
+
         return redirect()->route('supplier.index')
             ->with('success', 'Supplier updated successfully');
     }
- 
- 
- 
+
+
+
     public function destroy(string $id)
     {
         $supplier = Supplier::find($id);
- 
+
         if (!$supplier) {
             return request()->wantsJson()
                 ? response()->json(['status' => false, 'message' => 'Supplier not found'], 404)
                 : redirect()->route('supplier.index')->with('error', 'Supplier not found');
         }
- 
+
         try {
             $supplier->delete();
- 
+
             return request()->wantsJson()
                 ? response()->json(['status' => true, 'message' => 'Supplier deleted successfully'], 200)
                 : redirect()->route('supplier.index')->with('success', 'Supplier deleted successfully');
@@ -207,7 +185,7 @@ class SupplierController extends Controller
             ->select('id', 'name')
             ->get();
     }
- 
+
     public function getTalukas($districtId)
     {
         return Talukas::where('district_id', $districtId)
@@ -215,5 +193,3 @@ class SupplierController extends Controller
             ->get();
     }
 }
- 
- 

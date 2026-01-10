@@ -6,6 +6,7 @@ use App\Models\Batch;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Models\Unit;
 
 class BatchController extends Controller
 {

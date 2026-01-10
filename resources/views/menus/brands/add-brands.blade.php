@@ -136,11 +136,6 @@
                                                     <i class="bx bx-arrow-back"></i> Back
                                                 </a>
 
-                                                <!-- Status Toggle Button -->
-                                                <button type="button" id="statusToggleBtn"
-                                                    class="btn {{ $brand->status ?? 'btn-danger' }}">
-                                                    {{ ($brand->status ?? 'inactive') === 'active' ? 'Active' : 'Inactive' }}
-                                                </button>
 
                                                 @if ($mode === 'add')
                                                 <button type="submit" class="btn btn-success">

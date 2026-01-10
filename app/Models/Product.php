@@ -12,6 +12,7 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'sub_category_id',
+        'tax_id',
         'brand_id',
         'name',
         'sku',
@@ -26,6 +27,7 @@ class Product extends Model
         'product_images',
         'discount_type',
         'discount_value',
+        'warehouse_id',
     ];
 
     protected $casts = [
@@ -58,5 +60,10 @@ class Product extends Model
     public function offer()
     {
         return $this->belongsTo(Offer::class);
+    }
+
+    public function tax()
+    {
+        return $this->belongsTo(Tax::class);
     }
 }

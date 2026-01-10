@@ -10,36 +10,40 @@ use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\SubCategory;
+use App\Models\Tax;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        Log::info('Product Index Page Loaded', [
-            'user_id' => Auth::id(),
+   public function index()
+{
+    Log::info('Product Index Page Loaded');
+
+    try {
+        $products = Product::with(['category', 'tax'])
+            ->latest()
+            ->paginate(10);
+
+        return view('menus.product.index', compact('products'));
+
+    } catch (\Throwable $e) {
+
+        Log::error('Product Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
         ]);
 
-        try {
-            $products = Product::with('category')->latest()->paginate(10);
-
-            return view('menus.product.index', compact('products'));
-        } catch (\Throwable $e) {
-
-            Log::error('Product Index Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->with('error', 'Unable to load products');
-        }
+        return redirect()->back()
+            ->with('error', 'Unable to load products');
     }
+}
+
 
 
     /**
@@ -54,7 +58,9 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)->orderBy('name')->get();
             $categories = collect();
             $subCategories = collect();
-            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories'));
+            $taxes = Tax::where('is_active', 1)->get();
+
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -71,14 +77,18 @@ class ProductController extends Controller
     {
         Log::info('Product Store Request', [
             'request' => $request->all(),
-            'user_id' => Auth::id(),
         ]);
-
+             
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required|exists:brands,id',
-                'name'            => 'required|string|max:255',
+                'name'            => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name'),
+                ],
                 'sku'             => 'nullable|string|max:255',
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
@@ -86,49 +96,73 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
 
-                // ✅ Discount fields
                 'discount_type'   => 'nullable|in:flat,percentage',
                 'discount_value'  => 'nullable|numeric|min:0',
 
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+                'tax_id' => 'required|exists:taxes,id',
+
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
 
-            // 🔐 Extra discount validation (BUSINESS LOGIC)
             if (!empty($validated['discount_type'])) {
 
-                if ($validated['discount_type'] === 'percentage' && $validated['discount_value'] > 100) {
-                    return back()->withInput()->with('error', 'Discount percentage cannot exceed 100');
+                if (
+                    $validated['discount_type'] === 'percentage'
+                    && $validated['discount_value'] > 100
+                ) {
+                    return back()->withInput()
+                        ->with('error', 'Discount percentage cannot exceed 100');
                 }
 
-                if ($validated['discount_type'] === 'flat' && $validated['discount_value'] > $validated['mrp']) {
-                    return back()->withInput()->with('error', 'Flat discount cannot exceed MRP');
+                if (
+                    $validated['discount_type'] === 'flat'
+                    && $validated['discount_value'] > $validated['mrp']
+                ) {
+                    return back()->withInput()
+                        ->with('error', 'Flat discount cannot exceed MRP');
                 }
             } else {
-                // No discount selected
                 $validated['discount_value'] = 0;
             }
 
-            // 📸 Image Upload
+            // if ($request->hasFile('product_images')) {
+
+            //     $imageNames = [];
+
+            //     foreach ($request->file('product_images') as $image) {
+            //         $name = time() . '_' . $image->getClientOriginalName();
+            //         $image->storeAs('products', $name, 'public');
+            //         $imageNames[] = $name;
+            //     }
+
+            //     $validated['product_images'] = json_encode($imageNames);
+            // }
+
+
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
 
                 foreach ($request->file('product_images') as $image) {
-                    $originalName = $image->getClientOriginalName();
-                    $image->storeAs('products', $originalName, 'public');
-                    $imageNames[] = $originalName;
+                    $name = time() . '_' . $image->getClientOriginalName();
+                    $image->storeAs('products', $name, 'public');
+                    $imageNames[] = $name;
                 }
 
-                $validated['product_images'] = json_encode($imageNames);
+                // Save as ARRAY (Laravel will JSON encode)
+                $validated['product_images'] = $imageNames;
             }
+
 
             $product = Product::create($validated);
 
             Log::info('Product Created Successfully', [
-                'product_id' => $product->id
+                'product_id' => $product->id,
             ]);
 
             return redirect()->route('product.index')
@@ -136,9 +170,8 @@ class ProductController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             Log::warning('Product Store Validation Failed', [
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ]);
-
             throw $e;
         } catch (\Throwable $e) {
 
@@ -147,22 +180,18 @@ class ProductController extends Controller
                 'line'    => $e->getLine(),
             ]);
 
-            return redirect()->back()
-                ->withInput()
+            return back()->withInput()
                 ->with('error', 'Something went wrong while saving product');
         }
     }
 
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         try {
             Log::info('Product View Request', ['id' => $id]);
 
-            $product = Product::find($id);
+            $product = Product::with('tax')->findOrFail($id);
 
             if (!$product) {
                 Log::warning('Product Not Found', ['id' => $id]);
@@ -207,10 +236,10 @@ class ProductController extends Controller
             $brands = Brand::where('status', 1)
                 ->orderBy('name')
                 ->get();
-
+            $taxes = Tax::where('is_active', 1)->get();
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -244,7 +273,12 @@ class ProductController extends Controller
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required',
-                'name'            => 'required|string|max:255',
+                'name'            => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name')->ignore($product->id),
+                ],
                 'sku'             => 'nullable|string|max:255',
                 // 'effective_date'  => 'required|date',
                 // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
@@ -252,12 +286,14 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                'gst_percentage'  => 'required|numeric|min:0|max:100',
+                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
                 // 'stock'           => 'required|integer',
                 'product_images'   => 'nullable|array',
+                'tax_id' => 'required|exists:taxes,id',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
             ]);
-
             if ($request->hasFile('product_images')) {
 
                 $imageNames = [];
@@ -347,21 +383,12 @@ class ProductController extends Controller
         }
     }
 
-    //get category by Brand
-
-    public function getCategoriesByBrand($brandId)
+    public function getCategories()
     {
-
-        return Category::where('brand_id', $brandId)
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get();
+        return response()->json(
+            Category::select('id', 'name')
+                ->orderBy('name')
+                ->get()
+        );
     }
-
-    // public function getProductsByCategory($category_id)
-    // {
-    //     $products = Product::where('category_id', $category_id)->get();
-
-    //     return response()->json($products);
-    // }
 }

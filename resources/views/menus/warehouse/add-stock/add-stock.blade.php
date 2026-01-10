@@ -49,27 +49,24 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse</label>
-                                                        @if($mode === 'add')
+                                                        @if ($mode === 'add')
                                                         <input type="text" class="form-control"
-                                                            value="{{ $userWarehouse->name ?? 'N/A' }}"
-                                                            readonly>
+                                                            value="{{ $userWarehouse->name ?? 'N/A' }}" readonly>
                                                         {{-- Submit warehouse ID (THIS IS WHAT BACKEND NEEDS) --}}
-                                                        <input type="hidden"
-                                                            name="warehouse_id"
+                                                        <input type="hidden" name="warehouse_id"
                                                             value="{{ $userWarehouse->id }}">
                                                         @endif
 
                                                         {{-- VIEW / EDIT MODE --}}
 
-                                                        @if($mode === 'view' || $mode === 'edit')
-                                                        <input type="text" {{ $mode === 'view' ? 'readonly' : '' }}
+                                                        @if ($mode === 'view' || $mode === 'edit')
+                                                        <input type="text"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}
                                                             class="form-control"
-                                                            value="{{ $stockWarehouse->name ?? 'N/A' }}"
-                                                            readonly>
+                                                            value="{{ $stockWarehouse->name ?? 'N/A' }}" readonly>
 
                                                         {{-- SAFE: always available --}}
-                                                        <input type="hidden"
-                                                            name="warehouse_id"
+                                                        <input type="hidden" name="warehouse_id"
                                                             value="{{ old('warehouse_id', $warehouse_stock->warehouse_id) }}">
                                                         @endif
 
@@ -104,7 +101,8 @@
 
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Sub Category</label>
+                                                        <label class="form-label">Sub Category <span
+                                                                class="text-danger">*</span></label>
                                                         <select name="sub_category_id" id="sub_category_id"
                                                             class="form-select">
                                                             <option value="">-- Select Sub Category --</option>
@@ -143,6 +141,7 @@
                                                             @endforeach
 
                                                         </select>
+                                                       
 
                                                         @error('product_id')
                                                         <span class="text-danger mt-1">{{ $message }}</span>
@@ -150,31 +149,12 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Batch --}}
-
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label for="batch_id">Batch</label>
-                                                        <select name="batch_id" id="batch_id" class="form-control"
-                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                            <option value="">-- Select Batch No --</option>
-                                                            @foreach ($product_batches as $product_batch)
-<option value="{{ $product_batch->id }}"
-                                                                    {{ old('batch_id', $warehouse_stock->batch_id ?? '') == $product_batch->id ? 'selected' : '' }}>
-                                                                    {{ $product_batch->batch_no }}
-                                                                </option>
-@endforeach
-                                                        </select>
-                                                          @error('batch_id')
-    <span class="text-danger mt-1">{{ $message }}</span>
-@enderror
-                                                    </div>
-                                                </div> -->
 
                                                 {{-- Prices --}}
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Quantity</label>
+                                                        <label class="form-label">Quantity <span
+                                                                class="text-danger">*</span></label>
                                                         <input type="number" step="0.01" name="quantity"
                                                             class="form-control"
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
@@ -185,6 +165,46 @@
                                                         @enderror
                                                     </div>
                                                 </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Bill No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="bill_no" class="form-control"
+                                                        value="{{ old('bill_no', $warehouse_stock->bill_no ?? '') }}"
+                                                        placeholder="Enter bill number"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('bill_no')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Challan No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="challan_no" class="form-control"
+                                                        value="{{ old('challan_no', $warehouse_stock->challan_no ?? '') }}"
+                                                        placeholder="Enter challan number"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('challan_no')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Batch No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="batch_no" class="form-control"
+                                                        value="{{ old('batch_no', $warehouse_stock->batch_no ?? '') }}"
+                                                        placeholder="Enter batch number"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('batch_no')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">Supplier</label>
@@ -242,7 +262,7 @@
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function() {
 
         const categorySelect = document.getElementById('category_id');
@@ -282,6 +302,63 @@
                 });
         });
 
+    });
+</script> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const subCategorySelect = document.getElementById('sub_category_id');
+        const productSelect = document.getElementById('product_id');
+
+        const selectedProduct =
+            "{{ old('product_id', $warehouse_stock->product_id ?? '') }}";
+
+        function loadProducts(subCategoryId, selectedId = null) {
+
+            if (!subCategoryId) {
+                productSelect.innerHTML = '<option value="">-- Select Product --</option>';
+                return;
+            }
+
+            productSelect.innerHTML = '<option value="">Loading...</option>';
+
+            fetch(`/get-products-by-sub-category/${subCategoryId}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    productSelect.innerHTML =
+                        '<option value="">-- Select Product --</option>';
+
+                    if (data.length === 0) {
+                        productSelect.innerHTML +=
+                            '<option value="">No products found</option>';
+                    }
+
+                    data.forEach(product => {
+                        const selected =
+                            selectedId == product.id ? 'selected' : '';
+                        productSelect.innerHTML += `
+                        <option value="${product.id}" ${selected}>
+                            ${product.name}
+                        </option>`;
+                    });
+                })
+                .catch(() => {
+                    productSelect.innerHTML =
+                        '<option value="">Error loading products</option>';
+                });
+        }
+
+
+        subCategorySelect.addEventListener('change', function() {
+            loadProducts(this.value);
+        });
+
+
+        if (subCategorySelect.value) {
+            loadProducts(subCategorySelect.value, selectedProduct);
+        }
     });
 </script>
 

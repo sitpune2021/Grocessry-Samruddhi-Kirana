@@ -5,20 +5,27 @@
 
     <div class="card shadow-sm p-2">
         <div class="card-datatable text-nowrap">
+            @php
+            $canView = hasPermission('brands.view');
+            $canEdit = hasPermission('brands.edit');
+            $canDelete = hasPermission('brands.delete');
+            @endphp
 
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title mb-0">Brands</h5>
                 </div>
+
                 <div class="col-md-auto ms-auto">
-                    @if(hasPermission('brands', 'create'))
+                    @if(hasPermission('brands.create'))
                     <a href="{{ route('brands.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Brands
                     </a>
                     @endif
                 </div>
+
 
             </div>
 
@@ -37,7 +44,10 @@
                             <th style="width: 30%;">Brand Name</th>
                             <th style="width: 40%;">Slug</th>
                             <th class="text-center" style="width: 120px;">Status</th>
+                            @if($canView || $canEdit || $canDelete)
+
                             <th class="text-center" style="width: 150px;">Actions</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -86,12 +96,26 @@
                             </td>
 
                             {{-- Actions --}}
+                            @if($canView || $canEdit || $canDelete)
+
                             <td class="text-center" style="white-space:nowrap;">
-                                <x-action-buttons
-                                    :view-url="route('brands.show', $brand->id)"
-                                    :edit-url="route('brands.edit', $brand->id)"
-                                    :delete-url="route('brands.destroy', $brand->id)" />
+                                @if(hasPermission('brands.view'))
+                                <a href="{{ route('brands.show', $brand->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('brands.edit'))
+                                <a href="{{ route('brands.edit', $brand->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if(hasPermission('brands.delete'))
+                                <form action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete brand?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
                             </td>
+                            @endif
 
                         </tr>
                         @empty

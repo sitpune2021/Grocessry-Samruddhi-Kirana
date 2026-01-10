@@ -66,9 +66,9 @@
                                                     <select name="type" id="warehouseType" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Type</option>
-                                                        <!-- <option value="master"
+                                                        <option value="master"
                                                             {{ ($warehouse->type ?? '') == 'master' ? 'selected' : '' }}>
-                                                            Master</option> -->
+                                                            Master</option>
                                                         <option value="district"
                                                             {{ ($warehouse->type ?? '') == 'district' ? 'selected' : '' }}>
                                                             District</option>
@@ -89,13 +89,36 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
                                                         @foreach ($warehouses as $w)
+<<<<<<< HEAD
                                                             <option value="{{ $w->id }}"
                                                                 data-type="{{ $w->type }}"
                                                                 {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
                                                                 {{ $w->name }} ({{ ucfirst($w->type) }})
                                                             </option>
+=======
+                                                        <option value="{{ $w->id }}"
+                                                            data-type="{{ $w->type }}"
+                                                            {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }}({{ $w->district->name ?? 'N/A' }})
+                                                        </option>
+>>>>>>> 08dfd4843088d84033340d0782a98eb1ceff8bb6
                                                         @endforeach
                                                     </select>
+
+                                                    <!-- <select name="parent_id" id="parent_id" class="form-select"
+                                                    //******************Do Not Remove Advance TO Do Later******************
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Parent</option>
+                                                        @foreach ($warehouses as $w)
+                                                        <option value="{{ $w->id }}"
+                                                            data-type="{{ $w->type }}"
+                                                            data-district-id="{{ $w->district_id }}"
+                                                            {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }} ({{ ucfirst($w->type) }})
+                                                        </option>
+                                                        @endforeach
+                                                    </select> -->
+
                                                     @error('type')
                                                         <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
@@ -150,6 +173,8 @@
                                                     @enderror
                                                 </div>
 
+                                                @if($mode !== 'add')
+                                                {{-- GSTIN --}}
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Contact Person <span
@@ -180,16 +205,6 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- User Name --}}
-                                                <!-- <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">User Name</label>
-                                                        <input type="text" name="user_name" class="form-control"
-                                                            placeholder="User Name"
-                                                            value="{{ $warehouse->contact_person ?? '' }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    </div>
-                                                </div> -->
 
                                                 {{-- Email --}}
                                                 <div class="col-md-4">
@@ -204,6 +219,7 @@
                                                             <div class="text-danger mt-1">{{ $message }}</div>
                                                         @enderror
                                                     </div>
+                                                    @endif
                                                 </div>
 
                                                 {{-- Buttons --}}
@@ -237,6 +253,46 @@
     <!-- / Layout wrapper -->
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+     {{-- //************Do Not Remove Advance TO Do Later  ********************** --}}
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const warehouseType = document.getElementById('warehouseType');
+            const parentSelect = document.getElementById('parent_id');
+            const districtSelect = document.getElementById('district_id');
+
+            function autoSetDistrictFromParent() {
+                const selectedParent = parentSelect.options[parentSelect.selectedIndex];
+                if (!selectedParent) return;
+
+                const districtId = selectedParent.getAttribute('data-district-id');
+
+                if (districtId) {
+                    districtSelect.value = districtId;
+                }
+            }
+
+            // When warehouse type changes
+            warehouseType.addEventListener('change', function() {
+                if (this.value === 'district' || this.value === 'taluka') {
+                    autoSetDistrictFromParent();
+                }
+            });
+
+            // When parent warehouse changes
+            parentSelect.addEventListener('change', function() {
+                if (warehouseType.value === 'district' || warehouseType.value === 'taluka') {
+                    autoSetDistrictFromParent();
+                }
+            });
+
+            // Auto-trigger on edit page load
+            if (warehouseType.value === 'district' || warehouseType.value === 'taluka') {
+                autoSetDistrictFromParent();
+            }
+        });
+    </script> -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

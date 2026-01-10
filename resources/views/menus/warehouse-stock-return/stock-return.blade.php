@@ -77,7 +77,7 @@
 
                                                     <div class="col-md-6">
                                                         <label>Remarks</label>
-                                                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                                                        <textarea name="remarks" class="form-control" placeholder="Remark" rows="2"></textarea>
                                                     </div>
                                                 </div>
 
@@ -99,22 +99,26 @@
                                                     <tbody>
                                                         <tr>
                                                             <td>
-                                                                <select name="items[0][product_id]" class="form-control product-select" required>
+                                                                <select name="items[0][product_id]"
+                                                                    class="form-control product-select"
+                                                                    required>
+
                                                                     <option value="">Select Product</option>
 
-                                                                    @foreach($warehouseStocks->groupBy('product_id') as $productId => $stocks)
+                                                                    @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
                                                                     <option value="{{ $productId }}"
                                                                         data-batches='@json(
-                                                                            $stocks->map(fn($s) => [
-                                                                            "batch_id" => $s->batch_id,
-                                                                            "batch_no" => $s->batch->batch_no ?? "N/A",
-                                                                            "stock" => $s->quantity
-                                                                        ])
-                                                                    )'>
-                                                                        {{ $stocks->first()->product->name }}
+                $batches->map(fn($batch) => [
+                    "batch_id" => $batch->id,
+                    "batch_no" => $batch->batch_no,
+                    "stock"    => $batch->quantity
+                ])
+            )'>
+                                                                        {{ $batches->first()->product->name }}
                                                                     </option>
                                                                     @endforeach
                                                                 </select>
+
 
                                                             </td>
                                                             {{-- Product Image --}}
@@ -311,7 +315,7 @@
     /* ================= ALL CHANGE EVENTS ================= */
     document.addEventListener('change', function(e) {
 
-        /* PRODUCT CHANGE */
+        // Product change
         if (e.target.classList.contains('product-select')) {
             let row = e.target.closest('tr');
             let batchSelect = row.querySelector('.batch-select');
@@ -320,35 +324,26 @@
             batchSelect.innerHTML = '<option value="">Select Batch</option>';
             stockInput.value = '';
 
-            let batches = e.target.selectedOptions[0].dataset.batches;
+            let batches = e.target.selectedOptions[0]?.dataset.batches;
             if (!batches) return;
 
             JSON.parse(batches).forEach(batch => {
                 let option = document.createElement('option');
                 option.value = batch.batch_id;
-                option.text = batch.batch_no + ' (Stock: ' + batch.stock + ')';
+                option.textContent = batch.batch_no;
                 option.dataset.stock = batch.stock;
                 batchSelect.appendChild(option);
             });
         }
 
-        /* BATCH CHANGE */
+        // Batch change
         if (e.target.classList.contains('batch-select')) {
-            let stock =
-                e.target.selectedOptions[0]?.dataset.stock ?? '';
-            e.target.closest('tr')
-                .querySelector('.available-stock')
-                .value = stock;
-        }
-
-        /* IMAGE PREVIEW */
-        if (e.target.classList.contains('product-image')) {
-            let img =
-                e.target.closest('td').querySelector('.image-preview');
-            img.src = URL.createObjectURL(e.target.files[0]);
+            let row = e.target.closest('tr');
+            let stockInput = row.querySelector('.available-stock');
+            let stock = e.target.selectedOptions[0]?.dataset.stock ?? 0;
+            stockInput.value = stock;
         }
     });
-
     /* ================= STOCK VALIDATION ================= */
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('return-qty')) {
