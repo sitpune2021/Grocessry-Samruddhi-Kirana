@@ -37,32 +37,37 @@
                                         <input type="hidden" name="category_id" value="1">
 
                                         <!-- Row 1: FROM & TO -->
-                                       <div class="row g-3 mb-3">
+                                        <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label for="from_warehouse_id" class="form-label">From Warehouse <span class="text-danger">*</span></label>
-                                                <select name="from_warehouse_id" id="from_warehouse_id" class="form-select">
-                                                    <option value="">Select</option>
-                                                    @foreach($warehouses as $w)
-                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->from_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
-                                                    @endforeach
+                                                <label class="form-label">From Warehouse <span class="text-danger">*</span></label>
+
+                                                <select name="from_warehouse_id" id="from_warehouse_id" class="form-select" readonly>
+                                                    @if($fromWarehouse)
+                                                    <option value="{{ $fromWarehouse->id }}" selected>
+                                                        {{ $fromWarehouse->name }}
+                                                    </option>
+                                                    @endif
                                                 </select>
-                                                @error('from_warehouse_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
-                                                @enderror
+
+                                                <input type="hidden" name="from_warehouse_id" value="{{ $fromWarehouse->id }}">
                                             </div>
 
+
                                             <div class="col-md-6">
-                                                <label for="to_warehouse_id" class="form-label">To Warehouse <span class="text-danger">*</span></label>
+                                                <label class="form-label">To Warehouse <span class="text-danger">*</span></label>
+
                                                 <select name="to_warehouse_id" id="to_warehouse_id" class="form-select">
                                                     <option value="">Select</option>
-                                                    @foreach($warehouses as $w)
-                                                    <option value="{{ $w->id }}" {{ isset($transfer) && $transfer->to_warehouse_id==$w->id ? 'selected' : '' }}>{{ $w->name }}</option>
+                                                    @foreach($toWarehouses as $w)
+                                                    <option value="{{ $w->id }}"
+                                                        {{ isset($transfer) && $transfer->to_warehouse_id == $w->id ? 'selected' : '' }}>
+                                                        {{ $w->name }}
+                                                    </option>
+
                                                     @endforeach
                                                 </select>
-                                                @error('to_warehouse_id')
-                                                <span class="text-danger mt-1">{{ $message }}</span>
-                                                @enderror
                                             </div>
+
                                         </div>
 
                                         <!-- Row 2: PRODUCT -->
@@ -93,9 +98,10 @@
                                                     <option value="">Select Batch</option>
                                                     @if(isset($batches))
                                                     @foreach($batches as $b)
-                                                    <option value="{{ $p->id }}" selected>
+                                                    <option value="{{ $b->id }}" selected>
                                                         {{ $b->batch_no }}
                                                     </option>
+
                                                     @endforeach
                                                     @endif
                                                 </select>
@@ -200,17 +206,20 @@
 <script>
     $(document).ready(function() {
 
+        /* ================= SELECT2 ================= */
         $('#product_id').select2({
             placeholder: 'Select Product',
             closeOnSelect: false,
             width: '100%'
         });
+
         $('#batch_id').select2({
             placeholder: 'Select Batch',
             closeOnSelect: false,
             width: '100%'
         });
 
+        /* ================= VARIABLES ================= */
         let editIndex = null;
         let index = 0;
 
@@ -223,147 +232,154 @@
         const tableWrapper = $('#workOrderTableWrapper');
         const itemsContainer = $('#itemsContainer');
 
-        /* ========= PRODUCTS ========= */
-        fromWarehouseEl.on('change', function() {
-            const wid = $(this).val();
-            if (!wid) return;
-
+        /* ================= LOAD PRODUCTS ================= */
+        function loadProductsByWarehouse(wid) {
             $.get("{{ route('ajax.warehouse.stock.data') }}", {
                 warehouse_id: wid
             }, function(res) {
-                let opt = '';
-                res.data.forEach(p => opt += `<option value="${p.id}">${p.name}</option>`);
+
+                let opt = '<option></option>';
+                res.data.forEach(p => {
+                    opt += `<option value="${p.id}">${p.name}</option>`;
+                });
+
                 productEl.html(opt).val(null).trigger('change');
                 batchEl.html('').trigger('change');
             });
-        });
+        }
 
-        $(document).on('input change', '.qty-input', function() {
-            const rowIndex = $(this).data('index'); // rid
-            const newQty = $(this).val();
+        /* ================= AUTO LOAD (AUTH WAREHOUSE) ================= */
+        const initialWarehouseId = fromWarehouseEl.val();
+        if (initialWarehouseId) {
+            loadProductsByWarehouse(initialWarehouseId);
+        }
 
-            // update hidden input value
-            $(`[name="items[${rowIndex}][quantity]"]`).val(newQty);
-        });
-
-        /* ========= BATCHES ========= */
-        productEl.on('change', function() {
-
-            const ids = $(this).val();
-            if (!ids || !ids.length) {
-                batchEl.html('').trigger('change');
-                return;
-            }
-
-            $.get("{{ route('ajax.product.batches') }}", {
-                product_ids: ids
-            }, function(res) {
-
-                let opt = '';
-
-                res.data.forEach(b => {
-                    opt += `
-                <option value="${b.id}" data-max="${b.quantity}">
-                    ${b.batch_no} (${b.quantity})
-                </option>`;
-                });
-
-                batchEl.html(opt).trigger('change');
-            });
+        /* ================= WAREHOUSE CHANGE ================= */
+        fromWarehouseEl.on('change', function() {
+            const wid = $(this).val();
+            if (!wid) return;
+            loadProductsByWarehouse(wid);
         });
 
 
-        /* ========= QTY ========= */
+        /* ================= LOAD FIFO BATCH + AUTO QTY (MULTI PRODUCT) ================= */
         productEl.on('change', function() {
 
             const productIds = $(this).val();
 
-            if (!productIds || productIds.length === 0) {
+            if (!productIds || !productIds.length) {
                 batchEl.html('').trigger('change');
                 qtyEl.val('');
                 return;
             }
 
-            // GET batches for selected products
             $.get("{{ route('ajax.product.batches') }}", {
                 product_ids: productIds
             }, function(res) {
 
+                if (!res.data || !res.data.length) {
+                    batchEl.html('').trigger('change');
+                    qtyEl.val('');
+                    return;
+                }
+
                 let options = '';
-                let autoBatchIds = [];
+                let batchIds = [];
                 let quantities = [];
 
                 res.data.forEach(b => {
                     options += `<option value="${b.id}">${b.batch_no}</option>`;
-                    autoBatchIds.push(b.id);
+                    batchIds.push(b.id);
+
+                    // 🔥 EACH PRODUCT FIFO QTY
+                    quantities.push(b.quantity ?? 0);
                 });
 
-                // Set batch select & trigger change
+                // 🔥 SET ALL BATCHES
                 batchEl.html(options)
-                    .val(autoBatchIds)
+                    .val(batchIds)
                     .trigger('change');
 
-                // Now get quantity for each batch automatically
-                let completed = 0;
-
-                autoBatchIds.forEach((batchId, index) => {
-                    $.get(`/get-batch-stock/${batchId}`, function(r) {
-                        quantities[index] = r.quantity ?? 0;
-                        completed++;
-
-                        if (completed === autoBatchIds.length) {
-                            // Fill qty input as comma-separated
-                            qtyEl.val(quantities.join(','));
-                        }
-                    });
-                });
-
+                // 🔥 SET QTY AS CSV (5,5,5,5,5)
+                qtyEl.val(quantities.join(','));
             });
         });
 
-        /* ========= ADD / UPDATE ========= */
+
+        /* ================= QTY CHANGE ================= */
+        $(document).on('input', '.qty-input', function() {
+            const i = $(this).data('index');
+            $(`[name="items[${i}][quantity]"]`).val($(this).val());
+        });
+
+        /* ================= ADD ITEM ================= */
         $('#addItemBtn').on('click', function() {
 
             const fw = fromWarehouseEl.val();
             const tw = toWarehouseEl.val();
             const pids = productEl.val();
-            const bids = batchEl.val();
-            const qtys = qtyEl.val().split(',');
+            const qty = parseFloat(qtyEl.val()) || 0;
 
-            if (!fw || !tw || !pids || !bids || !qtys.length) {
+            if (!fw || !tw || !pids || !pids.length || !qty) {
                 alert('Fill all fields');
                 return;
             }
 
-            if (pids.length !== bids.length || bids.length !== qtys.length) {
-                alert('Product / Batch / Qty mismatch');
+            /* ================= EDIT MODE ================= */
+            if (editIndex !== null) {
+
+                const pid = pids[0]; // edit = single product
+
+                $.get("{{ route('ajax.product.batches') }}", {
+                    product_ids: [pid]
+                }, function(res) {
+
+                    const batch = res.data[0];
+
+                    // 🔥 UPDATE ROW
+                    const row = $(`#row_${editIndex}`);
+                    row.find('td:eq(1)').text(fromWarehouseEl.find(':selected').text());
+                    row.find('td:eq(2)').text(toWarehouseEl.find(':selected').text());
+                    row.find('td:eq(3)').text(productEl.find(`option[value="${pid}"]`).text());
+                    row.find('td:eq(4)').text(batch.batch_no);
+                    row.find('.qty-input').val(qty);
+
+                    // 🔥 UPDATE HIDDEN INPUTS
+                    $(`[name="items[${editIndex}][from_warehouse_id]"]`).val(fw);
+                    $(`[name="items[${editIndex}][to_warehouse_id]"]`).val(tw);
+                    $(`[name="items[${editIndex}][product_id]"]`).val(pid);
+                    $(`[name="items[${editIndex}][batch_id]"]`).val(batch.id);
+                    $(`[name="items[${editIndex}][quantity]"]`).val(qty);
+
+                    editIndex = null;
+                    resetForm();
+                });
+
                 return;
             }
 
-            if (editIndex !== null) {
-                removeRow(editIndex);
-                editIndex = null;
-            }
+            /* ================= ADD MODE (MULTI PRODUCT) ================= */
+            pids.forEach(pid => {
 
-            pids.forEach((pid, i) => {
                 const rid = index++;
 
-                tableBody.append(`
-                <tr id="row_${rid}">
+                $.get("{{ route('ajax.product.batches') }}", {
+                    product_ids: [pid]
+                }, function(res) {
 
-                    <td>${rid + 1}</td>                     
+                    const batch = res.data[0];
+
+                    tableBody.append(`
+                <tr id="row_${rid}">
+                    <td>${rid + 1}</td>
                     <td>${fromWarehouseEl.find(':selected').text()}</td>
                     <td>${toWarehouseEl.find(':selected').text()}</td>
-                    <td>${$('#product_id option[value="'+pid+'"]').text()}</td>
-                    <td>${$('#batch_id option[value="'+bids[i]+'"]').text()}</td>
+                    <td>${productEl.find(`option[value="${pid}"]`).text()}</td>
+                    <td>${batch.batch_no}</td>
                     <td>
-                        <input type="number"
-                            class="form-control form-control-sm qty-input"
-                            value="${qtys[i]}"
-                            data-index="${rid}"
-                            min="1">
+                        <input type="number" class="form-control form-control-sm qty-input"
+                               value="${qty}" min="1" data-index="${rid}">
                     </td>
-
                     <td>
                         <button type="button" class="btn btn-warning btn-sm edit-row" data-i="${rid}">Edit</button>
                         <button type="button" class="btn btn-danger btn-sm remove-row" data-i="${rid}">Remove</button>
@@ -371,51 +387,46 @@
                 </tr>
             `);
 
-                itemsContainer.append(`
+                    itemsContainer.append(`
+                <input type="hidden" name="items[${rid}][category_id]" value="1">
                 <input type="hidden" name="items[${rid}][from_warehouse_id]" value="${fw}">
                 <input type="hidden" name="items[${rid}][to_warehouse_id]" value="${tw}">
-                <input type="hidden" name="items[${rid}][category_id]" value="1">
                 <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
-                <input type="hidden" name="items[${rid}][batch_id]" value="${bids[i]}">
-                <input type="hidden" name="items[${rid}][quantity]" value="${qtys[i]}">
+                <input type="hidden" name="items[${rid}][batch_id]" value="${batch.id}">
+                <input type="hidden" name="items[${rid}][quantity]" value="${qty}">
             `);
+
+                    tableWrapper.show();
+                    toggleSubmit();
+                });
             });
 
-            tableWrapper.show();
             resetForm();
-            toggleSubmit();
         });
 
-        /* ========= EDIT ========= */
+
+        /* ================= EDIT ================= */
         $(document).on('click', '.edit-row', function() {
-            const i = $(this).data('i');
-            editIndex = i;
 
-            const get = f => $(`[name="items[${i}][${f}]"]`).map((_, el) => $(el).val()).get();
+            editIndex = $(this).data('i');
 
-            // from/to warehouse
-            fromWarehouseEl.val(get('from_warehouse_id')[0]).trigger('change');
-            toWarehouseEl.val(get('to_warehouse_id')[0]);
+            const get = f => $(`[name="items[${editIndex}][${f}]"]`).val();
+
+            fromWarehouseEl.val(get('from_warehouse_id')).trigger('change');
+            toWarehouseEl.val(get('to_warehouse_id'));
 
             setTimeout(() => {
-                // product
-                const productIds = get('product_id'); // array of product IDs
-                productEl.val(productIds).trigger('change');
-
+                productEl.val(get('product_id')).trigger('change');
                 setTimeout(() => {
-                    const batchIds = get('batch_id'); // array of batch IDs
-                    batchEl.val(batchIds).trigger('change');
-
-                    const qtys = get('quantity'); // array of qtys
-                    qtyEl.val(qtys.join(','));
-                }, 500);
-            }, 500);
+                    batchEl.val(get('batch_id')).trigger('change');
+                    qtyEl.val(get('quantity'));
+                }, 300);
+            }, 300);
 
             $('#addItemBtn').text('Update');
         });
 
-
-        /* ========= REMOVE ========= */
+        /* ================= REMOVE ================= */
         $(document).on('click', '.remove-row', function() {
             removeRow($(this).data('i'));
             toggleSubmit();
@@ -436,5 +447,9 @@
         function toggleSubmit() {
             $('button[type="submit"]').toggle(tableBody.children().length > 0);
         }
+
+        
     });
+
+    
 </script>
