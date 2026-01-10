@@ -6,17 +6,24 @@
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
 
+            @php
+            $canView = hasPermission('unit.view');
+            $canEdit = hasPermission('unit.edit');
+            $canDelete = hasPermission('unit.delete');
+            @endphp
+
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title mb-0">Unit</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-
+                    @if(hasPermission('unit.create'))
                     <a href="{{ route('units.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
                         <i class="bx bx-plus"></i> Add Unit
                     </a>
+                    @endif
                 </div>
 
             </div>
@@ -34,8 +41,9 @@
                             <th>Sr No</th>
                             <th>Unit Name</th>
                             <th>Short Name</th>
-
+                            @if($canView || $canEdit || $canDelete)
                             <th>Action</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -47,12 +55,25 @@
                             <td>{{ $unit->short_name }}</td>
 
                             {{-- Actions --}}
-                            <td>
-                                <x-action-buttons
-                                    :view-url="route('units.show', $unit->id)"
-                                    :edit-url="route('units.edit', $unit->id)"
-                                    :delete-url="route('units.destroy', $unit->id)" />
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('unit.view'))
+                                <a href="{{ route('units.show', $unit->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('unit.edit'))
+                                <a href="{{route('units.edit', $unit->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if(hasPermission('unit.delete'))
+                                <form action="{{ route('units.destroy', $unit->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete unit?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
                             </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>

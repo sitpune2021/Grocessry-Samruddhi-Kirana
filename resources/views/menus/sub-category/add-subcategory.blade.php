@@ -58,7 +58,7 @@
                                                         Parent Category <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <select name="category_id" class="form-select" {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                    <select name="category_id" id="category_id" class="form-select" {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Category</option>
                                                         @foreach($categories as $cat)
                                                         <option value="{{ $cat->id }}"
@@ -81,6 +81,7 @@
 
                                                     <input type="text"
                                                         name="name"
+                                                        id="name"
                                                         class="form-control"
                                                         value="{{ old('name', $subCategory->name ?? '') }}"
                                                         placeholder="Enter sub category name"
@@ -99,6 +100,7 @@
 
                                                     <input type="text"
                                                         name="slug"
+                                                        id="slug"
                                                         class="form-control"
                                                         value="{{ old('slug', $subCategory->slug ?? '') }}"
                                                         placeholder="auto-generated or manual"
