@@ -30,7 +30,7 @@ class WarehouseStock extends Model
 
     public function batch()
     {
-        return $this->belongsTo(ProductBatch::class, 'batch_id');
+        return $this->belongsTo(ProductBatch::class, 'batch_no');
     }
     public function category()
     {

@@ -16,34 +16,25 @@ use Illuminate\Validation\Rule;
 class SupplierController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $user = Auth::user();
+   public function index(Request $request)
+{
+    try {
+        $suppliers = Supplier::latest()->paginate(10);
 
-        // Super Admin → All suppliers
-        if ($user->role_id == 1) {
-            $query = Supplier::with('warehouse');
+        return view('supplier.index', compact('suppliers'));
 
-            //Filter by warehouse from dropdown
-            if ($request->filled('warehouse_id')) {
-                $query->where('warehouse_id', $request->warehouse_id);
-            }
+    } catch (\Throwable $e) {
 
-            $suppliers = $query->latest()->paginate(10);
-            $warehouses = Warehouse::select('id', 'name')->get();
-        }
-        // Warehouse Admin → Only own suppliers
-        else {
-            $suppliers = Supplier::with('warehouse')
-                ->where('warehouse_id', $user->warehouse_id)
-                ->latest()
-                ->paginate(10);
+        Log::error('Supplier Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
 
-            $warehouses = collect(); // empty
-        }
-
-        return view('supplier.index', compact('suppliers', 'warehouses'));
+        return redirect()->back()
+            ->with('error', 'Unable to load suppliers');
     }
+}
+
 
 
     public function create()
@@ -60,6 +51,7 @@ class SupplierController extends Controller
             'states'    => State::select('id', 'name')->get(),
         ]);
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -71,9 +63,9 @@ class SupplierController extends Controller
             ],
             'email'         => 'required|email|max:255',
             'address'       => 'required|string',
-            'state_id'      => 'required|exists:states,id',
-            'district_id'   => 'required|exists:districts,id',
-            'taluka_id'     => 'required|exists:talukas,id',
+            'state_id'      => 'nullable|exists:states,id', //temp nullable
+            'district_id'   => 'nullable|exists:districts,id',// "    "
+            'taluka_id'     => 'nullable|exists:talukas,id',// "    "
          
         ], [
             'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
@@ -132,10 +124,10 @@ class SupplierController extends Controller
             'supplier_name' => 'required|string|max:255',
             'mobile'        => 'required|digits:10|unique:suppliers,mobile,' . $id,
             'email'         => 'nullable|email|max:255',
-            'address'       => 'nullable|string',
-            'state_id'      => 'required|exists:states,id',
-            'district_id'   => 'required|exists:districts,id',
-            'taluka_id'     => 'required|exists:talukas,id',
+            'address'       => 'required|string',
+            'state_id'      => 'nullable|exists:states,id',
+            'district_id'   => 'nullable|exists:districts,id',
+            'taluka_id'     => 'nullable|exists:talukas,id',
           
         ]);
 

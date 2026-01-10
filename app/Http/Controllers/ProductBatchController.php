@@ -68,61 +68,99 @@ class ProductBatchController extends Controller
         );
     }
 
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'category_id'      => 'required|exists:categories,id',
-                'sub_category_id'  => 'required|exists:sub_categories,id',
-                'product_id'       => 'required|exists:products,id',
-                'batch_no'         => 'required|string|max:50',
-                'mfg_date'         => 'nullable|date',
-                'expiry_date'      => 'nullable|date|after:mfg_date',
-                'quantity'         => 'required|integer|min:1',
-                'unit_id'          => 'required|exists:units,id',
-            ]);
+  public function store(Request $request)
+{
+    Log::info('Product batch store request received', [
+        'user_id' => Auth::id(),
+        'payload' => $request->all(),
+    ]);
 
-            $warehouseId = Auth::user()->warehouse_id;
+    try {
+        $validated = $request->validate([
+            'category_id'      => 'required|exists:categories,id',
+            'sub_category_id'  => 'required|exists:sub_categories,id',
+            'product_id'       => 'required|exists:products,id',
+            'batch_no'         => 'required|string|max:50',
+            'mfg_date'         => 'nullable|date',
+            'expiry_date'      => 'nullable|date|after:mfg_date',
+            'quantity'         => 'required|integer|min:1',
+            'unit_id'          => 'required|exists:units,id',
+        ]);
 
-            $product = Product::findOrFail($validated['product_id']);
+        Log::info('Batch validation successful', [
+            'validated_data' => $validated,
+        ]);
 
-            $expiryDate = $validated['expiry_date'] ??
-                (
-                    $validated['mfg_date'] && $product->expiry_days
-                    ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
-                    : null
-                );
+        $warehouseId = Auth::user()->warehouse_id;
 
-            $batch = ProductBatch::create([
-                'warehouse_id'    => $warehouseId,
-                'category_id'     => $validated['category_id'],
-                'sub_category_id' => $validated['sub_category_id'],
-                'product_id'      => $validated['product_id'],
-                'batch_no'        => $validated['batch_no'],
-                'mfg_date'        => $validated['mfg_date'],
-                'expiry_date'     => $expiryDate,
-                'quantity'        => $validated['quantity'],
-                'unit_id'         => $validated['unit_id'],
-            ]);
+        $product = Product::findOrFail($validated['product_id']);
 
-            StockMovement::create([
-                'warehouse_id'      => $warehouseId,
-                'product_batch_id' => $batch->id,
-                'type'             => 'in',
-                'quantity'         => $validated['quantity'],
-            ]);
+        $expiryDate = $validated['expiry_date'] ??
+            (
+                $validated['mfg_date'] && $product->expiry_days
+                ? Carbon::parse($validated['mfg_date'])->addDays($product->expiry_days)
+                : null
+            );
 
-            return redirect()
-                ->route('batches.index')
-                ->with('success', 'Batch added successfully');
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (Exception $e) {
-            Log::error('Batch create error', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Something went wrong');
-        }
+        Log::info('Expiry date calculated', [
+            'product_id' => $product->id,
+            'expiry_date' => $expiryDate,
+        ]);
+
+        $batch = ProductBatch::create([
+            'warehouse_id'    => $warehouseId,
+            'category_id'     => $validated['category_id'],
+            'sub_category_id' => $validated['sub_category_id'],
+            'product_id'      => $validated['product_id'],
+            'batch_no'        => $validated['batch_no'],
+            'mfg_date'        => $validated['mfg_date'],
+            'expiry_date'     => $expiryDate,
+            'quantity'        => $validated['quantity'],
+            'unit_id'         => $validated['unit_id'],
+        ]);
+
+        Log::info('Product batch created successfully', [
+            'batch_id' => $batch->id,
+            'warehouse_id' => $warehouseId,
+        ]);
+
+        StockMovement::create([
+            'warehouse_id'      => $warehouseId,
+            'product_batch_id' => $batch->id,
+            'type'             => 'in',
+            'quantity'         => $validated['quantity'],
+        ]);
+
+        Log::info('Stock movement entry created', [
+            'batch_id' => $batch->id,
+            'quantity' => $validated['quantity'],
+        ]);
+
+        return redirect()
+            ->route('batches.index')
+            ->with('success', 'Batch added successfully');
+
+    } catch (ValidationException $e) {
+
+        Log::warning('Batch validation failed', [
+            'errors' => $e->errors(),
+            'user_id' => Auth::id(),
+        ]);
+
+        throw $e;
+
+    } catch (\Exception $e) {
+
+        Log::error('Batch create failed', [
+            'message' => $e->getMessage(),
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine(),
+            'user_id' => Auth::id(),
+        ]);
+
+        return back()->with('error', 'Something went wrong');
     }
-
+}
     public function show($id)
     {
         $user = Auth::user();
