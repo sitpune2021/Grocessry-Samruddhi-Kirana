@@ -123,6 +123,10 @@
                 </div>
                 <ul class="submenu" id="OrderMenu">
                     <li><a href="{{ route('warehouse.transfer.index') }}">Master → District Transfer Approval</a></li>
+                    <li><a href="{{ route('district.transfer.index') }}">District → District Transfer Approval</a></li>
+                    <li><a href="{{ route('district-taluka.transfer.index') }}">District → Taluka Transfer Approval</a></li>
+                    <li><a href="{{ route('taluka-taluka.transfer.index') }}">Taluka → Taluka Transfer Approval</a></li>
+                    <li><a href="{{ route('taluka-distribution.transfer.index') }}">Taluka → Distribution Transfer Approval</a></li>
                     <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
                     <!-- <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return Approval</a></li> -->
 
