@@ -292,7 +292,9 @@
 
                                                 {{-- Images --}}
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
+                                                    <label class="form-label">
+                                                        Product Images <span class="text-danger">*</span>
+                                                    </label>
 
                                                     @if ($mode !== 'view')
                                                     <input type="file" name="product_images[]" multiple
@@ -304,9 +306,15 @@
                                                     @enderror
 
                                                     @if (!empty($product->product_images))
+                                                    @php
+                                                    $images = is_string($product->product_images)
+                                                    ? json_decode($product->product_images, true)
+                                                    : $product->product_images;
+                                                    @endphp
+
                                                     <div class="mt-3 d-flex flex-wrap gap-2">
-                                                        @foreach (json_decode($product->product_images) as $img)
-                                                        <a href="{{ asset('storage/products/' . $img) }}"
+                                                        @foreach ($images as $img)
+                                                        <a href="{{ asset('storage/products/' . rawurlencode($img)) }}"
                                                             target="_blank"
                                                             class="text-primary text-decoration-underline d-block">
                                                             View
@@ -315,6 +323,7 @@
                                                     </div>
                                                     @endif
                                                 </div>
+
 
                                                 {{-- Buttons --}}
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
@@ -400,7 +409,7 @@
 
         let selectedSubCategoryId = $('#selected_sub_category_id').val();
 
-       
+
         $.ajax({
             url: "{{ url('get-categories') }}",
             type: "GET",
@@ -419,7 +428,7 @@
             },
             error: function() {
                 categorySelect.html('<option value="">Select Category</option>');
-          }
+            }
         });
 
         categorySelect.on('change', function() {
@@ -443,7 +452,7 @@
                     });
                     subCategorySelect.html(options);
                 },
-               error: function() {
+                error: function() {
                     subCategorySelect.html('<option value="">Select Sub Category</option>');
                 }
             });

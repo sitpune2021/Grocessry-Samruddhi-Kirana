@@ -21,28 +21,28 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    Log::info('Product Index Page Loaded');
+    public function index()
+    {
 
-    try {
-        $products = Product::with(['category', 'tax'])
-            ->latest()
-            ->paginate(10);
+        Log::info('Product Index Page Loaded');
 
-        return view('menus.product.index', compact('products'));
+        try {
+            $products = Product::with(['category', 'tax'])
+                ->latest()
+                ->paginate(10);
+            // dd($products);
+            return view('menus.product.index', compact('products'));
+        } catch (\Throwable $e) {
 
-    } catch (\Throwable $e) {
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
 
-        Log::error('Product Index Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
-
-        return redirect()->back()
-            ->with('error', 'Unable to load products');
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
     }
-}
 
 
 
@@ -78,7 +78,7 @@ class ProductController extends Controller
         Log::info('Product Store Request', [
             'request' => $request->all(),
         ]);
-             
+
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
@@ -185,31 +185,43 @@ class ProductController extends Controller
         }
     }
 
-
     public function show($id)
     {
         try {
             Log::info('Product View Request', ['id' => $id]);
 
+            // findOrFail already throws exception, so extra if not needed
             $product = Product::with('tax')->findOrFail($id);
 
-            if (!$product) {
-                Log::warning('Product Not Found', ['id' => $id]);
-                return redirect()->route('product.index')
-                    ->with('error', 'Product not found');
-            }
+            // JSON images handle (string or array)
+            $productImages = is_string($product->product_images)
+                ? json_decode($product->product_images, true)
+                : $product->product_images;
 
             $mode = 'view'; // important for form disabling
+
             $categories = Category::select('id', 'name')->get();
+
             $brands = Brand::where('status', 1)
                 ->orderBy('name')
                 ->get();
 
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
+            return view(
+                'menus.product.add-product',
+                compact('product', 'productImages', 'mode', 'categories', 'brands', 'subCategories')
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+
+            Log::warning('Product Not Found', ['id' => $id]);
+
+            return redirect()->route('product.index')
+                ->with('error', 'Product not found');
         } catch (\Throwable $e) {
+
             Log::error('Product View Error', ['message' => $e->getMessage()]);
+
             return redirect()->route('product.index')
                 ->with('error', 'Unable to view product');
         }
@@ -309,7 +321,7 @@ class ProductController extends Controller
                 }
 
                 // store as JSON in DB
-                $validated['product_images'] = json_encode($imageNames);
+                $validated['product_images'] = $imageNames;
             }
 
             $product->update($validated);
