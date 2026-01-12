@@ -293,7 +293,7 @@
                 </div>
             </div>
         </div>
-        <!-- Fruits Shop End -->
+        <!-- Fruits Shop End    -->
 
         <!-- Features Start -->
         <div class="container-fluid service py-3">
