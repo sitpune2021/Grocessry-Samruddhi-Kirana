@@ -82,6 +82,10 @@
                 </table>
             </div>
 
+            {{--<div class="px-3 py-2">
+                {{ $batches->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>--}}
+
         </div>
     </div>
 </div>

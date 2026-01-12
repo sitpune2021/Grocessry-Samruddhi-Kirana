@@ -19,36 +19,95 @@ use Illuminate\Support\Facades\Log;
 class StockController extends Controller
 {
 
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user();
 
-        // Super Admin → all warehouses
-        // Normal User → only their warehouse
+        $batchId = $request->batch_id;
+
+        // Warehouses
         $warehouses = $user->role_id == 1
             ? Warehouse::orderBy('name')->get()
             : Warehouse::where('id', $user->warehouse_id)->get();
 
-        $categories = WarehouseStock::where('warehouse_id', $user->warehouse_id)
-            ->whereNull('warehouse_stock.deleted_at')
+        $selectedWarehouse = null;
+        $selectedCategory  = null;
+        $selectedSubCat    = null;
+        $selectedProduct   = null;
+        $availableStock   = 0;
+
+        if ($batchId) {
+            $batch = ProductBatch::with([
+                'product.category',
+                'product.subCategory'
+            ])->findOrFail($batchId);
+
+            $selectedProduct   = $batch->product_id;
+            $selectedWarehouse = $batch->warehouse_id ?? $user->warehouse_id;
+            $selectedCategory  = $batch->product->category_id;
+            $selectedSubCat    = $batch->product->sub_category_id;
+
+            $availableStock = WarehouseStock::where('warehouse_id', $selectedWarehouse)
+                ->where('product_id', $selectedProduct)
+                ->sum('quantity');
+        }
+
+        // Categories
+        $categories = WarehouseStock::where('warehouse_id', $selectedWarehouse ?? $user->warehouse_id)
             ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
-            ->whereNull('categories.deleted_at')
             ->select('categories.id', 'categories.name')
             ->distinct()
             ->orderBy('categories.name')
             ->get();
 
-        return view('sale.create', [
-            'warehouses'      => $warehouses,
-            'categories'      => $categories,
-            'subCategories'   => collect(),
-            'products'        => collect(),
-            'selectedProduct' => null,
-            'availableStock'  => 0,
-            'user'            => $user,
-        ]);
-    }
+        // Sub Categories
+        $subCategories = $selectedCategory
+            ? WarehouseStock::where('warehouse_stock.warehouse_id', $selectedWarehouse)
+            ->where('warehouse_stock.category_id', $selectedCategory)
+            ->whereNotNull('warehouse_stock.sub_category_id')
+            ->whereNull('warehouse_stock.deleted_at')
+            ->join(
+                'sub_categories',
+                'sub_categories.id',
+                '=',
+                'warehouse_stock.sub_category_id'
+            )
+            ->select('sub_categories.id', 'sub_categories.name')
+            ->distinct()
+            ->get()
+            :collect();
 
+
+        // Products
+        $products = $selectedSubCat
+            ? WarehouseStock::where('warehouse_stock.warehouse_id', $selectedWarehouse)
+            ->where('warehouse_stock.sub_category_id', $selectedSubCat) 
+            ->whereNotNull('warehouse_stock.product_id')
+            ->whereNull('warehouse_stock.deleted_at')
+            ->join(
+                'products',
+                'products.id',
+                '=',
+                'warehouse_stock.product_id'
+            )
+            ->select('products.id', 'products.name')
+            ->distinct()
+            ->get()
+            :collect();
+
+        return view('sale.create', compact(
+            'warehouses',
+            'categories',
+            'subCategories',
+            'products',
+            'selectedWarehouse',
+            'selectedCategory',
+            'selectedSubCat',
+            'selectedProduct',
+            'availableStock',
+            'user'
+        ));
+    }
 
     public function store(Request $request)
     {
@@ -202,27 +261,27 @@ class StockController extends Controller
     }
 
 
-   public function getProductsBySubCategory($warehouseId, $subCategoryId)
-{
-    return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
-        ->where('warehouse_stock.sub_category_id', $subCategoryId)
-        ->whereNotNull('warehouse_stock.product_id')
-        ->whereNull('warehouse_stock.deleted_at')
-        ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
-        ->whereNull('products.deleted_at') // only if products use SoftDeletes
-        ->select('products.id', 'products.name')
-        ->distinct()
-        ->orderBy('products.name')
-        ->get();
-}
+    public function getProductsBySubCategory($warehouseId, $subCategoryId)
+    {
+        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+            ->where('warehouse_stock.sub_category_id', $subCategoryId)
+            ->whereNotNull('warehouse_stock.product_id')
+            ->whereNull('warehouse_stock.deleted_at')
+            ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
+            ->whereNull('products.deleted_at') // only if products use SoftDeletes
+            ->select('products.id', 'products.name')
+            ->distinct()
+            ->orderBy('products.name')
+            ->get();
+    }
 
 
     // Product → Quantity
     public function getProductQuantity($warehouseId, $productId)
     {
         return WarehouseStock::where('warehouse_id', $warehouseId)
-        ->where('product_id', $productId)
-        ->whereNull('deleted_at')
-        ->sum('quantity');
+            ->where('product_id', $productId)
+            ->whereNull('deleted_at')
+            ->sum('quantity');
     }
 }
