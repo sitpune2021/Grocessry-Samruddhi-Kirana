@@ -48,10 +48,14 @@ use App\Http\Controllers\DistrictToDistrictTransferController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
+use App\Http\Controllers\DistrictToDistrictApprovalController;
+use App\Http\Controllers\DistrictToTalukaApprovalController;
 use App\Http\Controllers\TalukashopTransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
 
+use App\Http\Controllers\TalukaToDistributionApprovalController;
+use App\Http\Controllers\TalukaToTalukaApprovalController;
 
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 //Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -741,6 +745,69 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
+     
+
+     // Approval district to district-transfers
+    Route::get(
+        '/district-transfers/approval',
+        [DistrictToDistrictApprovalController::class, 'index']
+    )->name('district.transfer.index');
+    Route::post(
+        '/district-transfers/{transfer}/approve',
+        [DistrictToDistrictApprovalController::class, 'approve']
+    )->name('district.transfer.approve');
+    Route::post(
+        '/district-transfer/{transfer}/reject',
+        [DistrictToDistrictApprovalController::class, 'reject']
+    )->name('district.transfer.reject');
+
+
+
+     // Approval district to taluka-transfers
+    Route::get(
+        '/taluka-transfers/approval',
+        [DistrictToTalukaApprovalController::class, 'index']
+    )->name('district-taluka.transfer.index');
+    Route::post(
+        '/taluka-transfers/{transfer}/approve',
+        [DistrictToTalukaApprovalController::class, 'approve']
+    )->name('district-taluka.transfer.approve');
+    Route::post(
+        '/taluka-transfer/{transfer}/reject',
+        [DistrictToTalukaApprovalController::class, 'reject']
+    )->name('district-taluka.transfer.reject');
+
+
+    // Approval Taluka to taluka-transfers
+    Route::get(
+        '/taluka-taluka-transfers/approval',
+        [TalukaToTalukaApprovalController::class, 'index']
+    )->name('taluka-taluka.transfer.index');
+    Route::post(
+        '/taluka-taluka-transfers/{transfer}/approve',
+        [TalukaToTalukaApprovalController::class, 'approve']
+    )->name('taluka-taluka.transfer.approve');
+    Route::post(
+        '/taluka-taluka-transfer/{transfer}/reject',
+        [TalukaToTalukaApprovalController::class, 'reject']
+    )->name('taluka-taluka.transfer.reject');
+
+
+    // Approval taluka-distribution-transfers
+    Route::get(
+        '/taluka-distribution-transfers/approval',
+        [TalukaToDistributionApprovalController::class, 'index']
+    )->name('taluka-distribution.transfer.index');
+    Route::post(
+        '/taluka-distribution-transfers/{transfer}/approve',
+        [TalukaToDistributionApprovalController::class, 'approve']
+    )->name('taluka-distribution.transfer.approve');
+    Route::post(
+        '/taluka-distribution-transfer/{transfer}/reject',
+        [TalukaToDistributionApprovalController::class, 'reject']
+    )->name('taluka-distribution.transfer.reject');
+    
+    
 
     // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])

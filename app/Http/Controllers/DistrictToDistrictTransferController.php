@@ -35,12 +35,10 @@ class DistrictToDistrictTransferController extends Controller
     public function create()
     {
         return view('district_district.transfer', [
-            'warehouses' => Warehouse::where('status', 'active')
-                ->where('type', 'taluka')
-                ->get(),
-            'categories' => collect(),  
-            'products'   => collect(),  
-            'batches'    => collect(),  
+           'warehouses' => Warehouse::where('status', 'active')->get(),
+            'categories' => collect(), // initially empty
+            'products'   => collect(), // empty collection to avoid undefined variable
+            'batches'    => collect(), // also empty
             'transfer'   => null,
         ]);
     }
