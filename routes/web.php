@@ -826,7 +826,7 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('warehouse_transfer.create');
         Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
 
-        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
         Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
         Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
         Route::get(
@@ -987,6 +987,17 @@ Route::prefix('banners')->group(function () {
 Route::prefix('contacts-details')->group(function () {
     Route::get('contacts', [BannerController::class, 'contactList'])
         ->name('admin.contacts');
+});
+
+// Admin Pages
+Route::prefix('pages')->group(function () {
+
+    // about us
+    Route::get('aboutus', [BannerController::class, 'aboutus'])
+        ->name('admin.aboutus');
+    Route::post('aboutus/store', [BannerController::class, 'storeAboutUs'])
+    ->name('admin.aboutus.store');
+    
 });
 
 // website banner route
