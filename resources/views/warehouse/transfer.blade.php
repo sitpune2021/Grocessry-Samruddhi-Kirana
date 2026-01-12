@@ -49,7 +49,8 @@
                                                     @endif
                                                 </select>
 
-                                                <input type="hidden" name="from_warehouse_id" value="{{ $fromWarehouse->id }}">
+                                                <input type="hidden" name="from_warehouse_id" value="{{ $fromWarehouse->id ?? '' }}">
+
                                             </div>
 
 
@@ -457,8 +458,6 @@
             $('button[type="submit"]').toggle(tableBody.children().length > 0);
         }
 
-        
-    });
 
-    
+    });
 </script>
