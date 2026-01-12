@@ -5,7 +5,11 @@
 
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
-
+            @php
+            $canView = hasPermission( 'delivery_agent.view');
+            $canEdit = hasPermission('delivery_agent.edit');
+            $canDelete = hasPermission('delivery_agent.delete');
+            @endphp
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
@@ -37,7 +41,9 @@
                             <th style="width: 25%;">Email</th>
                             <th style="width: 25%;">Profile Photo</th>
                             <th style="width: 25%;">Status</th>
+                             @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +51,7 @@
                         <tr>
                             {{-- Sr No --}}
                             <td class="text-center">
-                                {{  $agents->firstItem() + $index}}
+                                {{ $agents->firstItem() + $index}}
                             </td>
 
                             {{-- Shop Name --}}
@@ -89,12 +95,27 @@
                             </td>
 
                             {{-- Actions --}}
-                            <td class="text-center">
-                                <x-action-buttons
-                                    :view-url="route('delivery-agents.show', $agent->id)"
-                                    :edit-url="route('delivery-agents.edit', $agent->id)"
-                                    :delete-url="route('delivery-agents.destroy', $agent->id)" />
+
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('delivery_agent.view'))
+                                <a href="{{ route('grocery-shops.show', $shopItem->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('delivery_agent.edit'))
+                                <a href="{{ route('grocery-shops.edit', $shopItem->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if(hasPermission('delivery_agent.delete'))
+                                <form action="{{ route('grocery-shops.destroy', $shopItem->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete delivery_agent?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
                             </td>
+                            @endif
+
                         </tr>
                         @empty
                         <tr>

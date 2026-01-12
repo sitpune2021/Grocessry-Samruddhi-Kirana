@@ -49,15 +49,40 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Warehouse</label>
+
+                                                        {{-- SUPER ADMIN → DROPDOWN --}}
+                                                        @if (Auth::user()->role_id == 1)
+
+                                                        <select name="warehouse_id" class="form-control"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                            <option value="">-- Select Warehouse --</option>
+
+                                                            @foreach ($warehouses as $w)
+                                                            <option value="{{ $w->id }}"
+                                                                {{ old('warehouse_id',
+                                                            $warehouse_stock->warehouse_id ?? $userWarehouse->id ?? '') == $w->id ? 'selected' : '' }}>
+                                                                {{ $w->name }}
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+
+                                                        {{-- disabled select won't submit --}}
+                                                        @if ($mode === 'view')
+                                                        <input type="hidden" name="warehouse_id"
+                                                            value="{{ $warehouse_stock->warehouse_id }}">
+                                                        @endif
+
+                                                        {{-- OTHER USERS → KEEP CURRENT LOGIC --}}
+                                                        @else
+
                                                         @if ($mode === 'add')
                                                         <input type="text" class="form-control"
                                                             value="{{ $userWarehouse->name ?? 'N/A' }}" readonly>
-                                                        {{-- Submit warehouse ID (THIS IS WHAT BACKEND NEEDS) --}}
+
                                                         <input type="hidden" name="warehouse_id"
                                                             value="{{ $userWarehouse->id }}">
                                                         @endif
-
-                                                        {{-- VIEW / EDIT MODE --}}
 
                                                         @if ($mode === 'view' || $mode === 'edit')
                                                         <input type="text"
@@ -65,12 +90,11 @@
                                                             class="form-control"
                                                             value="{{ $stockWarehouse->name ?? 'N/A' }}" readonly>
 
-                                                        {{-- SAFE: always available --}}
                                                         <input type="hidden" name="warehouse_id"
                                                             value="{{ old('warehouse_id', $warehouse_stock->warehouse_id) }}">
                                                         @endif
 
-
+                                                        @endif
                                                     </div>
                                                 </div>
 
@@ -141,7 +165,7 @@
                                                             @endforeach
 
                                                         </select>
-                                                       
+
 
                                                         @error('product_id')
                                                         <span class="text-danger mt-1">{{ $message }}</span>

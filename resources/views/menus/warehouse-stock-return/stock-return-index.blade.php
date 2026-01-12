@@ -40,6 +40,7 @@
                     </thead>
                     <tbody>
                         @forelse($returns as $key => $return)
+                  
                         <tr>
                             <td>{{ $returns->firstItem() + $key }}</td>
 
@@ -54,7 +55,7 @@
 
                             <td>
                                 <span class="badge bg-info">
-                                   {{ $return->WarehouseStockReturnItem->sum('return_qty') }} Items
+                                    {{ $return->WarehouseStockReturnItem->sum('return_qty') }} Items
 
                                 </span>
                             </td>
@@ -83,8 +84,6 @@
                             </td>
 
                             <td>{{ $return->created_at->format('d M Y') }}</td>
-
-
                             <td>
                                 <a href="{{ route('warehouse-stock-returns.download-pdf', $return->id) }}"
                                     class="btn btn-sm btn-outline-danger"
@@ -93,7 +92,13 @@
                                 </a>
                             </td>
                             <td>
-                                @if($return->status === 'draft')
+                                @php
+                                $userWarehouseId = auth()->user()->warehouse_id;
+
+                               @endphp
+
+                                @if($return->status === 'draft' &&
+                                $userWarehouseId == $return->to_warehouse_id)
                                 <form action="{{ route('stock-returns.send-for-approval', $return->id) }}"
                                     method="POST" class="d-inline">
                                     @csrf
@@ -103,7 +108,8 @@
                                 </form>
                                 @endif
 
-                                @if($return->status == 'approved')
+                                @if($return->status == 'approved' &&
+                                $userWarehouseId == $return->from_warehouse_id)
                                 <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-primary btn-sm">
@@ -112,7 +118,9 @@
                                 </form>
                                 @endif
 
-                                @if($return->status == 'dispatched')
+                                @if($return->status == 'dispatched' &&
+                                $userWarehouseId == $return->to_warehouse_id)
+                                 
                                 <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-success btn-sm">

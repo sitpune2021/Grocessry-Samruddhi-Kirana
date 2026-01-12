@@ -33,35 +33,15 @@ class TalukaTransferController extends Controller
     }
 
    public function create()
-{
-    $user = Auth::user();
-
-    // Logged-in user's warehouse
-    $fromWarehouse = Warehouse::where('id', $user->warehouse_id)
-                        ->where('status', 'active')
-                        ->first();
-
-    // Safety check
-    if (!$fromWarehouse) {
-        abort(403, 'Warehouse not assigned');
+    {
+        return view('taluka-transfer.transfer', [
+           'warehouses' => Warehouse::where('status', 'active')->get(),
+            'categories' => collect(), // initially empty
+            'products'   => collect(), // empty collection to avoid undefined variable
+            'batches'    => collect(), // also empty
+            'transfer'   => null,
+        ]);
     }
-
-    // Same district other taluka warehouses (exclude self)
-    $toWarehouses = Warehouse::where('status', 'active')
-                        ->where('type', 'taluka')
-                        ->where('district_id', $fromWarehouse->district_id)
-                        ->where('id', '!=', $fromWarehouse->id)
-                        ->get();
-
-    return view('taluka-transfer.transfer', [
-        'fromWarehouse' => $fromWarehouse,
-        'toWarehouses'  => $toWarehouses,
-        'categories'    => collect(),
-        'products'      => collect(),
-        'batches'       => collect(),
-        'transfer'      => null,
-    ]);
-}
 
 
     public function getProductsByCategory($category_id)
