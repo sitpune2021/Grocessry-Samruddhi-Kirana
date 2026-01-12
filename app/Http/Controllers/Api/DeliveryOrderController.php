@@ -14,13 +14,6 @@ class DeliveryOrderController extends Controller
         $user = $request->user();
         $perPage = $request->get('per_page', 10);
 
-        if ($this->agentHasActiveOrder($user->id)) {
-            return response()->json([
-                'status' => true,
-                'data' => []
-            ]);
-        }
-
         $orders = Order::with('orderItems.product')
             ->where('status', 'pending')
             ->paginate($perPage);
@@ -31,45 +24,56 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
+
     public function acceptOrder(Request $request, $orderId)
     {
         $user = $request->user();
-        $order = Order::find($orderId);
-        if (!$order || $order->status !== 'pending') {
+
+        $order = Order::where('id', $orderId)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order not available for accept'
+                'message' => 'Order not available'
             ], 404);
         }
-        $order->status = 'accepted';
-        $order->delivery_agent_id = $user->id;
-        $order->save();
+
+        $order->update([
+            'status' => 'accepted',
+            'delivery_agent_id' => $user->id
+        ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Order accepted',
+            'message' => 'Order accepted & added to delivery queue',
             'data' => $order
         ]);
     }
-
     public function rejectOrder(Request $request, $orderId)
     {
-        $user = $request->user();
-        $order = Order::find($orderId);
-        if (!$order || $order->status !== 'pending') {
+        $order = Order::where('id', $orderId)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order not available for reject'
+                'message' => 'Order not available'
             ], 404);
         }
 
-        $order->status = 'rejected';
-        $order->save();
+        $order->update([
+            'status' => 'rejected'
+        ]);
+
         return response()->json([
             'status' => true,
-            'message' => 'Order rejected'
+            'message' => 'Order rejected and removed from list'
         ]);
     }
+
 
     public function getAvailableOrders(Request $request)
     {
@@ -101,6 +105,7 @@ class DeliveryOrderController extends Controller
         $orders = Order::with('orderItems.product')
             ->where('delivery_agent_id', $user->id)
             ->whereIn('status', ['accepted', 'on_the_way'])
+            ->orderBy('created_at', 'asc')
             ->paginate($perPage);
 
         return response()->json([
@@ -108,6 +113,7 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
+
 
     public function getOrderDetails(Request $request, $orderId)
     {
@@ -363,8 +369,6 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
-
-
     // Get Delivery Status
     //Filters: dateFrom, dateTo
     public function status(Request $request)
@@ -485,5 +489,4 @@ class DeliveryOrderController extends Controller
             'message' => 'Customer rated successfully'
         ]);
     }
- 
 }
