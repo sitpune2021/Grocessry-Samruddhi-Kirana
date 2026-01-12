@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Models\DeliveryAgent;
 
 class DeliveryAgentController extends Controller
 {
@@ -436,5 +437,72 @@ class DeliveryAgentController extends Controller
             'message' => 'Current order fetched',
             'data' => $order
         ]);
+    }
+
+    public function profile(Request $request)
+    {
+        $agent = DeliveryAgent::where('user_id', $request->user()->id)->first();
+
+        return response()->json([
+            'status' => true,
+            'data' => $agent
+        ]);
+    }
+
+
+    public function updateProfileField(Request $request, $type)
+    {
+        $user = $request->user();
+
+        if ($type === 'phone') {
+            $request->validate([
+                'phone' => 'required|string'
+            ]);
+
+            $user->update([
+                'mobile' => $request->phone
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Phone updated successfully'
+            ]);
+        }
+
+        if ($type === 'email') {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+
+            $user->update([
+                'email' => $request->email
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Email updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid update type'
+        ], 400);
+    }
+
+
+    public function updateVehicle(Request $request)
+    {
+        $request->validate([
+            'vehicleType' => 'required|string',
+            'vehicleNumber' => 'required|string'
+        ]);
+
+        DeliveryAgent::where('user_id', $request->user()->id)->update([
+            'vehicle_type' => $request->vehicleType,
+            'vehicle_number' => $request->vehicleNumber
+        ]);
+
+        return response()->json(['status' => true]);
     }
 }

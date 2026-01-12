@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -31,7 +30,6 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
-
 
     public function acceptOrder(Request $request, $orderId)
     {
@@ -94,7 +92,6 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
-
 
     public function getDeliveryQueue(Request $request)
     {
@@ -305,10 +302,188 @@ class DeliveryOrderController extends Controller
             'message' => 'Order cancelled successfully'
         ]);
     }
+
     private function agentHasActiveOrder($userId)
     {
         return Order::where('delivery_agent_id', $userId)
             ->whereIn('status', ['accepted', 'on_the_way'])
             ->exists();
     }
+
+    public function myDeliveries(Request $request)
+    {
+        $deliveryBoy = $request->user();
+
+        $query = Order::where('delivery_agent_id', $deliveryBoy->id);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('delivery_type', $request->type);
+        }
+
+        if ($request->filled('dateFrom')) {
+            $query->whereDate('created_at', '>=', $request->dateFrom);
+        }
+
+        if ($request->filled('dateTo')) {
+            $query->whereDate('created_at', '<=', $request->dateTo);
+        }
+
+        $deliveries = $query->latest()->paginate(10);
+
+        return response()->json([
+            'status' => true,
+            'data' => $deliveries
+        ]);
+    }
+    //Search by order_id, customer name, mobile
+    public function search(Request $request)
+    {
+        $request->validate([
+            'query' => 'required|string'
+        ]);
+
+        $deliveryBoy = $request->user();
+        $search = $request->get('query');
+
+        $deliveries = Order::where('delivery_agent_id', $deliveryBoy->id)
+            ->where(function ($q) use ($search) {
+                $q->where('order_number', 'LIKE', '%' . $search . '%')
+                    ->orWhere('status', 'LIKE', '%' . $search . '%');
+            })
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $deliveries
+        ]);
+    }
+
+
+
+    // Get Delivery Status
+    //Filters: dateFrom, dateTo
+    public function status(Request $request)
+    {
+        $deliveryBoy = $request->user();
+
+        $query = Order::where('delivery_agent_id', $deliveryBoy->id);
+
+        if ($request->filled('dateFrom')) {
+            $query->whereDate('created_at', '>=', $request->dateFrom);
+        }
+
+        if ($request->filled('dateTo')) {
+            $query->whereDate('created_at', '<=', $request->dateTo);
+        }
+
+        $total = (clone $query)->count();
+        $delivered = (clone $query)->where('status', 'delivered')->count();
+        $cancelled = (clone $query)->where('status', 'cancelled')->count();
+        $pending = (clone $query)->whereIn('status', ['pending', 'accepted'])->count();
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'total_orders' => $total,
+                'delivered_orders' => $delivered,
+                'cancelled_orders' => $cancelled,
+                'pending_orders' => $pending
+            ]
+        ]);
+    }
+    public function getOrderSummary(Request $request, $orderId)
+    {
+        $deliveryBoy = $request->user();
+
+        $order = Order::with('orderItems.product')
+            ->where('id', $orderId)
+            ->where('delivery_agent_id', $deliveryBoy->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'order_number' => $order->order_number,
+                'subtotal' => $order->subtotal,
+                'delivery_charge' => $order->delivery_charge,
+                'discount' => $order->discount,
+                'total_amount' => $order->total_amount,
+                'items_count' => $order->orderItems->count(),
+                'status' => $order->status
+            ]
+        ]);
+    }
+    public function completeOrder(Request $request, $orderId)
+    {
+        $deliveryBoy = $request->user();
+
+        $order = Order::where('id', $orderId)
+            ->where('delivery_agent_id', $deliveryBoy->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        if ($order->status !== 'on_the_way') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order cannot be completed'
+            ], 400);
+        }
+
+        $order->status = 'delivered';
+        $order->delivered_at = now();
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order completed successfully'
+        ]);
+    }
+    public function rateCustomer(Request $request, $orderId)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'tags' => 'nullable|array'
+        ]);
+
+        $deliveryBoy = $request->user();
+
+        $order = Order::where('id', $orderId)
+            ->where('delivery_agent_id', $deliveryBoy->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        $order->customer_rating = $request->rating;
+        $order->customer_rating_tags = $request->tags ? json_encode($request->tags) : null;
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer rated successfully'
+        ]);
+    }
+ 
 }
