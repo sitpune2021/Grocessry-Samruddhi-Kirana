@@ -67,7 +67,8 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-12">
+
+                                    <!-- <div class="col-lg-12">
                                         <div class="mb-3">
                                             <h4 class="mb-2">Price</h4>
                                             <form method="GET" action="{{ route('shop') }}">
@@ -80,6 +81,24 @@
                                                     value="{{ $maxPrice ?? 0 }}"
                                                     onchange="this.form.submit()">
                                                 <output>{{ $maxPrice ?? 0 }}</output>
+                                            </form>
+                                        </div>
+                                    </div> -->
+
+                                    <div class="col-lg-12">
+                                        <div class="mb-3">
+                                            <h4 class="mb-2">Price Range</h4>
+
+                                            <form id="priceForm">
+                                                <input type="number" class="form-control mb-2" 
+                                                    id="minPrice" placeholder="Min Price" value="{{ request('min_price') }}">
+
+                                                <input type="number" class="form-control mb-2" 
+                                                    id="maxPrice" placeholder="Max Price" value="{{ request('max_price') }}">
+
+                                                <button type="button" class="btn btn-primary w-100" onclick="loadProducts(1)">
+                                                    Apply Filter
+                                                </button>
                                             </form>
                                         </div>
                                     </div>
@@ -199,4 +218,30 @@
         let page = new URL(link.href).searchParams.get('page');
         loadProducts(page);
     });
+</script>
+
+<script>
+    function loadProducts(page = 1)
+    {
+        let categoryId = document.getElementById('categoryFilter').value;
+        let minPrice  = document.getElementById('minPrice').value;
+        let maxPrice  = document.getElementById('maxPrice').value;
+
+        fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('product-container').innerHTML = html;
+            });
+    }
+
+    // Pagination AJAX
+    document.addEventListener('click', function (e) {
+        let link = e.target.closest('.pagination a');
+        if (!link) return;
+
+        e.preventDefault();
+        let page = new URL(link.href).searchParams.get('page');
+        loadProducts(page);
+    });
+
 </script>
