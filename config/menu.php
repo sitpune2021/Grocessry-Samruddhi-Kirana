@@ -111,6 +111,7 @@ return [
                     'title' => 'Warehouse Stock Return Approval',
                     'route' => 'stock-returns.index',
                 ],
+
             ],
         ],
 
@@ -162,6 +163,7 @@ return [
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
             'children' => [
+                ['title' => 'WebSite Order', 'route' => 'userorder'],
                 ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
@@ -187,7 +189,7 @@ return [
             'type'  => 'dropdown',
             'key'   => 'SettingMenu',
             'title' => 'Setting',
-            'icon'  => 'bx bx-package',
+            'icon'  => 'bx bx-cog',
             'children' => [
                 ['title' => 'Permission Management', 'route' => 'RolePermission'],
                 ['title' => 'Tax Management', 'route' => 'taxes.index'],
@@ -206,6 +208,13 @@ return [
             'type'  => 'single',
             'title' => 'User Contact Details',
             'icon'  => 'bx bx-package',
+            'route' => 'admin.contacts',
+        ],
+
+        [
+          'type'  => 'single',
+            'title' => 'About us',
+            'icon'  => 'bx bx-info-circle',
             'route' => 'admin.contacts',
         ],
 
