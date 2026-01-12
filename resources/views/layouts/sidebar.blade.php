@@ -1,293 +1,135 @@
 @include('layouts.header')
 
+<style>
+    .sidebar-text {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .list-outer {
+        margin-bottom: 10px;
+    }
+
+    .dropdowns-menus {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .submenu {
+        display: none;
+        margin-left: 35px;
+        list-style: none;
+    }
+
+    .arrow.rotate {
+        transform: rotate(90deg);
+        transition: 0.2s;
+    }
+    #sidebar {
+    height: 100vh;            
+    overflow-y: auto;             
+     overflow-x: hidden; 
+     }
+     .dropdown-outer{
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        align-items: center;
+     }
+     .sidebar::-webkit-scrollbar {
+    display: none;
+}               
+</style>
 
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
 
+    <!-- Close -->
     <div class="sidebar-close">
-        <i class="bx bx-x" style="color:red !important;" id="sidebarClose"></i>
+        <i class="bx bx-x" style="color:red" id="sidebarClose"></i>
     </div>
 
     <!-- Logo -->
     <div class="sidebar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}" alt="Samruddhi Kirana">
+            <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}"
+                 alt="Samruddhi Kirana">
         </a>
     </div>
 
-    <div class="sidebar-menu" id="sidebarMenu">
-        <ul>
+    <ul>
 
-            <!-- Dashboard -->
-            <li class="menu-item">
-                <a href="/dashboard" class="menu-link active text-white">
-                    <span style="padding-left:10px">
-                        <i class="bx bx-home-smile me-2"></i>
-                        Dashboard
-                    </span>
-                </a>
-            </li>
+        @foreach(config('menu.sidebar') as $menu)
 
-            <!-- <li class="menu-header">MANAGEMENT</li> -->
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('ProductMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        Product Management
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="ProductMenu">
-                    <li><a href="{{ route('brands.index') }}">Brand</a></li>
-                    <li><a href="{{ route('category.index') }}">Category</a></li>
-                    <li><a href="{{ route('sub-category.index') }}">Sub Category</a></li>
-                    <li><a href="{{ route('units.index') }}">Unit</a></li>
-                    <li><a href="{{ route('product.index') }}">Products</a></li>
-
-                </ul>
-
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('suppplierMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Supplier & Purchase Management
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="suppplierArrow"></i>
-                </div>
-                <ul class="submenu" id="suppplierMenu">
-                    <li><a href="{{ route('supplier.index') }}">Supplier Management</a></li>
-                    <li><a href="/purchase-orders/create">Add Purches List</a></li>            
-                    <li><a href="{{ route('purchase.orders.index') }}">Purchase History</a></li>
-                </ul>
-            </li>
-
-            <!-- Warehouse -->
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('warehouseMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        Warehouse Management
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="warehouseMenu">
-                    <li><a href="{{ route('warehouse.index') }}">Warehouse Management</a></li>                   
-                    <li><a href="{{ route('index.addStock.warehouse') }}">Add Warehouse Stock</a></li>
-                </ul>
-            </li>
-
-            <!-- Inventory Dropdown -->
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('inventoryMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Inventory Management
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-                </div>
-                <ul class="submenu" id="inventoryMenu">
-                    <li><a href="{{ route('batches.index') }}">Batch Management</a></li>
-                    <li><a href="/expiry-alerts">Expiry Alerts</a></li>
-                    <li><a href="{{ route('sale.create') }}">Near Expiry Sale</a></li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('TransferMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Stock Transfer
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-                </div>
-
-                <ul class="submenu" id="TransferMenu">
-                    <li><a href="{{ route('transfer.index') }}">Master → District Transfer</a></li>
-                    <li><a href="{{ route('district-district.index') }}">District → District Transfer</a></li>
-                    <li><a href="{{ route('district-taluka-transfer.index') }}">District → Taluka Transfer</a></li>
-                    <li><a href="{{ route('taluka.transfer.index') }}">Taluka → Taluka Transfer</a></li>
-                    <li><a href="{{ route('taluka-shop.index') }}">Taluka → Distribution Center</a></li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('OrderMenu','orderArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Order & Approval
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="orderArrow"></i>
-                </div>
-                <ul class="submenu" id="OrderMenu">
-                    <li><a href="{{ route('warehouse.transfer.index') }}">Master → District Transfer Approval</a></li>
-                    <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return</a></li>
-                    <!-- <li><a href="{{ route('stock-returns.index') }}">Warehouse Stock Return Approval</a></li> -->
-
-                </ul>
-            </li>
-
-            @if (auth()->check() && auth()->user()->role_id == 1)
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('shopMenu','warehouseArrow')">
-                    <span>
-                        <i class="bx bx-store me-2 "></i>
-                        Distribution Center
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="warehouseArrow"></i>
-                </div>
-                <ul class="submenu" id="shopMenu">
-                    <li><a href="{{ route('grocery-shops.index') }}">Shop Management</a></li>
-                    @if (auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('delivery-agents.index') }}">Delivery Agent Management</a></li>
-                    <li><a href="{{ route('vehicle-assignments.index') }}">Vehicle Assignment</a></li>
-                    @endif
-                </ul>
-            </li>
+            {{-- ROLE CHECK --}}
+            @if(isset($menu['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $menu['roles']))
+                @continue
             @endif
 
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('PosMenu','PosArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        POS & Sales
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="PosArrow"></i>
-                </div>
-                <ul class="submenu" id="PosMenu">
-                    <li><a href="/warehouse-transfer-request/create">Stock Request</a></li>
-                    <li><a href="/warehouse-transfer-request/incoming">Incoming Stock Requests</a></li>
-                </ul>
-            </li>
+            {{-- SINGLE MENU --}}
+            @if($menu['type'] === 'single')
+                <li class="list-outer mt-4 ">
+                    <a href="{{ isset($menu['route']) ? route($menu['route']) : url($menu['url']) }}" class="text-white">
+                        <i class="{{ $menu['icon'] }}"></i>
+                        <span style="margin-left: 6px;">{{ $menu['title'] }}</span>
+                    </a>
+                </li>
+            @endif
 
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('OfferMenu','offerArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Offers & Schemes
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="offerArrow"></i>
-                </div>
-                <ul class="submenu" id="OfferMenu">
-                    @if (auth()->check() && auth()->user()->role_id == 1)
-                    <li><a href="{{ route('sale.create') }}">Offer Management</a></li>
-                    <li><a href="{{ route('retailer-offers.index') }}">Retailer Offer Management</a></li>
-                        {{-- <li><a href="{{ route('coupons.index') }}">Coupon Management</a></li> --}}
-                    @endif
-                    <li><a href="{{ route('offers.index') }}">Coupon Management</a></li>
-                </ul>
-            </li>
+            {{-- DROPDOWN MENU --}}
+            @if($menu['type'] === 'dropdown')
+                <li>
+                   <div class="dropdown-outer"  onclick="toggleMenu('{{ $menu['key'] }}','{{ $menu['key'] }}Arrow')">
+                     <div class="dropdowns-menus text-white mt-4"  >
+                      <div class="">
+                         <i class="{{ $menu['icon'] }}"></i>
+                      </div>
+                        <div style="margin-left: 10px;">               
+                            {{ $menu['title'] }}
+                        </div>
+                       
+                    </div>
+                     <div class="text-end  mt-4  " style="text-align: right !important; margin-left: 5px;">
+                            <i class="bx bx-chevron-right arrow text-white"
+                           id="{{ $menu['key'] }}Arrow"></i>
+                   </div>
+                   </div>
 
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('CustomerMenu','inventoryArrow')">
-                    <span>
-                        <i class="bx bx-package me-2 "></i>
-                        Customer Management
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="inventoryArrow"></i>
-                </div>
-                <ul class="submenu" id="CustomerMenu">
-                    <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
-                    <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
-                </ul>
-            </li>
+                    <ul class="submenu" id="{{ $menu['key'] }}">
+                        @foreach($menu['children'] as $child)
 
-            <li class="menu-item">
-                <div class="menu-link text-white" onclick="toggleMenu('ReportMenu','reportArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-bar-chart-alt-2 me-2"></i>
-                        Reports & Analytics
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="reportArrow"></i>
-                </div>
-                <ul class="submenu" id="ReportMenu">
-                    <li>
-                        <a href="{{ route('warehouse-stock.report') }}">
-                            Warehouse transfer Report
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('stock-movement.report') }}">
-                            Stock Movement Report
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('lowstock.index') }}">
-                            Low Stock Alert
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('lowstock.analytics') }}">
-                            Low Stock Analytics
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('transfer-challans.index') }}">
-                            Transfer Challan
-                        </a>
-                    </li>
-                </ul>
-            </li>
+                            {{-- CHILD ROLE CHECK --}}
+                            @if(isset($child['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $child['roles']))
+                                @continue
+                            @endif
 
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('SettingMenu','settingArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        Settings
-                    </span>
-                    <i class="bx bx-chevron-right arrow" id="settingArrow"></i>
-                </div>
-                <ul class="submenu" id="SettingMenu">
-                    <li><a href="{{ route('RolePermission') }}">Permission Management</a></li>
-                    <li><a href="{{ route('roles.index') }}">Role Management</a></li>
-                    <li><a href="{{ route('user.profile') }}">User Management</a></li>
-                    <li><a href="{{ route('taxes.index') }}">Tax Management</a></li>              
-                </ul>
-            </li>
+                            <li>
+                                <a href="{{ isset($child['route']) ? route($child['route']) : url($child['url']) }}">
+                                    {{ $child['title'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </li>
+            @endif
 
-            <li class="menu-header">Website Management</li>
+        @endforeach
 
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('BannerMenu','BannerArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        <a href="{{ route('banners.index') }}">Banner Management</a>
-                    </span>
-                </div>
-            </li>
-
-            <li class="menu-item">
-                <div class="menu-link  text-white" onclick="toggleMenu('BannerMenu','BannerArrow')">
-                    <span style="padding-left: 10px;">
-                        <i class="bx bx-package me-2 "></i>
-                        <a href="{{ route('admin.contacts') }}">User Contact Details</a>
-                    </span>
-                </div>
-            </li>
-
-        </ul>
-    </div>
+    </ul>
 
 </div>
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.submenu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-
-        document.querySelectorAll('.arrow').forEach(arrow => {
-            arrow.classList.remove('rotate');
-        });
-    });
-
     function toggleMenu(menuId, arrowId) {
-        const currentMenu = document.getElementById(menuId);
-        const currentArrow = document.getElementById(arrowId);
 
+        const currentMenu  = document.getElementById(menuId);
+        const currentArrow = document.getElementById(arrowId);
         const isOpen = currentMenu.style.display === 'block';
 
         document.querySelectorAll('.submenu').forEach(menu => {

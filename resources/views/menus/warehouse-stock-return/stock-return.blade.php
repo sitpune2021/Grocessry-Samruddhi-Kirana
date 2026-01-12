@@ -108,12 +108,12 @@
                                                                     @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
                                                                     <option value="{{ $productId }}"
                                                                         data-batches='@json(
-                $batches->map(fn($batch) => [
-                    "batch_id" => $batch->id,
-                    "batch_no" => $batch->batch_no,
-                    "stock"    => $batch->quantity
-                ])
-            )'>
+                                                                        $batches->map(fn($batch) => [
+                                                                        "batch_id" => $batch->id,
+                                                                        "batch_no" => $batch->batch_no,
+                                                                        "stock"    => $batch->quantity
+                                                                        ])
+                                                                    )'>
                                                                         {{ $batches->first()->product->name }}
                                                                     </option>
                                                                     @endforeach
@@ -193,100 +193,6 @@
     </div>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- <script>
-    let rowIndex = 1;
-
-    // Add Row
-    document.getElementById('addRow').addEventListener('click', function() {
-        let table = document.querySelector('#productTable tbody');
-        let row = table.rows[0].cloneNode(true);
-
-        row.querySelectorAll('input, select').forEach(el => {
-            if (el.name) el.name = el.name.replace(/\d+/, rowIndex);
-            if (el.type !== 'file') el.value = '';
-        });
-
-        row.querySelector('.image-preview').src =
-            "{{ asset('images/no-image.png') }}";
-
-        table.appendChild(row);
-        rowIndex++;
-    });
-
-    // Preview Image
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('product-image')) {
-            let reader = new FileReader();
-            let img = e.target.closest('td').querySelector('.image-preview');
-
-            reader.onload = function(e) {
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    });
-
-    // Stock validation
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('return-qty')) {
-            let row = e.target.closest('tr');
-            let available = parseInt(row.querySelector('.available-stock').value || 0);
-
-            if (parseInt(e.target.value) > available) {
-                alert('Return quantity cannot exceed available stock');
-                e.target.value = '';
-            }
-        }
-    });
-</script>
-<script>
-    document.addEventListener('change', function(e) {
-
-        // PRODUCT CHANGE
-        if (e.target.classList.contains('product-select')) {
-
-            let row = e.target.closest('tr');
-            let batchSelect = row.querySelector('.batch-select');
-            let stockInput = row.querySelector('.available-stock');
-
-            batchSelect.innerHTML = '<option value="">Select Batch</option>';
-            stockInput.value = '';
-
-            let batches = e.target.selectedOptions[0].dataset.batches;
-            if (!batches) return;
-
-            batches = JSON.parse(batches);
-
-            batches.forEach(stock => {
-                let option = document.createElement('option');
-                option.value = stock.batch_id;
-                option.text =
-                    (stock.batch?.batch_no ?? 'N/A') +
-                    ' (Stock: ' + stock.quantity + ')';
-
-                option.dataset.stock = stock.quantity;
-
-                batchSelect.appendChild(option);
-            });
-        }
-
-        // BATCH CHANGE
-        if (e.target.classList.contains('batch-select')) {
-            let row = e.target.closest('tr');
-            let stockInput = row.querySelector('.available-stock');
-
-            let stock = e.target.selectedOptions[0]?.dataset.stock ?? '';
-            stockInput.value = stock;
-        }
-
-        // IMAGE PREVIEW
-        if (e.target.classList.contains('product-image')) {
-            let img = e.target.closest('td').querySelector('.image-preview');
-            img.src = URL.createObjectURL(e.target.files[0]);
-        }
-    });
-</script> -->
-
 <script>
     let rowIndex = 1;
 

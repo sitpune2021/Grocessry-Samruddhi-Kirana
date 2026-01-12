@@ -134,32 +134,29 @@
                                 value="{{ Auth::user()->first_name }}">
                         </div>
 
-                        <div class="col-md-6">
-                            <label>Last Name <span class="text-danger">*</span></label>
-                            <input type="text" name="last_name" class="form-control"
-                                value="{{ Auth::user()->last_name }}">
-                        </div>
+                                        <div class="col-md-6">
+                                            <label>First Name</label>
+                                            <input type="text" name="first_name" class="form-control"
+                                                value="{{ Auth::user()->first_name ?? '' }}">
+                                        </div>
 
-                        <div class="col-md-6">
-                            <label>Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control"
-                                value="{{ Auth::user()->email }}" disabled>
-                        </div>
+                                        <div class="col-md-6">
+                                            <label>Last Name</label>
+                                            <input type="text" name="last_name" class="form-control"
+                                                value="{{ Auth::user()->last_name ?? '' }}">
+                                        </div>
 
-                        <div class="col-md-6">
-                            <label>Mobile <span class="text-danger">*</span> </label>
-                            <input type="text" name="mobile" class="form-control"
-                                value="{{ Auth::user()->mobile }}">
-                        </div>
+                                        <div class="col-md-6">
+                                            <label>Email</label>
+                                            <input type="email" class="form-control"
+                                                value="{{ Auth::user()->email ?? '' }}" disabled>
+                                        </div>
 
-                        <div class="col-md-6">
-                            <label>Current Password <span class="text-danger">*</span></label>
-                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
-                                placeholder="Leave blank to keep old">
-                            @error('password')
-                            <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
+                                        <div class="col-md-6">
+                                            <label>Mobile</label>
+                                            <input type="text" name="mobile" class="form-control"
+                                                value="{{ Auth::user()->mobile ?? '' }}">
+                                        </div>
 
 
                         <div class="col-md-6">
