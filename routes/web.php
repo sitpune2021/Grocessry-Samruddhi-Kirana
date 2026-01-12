@@ -639,7 +639,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     //  PURCHASE ORDER  
-    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create']);
+    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase.orders.create');
     Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
     // PURCHASE ORDER AJAX

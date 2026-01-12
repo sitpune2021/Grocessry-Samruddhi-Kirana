@@ -6,6 +6,11 @@
 
     <div class="card">
         <div class="card-datatable text-nowrap">
+             @php
+            $canView = hasPermission( 'distribution_center.view');
+            $canEdit = hasPermission('distribution_center.edit');
+            $canDelete = hasPermission('distribution_center.delete');
+            @endphp
 
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
@@ -30,7 +35,9 @@
                         <th>Owner</th>
                         <th>Mobile</th>
                         <th>Address</th>
+                        @if($canView || $canEdit || $canDelete)
                         <th>Action</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -41,12 +48,27 @@
                             <td>{{ $shopItem->owner_name }}</td>
                             <td>{{ $shopItem->mobile_no }}</td>
                             <td>{{ $shopItem->address }}</td>
-                           <td class="text-center">
-                                <x-action-buttons
-                                    :view-url="route('grocery-shops.show', $shopItem->id)"
-                                    :edit-url="route('grocery-shops.edit', $shopItem->id)"
-                                    :delete-url="route('grocery-shops.destroy', $shopItem->id)" />
+
+                             @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('distribution_center.view'))
+                                <a href="{{ route('grocery-shops.show', $shopItem->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('distribution_center.edit'))
+                                <a href="{{ route('grocery-shops.edit', $shopItem->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    @endif
+                                    @if(hasPermission('distribution_center.delete'))
+                                    <form action="{{ route('grocery-shops.destroy', $shopItem->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Delete distribution_center?')" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
+                            @endif
+
                         </tr>
                     @empty
                         <tr>

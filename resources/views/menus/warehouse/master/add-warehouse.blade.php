@@ -89,19 +89,11 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select Parent</option>
                                                         @foreach ($warehouses as $w)
-<<<<<<< HEAD
-                                                            <option value="{{ $w->id }}"
-                                                                data-type="{{ $w->type }}"
-                                                                {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
-                                                                {{ $w->name }} ({{ ucfirst($w->type) }})
-                                                            </option>
-=======
                                                         <option value="{{ $w->id }}"
                                                             data-type="{{ $w->type }}"
                                                             {{ ($warehouse->parent_id ?? '') == $w->id ? 'selected' : '' }}>
                                                             {{ $w->name }}({{ $w->district->name ?? 'N/A' }})
                                                         </option>
->>>>>>> 08dfd4843088d84033340d0782a98eb1ceff8bb6
                                                         @endforeach
                                                     </select>
 
@@ -326,7 +318,7 @@
 
                     if (selectedType === 'district') {
                         opt.style.display =
-                            (type === 'Master' || opt.value === '') ? 'block' : 'none';
+                            (type === 'master' || opt.value === '') ? 'block' : 'none';
                     } else if (selectedType === 'taluka') {
                         opt.style.display =
                             (type === 'district' || opt.value === '') ? 'block' : 'none';
