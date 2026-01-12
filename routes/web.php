@@ -826,7 +826,7 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('warehouse_transfer.create');
         Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
 
-        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming']);
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
         Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
         Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
         Route::get(
