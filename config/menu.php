@@ -9,7 +9,7 @@ return [
             'type'  => 'single',
             'title' => 'Dashboard',
             'icon'  => 'bx bx-home-smile',
-            'url'   => '/dashboard',
+            'route'   => 'dashboard',
         ],
 
         /* ================= Product Management ================= */
@@ -60,7 +60,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
-                ['title' => 'Expiry Alerts', 'url' => '/expiry-alerts'],
+                ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
                 ['title' => 'Expiry Sell', 'route' => 'sale.create'],
             ],
         ],
@@ -84,16 +84,37 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'OrderMenu',
-            'title' => 'Order Management',
+            'title' => 'Order & Approval',
             'icon'  => 'bx bx-package',
             'children' => [
                 [
-                    'title' => 'District-Wise Warehouse Stock Transfer Approval',
-                    'route' => 'warehouse.transfer.index'
+                    'title' => 'Master → District Transfer Approval',
+                    'route' => 'warehouse.transfer.index',
                 ],
-                ['title' => 'Warehouse Stock Return', 'route' => 'stock-returns.index'],
+                [
+                    'title' => 'District → District Transfer Approval',
+                    'route' => 'district.transfer.index',
+                ],
+                [
+                    'title' => 'District → Taluka Transfer Approval',
+                    'route' => 'district-taluka.transfer.index',
+                ],
+                [
+                    'title' => 'Taluka → Taluka Transfer Approval',
+                    'route' => 'taluka-taluka.transfer.index',
+                ],
+                [
+                    'title' => 'Taluka → Distribution Transfer Approval',
+                    'route' => 'taluka-distribution.transfer.index',
+                ],
+                [
+                    'title' => 'Warehouse Stock Return Approval',
+                    'route' => 'stock-returns.index',
+                ],
+
             ],
         ],
+
 
         /* ================= Distribution Center (Admin) ================= */
         [
@@ -101,7 +122,6 @@ return [
             'key'   => 'shopMenu',
             'title' => 'Distribution Center',
             'icon'  => 'bx bx-store',
-            // 'roles' => [1],
             'children' => [
                 ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
                 ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
@@ -116,10 +136,10 @@ return [
             'title' => 'POS System',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Add Purches List', 'url' => '/purchase-orders/create'],
+                ['title' => 'Add Purches List', 'route' => 'purchase.orders.create'],
                 ['title' => 'Purches History', 'route' => 'purchase.orders.index'],
-                ['title' => 'Stock Request', 'url' => '/warehouse-transfer-request/create'],
-                ['title' => 'Incoming Request', 'url' => '/warehouse-transfer-request/incoming'],
+                ['title' => 'Stock Request', 'route' => 'warehouse_transfer.create'],
+                ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
             ],
         ],
 
@@ -143,6 +163,7 @@ return [
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
             'children' => [
+                ['title' => 'WebSite Order', 'route' => 'userorder'],
                 ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
@@ -168,7 +189,7 @@ return [
             'type'  => 'dropdown',
             'key'   => 'SettingMenu',
             'title' => 'Setting',
-            'icon'  => 'bx bx-package',
+            'icon'  => 'bx bx-cog',
             'children' => [
                 ['title' => 'Permission Management', 'route' => 'RolePermission'],
                 ['title' => 'Tax Management', 'route' => 'taxes.index'],
@@ -188,6 +209,13 @@ return [
             'title' => 'User Contact Details',
             'icon'  => 'bx bx-package',
             'route' => 'admin.contacts',
+        ],
+
+        [
+          'type'  => 'single',
+            'title' => 'About us',
+            'icon'  => 'bx bx-info-circle',
+            'route' => 'admin.aboutus',
         ],
 
     ],

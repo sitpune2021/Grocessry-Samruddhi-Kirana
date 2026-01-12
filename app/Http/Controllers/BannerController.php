@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Banner;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ContactDetail;
+use App\Models\AboutPage;
+
 
 class BannerController extends Controller
 {
@@ -87,6 +89,25 @@ class BannerController extends Controller
         $contacts = ContactDetail::latest()->paginate(10);
 
         return view('contacts.index', compact('contacts'));
+    }
+
+    public function aboutus()
+    {
+        return view('website.about');
+    }
+
+    public function storeAboutUs(Request $request)
+    {
+        $request->validate([
+            'content' => 'required',
+        ]);
+
+        AboutPage::updateOrCreate(
+            ['id' => 1], // ek hi About Us page rahe
+            ['content' => $request->content]
+        );
+
+        return back()->with('success', 'About Us updated successfully');
     }
 
 }
