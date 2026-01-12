@@ -20,10 +20,11 @@ class GroceryShopController extends Controller
     {
         return view('grocery_shops.create', [
             'shop' => null,
-            'districtWarehouses' => Warehouse::whereNotNull('district_id')
-                ->whereNull('taluka_id')
+            'districtWarehouses' => Warehouse::where('type', 'district')
+                ->where('status', 'active')
                 ->orderBy('name')
                 ->get()
+
         ]);
     }
 
@@ -48,8 +49,8 @@ class GroceryShopController extends Controller
                 'owner_name'  => $request->owner_name,
                 'mobile_no'   => $request->mobile_no,
                 'address'     => $request->address,
-                'district_id' => $request->district_warehouse_id, // warehouse id
-                'taluka_id'   => $request->taluka_id,             // warehouse id
+                'district_id' => $request->district_warehouse_id,
+                'taluka_id'   => $request->taluka_id,
                 'status'      => 'active',
             ]);
 
@@ -70,8 +71,8 @@ class GroceryShopController extends Controller
         return view('grocery_shops.create', [
             'shop' => $groceryShop,
 
-            'districtWarehouses' => Warehouse::whereNotNull('district_id')
-                ->whereNull('taluka_id')
+            'districtWarehouses' => Warehouse::where('type', 'district')
+                ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
 
@@ -115,8 +116,8 @@ class GroceryShopController extends Controller
         return view('grocery_shops.create', [
             'shop' => $groceryShop,
 
-            'districtWarehouses' => Warehouse::whereNotNull('district_id')
-                ->whereNull('taluka_id')
+           'districtWarehouses' => Warehouse::where('type', 'district')
+                ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
 

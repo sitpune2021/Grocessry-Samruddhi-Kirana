@@ -5,7 +5,11 @@
 
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
-
+            @php
+            $canView = hasPermission( 'vehical_assignment.view');
+            $canEdit = hasPermission('vehical_assignment.edit');
+            $canDelete = hasPermission('vehical_assignment.delete');
+            @endphp
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
@@ -36,7 +40,9 @@
                             <th style="width: 25%;">Vehicle Type</th>
                             <th style="width: 25%;">License No</th>
                             <th style="width: 25%;">Status</th>
+                            @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -45,7 +51,8 @@
                         <tr>
                             <td class="text-center">{{ $loop->iteration }}</td>
                             <td>{{ $driverVehicle->driver?->first_name }}
-                                {{ $driverVehicle->driver?->last_name }}</td>
+                                {{ $driverVehicle->driver?->last_name }}
+                            </td>
                             <td>{{ $driverVehicle->vehicle_no }}</td>
                             <td>{{ $driverVehicle->vehicle_type ?? '-' }}</td>
                             <td>{{ $driverVehicle->license_no ?? '-' }}</td>
@@ -63,12 +70,25 @@
                                 @endif
                             </td>
 
-                            <td class="text-center">
-                                <x-action-buttons
-                                    :view-url="route('vehicle-assignments.show', $driverVehicle->id)"
-                                    :edit-url="route('vehicle-assignments.edit', $driverVehicle->id)"
-                                    :delete-url="route('vehicle-assignments.destroy', $driverVehicle->id)" />
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('vehical_assignment.view'))
+                                <a href="{{ route('vehicle-assignments.show', $driverVehicle->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if(hasPermission('vehical_assignment.edit'))
+                                <a href="{{ route('vehicle-assignments.edit', $driverVehicle->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if(hasPermission('vehical_assignment.delete'))
+                                <form action="{{ route('vehicle-assignments.destroy', $driverVehicle->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete vehical_assignment?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

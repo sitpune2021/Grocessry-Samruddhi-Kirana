@@ -206,7 +206,8 @@ class AdminAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        //if (!Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
             return back()
                 ->withErrors(['email' => 'Invalid email or password'])
                 ->withInput();
@@ -229,7 +230,9 @@ class AdminAuthController extends Controller
                 'time'    => now()->toDateTimeString(),
             ]);
 
-            Auth::logout();
+            //Auth::logout();
+            Auth::guard('admin')->logout();
+
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();

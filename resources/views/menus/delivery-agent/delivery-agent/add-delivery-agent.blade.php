@@ -116,7 +116,7 @@
                                                         Mobile <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="text" maxlength="10" name="mobile"
-                                                        class="form-control" placeholder="Enter 10 digit mobile number"
+                                                        class="form-control" placeholder="Enter mobile number"
                                                         value="{{ old('mobile', $agent->user->mobile ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
@@ -131,7 +131,7 @@
                                                         Email
                                                     </label>
                                                     <input type="email" name="email" class="form-control"
-                                                        placeholder="Enter email address"
+                                                        placeholder="Enter email "
                                                         value="{{ old('email', $agent->user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <!--
@@ -154,6 +154,18 @@
 @enderror -->
                                                 </div>
 
+
+
+                                                {{-- Address --}}
+                                                <div class="col-md-6">
+                                                    <label class="form-label fw-medium">Address</label>
+                                                    <textarea name="address" class="form-control" rows="3" placeholder="Enter address"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>{{ old('address', $agent->address ?? '') }}</textarea>
+
+                                                    <!-- @error('address')
+    <div class="text-danger mt-1">{{ $message }}</div>
+@enderror -->
+                                                </div>
                                                 {{-- Gender --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium d-block">
@@ -180,18 +192,6 @@
     <div class="text-danger mt-1">{{ $message }}</div>
 @enderror -->
                                                 </div>
-
-                                                {{-- Address --}}
-                                                <div class="col-md-8">
-                                                    <label class="form-label fw-medium">Address</label>
-                                                    <textarea name="address" class="form-control" rows="3" placeholder="Enter complete address"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>{{ old('address', $agent->address ?? '') }}</textarea>
-
-                                                    <!-- @error('address')
-    <div class="text-danger mt-1">{{ $message }}</div>
-@enderror -->
-                                                </div>
-
                                                 {{-- Profile Image --}}
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Profile Image</label>
