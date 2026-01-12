@@ -28,7 +28,8 @@
                     data-bs-toggle="dropdown">
 
                     <div class="avatar avatar-online">
-                      <img
+                      @if(Auth::check())
+    <img
         src="{{ Auth::user()->profile_photo
             ? asset('storage/' . Auth::user()->profile_photo)
             : asset('admin/assets/img/avatars/1.png') }}"
@@ -37,6 +38,10 @@
         height="40"
         alt="User Avatar"
     >
+@else
+    <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">
+@endif
+
                     </div>
                 </a>
 
@@ -131,7 +136,7 @@
                         <div class="col-md-6">
                             <label>First Name <span class="text-danger">*</span></label>
                             <input type="text" name="first_name" class="form-control"
-                                value="{{ Auth::user()->first_name }}">
+                                value="{{ Auth::user()->first_name ?? '' }}">
                         </div>
 
                                         <div class="col-md-6">

@@ -989,6 +989,17 @@ Route::prefix('contacts-details')->group(function () {
         ->name('admin.contacts');
 });
 
+// Admin Pages
+Route::prefix('pages')->group(function () {
+
+    // about us
+    Route::get('aboutus', [BannerController::class, 'aboutus'])
+        ->name('admin.aboutus');
+    Route::post('aboutus/store', [BannerController::class, 'storeAboutUs'])
+    ->name('admin.aboutus.store');
+    
+});
+
 // website banner route
 Route::get('/', [WebsiteController::class, 'index'])->name('home');
 
