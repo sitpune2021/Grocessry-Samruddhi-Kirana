@@ -78,16 +78,17 @@ class WarehouseStockReturnController extends Controller
         $user = User::with('warehouse')->findOrFail(auth()->id());
 
         $fromWarehouse = $user->warehouse;
-        $fromWarehouseId = $fromWarehouse->id;
+
+        $fromWarehouseId = $fromWarehouse->id ?? null;
 
         /**
          * FILTER TO WAREHOUSE BASED ON LEVEL
          */
-        if ($fromWarehouse->type === 'taluka') {
+        if ($fromWarehouse?->type === 'taluka') {
 
             // Taluka → District
             $warehouses = Warehouse::where('type', 'district')->get();
-        } elseif ($fromWarehouse->type === 'district') {
+        } elseif ($fromWarehouse?->type === 'district') {
 
             // District → Master
             $warehouses = Warehouse::where('type', 'master')->get();
@@ -418,7 +419,7 @@ class WarehouseStockReturnController extends Controller
             }
 
             $stockReturn->update([
-                'status'      => 'approved',
+                'status'      => 'pending_approval',
                 'approved_by' => auth()->id(),
             ]);
 
@@ -436,6 +437,29 @@ class WarehouseStockReturnController extends Controller
 
             return back()->with('error', $e->getMessage());
         }
+    }
+
+
+    /* DISTRICT → APPROVE */
+    public function approve($id)
+    {
+        $return = WarehouseStockReturn::findOrFail($id);
+        $userWarehouseId = auth()->user()->warehouse_id;
+
+        // Only TO warehouse (District)
+        if ($return->to_warehouse_id !== $userWarehouseId) {
+            abort(403, 'Unauthorized');
+        }
+
+        if ($return->status !== 'pending_approval') {
+            abort(400, 'Invalid status');
+        }
+
+        $return->update([
+            'status' => 'approved'
+        ]);
+
+        return back()->with('success', 'Stock approved');
     }
 
     public function dispatch($id)
@@ -485,7 +509,6 @@ class WarehouseStockReturnController extends Controller
                     ])
                         ->lockForUpdate()
                         ->first();
-
 
                     Log::info('Source Stock Found', [
                         'warehouse_stock_id' => $stock->id,

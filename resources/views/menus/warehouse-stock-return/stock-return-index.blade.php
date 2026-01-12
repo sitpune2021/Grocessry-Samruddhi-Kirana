@@ -40,7 +40,7 @@
                     </thead>
                     <tbody>
                         @forelse($returns as $key => $return)
-                  
+
                         <tr>
                             <td>{{ $returns->firstItem() + $key }}</td>
 
@@ -95,7 +95,7 @@
                                 @php
                                 $userWarehouseId = auth()->user()->warehouse_id;
 
-                               @endphp
+                                @endphp
 
                                 @if($return->status === 'draft' &&
                                 $userWarehouseId == $return->to_warehouse_id)
@@ -108,8 +108,18 @@
                                 </form>
                                 @endif
 
+                                {{-- DISTRICT: APPROVE --}}
+                                @if($return->canApprove($userWarehouseId))
+                                <form action="{{ route('stock-returns.approve', $return->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm">
+                                        Approve
+                                    </button>
+                                </form>
+                                @endif
+
                                 @if($return->status == 'approved' &&
-                                $userWarehouseId == $return->from_warehouse_id)
+                                $userWarehouseId == $return->to_warehouse_id)
                                 <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-primary btn-sm">
@@ -118,9 +128,11 @@
                                 </form>
                                 @endif
 
+
+
                                 @if($return->status == 'dispatched' &&
-                                $userWarehouseId == $return->to_warehouse_id)
-                                 
+                                $userWarehouseId == $return->from_warehouse_id)
+
                                 <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-success btn-sm">
