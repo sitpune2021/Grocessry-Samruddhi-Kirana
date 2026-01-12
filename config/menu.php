@@ -46,11 +46,24 @@ return [
             'icon'  => 'bx bx-store',
             'children' => [
                 ['title' => 'Add Warehouse', 'route' => 'warehouse.index'],
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Add Warehouse Stock', 'route' => 'index.addStock.warehouse'],
             ],
         ],
+
+        /* ================ User Management ==============*/
+        [
+            'type'  => 'dropdown',
+            'key'   => 'userMenu',
+            'title' => 'User Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Role Management', 'route' => 'roles.index'],
+                ['title' => 'User Management', 'route' => 'user.profile'],
+                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+
+            ],
+        ],
+
 
         /* ================= Inventory Management ================= */
         [
@@ -191,7 +204,6 @@ return [
             'title' => 'Setting',
             'icon'  => 'bx bx-cog',
             'children' => [
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
                 ['title' => 'Tax Management', 'route' => 'taxes.index'],
             ],
         ],
@@ -212,7 +224,7 @@ return [
         ],
 
         [
-          'type'  => 'single',
+            'type'  => 'single',
             'title' => 'About us',
             'icon'  => 'bx bx-info-circle',
             'route' => 'admin.aboutus',

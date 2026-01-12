@@ -8,7 +8,14 @@
                     <option value="100">100</option>
                 </select>entries</label></div>
     </div> -->
-    <div class=" justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
-        <div class="dt-search mt-0 mt-md-6"><label  >Search:</label><input type="search" class="form-control  mb-5 ms-4" id="dt-search-1" placeholder="" aria-controls="DataTables_Table_1"></div>
+        <div class=" justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
+            <div class="dt-search mt-0 mt-md-6">
+                <label>Search:</label>
+                <input type="search"
+                    class="form-control  mb-5 ms-4"
+                    id="dt-search-1"
+                    placeholder=""
+                    aria-controls="DataTables_Table_1">
+            </div>
+        </div>
     </div>
-</div>
