@@ -24,9 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('delivery_agent_id');
-            $table->dropColumn('cancel_reason');
-            $table->dropColumn('cancel_comment');
+
+            $table->dropColumn(['cancel_reason',  'cancel_comment', 'cancelled_at']);
         });
     }
 };
