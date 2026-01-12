@@ -207,14 +207,7 @@
 
                             <div class="mt-4 d-flex flex-column align-items-end">
                                 {{-- Pagination --}}
-                                {{ $allProducts->links() }}
-
-                                {{-- Showing result text --}}
-                                <div class="mt-2 text-muted">
-                                    Showing {{ $allProducts->firstItem() }}
-                                    to {{ $allProducts->lastItem() }}
-                                    of {{ $allProducts->total() }} results
-                                </div>
+                                {{ $allProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
                             </div>
 
                         </div>
@@ -277,14 +270,14 @@
 
                             <div class="mt-4 d-flex flex-column align-items-end">
                                 {{-- Pagination --}}
-                                {{ $categoryProducts->links() }}
+                                {{ $categoryProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
 
                                 {{-- Showing result text --}}
-                                <div class="mt-2 text-muted">
+                                <!-- <div class="mt-2 text-muted">
                                     Showing {{ $categoryProducts->firstItem() }}
                                     to {{ $categoryProducts->lastItem() }}
                                     of {{ $categoryProducts->total() }} results
-                                </div>
+                                </div> -->
                             </div>
 
                         </div>
