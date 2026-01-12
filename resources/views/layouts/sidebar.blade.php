@@ -191,6 +191,7 @@
                 <ul class="submenu" id="CustomerMenu">
                     <li><a href="{{ route('customer-orders.index') }}">Customer Order</a></li>
                     <li><a href="{{ route('customer-returns.index') }}">Order Return</a></li>
+                    <li><a href="{{ route('userorder') }}">User Order</a></li>
                 </ul>
             </li>
 

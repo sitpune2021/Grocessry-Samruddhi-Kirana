@@ -9,6 +9,7 @@
                     @endphp
 
                     <div class="fruite-img">
+                        <a href="{{ route('productdetails', $product->id) }}">
                         @if($image)
                         <img
                             src="{{ asset('storage/products/'.$image) }}"
@@ -22,13 +23,22 @@
                             alt="No Image"
                             style="height: 200px; object-fit: cover;">
                         @endif
+                        </a>
                     </div>
 
                     <h4>{{ $product->name }}</h4>
                     <p class="text-dark fs-5 fw-bold mb-0">
                         ₹ {{ $product->mrp }}
                     </p>
-                    <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>                                           
+                    
+                    <form action="{{ route('add_cart') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <button class="btn border border-secondary rounded-pill px-3 text-primary">
+                            <i class="fa fa-shopping-bag me-2"></i> Add to cart
+                        </button>
+                    </form>
+                                          
                 </div>
             </div>
         </div>
