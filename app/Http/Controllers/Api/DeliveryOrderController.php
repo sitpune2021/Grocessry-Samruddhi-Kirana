@@ -14,6 +14,14 @@ class DeliveryOrderController extends Controller
     {
         $user = $request->user();
         $perPage = $request->get('per_page', 10);
+
+        if ($this->agentHasActiveOrder($user->id)) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
         $orders = Order::with('orderItems.product')
             ->where('status', 'pending')
             ->paginate($perPage);
@@ -23,6 +31,7 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
+
 
     public function acceptOrder(Request $request, $orderId)
     {
@@ -66,7 +75,16 @@ class DeliveryOrderController extends Controller
 
     public function getAvailableOrders(Request $request)
     {
+        $user = $request->user();
         $perPage = $request->get('per_page', 10);
+
+        if ($this->agentHasActiveOrder($user->id)) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
         $orders = Order::with('orderItems.product')
             ->where('status', 'pending')
             ->paginate($perPage);
@@ -76,6 +94,7 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
+
 
     public function getDeliveryQueue(Request $request)
     {
@@ -285,5 +304,11 @@ class DeliveryOrderController extends Controller
             'status' => true,
             'message' => 'Order cancelled successfully'
         ]);
+    }
+    private function agentHasActiveOrder($userId)
+    {
+        return Order::where('delivery_agent_id', $userId)
+            ->whereIn('status', ['accepted', 'on_the_way'])
+            ->exists();
     }
 }

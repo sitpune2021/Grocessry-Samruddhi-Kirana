@@ -21,6 +21,11 @@
 
 <body>
 
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
     <!-- Hero Start -->
     <div class="py-5 mb-5">
         <div class="py-5" style="

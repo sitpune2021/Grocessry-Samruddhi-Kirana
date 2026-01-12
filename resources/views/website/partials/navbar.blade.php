@@ -84,16 +84,53 @@
                             </div> -->
                             <a href="{{ route('contact') }}" class="nav-item nav-link">Contact</a>
                         </div>
+                        
                         <div class="d-flex m-3 me-0">
-                            <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
-                            <a href="#" class="position-relative me-4 my-auto">
+
+                            <!-- Search -->
+                            <!-- <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4"
+                                data-bs-toggle="modal" data-bs-target="#searchModal">
+                                <i class="fas fa-search text-primary"></i>
+                            </button> -->
+
+                            <!-- Cart -->
+                            <a href="{{ route('cart') }}" class="position-relative me-4 my-auto">
                                 <i class="fa fa-shopping-bag fa-2x"></i>
-                                <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
+
+                                @if($cartCount > 0)
+                                <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center 
+                                justify-content-center text-dark px-1"
+                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;">
+                                    {{ $cartCount }}
+                                </span>
+                                @endif
                             </a>
-                            <a href="#" class="my-auto">
-                                <i class="fas fa-user fa-2x"></i>
-                            </a>
+
+                            <!-- User -->
+                            @auth
+                                <div class="dropdown">
+                                    <a href="#" class="my-auto dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user fa-2x"></i>
+                                        <span class="ms-1">{{ Auth::user()->first_name ?? '' }}</span>
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <form method="POST" action="{{ route('websitelogout') }}">
+                                                @csrf
+                                                <button class="dropdown-item text-danger">Logout</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            @else
+                                <a href="{{ route('login') }}" class="my-auto">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </a>
+                            @endauth
+
                         </div>
+
                     </div>
                 </nav>
             </div>
