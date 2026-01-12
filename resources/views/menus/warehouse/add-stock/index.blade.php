@@ -1,6 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .search-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+    }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
     <div class="card">
@@ -26,12 +35,50 @@
                 @endif
             </div>
 
-            <!-- Search -->
-            <x-datatable-search />
+            <!-- Search + Warehouse Filter -->
+            <div style="
+                 display:flex;
+                justify-content:space-between;
+                align-items:flex-end;
+                gap:5px;
+                padding:0.5rem 1rem;
+                flex-wrap:wrap; ">
+
+                <form method="GET" action="{{ route('index.addStock.warehouse') }}">
+                    <!-- <label>Search:</label> -->
+                    <input type="search"
+                        name="search"
+                        value="{{ request('search') }}"
+                        class="form-control"
+                        placeholder="Search stock...">
+                </form>
+
+                <!-- Warehouse Dropdown (Super Admin only) -->
+                @if(Auth::user()->role_id == 1)
+                <form method="GET" action="{{ route('index.addStock.warehouse') }}">
+                    <label class="form-label mb-1">Select Warehouse</label>
+                    <select name="warehouse_id"
+                        class="form-select"
+                        onchange="this.form.submit()"
+                        style="min-width:220px">
+                        <option value="">-- All Warehouses --</option>
+                        @foreach($warehouses as $w)
+                        <option value="{{ $w->id }}"
+                            {{ request('warehouse_id') == $w->id ? 'selected' : '' }}>
+                            {{ $w->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </form>
+                @endif
+
+            </div>
+
+
 
             <!-- Table -->
             <div class="table-responsive mt-5 p-3">
-                <table class="table table-bordered table-striped align-middle">
+                <table id="stock" class="table table-bordered table-striped align-middle">
                     <thead>
                         <tr class="bg-light">
                             <th>Sr No</th>
@@ -65,8 +112,8 @@
                             </td>
 
                             {{-- Actions --}}
-                            
-                             @if($canView || $canEdit || $canDelete)
+
+                            @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('stock.view'))
                                 <a href="{{ route('warehouse.viewStockForm', $stock->id) }}" class="btn btn-sm btn-primary">View</a>
@@ -98,13 +145,13 @@
                 </table>
             </div>
 
+            <div class="px-3 py-2">
+                {{ $stocks->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
 
         </div>
     </div>
     @endsection
-
-    @push('scripts')
-    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
     <!-- table search box script -->
 
@@ -114,7 +161,7 @@
         document.addEventListener("DOMContentLoaded", function() {
 
             const searchInput = document.getElementById("dt-search-1");
-            const table = document.getElementById("batchTable");
+            const table = document.getElementById("stock");
 
             if (!searchInput || !table) return;
 
@@ -138,5 +185,4 @@
 
         });
     </script>
-    @endpush
     @endpush
