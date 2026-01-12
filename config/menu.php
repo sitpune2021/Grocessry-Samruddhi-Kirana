@@ -215,7 +215,7 @@ return [
           'type'  => 'single',
             'title' => 'About us',
             'icon'  => 'bx bx-info-circle',
-            'route' => 'admin.contacts',
+            'route' => 'admin.aboutus',
         ],
 
     ],
