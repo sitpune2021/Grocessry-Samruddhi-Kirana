@@ -304,15 +304,19 @@
                                                     @enderror
 
                                                     @if (!empty($product->product_images))
-                                                    <div class="mt-3 d-flex flex-wrap gap-2">
-                                                        @foreach (json_decode($product->product_images) as $img)
-                                                        <a href="{{ asset('storage/products/' . $img) }}"
-                                                            target="_blank"
-                                                            class="text-primary text-decoration-underline d-block">
-                                                            View
-                                                        </a>
-                                                        @endforeach
-                                                    </div>
+                                                    @php
+                                                    $images = $product->product_images; // Already array
+                                                    $image = $images[0] ?? null;
+                                                    @endphp
+
+                                                    @if ($image)
+                                                    <img src="{{ asset('storage/products/' . $image) }}" alt="Product Image"
+                                                        width="60" height="60" class="rounded border">
+                                                    @else
+                                                    <span class="text-muted">No Image</span>
+                                                    @endif
+                                                    @else
+                                                    <span class="text-muted">No Image</span>
                                                     @endif
                                                 </div>
 
@@ -400,7 +404,7 @@
 
         let selectedSubCategoryId = $('#selected_sub_category_id').val();
 
-       
+
         $.ajax({
             url: "{{ url('get-categories') }}",
             type: "GET",
@@ -419,7 +423,7 @@
             },
             error: function() {
                 categorySelect.html('<option value="">Select Category</option>');
-          }
+            }
         });
 
         categorySelect.on('change', function() {
@@ -443,7 +447,7 @@
                     });
                     subCategorySelect.html(options);
                 },
-               error: function() {
+                error: function() {
                     subCategorySelect.html('<option value="">Select Sub Category</option>');
                 }
             });

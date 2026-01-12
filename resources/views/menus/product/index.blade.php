@@ -117,9 +117,9 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            <x-pagination :from="$products->firstItem()" :to="$products->lastItem()" :total="$products->total()" />
-
+            <div class="px-3 py-2">
+                {{ $products->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
         </div>
 
         <!-- Search -->
