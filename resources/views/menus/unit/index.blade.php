@@ -81,7 +81,9 @@
             </div>
 
             <!-- Pagination -->
-
+            <div class="px-3 py-2">
+                {{ $units->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
 
         </div>
     </div>
