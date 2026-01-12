@@ -74,7 +74,7 @@ return [
             'children' => [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
-                ['title' => 'Expiry Sell', 'route' => 'sale.create'],
+                ['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
             ],
         ],
 
