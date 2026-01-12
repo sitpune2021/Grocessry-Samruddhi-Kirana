@@ -99,13 +99,13 @@
                             @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('delivery_agent.view'))
-                                <a href="{{ route('grocery-shops.show', $shopItem->id) }}" class="btn btn-sm btn-primary">View</a>
+                                <a href="{{ route('delivery-agents.show', $agent->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
                                 @if(hasPermission('delivery_agent.edit'))
-                                <a href="{{ route('grocery-shops.edit', $shopItem->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="{{ route('delivery-agents.edit', $agent->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
                                 @if(hasPermission('delivery_agent.delete'))
-                                <form action="{{ route('grocery-shops.destroy', $shopItem->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('delivery-agents.destroy', $agent->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button onclick="return confirm('Delete delivery_agent?')" class="btn btn-sm btn-danger">

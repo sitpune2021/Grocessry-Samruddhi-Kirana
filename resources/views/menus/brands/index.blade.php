@@ -131,11 +131,9 @@
 
             <!-- Pagination -->
             <div class="px-3 py-2">
-                <x-pagination
-                    :from="$brands->firstItem()"
-                    :to="$brands->lastItem()"
-                    :total="$brands->total()" />
+               {{ $brands->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
+
 
         </div>
     </div>
