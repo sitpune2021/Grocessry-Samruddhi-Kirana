@@ -137,7 +137,7 @@
                                                         @foreach ($warehouses as $warehouse)
                                                             <option value="{{ $warehouse->id }}"
                                                                 {{ old('warehouse_id', $user->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
-                                                                {{ $warehouse->name }} ({{ ucfirst(strtolower($warehouse->type)) }})
+                                                                {{ $warehouse->name }} ({{ $warehouse->district->name ?? 'N/A' }})
                                                             </option>
                                                         @endforeach
                                                     </select>
