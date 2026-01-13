@@ -44,38 +44,29 @@ class WarehouseTransferController extends Controller
     // }
  
     public function create()
-{
-    $user = auth()->user();
- 
-    // 🔹 Logged-in District Warehouse
-    $toWarehouse = Warehouse::where('status', 'active')
-        ->where('id', $user->warehouse_id)
-        ->firstOrFail();
- 
-    // 🔹 Parent Master Warehouse of this District
-    $fromWarehouse = Warehouse::where('status', 'active')
-        ->where('id', $toWarehouse->parent_id)
-        ->where('type', 'master')
-        ->firstOrFail();
- 
-    // 🔹 Products ONLY from this master warehouse stock
-    $products = Product::whereIn('id', function ($q) use ($fromWarehouse) {
-        $q->select('product_id')
-            ->from('warehouse_stock')
-            ->where('warehouse_id', $fromWarehouse->id)
-            ->where('quantity', '>', 0);
-    })->get();
-   
- 
-    return view('warehouse.transfer', [
-        'toWarehouse'          => $toWarehouse,
-        'fromWarehouses'       => collect([$fromWarehouse]), // 🔒 only parent
-        'defaultFromWarehouse' => $fromWarehouse,
-        'products'             => $products,
-        'batches'              => collect(),
-        'transfer'             => null,
-    ]);
-}
+    {
+        $user = auth()->user();
+
+        // 🔹 Logged-in user's warehouse (Taluka OR District)
+        $toWarehouse = Warehouse::where('status', 'active')
+            ->where('id', $user->warehouse_id)
+            ->firstOrFail();
+
+        // 🔹 Parent warehouse (District OR Master)
+        $fromWarehouse = Warehouse::where('status', 'active')
+            ->where('id', $toWarehouse->parent_id)
+            ->firstOrFail();
+
+        return view('warehouse.transfer', [
+            'toWarehouse'          => $toWarehouse,          // Auto selected (disabled)
+            'fromWarehouses'      => collect([$fromWarehouse]), // Only parent
+            'defaultFromWarehouse'=> $fromWarehouse,
+            'products'            => collect(),              // ❌ No default products
+            'batches'             => collect(),
+            'transfer'            => null,
+        ]);
+    }
+
  
  
  
