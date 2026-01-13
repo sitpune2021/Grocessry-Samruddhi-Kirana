@@ -69,9 +69,11 @@ Route::prefix('auth')->group(function () {
     Route::post('/login/{type}', [DeliveryAgentController::class, 'login']);
     Route::post('/reset-password', [DeliveryAgentController::class, 'resetPassword']);
     Route::post('forgot-password/send-otp', [DeliveryAgentController::class, 'forgotPasswordSendOtp']);
-    Route::middleware('auth:sanctum')->post('logout', [DeliveryAgentController::class, 'logout']);
-    Route::post('/partner/status/online', [DeliveryAgentController::class, 'goOnline']);
-    Route::post('/partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
+});
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('logout', [DeliveryAgentController::class, 'logout']);
+    Route::post('partner/status/online', [DeliveryAgentController::class, 'goOnline']);
+    Route::post('partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
@@ -95,15 +97,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{orderId}/summary', [DeliveryOrderController::class, 'getOrderSummary']);
     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
     Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
+    Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
+    Route::get('/partner/status/online-status',[DeliveryAgentController::class, 'onlineStatus']);
+    Route::get('/partner/stats/login-hours',[DeliveryAgentController::class, 'loginHours']);
     Route::get('/notifications', [NotificationController::class, 'get_notifications']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::get('/notifications/settings', [NotificationController::class, 'getSettings']);
     Route::put('/notifications/settings', [NotificationController::class, 'updateSettings']);
     Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
+
+    Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
     Route::put(
         '/delivery_boy/profile/{type}',
         [DeliveryAgentController::class, 'updateProfileField']
     );
-    Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
+});
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::put('/partner/profile/address', [DeliveryAgentController::class, 'updateAddress']);
+    Route::post('/partner/profile/image', [DeliveryAgentController::class, 'updateProfileImage']);
 });

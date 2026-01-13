@@ -489,4 +489,15 @@ class DeliveryOrderController extends Controller
             'message' => 'Customer rated successfully'
         ]);
     }
+    public function totalOrders(Request $request)
+{
+    $user = $request->user();
+    $totalOrders = Order::where('delivery_agent_id', $user->id)->count();
+
+    return response()->json([
+        'status' => true,
+        'totalOrders' => $totalOrders
+    ]);
+}
+
 }
