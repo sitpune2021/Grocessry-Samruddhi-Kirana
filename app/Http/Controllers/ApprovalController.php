@@ -18,13 +18,21 @@ use App\Models\Product;
 class ApprovalController extends Controller
 {
 
+  
     public function index()
     {
+        $userWarehouseId = auth()->user()->warehouse_id;
+
         $transfers = WarehouseTransfer::with([
-            'fromWarehouse',
-            'toWarehouse',
+            'approvedByWarehouse',
+            'requestedByWarehouse',
             'product'
         ])
+        ->where(function ($q) use ($userWarehouseId) {
+            $q->where('approved_by_warehouse_id', $userWarehouseId)   // Master
+            ->orWhere('requested_by_warehouse_id', $userWarehouseId); // District
+        })
+        ->where('status', 0)
         ->latest()
         ->paginate(10);
 
@@ -39,10 +47,16 @@ class ApprovalController extends Controller
 
         DB::transaction(function () use ($transfer) {
 
+            // SOURCE = MASTER WAREHOUSE
+            $sourceWarehouseId = $transfer->approved_by_warehouse_id;
+
+            // DESTINATION = DISTRICT WAREHOUSE
+            $destWarehouseId = $transfer->requested_by_warehouse_id;
+
             /** ------------------------------
              * SOURCE WAREHOUSE STOCK
              * ------------------------------*/
-            $sourceStock = WarehouseStock::where('warehouse_id', $transfer->from_warehouse_id)
+            $sourceStock = WarehouseStock::where('warehouse_id', $sourceWarehouseId)
                 ->where('product_id', $transfer->product_id)
                 ->lockForUpdate()
                 ->first();
@@ -53,11 +67,11 @@ class ApprovalController extends Controller
 
             $sourceStock->decrement('quantity', $transfer->quantity);
 
-
             /** ------------------------------
              * SOURCE PRODUCT BATCH
              * ------------------------------*/
             $sourceBatch = ProductBatch::where('id', $transfer->batch_id)
+                ->where('warehouse_id', $sourceWarehouseId)
                 ->lockForUpdate()
                 ->first();
 
@@ -67,14 +81,13 @@ class ApprovalController extends Controller
 
             $sourceBatch->decrement('quantity', $transfer->quantity);
 
-
             /** ------------------------------
              * DESTINATION WAREHOUSE STOCK
              * ------------------------------*/
             $product = Product::findOrFail($transfer->product_id);
 
             $destStock = WarehouseStock::firstOrNew([
-                'warehouse_id' => $transfer->to_warehouse_id,
+                'warehouse_id' => $destWarehouseId,
                 'product_id'   => $transfer->product_id,
             ]);
 
@@ -82,12 +95,11 @@ class ApprovalController extends Controller
             $destStock->quantity = ($destStock->quantity ?? 0) + $transfer->quantity;
             $destStock->save();
 
-
             /** ------------------------------
              * DESTINATION PRODUCT BATCH
              * ------------------------------*/
             $destBatch = ProductBatch::firstOrNew([
-                'warehouse_id' => $transfer->to_warehouse_id,
+                'warehouse_id' => $destWarehouseId,
                 'product_id'   => $transfer->product_id,
                 'batch_no'     => $sourceBatch->batch_no,
             ]);
@@ -98,35 +110,28 @@ class ApprovalController extends Controller
             $destBatch->quantity    = ($destBatch->quantity ?? 0) + $transfer->quantity;
             $destBatch->save();
 
-
             /** ------------------------------
-             * STOCK MOVEMENTS (MAIN PART)
+             * STOCK MOVEMENTS
              * ------------------------------*/
-
-            // SOURCE (OUT)
             StockMovement::create([
                 'product_batch_id' => $sourceBatch->id,
                 'type'             => 'transfer',
                 'quantity'         => -$transfer->quantity,
-                'warehouse_id'     => $transfer->from_warehouse_id,
+                'warehouse_id'     => $sourceWarehouseId,
             ]);
 
-            // DESTINATION (IN)
             StockMovement::create([
                 'product_batch_id' => $destBatch->id,
                 'type'             => 'transfer',
                 'quantity'         => $transfer->quantity,
-                'warehouse_id'     => $transfer->to_warehouse_id,
+                'warehouse_id'     => $destWarehouseId,
             ]);
-
 
             /** ------------------------------
              * MARK APPROVED
              * ------------------------------*/
             $transfer->status = 1;
-            // $transfer->approved_at = now();
             $transfer->save();
-            
         });
 
         return back()->with('success', 'Transfer approved successfully');

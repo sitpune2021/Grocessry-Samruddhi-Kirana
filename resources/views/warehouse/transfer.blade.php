@@ -45,7 +45,7 @@
                                                     <option selected>{{ $toWarehouse->name }}</option>
                                                 </select>
  
-                                                <input type="hidden" name="to_warehouse_id"
+                                                <input type="hidden" name="requested_by_warehouse_id"
                                                     value="{{ $toWarehouse->id }}">
                                             </div>
  
@@ -56,8 +56,8 @@
                                                     To Warehouse <span class="text-danger">*</span>
                                                 </label>
  
-                                                <select name="from_warehouse_id"
-                                                    id="from_warehouse_id"
+                                                <select name="approved_by_warehouse_id"
+                                                    id="approved_by_warehouse_id"
                                                     class="form-select"
                                                     required>
  
@@ -65,7 +65,7 @@
  
                                                     @foreach($fromWarehouses as $w)
                                                     <option value="{{ $w->id }}"
-                                                        {{ isset($transfer) && $transfer->from_warehouse_id == $w->id ? 'selected' : '' }}>
+                                                        {{ isset($transfer) && $transfer->approved_by_warehouse_id == $w->id ? 'selected' : '' }}>
                                                         {{ $w->name }}
                                                     </option>
                                                     @endforeach
@@ -226,12 +226,12 @@
         let editIndex = null;
         let index = 0;
  
-        const fromWarehouseEl = $('#from_warehouse_id');
+        const fromWarehouseEl = $('#approved_by_warehouse_id');
         const productEl = $('#product_id');
         const batchEl = $('#batch_id');
         const qtyEl = $('#quantity');
  
-        const toWarehouseHidden = $('input[name="to_warehouse_id"]');
+        const toWarehouseHidden = $('input[name="requested_by_warehouse_id"]');
  
         const tableBody = $('#workOrderTable tbody');
         const tableWrapper = $('#workOrderTableWrapper');
@@ -340,13 +340,13 @@
  
                     const row = $(`#row_${editIndex}`);
                     row.find('td:eq(1)').text(fromWarehouseEl.find(':selected').text());
-                    row.find('td:eq(2)').text($('#to_warehouse_id option:selected').text());
+                    row.find('td:eq(2)').text($('#requested_by_warehouse_id option:selected').text());
                     row.find('td:eq(3)').text(productEl.find(`option[value="${pid}"]`).text());
                     row.find('td:eq(4)').text(batch.batch_no);
                     row.find('.qty-input').val(qty);
  
-                    $(`[name="items[${editIndex}][from_warehouse_id]"]`).val(fw);
-                    $(`[name="items[${editIndex}][to_warehouse_id]"]`).val(tw);
+                    $(`[name="items[${editIndex}][approved_by_warehouse_id]"]`).val(fw);
+                    $(`[name="items[${editIndex}][requested_by_warehouse_id]"]`).val(tw);
                     $(`[name="items[${editIndex}][product_id]"]`).val(pid);
                     $(`[name="items[${editIndex}][batch_id]"]`).val(batch.id);
                     $(`[name="items[${editIndex}][quantity]"]`).val(qty);
@@ -373,7 +373,7 @@
                     <tr id="row_${rid}">
                         <td>${rid + 1}</td>
                         <td>${fromWarehouseEl.find(':selected').text()}</td>
-                        <td>${$('#to_warehouse_id option:selected').text()}</td>
+                        <td>${$('#requested_by_warehouse_id option:selected').text()}</td>
                         <td>${productEl.find(`option[value="${pid}"]`).text()}</td>
                         <td>${batch.batch_no}</td>
                         <td>
@@ -392,8 +392,8 @@
  
                     itemsContainer.append(`
                     <input type="hidden" name="items[${rid}][category_id]" value="1">
-                    <input type="hidden" name="items[${rid}][from_warehouse_id]" value="${fw}">
-                    <input type="hidden" name="items[${rid}][to_warehouse_id]" value="${tw}">
+                    <input type="hidden" name="items[${rid}][approved_by_warehouse_id]" value="${fw}">
+                    <input type="hidden" name="items[${rid}][requested_by_warehouse_id]" value="${tw}">
                     <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
                     <input type="hidden" name="items[${rid}][batch_id]" value="${batch.id}">
                     <input type="hidden" name="items[${rid}][quantity]" value="${qty}">
@@ -414,8 +414,8 @@
  
             const get = f => $(`[name="items[${editIndex}][${f}]"]`).val();
  
-            fromWarehouseEl.val(get('from_warehouse_id'));
-            loadProductsByWarehouse(get('from_warehouse_id'), false);
+            fromWarehouseEl.val(get('approved_by_warehouse_id'));
+            loadProductsByWarehouse(get('approved_by_warehouse_id'), false);
  
             setTimeout(() => {
                 productEl.val([get('product_id')]).trigger('change');
