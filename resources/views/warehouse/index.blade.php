@@ -9,7 +9,7 @@
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row pb-0">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title"> District  Warehouse Transfers</h5>
+                        <h5 class="card-title"> District  Warehouse Request</h5>
                     </div>
                     <div class="col-md-auto ms-auto mt-5">
                         <a href="{{ route('transfer.create') }}" class="btn btn-success">
@@ -24,8 +24,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>From Warehouse</th>
-                                <th>To Warehouse</th>
+                                <th>Request Warehouse</th>
+                                <!-- <th></th> -->
                                 <th>Category</th>
                                 <th>Product</th>
                                 <th>Batch</th>
@@ -40,7 +40,7 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $t->fromWarehouse->name }}</td>
-                                    <td>{{ $t->toWarehouse->name }}</td>
+                                    <!-- <td>{{ $t->toWarehouse->name }}</td> -->
                                     <td>{{ $t->category->name }}</td>
                                     <td>{{ $t->product->name }}</td>
                                     <td>{{ $t->batch->batch_no ?? '' }}</td>

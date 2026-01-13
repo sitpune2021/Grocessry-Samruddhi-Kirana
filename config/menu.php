@@ -85,11 +85,11 @@ return [
             'title' => 'Transfer Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => ' Master to District Warehouse Transfers', 'route' => 'transfer.index'],
-                ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
-                ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
-                ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
-                ['title' => 'Taluka to Distribution Center Warehouse Transfers', 'route' => 'taluka-shop.index'],
+                ['title' => 'Warehouse Stock Request', 'route' => 'transfer.index'],
+                // ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
+                // ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
+                // ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
+                // ['title' => 'Taluka to Distribution Center Warehouse Transfers', 'route' => 'taluka-shop.index'],
             ],
         ],
 
@@ -101,29 +101,29 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 [
-                    'title' => 'Master → District Transfer Approval',
+                    'title' => 'Stock Request Approval',
                     'route' => 'warehouse.transfer.index',
                 ],
+                // [
+                //     'title' => 'District → District Transfer Approval',
+                //     'route' => 'district.transfer.index',
+                // ],
+                // [
+                //     'title' => 'District → Taluka Transfer Approval',
+                //     'route' => 'district-taluka.transfer.index',
+                // ],
+                // [
+                //     'title' => 'Taluka → Taluka Transfer Approval',
+                //     'route' => 'taluka-taluka.transfer.index',
+                // ],
+                // [
+                //     'title' => 'Taluka → Distribution Transfer Approval',
+                //     'route' => 'taluka-distribution.transfer.index',
+                // ],
                 [
-                    'title' => 'District → District Transfer Approval',
-                    'route' => 'district.transfer.index',
-                ],
-                [
-                    'title' => 'District → Taluka Transfer Approval',
-                    'route' => 'district-taluka.transfer.index',
-                ],
-                [
-                    'title' => 'Taluka → Taluka Transfer Approval',
-                    'route' => 'taluka-taluka.transfer.index',
-                ],
-                [
-                    'title' => 'Taluka → Distribution Transfer Approval',
-                    'route' => 'taluka-distribution.transfer.index',
-                ],
-                [
-                    'title' => 'Warehouse Stock Return Approval',
-                    'route' => 'stock-returns.index',
-                ],
+                     'title' => 'Warehouse Stock Return Approval',
+                     'route' => 'stock-returns.index',
+                 ],
 
             ],
         ],
