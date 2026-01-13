@@ -51,7 +51,7 @@
 
                                                         @foreach ($warehouses as $w)
                                                         <option value="{{ $w->id }}"
-                                                            {{ $user->warehouse_id == $w->id ? 'selected' : '' }}>
+                                                            {{ ($selectedWarehouse ?? $user->warehouse_id) == $w->id ? 'selected' : '' }}>
                                                             {{ $w->name }}
                                                         </option>
                                                         @endforeach
@@ -73,12 +73,16 @@
                                                             class="text-danger">*</span></label>
                                                     <select name="category_id" id="category_id" class="form-select">
                                                         <option value="">Select Category</option>
+
                                                         @foreach ($categories as $category)
-                                                        <option value="{{ $category->id }}">{{ $category->name }}
+                                                        <option value="{{ $category->id }}"
+                                                            {{ (isset($selectedCategory) && $selectedCategory == $category->id) ? 'selected' : '' }}>
+                                                            {{ $category->name }}
                                                         </option>
                                                         @endforeach
+
                                                     </select>
-                                                    @error('warehouse_id')
+                                                    @error('category_id')
                                                     <span class="text-danger mt-1">{{ $message }}</span>
                                                     @enderror
                                                 </div>
@@ -97,6 +101,13 @@
 
                                                     <select name="sub_category_id" id="sub_category_id" class="form-select" required>
                                                         <option value="">Select Sub Category</option>
+
+                                                        @foreach ($subCategories as $sub)
+                                                        <option value="{{ $sub->id }}"
+                                                            {{ (isset($selectedSubCat) && $selectedSubCat == $sub->id) ? 'selected' : '' }}>
+                                                            {{ $sub->name }}
+                                                        </option>
+                                                        @endforeach
                                                     </select>
 
                                                     @error('sub_category_id')
@@ -112,9 +123,10 @@
                                                             class="text-danger">*</span></label>
                                                     <select name="product_id" id="product_id" class="form-select ">
                                                         <option value="">Select Product</option>
+
                                                         @foreach ($products as $product)
                                                         <option value="{{ $product->id }}"
-                                                            {{ $selectedProduct == $product->id ? 'selected' : '' }}>
+                                                            {{ (isset($selectedProduct) && $selectedProduct == $product->id) ? 'selected' : '' }}>
                                                             {{ $product->name }}
                                                         </option>
                                                         @endforeach
@@ -179,73 +191,121 @@
 
 
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
 
-    $('#category_id').on('change', function () {
-        let categoryId  = $(this).val();
-        let warehouseId = $('#warehouse_id').val(); // must exist
-// console.log('Selected Category ID:', categoryId, warehouseId);
-        $('#sub_category_id').html('<option value="">Loading...</option>');
-console.log('Selected Category ID:', categoryId, warehouseId);
-        if (!categoryId || !warehouseId) {
-            $('#sub_category_id').html('<option value="">Select Sub Category</option>');
-            return;
-        }
-
-        $.get(
-            `/sell/ws/subcategories/${warehouseId}/${categoryId}`,
-            function (data) {
-                let options = '<option value="">Select Sub Category</option>';
-
-                data.forEach(sub => {
-                    options += `<option value="${sub.id}">${sub.name}</option>`;
-                });
-
-                $('#sub_category_id').html(options);
+        $('#category_id').on('change', function() {
+            let categoryId = $(this).val();
+            let warehouseId = $('#warehouse_id').val(); // must exist
+            // console.log('Selected Category ID:', categoryId, warehouseId);
+            $('#sub_category_id').html('<option value="">Loading...</option>');
+            console.log('Selected Category ID:', categoryId, warehouseId);
+            if (!categoryId || !warehouseId) {
+                $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+                return;
             }
-        );
-    });
 
-});
+            $.get(
+                `/sell/ws/subcategories/${warehouseId}/${categoryId}`,
+                function(data) {
+                    let options = '<option value="">Select Sub Category</option>';
+
+                    data.forEach(sub => {
+                        options += `<option value="${sub.id}">${sub.name}</option>`;
+                    });
+
+                    $('#sub_category_id').html(options);
+                }
+            );
+        });
+
+    });
 </script>
 
 <script>
-/* Sub Category → Product */
-$('#sub_category_id').change(function () {
+    /* Sub Category → Product */
+    $('#sub_category_id').change(function() {
 
-    let wid = $('#warehouse_id').val();
-    let sid = $(this).val();
+        let wid = $('#warehouse_id').val();
+        let sid = $(this).val();
 
-    $('#product_id').html('<option value="">Loading...</option>');
-    $('#quantity').val('');
-    $('#stock-info').text('');
+        $('#product_id').html('<option value="">Loading...</option>');
+        $('#quantity').val('');
+        $('#stock-info').text('');
 
-    if (!sid || !wid) {
-        $('#product_id').html('<option value="">Select Product</option>');
-        return;
-    }
+        if (!sid || !wid) {
+            $('#product_id').html('<option value="">Select Product</option>');
+            return;
+        }
 
-    $.get('/sell/ws/products/' + wid + '/' + sid, function (data) {
-        let html = '<option value="">Select Product</option>';
-        data.forEach(p => {
-            html += `<option value="${p.id}">${p.name}</option>`;
+        $.get('/sell/ws/products/' + wid + '/' + sid, function(data) {
+            let html = '<option value="">Select Product</option>';
+            data.forEach(p => {
+                html += `<option value="${p.id}">${p.name}</option>`;
+            });
+            $('#product_id').html(html);
         });
-        $('#product_id').html(html);
     });
-});
 
 
-/* Product → Quantity */
-$('#product_id').change(function () {
+    /* Product → Quantity */
+    $('#product_id').change(function() {
 
-    let wid = $('#warehouse_id').val();
-    let pid = $(this).val();
+        let wid = $('#warehouse_id').val();
+        let pid = $(this).val();
 
-    if (!pid || !wid) return;
+        if (!pid || !wid) return;
 
-    $.get('/sell/ws/quantity/' + wid + '/' + pid, function (qty) {
-        $('#quantity').attr('max', qty);
-        $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
+        $.get('/sell/ws/quantity/' + wid + '/' + pid, function(qty) {
+            $('#quantity').attr('max', qty);
+            $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
+        });
     });
+</script>
+
+<script>
+$(document).ready(function () {
+
+    let warehouseId = $('#warehouse_id').val();
+    let categoryId  = $('#category_id').val();
+    let subCatId    = "{{ $selectedSubCat ?? '' }}";
+    let productId   = "{{ $selectedProduct ?? '' }}";
+
+    // 🔁 AUTO LOAD SUB-CATEGORIES
+    if (warehouseId && categoryId) {
+        $.get(`/sell/ws/subcategories/${warehouseId}/${categoryId}`, function (data) {
+
+            let options = '<option value="">Select Sub Category</option>';
+
+            data.forEach(sub => {
+                let selected = (sub.id == subCatId) ? 'selected' : '';
+                options += `<option value="${sub.id}" ${selected}>${sub.name}</option>`;
+            });
+
+            $('#sub_category_id').html(options);
+
+            // 🔁 AUTO LOAD PRODUCTS AFTER SUB-CATEGORY
+            if (subCatId) {
+                $.get(`/sell/ws/products/${warehouseId}/${subCatId}`, function (products) {
+
+                    let html = '<option value="">Select Product</option>';
+
+                    products.forEach(p => {
+                        let selected = (p.id == productId) ? 'selected' : '';
+                        html += `<option value="${p.id}" ${selected}>${p.name}</option>`;
+                    });
+
+                    $('#product_id').html(html);
+
+                    // 🔁 AUTO LOAD QUANTITY
+                    if (productId) {
+                        $.get(`/sell/ws/quantity/${warehouseId}/${productId}`, function (qty) {
+                            $('#quantity').attr('max', qty);
+                            $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
+                        });
+                    }
+                });
+            }
+        });
+    }
 });
 </script>

@@ -317,7 +317,7 @@ class ProductBatchController extends Controller
 
         $batches = $query
             ->orderBy('expiry_date')
-            ->get();
+            ->paginate();
 
         return view('batches.expiry', compact('batches'));
     }
