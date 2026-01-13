@@ -84,6 +84,9 @@
                                     'offers'                => 'Offers / Coupons',
                                     'retailer_offers'       => 'Retailer Offers',
                                     'website_orders'        => 'Website Orders',
+                                    'customer_orders'       => 'Customer Orders',
+                                    'transfer_challan'       => 'Transfer Challan',
+                                    'banners'               => 'Banners',
                                     ];
 
                                     $dashboardCards = [
