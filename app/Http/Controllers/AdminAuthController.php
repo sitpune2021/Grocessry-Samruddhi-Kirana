@@ -15,7 +15,7 @@ class AdminAuthController extends Controller
 {
     public function index()
     {
-        $users = User::with('role')->orderBy('id', 'desc')->paginate(10);
+        $users = User::with('role')->orderBy('id', 'desc')->paginate(20);
         $warehouses = Warehouse::all();
         return view('userProfile.index', compact('users', 'warehouses'));
     }
@@ -23,8 +23,8 @@ class AdminAuthController extends Controller
     public function createUser()
     {
         $mode = 'add';
-        $roles = Role::all(); // fetch all roles
-        $user = new User(); // ✅ empty model
+        $roles = Role::all();
+        $user = new User();
         $warehouses = Warehouse::all();
 
         return view('userProfile.add-user', compact('mode', 'user', 'roles', 'warehouses'));
@@ -51,13 +51,13 @@ class AdminAuthController extends Controller
         ]);
         try {
 
-            Log::info('✅ User Store Validation Passed');
+            Log::info(' User Store Validation Passed');
 
             // Profile photo upload
             $photoPath = null;
             if ($request->hasFile('profile_photo')) {
                 $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
-                Log::info('✅ Profile photo uploaded', ['path' => $photoPath]);
+                Log::info('Profile photo uploaded', ['path' => $photoPath]);
             }
 
             // Create user
@@ -85,16 +85,16 @@ class AdminAuthController extends Controller
                 }
             }
 
-            Log::info('✅ User created successfully', ['user_id' => $user->id]);
+            Log::info('User created successfully', ['user_id' => $user->id]);
 
             return redirect()->route('user.profile')->with('success', 'User created successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Log validation errors
-            Log::warning('⚠️ User Store Validation Failed', ['errors' => $e->errors()]);
+            Log::warning(' User Store Validation Failed', ['errors' => $e->errors()]);
             return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {
             // Log unexpected errors
-            Log::error('❌ User Store Failed', [
+            Log::error('User Store Failed', [
                 'message' => $e->getMessage(),
                 'line'    => $e->getLine(),
                 'file'    => $e->getFile()
@@ -135,12 +135,12 @@ class AdminAuthController extends Controller
             'last_name'     => 'required|string|max:100',
             'email'         => 'nullable|email|unique:users,email,' . $user->id,
             'mobile'        => 'required|digits:10|unique:users,mobile,' . $user->id,
-            'role_id'       => 'required|exists:roles,id', // ✅ FIXED
+            'role_id'       => 'required|exists:roles,id',
             'status'        => 'required|boolean',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        Log::info('✅ User Update Validation Passed', $validated);
+        Log::info(' User Update Validation Passed', $validated);
 
         // 📸 Replace profile photo
         if ($request->hasFile('profile_photo')) {
@@ -170,7 +170,7 @@ class AdminAuthController extends Controller
             'status'     => $request->status,
         ]);
 
-        Log::info('✅ User Updated Successfully', [
+        Log::info(' User Updated Successfully', [
             'user_id' => $user->id,
             'role_id' => $request->role_id
         ]);
@@ -223,7 +223,7 @@ class AdminAuthController extends Controller
         try {
             $user = Auth::user();
 
-            Log::info('🔐 Logout initiated', [
+            Log::info('Logout initiated', [
                 'user_id' => $user->id ?? null,
                 'email'   => $user->email ?? null,
                 'ip'      => $request->ip(),
@@ -237,7 +237,7 @@ class AdminAuthController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            Log::info('✅ User logged out successfully', [
+            Log::info('User logged out successfully', [
                 'user_id' => $user->id ?? null,
                 'ip'      => $request->ip(),
                 'time'    => now()->toDateTimeString(),
@@ -247,7 +247,7 @@ class AdminAuthController extends Controller
                 ->with('success', 'Logged out successfully!');
         } catch (\Exception $e) {
 
-            Log::error('❌ Logout failed', [
+            Log::error('Logout failed', [
                 'error_message' => $e->getMessage(),
                 'line'          => $e->getLine(),
                 'file'          => $e->getFile(),
