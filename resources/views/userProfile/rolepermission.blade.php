@@ -83,6 +83,7 @@
                                     'vehical_assignment'    => 'Vehical Assignment',
                                     'offers'                => 'Offers / Coupons',
                                     'retailer_offers'       => 'Retailer Offers',
+                                    'website_orders'        => 'Website Orders',
                                     ];
 
                                     $dashboardCards = [

@@ -167,36 +167,53 @@ class MasterWarehouseController extends Controller
         }
     }
 
+public function update(Request $request, $id)
+{
+    Log::info('Warehouse update request received', [
+        'warehouse_id' => $id,
+        'request_data' => $request->except(['_token']),
+        'user_id'      => auth()->id(),
+    ]);
 
-    public function update(Request $request, $id)
-    {
+    try {
+
         $warehouse = Warehouse::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:master,district,taluka',
             'address' => 'nullable|string|max:500',
-            'contact_person' => 'nullable|string|max:255',
-            'contact_number' => [
-                'required',
-                'regex:/^[6-9]\d{9}$/',
-                Rule::unique('warehouses', 'contact_number')->ignore($id),
-            ],
-            'email' => 'nullable|email',
-        ], [
-            'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
-            'contact_number.unique' => 'This mobile number is already registered.',
+        //     'contact_person' => 'nullable|string|max:255',
+        //     'contact_number' => [
+        //         'required',
+        //         'regex:/^[6-9]\d{9}$/',
+        //         Rule::unique('warehouses', 'contact_number')->ignore($id),
+        //     ],
+        //     'email' => 'nullable|email',
+        // ], [
+        //     'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
+        //     'contact_number.unique' => 'This mobile number is already registered.',
         ]);
 
-        // Add optional fields
-        $validated['parent_id'] = $request->parent_id ?? null;
+        Log::info('Warehouse update validation passed', [
+            'warehouse_id' => $id,
+            'validated'    => $validated,
+        ]);
+
+        // Optional hierarchy fields
+        $validated['parent_id']   = $request->parent_id ?? null;
         $validated['district_id'] = $request->district_id ?? null;
-        $validated['taluka_id'] = $request->taluka_id ?? null;
+        $validated['taluka_id']   = $request->taluka_id ?? null;
 
         DB::transaction(function () use ($warehouse, $validated) {
 
             // 1️⃣ Update Warehouse
             $warehouse->update($validated);
+
+            Log::info('Warehouse updated successfully', [
+                'warehouse_id' => $warehouse->id,
+                'updated_data' => $validated,
+            ]);
 
             // 2️⃣ Update linked user (warehouse admin / incharge)
             $user = User::where('warehouse_id', $warehouse->id)->first();
@@ -206,12 +223,40 @@ class MasterWarehouseController extends Controller
                     'email'  => $validated['email'] ?? $user->email,
                     'mobile' => $validated['contact_number'] ?? $user->mobile,
                 ]);
+
+                Log::info('Linked warehouse user updated', [
+                    'warehouse_id' => $warehouse->id,
+                    'user_id'      => $user->id,
+                ]);
+            } else {
+                Log::warning('No linked user found for warehouse', [
+                    'warehouse_id' => $warehouse->id,
+                ]);
             }
         });
 
-        return redirect()->route('warehouse.index')
+        Log::info('Warehouse update process completed', [
+            'warehouse_id' => $id,
+        ]);
+
+        return redirect()
+            ->route('warehouse.index')
             ->with('success', 'Warehouse updated successfully.');
+
+    } catch (\Throwable $e) {
+
+        Log::error('Warehouse update failed', [
+            'warehouse_id' => $id,
+            'error'        => $e->getMessage(),
+            'line'         => $e->getLine(),
+            'file'         => $e->getFile(),
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('error', 'Failed to update warehouse. Please try again.');
     }
+}
 
 
 
