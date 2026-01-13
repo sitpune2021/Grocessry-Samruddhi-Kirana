@@ -40,7 +40,7 @@
                     </thead>
                     <tbody>
                         @forelse($returns as $key => $return)
-                  
+
                         <tr>
                             <td>{{ $returns->firstItem() + $key }}</td>
 
@@ -91,11 +91,11 @@
                                     <i class="ri-file-pdf-line"></i>
                                 </a>
                             </td>
-                            <td>
+                            <!-- <td>
                                 @php
                                 $userWarehouseId = auth()->user()->warehouse_id;
 
-                               @endphp
+                                @endphp
 
                                 @if($return->status === 'draft' &&
                                 $userWarehouseId == $return->to_warehouse_id)
@@ -108,8 +108,18 @@
                                 </form>
                                 @endif
 
+                                {{-- DISTRICT: APPROVE --}}
+                                @if($return->canApprove($userWarehouseId))
+                                <form action="{{ route('stock-returns.approve', $return->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm">
+                                        Approve
+                                    </button>
+                                </form>
+                                @endif
+
                                 @if($return->status == 'approved' &&
-                                $userWarehouseId == $return->from_warehouse_id)
+                                $userWarehouseId == $return->to_warehouse_id)
                                 <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-primary btn-sm">
@@ -118,9 +128,11 @@
                                 </form>
                                 @endif
 
+
+
                                 @if($return->status == 'dispatched' &&
-                                $userWarehouseId == $return->to_warehouse_id)
-                                 
+                                $userWarehouseId == $return->from_warehouse_id)
+
                                 <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-success btn-sm">
@@ -129,15 +141,79 @@
                                 </form>
                                 @endif
 
+                                @if($userWarehouseType === 'district')
+                                <a href="{{ route('stock-returns.create') }}" class="btn btn-primary btn-sm">
+                                    Send Stock to Master
+                                </a>
+                                @endif
+                            </td> -->
 
-                                {{-- CLOSE --}}
-                                <!-- @if($return->status == 'received')
-                                <form method="POST" action="{{ route('stock-returns.close', $return->id) }}">
+                            <td>
+
+                                {{-- DISTRICT: SEND FOR APPROVAL --}}
+                                @if(
+                                $return->status === 'draft' &&
+                                $userWarehouseType === 'district' &&
+                                $userWarehouseId == $return->from_warehouse_id
+                                )
+                                <form action="{{ route('stock-returns.send-for-approval', $return->id) }}"
+                                    method="POST" class="d-inline">
                                     @csrf
-                                    <button class="btn btn-dark btn-sm">Close</button>
+                                    <button class="btn btn-warning btn-sm">
+                                        Send for Approval
+                                    </button>
                                 </form>
-                                @endif -->
+                                @endif
+
+
+                                {{-- MASTER: APPROVE --}}
+                                @if(
+                                $return->status === 'sent_for_approval' &&
+                                $userWarehouseType === 'master' &&
+                                $userWarehouseId == $return->to_warehouse_id
+                                )
+                                <form action="{{ route('stock-returns.approve', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm">
+                                        Approve
+                                    </button>
+                                </form>
+                                @endif
+
+
+                                {{-- MASTER: DISPATCH --}}
+                                @if(
+                                $return->status === 'approved' &&
+                                $userWarehouseType === 'master' &&
+                                $userWarehouseId == $return->to_warehouse_id
+                                )
+                                <form action="{{ route('stock-returns.dispatch', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-primary btn-sm">
+                                        Dispatch Stock
+                                    </button>
+                                </form>
+                                @endif
+
+
+                                {{-- DISTRICT: RECEIVE --}}
+                                @if(
+                                $return->status === 'dispatched' &&
+                                $userWarehouseType === 'district' &&
+                                $userWarehouseId == $return->from_warehouse_id
+                                )
+                                <form action="{{ route('stock-returns.receive', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm">
+                                        Receive Stock
+                                    </button>
+                                </form>
+                                @endif
                             </td>
+
                         </tr>
                         @empty
                         <tr>

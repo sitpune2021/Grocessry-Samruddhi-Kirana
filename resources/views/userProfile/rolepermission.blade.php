@@ -81,7 +81,8 @@
                                     'disribution_center'    => 'Distribution Center / Shop',
                                     'delivery_agent'        => 'Delivery Agent',
                                     'vehical_assignment'    => 'Vehical Assignment',
-                                    'offers'                => 'Offers'
+                                    'offers'                => 'Offers / Coupons',
+                                    'retailer_offers'       => 'Retailer Offers',
                                     ];
 
                                     $dashboardCards = [

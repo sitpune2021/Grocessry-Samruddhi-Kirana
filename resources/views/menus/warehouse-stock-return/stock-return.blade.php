@@ -98,14 +98,15 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>
+                                                            <td>                             
                                                                 <select name="items[0][product_id]"
                                                                     class="form-control product-select"
                                                                     required>
 
                                                                     <option value="">Select Product</option>
-
+                                                                   
                                                                     @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
+                                                                 
                                                                     <option value="{{ $productId }}"
                                                                         data-batches='@json(
                                                                         $batches->map(fn($batch) => [

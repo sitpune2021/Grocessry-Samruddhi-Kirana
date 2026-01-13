@@ -30,7 +30,7 @@ class UserController extends Controller
 
     public function profile()
     {
-        $users = User::with('role')->paginate(10);
+        $users = User::with('role')->paginate(20);
 
         return view('userProfile.index', compact('users'));
     }

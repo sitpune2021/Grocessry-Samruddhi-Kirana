@@ -24,23 +24,37 @@ class WarehouseStockReturnController extends Controller
     {
         $user = auth()->user();
         $warehouseId = $user->warehouse_id;
+        $userWarehouseType = $user->warehouse->type ?? null;
 
         $returns = WarehouseStockReturn::with([
             'fromWarehouse',
             'toWarehouse',
             'WarehouseStockReturnItem',
             'creator.role'
-        ])
-            ->where(function ($q) use ($warehouseId) {
-                $q->where('from_warehouse_id', $warehouseId)
-                    ->orWhere('to_warehouse_id', $warehouseId);
-            })
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        ]);
+
+        if ($userWarehouseType === 'district') {
+            // District sees what it sent OR needs to receive
+            $returns->where('from_warehouse_id', $warehouseId)
+                ->orWhere('to_warehouse_id', $warehouseId);
+        }
+
+        if ($userWarehouseType === 'master') {
+            // Master sees only incoming returns
+            $returns->where('to_warehouse_id', $warehouseId);
+        }
+
+        $returns = $returns->latest()->paginate(10);
+        // ->where(function ($q) use ($warehouseId) {
+        //     $q->where('from_warehouse_id', $warehouseId)
+        //         ->orWhere('to_warehouse_id', $warehouseId);
+        // })
+        // ->orderBy('id', 'desc')
+        // ->paginate(10);
 
         return view(
             'menus.warehouse-stock-return.stock-return-index',
-            compact('returns')
+            compact('returns', 'userWarehouseType')
         );
     }
 
@@ -78,16 +92,16 @@ class WarehouseStockReturnController extends Controller
         $user = User::with('warehouse')->findOrFail(auth()->id());
 
         $fromWarehouse = $user->warehouse;
-        $fromWarehouseId = $fromWarehouse->id;
 
+        $fromWarehouseId = $fromWarehouse->id ?? null;
         /**
          * FILTER TO WAREHOUSE BASED ON LEVEL
          */
-        if ($fromWarehouse->type === 'taluka') {
+        if ($fromWarehouse?->type === 'taluka') {
 
             // Taluka → District
             $warehouses = Warehouse::where('type', 'district')->get();
-        } elseif ($fromWarehouse->type === 'district') {
+        } elseif ($fromWarehouse?->type === 'district') {
 
             // District → Master
             $warehouses = Warehouse::where('type', 'master')->get();
@@ -418,7 +432,7 @@ class WarehouseStockReturnController extends Controller
             }
 
             $stockReturn->update([
-                'status'      => 'approved',
+                'status'      => 'pending_approval',
                 'approved_by' => auth()->id(),
             ]);
 
@@ -436,6 +450,29 @@ class WarehouseStockReturnController extends Controller
 
             return back()->with('error', $e->getMessage());
         }
+    }
+
+
+    /* DISTRICT → APPROVE */
+    public function approve($id)
+    {
+        $return = WarehouseStockReturn::findOrFail($id);
+        $userWarehouseId = auth()->user()->warehouse_id;
+
+        // Only TO warehouse (District)
+        if ($return->to_warehouse_id !== $userWarehouseId) {
+            abort(403, 'Unauthorized');
+        }
+
+        if ($return->status !== 'pending_approval') {
+            abort(400, 'Invalid status');
+        }
+
+        $return->update([
+            'status' => 'approved'
+        ]);
+
+        return back()->with('success', 'Stock approved');
     }
 
     public function dispatch($id)
@@ -485,7 +522,6 @@ class WarehouseStockReturnController extends Controller
                     ])
                         ->lockForUpdate()
                         ->first();
-
 
                     Log::info('Source Stock Found', [
                         'warehouse_stock_id' => $stock->id,

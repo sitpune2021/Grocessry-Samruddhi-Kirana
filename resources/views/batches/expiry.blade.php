@@ -17,7 +17,7 @@
             <!-- Search -->
             <x-datatable-search />
             <div class="table-responsive mt-5 p-3">
-                <table class="table table-bordered">
+                <table id="expiry" class="table table-bordered">
 
                     <thead class="table-light">
                         <tr>
@@ -60,9 +60,12 @@
 
                                     <td align="center" class="text-success">
                                         @if($batch->quantity > 0 && $batch->expiry_date >= now())
-                                        <a href="{{ url('/sale/'.$batch->product_id) }}" title="Sell Product" class="text-success">
+                                        <a href="{{ route('sale.create', ['batch_id' => $batch->id]) }}"
+                                            title="Sell Product"
+                                            class="text-success">
                                             🛒 SELL
                                         </a>
+
                                         @else
                                         ❌
                                         @endif
@@ -71,8 +74,11 @@
 
                                 @endforeach
                     </tbody>
-                    
+
                 </table>
+            </div>
+            <div class="px-3 py-2">
+                {{ $batches->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
@@ -92,7 +98,7 @@
     document.addEventListener("DOMContentLoaded", function() {
 
         const searchInput = document.getElementById("dt-search-1");
-        const table = document.getElementById("batchTable");
+        const table = document.getElementById("expiry");
 
         if (!searchInput || !table) return;
 

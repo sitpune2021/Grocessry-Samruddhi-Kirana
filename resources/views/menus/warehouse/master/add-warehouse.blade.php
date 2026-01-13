@@ -218,7 +218,7 @@
                                                 <div class="col-lg-12">
                                                     <div class="text-end">
                                                         <a href="{{ route('warehouse.index') }}"
-                                                            class="btn btn-success">Cancel</a>
+                                                            class="btn btn-success">Back</a>
                                                         @if ($mode === 'add')
                                                             <button type="submit" class="btn btn-success">Save
                                                                 Warehouse</button>

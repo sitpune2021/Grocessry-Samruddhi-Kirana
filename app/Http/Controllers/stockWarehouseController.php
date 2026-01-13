@@ -20,30 +20,57 @@ use Illuminate\Support\Facades\Auth;
 
 class stockWarehouseController extends Controller
 {
-    public function indexWarehouse()
-    {
+public function indexWarehouse(Request $request)
+{
+    $user = Auth::user();
+    $search = $request->search;
 
-        $user = Auth::user();
+    $query = WarehouseStock::with([
+        'warehouse:id,name',
+        'category:id,name',
+        'product:id,name',
+        'supplier:id,supplier_name',
+    ])->orderBy('id', 'desc');
 
-        $query = WarehouseStock::with([
-            'warehouse:id,name',
-            'category:id,name',
-            'product:id,name',
-            'batch:id,batch_no'
-        ])->orderBy('id', 'desc');
-
-        if ($user->role_id != 1) { // NOT Super Admin
-            $query->where('warehouse_id', $user->warehouse_id);
-        }
-
-
-        $stocks = $query->paginate(10);
-
-        $supplier = Supplier::select('id', 'supplier_name')->get();
-
-        return view('menus.warehouse.add-stock.index', compact('stocks', 'supplier'));
+    // 🔹 Super Admin: warehouse filter
+    if ($user->role_id == 1 && $request->warehouse_id) {
+        $query->where('warehouse_id', $request->warehouse_id);
     }
 
+    // 🔹 Non Super Admin: force own warehouse
+    if ($user->role_id != 1) {
+        $query->where('warehouse_id', $user->warehouse_id);
+    }
+
+    // 🔹 SEARCH (IMPORTANT)
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('warehouse', fn ($w) =>
+                    $w->where('name', 'like', "%{$search}%")
+                )
+              ->orWhereHas('category', fn ($c) =>
+                    $c->where('name', 'like', "%{$search}%")
+                )
+              ->orWhereHas('product', fn ($p) =>
+                    $p->where('name', 'like', "%{$search}%")
+                )
+              ->orWhereHas('supplier', fn ($s) =>
+                    $s->where('supplier_name', 'like', "%{$search}%")
+                );
+        });
+    }
+
+    $stocks = $query->paginate(20)->withQueryString();
+
+    $warehouses = $user->role_id == 1
+        ? Warehouse::select('id', 'name')->orderBy('name')->get()
+        : collect();
+
+    return view(
+        'menus.warehouse.add-stock.index',
+        compact('stocks', 'warehouses')
+    );
+}
 
    public function addStockForm()
 {
@@ -217,8 +244,9 @@ class stockWarehouseController extends Controller
         $products = Product::where('category_id', $warehouse_stock->category_id)->get();
         $product_batches = ProductBatch::where('product_id', $warehouse_stock->product_id)->get();
         $suppliers = Supplier::select('id', 'supplier_name')->get();
-
+        $warehouses = Warehouse::select('id', 'name')->get();
         return view('menus.warehouse.add-stock.add-stock', compact(
+            'warehouses',
             'mode',
             'warehouse_stock',
             'stockWarehouse',
@@ -233,6 +261,7 @@ class stockWarehouseController extends Controller
     public function editStockForm(Request $request, $id)
     {
         $mode = 'edit';
+
 
         $warehouse_stock = WarehouseStock::with([
             'warehouse',
@@ -253,7 +282,10 @@ class stockWarehouseController extends Controller
             ->select('id', 'name')
             ->get();
 
+            $warehouses = Warehouse::select('id', 'name')->get();
+
         return view('menus.warehouse.add-stock.add-stock', compact(
+            'warehouses',
             'mode',
             'warehouse_stock',
             'stockWarehouse',
