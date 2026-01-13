@@ -41,10 +41,15 @@ return Application::configure(basePath: dirname(__DIR__))
             AuthenticationException $e,
             $request
         ) {
-            return response()->json([
-                'message' => 'Unauthenticated'
-            ], 401);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthenticated'
+                ], 401);
+            }
+
+            return redirect()->route('login');
         });
     })
+
 
     ->create();

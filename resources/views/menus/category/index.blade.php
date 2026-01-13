@@ -91,10 +91,7 @@
 
             <!-- Pagination -->
             <div class="px-3 py-2">
-                <x-pagination
-                    :from="$categories->firstItem()"
-                    :to="$categories->lastItem()"
-                    :total="$categories->total()" />
+                {{ $categories->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
 
         </div>

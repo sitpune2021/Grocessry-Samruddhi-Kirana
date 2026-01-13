@@ -43,4 +43,24 @@ class WarehouseStockReturn extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /* ================= BUTTON LOGIC ================= */
+
+    public function canApprove($warehouseId)
+    {
+        return $this->status === 'draft'
+            && $this->to_warehouse_id === $warehouseId;
+    }
+
+    public function canDispatch($warehouseId)
+    {
+        return $this->status === 'approved'
+            && $this->from_warehouse_id === $warehouseId;
+    }
+
+    public function canReceive($warehouseId)
+    {
+        return $this->status === 'dispatched'
+            && $this->to_warehouse_id === $warehouseId;
+    }
 }

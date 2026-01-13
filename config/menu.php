@@ -6,171 +6,228 @@ return [
 
         /* ================= Dashboard ================= */
         [
+            'type'  => 'single',
             'title' => 'Dashboard',
             'icon'  => 'bx bx-home-smile',
-            'route' => 'dashboard',
-            'type'  => 'single',
+            'route'   => 'dashboard',
         ],
 
-        /* ================= Supplier & Purchase ================= */
+        /* ================= Product Management ================= */
         [
-            'title' => 'Supplier & Purchase Management',
-            'icon'  => 'bx bx-package',
             'type'  => 'dropdown',
-            'key'   => 'supplier',
+            'key'   => 'ProductMenu',
+            'title' => 'Product Management',
+            'icon'  => 'bx bx-store',
             'children' => [
-                ['title' => 'Supplier Management', 'route' => 'supplier.index'],
-                ['title' => 'Add Purchase List', 'route' => 'purchase.orders.create'],
-                ['title' => 'Purchase History', 'route' => 'purchase.orders.index'],
+                ['title' => 'Brand', 'route' => 'brands.index'],
+                ['title' => 'Category', 'route' => 'category.index'],
+                ['title' => 'Sub Category', 'route' => 'sub-category.index'],
+                ['title' => 'Unit', 'route' => 'units.index'],
+                ['title' => 'Products', 'route' => 'product.index'],
             ],
         ],
 
-        /* ================= Warehouse ================= */
+        /* ================= Supplier Management ================= */
         [
+            'type'  => 'dropdown',
+            'key'   => 'suppplierMenu',
+            'title' => 'Supplier Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+            ],
+        ],
+
+        /* ================= Warehouse Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'warehouseMenu',
             'title' => 'Warehouse Management',
             'icon'  => 'bx bx-store',
-            'type'  => 'dropdown',
-            'key'   => 'warehouse',
             'children' => [
-                ['title' => 'Warehouse Management', 'route' => 'warehouse.index'],
+                ['title' => 'Add Warehouse', 'route' => 'warehouse.index'],
                 ['title' => 'Add Warehouse Stock', 'route' => 'index.addStock.warehouse'],
             ],
         ],
 
-        /* ================= Inventory ================= */
+        /* ================ User Management ==============*/
         [
+            'type'  => 'dropdown',
+            'key'   => 'userMenu',
+            'title' => 'User Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Role Management', 'route' => 'roles.index'],
+                ['title' => 'User Management', 'route' => 'user.profile'],
+                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+
+            ],
+        ],
+
+
+        /* ================= Inventory Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'inventoryMenu',
             'title' => 'Inventory Management',
             'icon'  => 'bx bx-package',
-            'type'  => 'dropdown',
-            'key'   => 'inventory',
             'children' => [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
-                ['title' => 'Expiry Alerts', 'url' => '/expiry-alerts'],
-                ['title' => 'Near Expiry Sale', 'route' => 'sale.create'],
+                ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
+                ['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
             ],
         ],
 
-        /* ================= Stock Transfer ================= */
+        /* ================= Transfer Management ================= */
         [
-            'title' => 'Stock Transfer',
-            'icon'  => 'bx bx-package',
             'type'  => 'dropdown',
-            'key'   => 'transfer',
+            'key'   => 'TransferMenu',
+            'title' => 'Transfer Management',
+            'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Master → District', 'route' => 'transfer.index'],
-                ['title' => 'District → District', 'route' => 'district-district.index'],
-                ['title' => 'District → Taluka', 'route' => 'district-taluka-transfer.index'],
-                ['title' => 'Taluka → Taluka', 'route' => 'taluka.transfer.index'],
-                ['title' => 'Taluka → Distribution Center', 'route' => 'taluka-shop.index'],
+                ['title' => ' Master to District Warehouse Transfers', 'route' => 'transfer.index'],
+                ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
+                ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
+                ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
+                ['title' => 'Taluka to Distribution Center Warehouse Transfers', 'route' => 'taluka-shop.index'],
             ],
         ],
 
-        /* ================= Order & Approval ================= */
+        /* ================= Order Management ================= */
         [
+            'type'  => 'dropdown',
+            'key'   => 'OrderMenu',
             'title' => 'Order & Approval',
             'icon'  => 'bx bx-package',
-            'type'  => 'dropdown',
-            'key'   => 'order',
             'children' => [
-                ['title' => 'Transfer Approval', 'route' => 'warehouse.transfer.index'],
-                ['title' => 'Warehouse Stock Return', 'route' => 'stock-returns.index'],
+                [
+                    'title' => 'Master → District Transfer Approval',
+                    'route' => 'warehouse.transfer.index',
+                ],
+                [
+                    'title' => 'District → District Transfer Approval',
+                    'route' => 'district.transfer.index',
+                ],
+                [
+                    'title' => 'District → Taluka Transfer Approval',
+                    'route' => 'district-taluka.transfer.index',
+                ],
+                [
+                    'title' => 'Taluka → Taluka Transfer Approval',
+                    'route' => 'taluka-taluka.transfer.index',
+                ],
+                [
+                    'title' => 'Taluka → Distribution Transfer Approval',
+                    'route' => 'taluka-distribution.transfer.index',
+                ],
+                [
+                    'title' => 'Warehouse Stock Return Approval',
+                    'route' => 'stock-returns.index',
+                ],
+
             ],
         ],
 
-        /* ================= Distribution Center (Admin Only) ================= */
+
+        /* ================= Distribution Center (Admin) ================= */
         [
+            'type'  => 'dropdown',
+            'key'   => 'shopMenu',
             'title' => 'Distribution Center',
             'icon'  => 'bx bx-store',
-            'type'  => 'dropdown',
-            'key'   => 'distribution',
-            // 'roles' => [1], // 👈 super admin only
             'children' => [
                 ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
-                ['title' => 'Delivery Agent Management', 'route' => 'delivery-agents.index'],
+                ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
                 ['title' => 'Vehicle Assignment', 'route' => 'vehicle-assignments.index'],
             ],
         ],
 
-        /* ================= POS & Sales ================= */
+        /* ================= POS System ================= */
         [
-            'title' => 'POS & Sales',
-            'icon'  => 'bx bx-package',
             'type'  => 'dropdown',
-            'key'   => 'pos',
+            'key'   => 'PosMenu',
+            'title' => 'POS System',
+            'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Stock Request', 'url' => '/warehouse-transfer-request/create'],
-                ['title' => 'Incoming Requests', 'url' => '/warehouse-transfer-request/incoming'],
+                ['title' => 'Add Purches List', 'route' => 'purchase.orders.create'],
+                ['title' => 'Purches History', 'route' => 'purchase.orders.index'],
+                ['title' => 'Stock Request', 'route' => 'warehouse_transfer.create'],
+                ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
             ],
         ],
 
-        /* ================= Offers ================= */
+        /* ================= Offer / Scheme Management ================= */
         [
-            'title' => 'Offers & Schemes',
-            'icon'  => 'bx bx-package',
             'type'  => 'dropdown',
-            'key'   => 'offers',
+            'key'   => 'OfferMenu',
+            'title' => 'Offer / Scheme Management',
+            'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Offer Management', 'route' => 'sale.create', 'roles' => [1]],
-                ['title' => 'Retailer Offers', 'route' => 'retailer-offers.index', 'roles' => [1]],
+                ['title' => 'Offer Management', 'route' => 'sale.create'],
+                ['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
                 ['title' => 'Coupon Management', 'route' => 'offers.index'],
             ],
         ],
 
-        /* ================= Customer ================= */
+        /* ================= Customer Management ================= */
         [
+            'type'  => 'dropdown',
+            'key'   => 'CustomerMenu',
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
-            'type'  => 'dropdown',
-            'key'   => 'customer',
             'children' => [
-                ['title' => 'Customer Orders', 'route' => 'customer-orders.index'],
-                ['title' => 'Order Returns', 'route' => 'customer-returns.index'],
-                ['title' => 'User Order', 'route' =>'userorder']
+                ['title' => 'WebSite Order', 'route' => 'userorder'],
+                ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
+                ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
         ],
 
         /* ================= Reports ================= */
         [
-            'title' => 'Reports & Analytics',
-            'icon'  => 'bx bx-bar-chart-alt-2',
             'type'  => 'dropdown',
-            'key'   => 'reports',
+            'key'   => 'ReportMenu',
+            'title' => 'Reports',
+            'icon'  => 'bx bx-bar-chart-alt-2',
             'children' => [
-                ['title' => 'Warehouse Transfer Report', 'route' => 'warehouse-stock.report'],
+                ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
                 ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
-                ['title' => 'Transfer Challan', 'route' => 'transfer-challans.index'],
+                ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
             ],
         ],
 
-        /* ================= Settings ================= */
+        /* ================= Setting ================= */
         [
-            'title' => 'Settings',
-            'icon'  => 'bx bx-package',
             'type'  => 'dropdown',
-            'key'   => 'settings',
+            'key'   => 'SettingMenu',
+            'title' => 'Setting',
+            'icon'  => 'bx bx-cog',
             'children' => [
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Tax Management', 'route' => 'taxes.index'],
             ],
         ],
 
         /* ================= Website ================= */
         [
+            'type'  => 'single',
             'title' => 'Banner Management',
             'icon'  => 'bx bx-package',
             'route' => 'banners.index',
-            'type'  => 'single',
         ],
 
         [
+            'type'  => 'single',
             'title' => 'User Contact Details',
             'icon'  => 'bx bx-package',
             'route' => 'admin.contacts',
+        ],
+
+        [
             'type'  => 'single',
+            'title' => 'About us',
+            'icon'  => 'bx bx-info-circle',
+            'route' => 'admin.aboutus',
         ],
 
     ],
