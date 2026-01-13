@@ -14,16 +14,7 @@
 
     <!-- Hero Start -->
     <div class="py-5 mb-5">
-        <div class="py-5" style="
-                min-height: 500px;
-                margin: 0px auto;
-                background:
-                    linear-gradient(rgba(248, 223, 173, 0.1), rgba(248, 223, 173, 0.1)),
-                    url('/website/img/hero-img.jpg');
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: cover;
-            ">
+     
             <div class="row g-5 align-items-center">
                 <div class="col-md-12 col-lg-7"><br><br><br><br><br><br>
                     <h4 class="mb-3 text-secondary" style="padding: 0px 70px;">100% Organic Foods</h4>
