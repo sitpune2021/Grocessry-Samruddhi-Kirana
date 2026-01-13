@@ -95,8 +95,11 @@
                 </table>
             </div>
 
+          
             <!-- Pagination -->
-            <x-pagination :from="$subCategories->firstItem()" :to="$subCategories->lastItem()" :total="$subCategories->total()" />
+            <div class="px-3 py-2">
+                {{ $subCategories->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
 
         </div>
     </div>

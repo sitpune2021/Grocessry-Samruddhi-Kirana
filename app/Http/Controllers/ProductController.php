@@ -28,7 +28,7 @@ class ProductController extends Controller
     try {
         $products = Product::with(['category', 'tax'])
             ->latest()
-            ->paginate(10);
+            ->paginate(20);
 
         return view('menus.product.index', compact('products'));
 

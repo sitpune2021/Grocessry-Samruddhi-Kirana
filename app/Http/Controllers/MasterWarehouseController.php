@@ -21,7 +21,7 @@ class MasterWarehouseController extends Controller
 {
     public function index()
     {
-        $warehouses = Warehouse::orderBy('id', 'desc')->paginate(10);
+        $warehouses = Warehouse::orderBy('id', 'desc')->paginate(20);
         return view('menus.warehouse.master.index', compact('warehouses'));
     }
     public function create()
@@ -41,9 +41,7 @@ class MasterWarehouseController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-
-        try {
-            $request->validate([
+         $request->validate([
                 'name' => 'required|string|max:255|unique:warehouses,name',
                 'type' => 'required|in:master,district,taluka',
                 'contact_person' => 'nullable|string|min:3|max:50',
@@ -63,6 +61,9 @@ class MasterWarehouseController extends Controller
             ]);
 
 
+
+        try {
+           
             $warehouse = Warehouse::create([
                 'name'           => $request->name,
                 'type'           => $request->type,
