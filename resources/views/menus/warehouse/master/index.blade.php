@@ -8,8 +8,8 @@
             @php
             $canView = hasPermission('warehouse.view');
             $canEdit = hasPermission('warehouse.edit');
-            $canDelete = hasPermission(permission: 'warehouse.delete');
-            @endphp
+        //   $canDelete = hasPermission(permission: 'warehouse.delete');
+        @endphp
 
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
@@ -26,11 +26,14 @@
             </div>
 
             <!-- Search -->
-            <x-datatable-search />
+            <div class="px-3 pt-2">
+                <x-datatable-search />
+            </div>
+
 
             <!-- Table -->
             <div class="table-responsive mt-3 p-3">
-                <table class="table table-bordered table-striped align-middle">
+                <table id="warehouse_id" class="table table-bordered table-striped align-middle">
                     <thead>
                         <thead class="table-light">
                             <th>Sr No</th>
@@ -40,7 +43,7 @@
                             <th>Contact Number</th>
                             <th>Email</th>
                             <th>Status</th>
-                            @if($canView || $canEdit || $canDelete)
+                            @if($canView || $canEdit ) {{-- || $canDelete --}}     
                             <th>Actions</th>
                             @endif
                             </tr>
@@ -58,15 +61,14 @@
                             <td>{{ $warehouse->email ?? '-'}}</td>
                             <td>{{$warehouse->status ?? '-'}}</td>
 
-                            @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
+                            @if($canView || $canEdit ) {{-- || $canDelete --}}                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('warehouse.view'))
                                 <a href="{{ route('warehouse.show', $warehouse->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
                                 @if(hasPermission('warehouse.edit'))
                                 <a href="{{ route('warehouse.edit', $warehouse->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
-                                @if(hasPermission('warehouse.delete'))
+                                {{-- @if(hasPermission('warehouse.delete'))
                                 <form action="{{ route('warehouse.destroy', $warehouse->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
@@ -74,7 +76,7 @@
                                         Delete
                                     </button>
                                 </form>
-                                @endif
+                                @endif --}}
                             </td>
                             @endif
                         </tr>
@@ -88,11 +90,9 @@
             </div>
 
             <!-- Pagination -->
-            <x-pagination
-                :from="$warehouses->firstItem()"
-                :to="$warehouses->lastItem()"
-                :total="$warehouses->total()" />
-
+            <div class="px-3 py-2">
+                {{ $warehouses->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 </div>
@@ -110,7 +110,7 @@
     document.addEventListener("DOMContentLoaded", function() {
 
         const searchInput = document.getElementById("dt-search-1");
-        const table = document.getElementById("batchTable");
+        const table = document.getElementById("warehouse_id");
 
         if (!searchInput || !table) return;
 
