@@ -46,11 +46,24 @@ return [
             'icon'  => 'bx bx-store',
             'children' => [
                 ['title' => 'Add Warehouse', 'route' => 'warehouse.index'],
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Add Warehouse Stock', 'route' => 'index.addStock.warehouse'],
             ],
         ],
+
+        /* ================ User Management ==============*/
+        [
+            'type'  => 'dropdown',
+            'key'   => 'userMenu',
+            'title' => 'User Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Role Management', 'route' => 'roles.index'],
+                ['title' => 'User Management', 'route' => 'user.profile'],
+                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+
+            ],
+        ],
+
 
         /* ================= Inventory Management ================= */
         [
@@ -61,7 +74,7 @@ return [
             'children' => [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
-                ['title' => 'Expiry Sell', 'route' => 'sale.create'],
+                ['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
             ],
         ],
 
@@ -111,6 +124,7 @@ return [
                     'title' => 'Warehouse Stock Return Approval',
                     'route' => 'stock-returns.index',
                 ],
+
             ],
         ],
 
@@ -162,6 +176,7 @@ return [
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
             'children' => [
+                ['title' => 'WebSite Order', 'route' => 'userorder'],
                 ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
@@ -187,9 +202,8 @@ return [
             'type'  => 'dropdown',
             'key'   => 'SettingMenu',
             'title' => 'Setting',
-            'icon'  => 'bx bx-package',
+            'icon'  => 'bx bx-cog',
             'children' => [
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
                 ['title' => 'Tax Management', 'route' => 'taxes.index'],
             ],
         ],
@@ -207,6 +221,13 @@ return [
             'title' => 'User Contact Details',
             'icon'  => 'bx bx-package',
             'route' => 'admin.contacts',
+        ],
+
+        [
+            'type'  => 'single',
+            'title' => 'About us',
+            'icon'  => 'bx bx-info-circle',
+            'route' => 'admin.aboutus',
         ],
 
     ],

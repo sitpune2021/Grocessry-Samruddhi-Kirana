@@ -89,8 +89,8 @@
             </div>
 
             <!-- Pagination -->
-            <div class="px-3 py-2">
-                <x-pagination :from="$suppliers->firstItem()" :to="$suppliers->lastItem()" :total="$suppliers->total()" />
+           <div class="px-3 py-2">
+                {{ $suppliers->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
 
         </div>

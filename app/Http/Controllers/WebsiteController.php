@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Banner;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ContactDetail;
-
+use Illuminate\Support\Facades\Auth;
 class WebsiteController extends Controller
 {
     
@@ -68,37 +70,84 @@ class WebsiteController extends Controller
         return back()->with('success', 'Thank you! Your message has been sent.');
     }
 
+    // public function shop(Request $request)
+    // {
+    //     $categoryId = $request->category_id;
+    //     $maxPrice   = $request->price;
+
+    //     // categories for sidebar
+    //     $categories = Category::orderBy('name')->get();
+
+    //     // products query
+    //     $productsQuery = Product::whereNull('deleted_at');
+
+    //     // category filter
+    //     if ($categoryId) {
+    //         $productsQuery->where('category_id', $categoryId);
+    //     }
+
+    //     // price filter (MRP based)
+    //     if ($maxPrice) {
+    //         $productsQuery->where('mrp', '<=', $maxPrice);
+    //     }
+
+    //     // pagination 12 (3 per row x 4 rows)
+    //     $products = $productsQuery
+    //         ->latest()
+    //         ->paginate(12)
+    //         ->withQueryString();
+
+    //     return view('website.shop', compact(
+    //         'products',
+    //         'categories',
+    //         'categoryId',
+    //         'maxPrice'
+    //     ));
+    // }
+
+    // public function shopFilter(Request $request)
+    // {
+    //     $categoryId = $request->category_id;
+    //     $page       = $request->page ?? 1;
+
+    //     $query = Product::whereNull('deleted_at');
+
+    //     if ($categoryId && $categoryId !== 'all') {
+    //         $query->where('category_id', $categoryId);
+    //     }
+
+    //     $products = $query
+    //         ->latest()
+    //         ->paginate(12, ['*'], 'page', $page);
+
+    //     return view('website.partials.product-list', compact('products'))->render();
+    // }  
+
     public function shop(Request $request)
     {
         $categoryId = $request->category_id;
-        $maxPrice   = $request->price;
+        $minPrice  = $request->min_price;
+        $maxPrice  = $request->max_price;
 
-        // categories for sidebar
         $categories = Category::orderBy('name')->get();
 
-        // products query
-        $productsQuery = Product::whereNull('deleted_at');
+        $query = Product::whereNull('deleted_at');
 
-        // category filter
         if ($categoryId) {
-            $productsQuery->where('category_id', $categoryId);
+            $query->where('category_id', $categoryId);
         }
 
-        // price filter (MRP based)
-        if ($maxPrice) {
-            $productsQuery->where('mrp', '<=', $maxPrice);
+        if ($minPrice !== null && $maxPrice !== null) {
+            $query->whereBetween('mrp', [$minPrice, $maxPrice]);
         }
 
-        // pagination 12 (3 per row x 4 rows)
-        $products = $productsQuery
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
+        $products = $query->latest()->paginate(12)->withQueryString();
 
         return view('website.shop', compact(
             'products',
             'categories',
             'categoryId',
+            'minPrice',
             'maxPrice'
         ));
     }
@@ -106,7 +155,9 @@ class WebsiteController extends Controller
     public function shopFilter(Request $request)
     {
         $categoryId = $request->category_id;
-        $page       = $request->page ?? 1;
+        $minPrice  = $request->min_price;
+        $maxPrice  = $request->max_price;
+        $page      = $request->page ?? 1;
 
         $query = Product::whereNull('deleted_at');
 
@@ -114,11 +165,60 @@ class WebsiteController extends Controller
             $query->where('category_id', $categoryId);
         }
 
+        if ($minPrice !== null && $maxPrice !== null) {
+            $query->whereBetween('mrp', [$minPrice, $maxPrice]);
+        }
+
         $products = $query
             ->latest()
             ->paginate(12, ['*'], 'page', $page);
 
         return view('website.partials.product-list', compact('products'))->render();
+    }
+
+    public function addToCart(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        $userId = Auth::id() ?? session()->getId();
+
+        // Get or create cart
+        $cart = Cart::firstOrCreate([
+            'user_id' => $userId,
+        ]);
+
+        // Check if product already in cart
+        $item = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($item) {
+            $item->qty += 1;
+            $item->line_total = $item->qty * $item->price;
+            $item->save();
+        } else {
+            CartItem::create([
+                'cart_id'    => $cart->id,
+                'product_id' => $product->id,
+                'qty'        => 1,
+                'price'      => $product->mrp,
+                'line_total' => $product->mrp,
+            ]);
+        }
+
+        // Recalculate cart totals
+        $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+
+        $cart->update([
+            'subtotal' => $subtotal,
+            'total'    => $subtotal,
+        ]);
+
+        return redirect()->route('cart')->with('success', 'Product added to cart');
     }
 
 

@@ -19,7 +19,7 @@ class CategoryController extends Controller
 
 
         $categories = Category::orderBy('id', 'desc')
-            ->paginate(10);;
+            ->paginate(20);
 
         return view('menus.category.index', compact('categories'));
     }
