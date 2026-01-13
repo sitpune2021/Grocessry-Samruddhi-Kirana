@@ -24,7 +24,7 @@
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
-                                    Master Warehouse to District Warehouse Stock Transfer
+                                    Master Warehouse to District Warehouse Stock Request
                                 </h4>
 
                                 <div class="card-body">
