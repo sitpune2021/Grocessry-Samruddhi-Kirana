@@ -86,7 +86,7 @@ return [
             'title' => 'Transfer Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => ' Master to District Warehouse Transfers', 'route' => 'transfer.index'],
+                ['title' => 'District → Master Stock Request', 'route' => 'transfer.index'],
                 ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
                 ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
                 ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
@@ -102,7 +102,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 [
-                    'title' => 'Master → District Transfer Approval',
+                    'title' => 'Warehouse Stock Approve',
                     'route' => 'warehouse.transfer.index',
                 ],
                 [
