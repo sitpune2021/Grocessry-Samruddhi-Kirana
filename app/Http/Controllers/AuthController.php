@@ -33,14 +33,15 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user);
+        Auth::guard('web')->login($user);
 
         return redirect()->route('checkout');
     }
 
     public function login(Request $request)
     {
-        if (Auth::attempt($request->only('email','password'))) {
+        if (Auth::guard('web')->attempt($request->only('email','password'))) {
+            $request->session()->regenerate();
             return redirect()->route('shop');
         }
 
@@ -49,7 +50,7 @@ class AuthController extends Controller
 
     public function websitelogout()
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         return redirect('/');
     }
     
