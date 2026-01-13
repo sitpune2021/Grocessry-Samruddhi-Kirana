@@ -219,6 +219,15 @@
             .hover-shadow {
                 transition: all 0.3s ease;
             }
+
+            .service-item {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .service-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+            }
         </style>
 
         <!-- Fruits Shop Start-->
@@ -427,96 +436,13 @@
                         </div>
                     </div>
 
-                    <!-- Pagination -->
-                    <div class="mt-4 d-flex flex-column align-items-end">
-                        {{ $allProducts->links('pagination::bootstrap-5') }}
 
-                        <div class="mt-2 text-muted">
-                            Showing {{ $allProducts->firstItem() }}
-                            to {{ $allProducts->lastItem() }}
-                            of {{ $allProducts->total() }} results
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- TAB 2 : CATEGORY SEARCH (UNCHANGED, CORRECT) -->
-                <div id="tab-2"
-                    class="tab-pane fade show {{ !empty($categoryId) ? 'active' : '' }}">
-
-                    <form method="GET" action="{{ route('home') }}" class="mb-4">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <select name="category_id"
-                                    class="form-select"
-                                    onchange="this.form.submit()">
-                                    <option value="">Select Category</option>
-                                    @foreach($categories as $category)
-                                    <option value="{{ $category->id }}"
-                                        {{ $categoryId == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-
-                    <div class="row g-4">
-                        @forelse($categoryProducts as $product)
-                        @php
-                        $image = $product->product_images[0] ?? null;
-                        @endphp
-
-                        <div class="col-md-6 col-lg-3">
-                            <div class="rounded position-relative fruite-item">
-
-                                <div class="fruite-img">
-                                    <img src="{{ $image
-                                    ? asset('storage/products/'.$image)
-                                    : asset('website/img/no-image.png') }}"
-                                        class="img-fluid w-100 rounded-top"
-                                        style="height:200px;object-fit:cover"
-                                        alt="{{ $product->name }}">
-                                </div>
-
-                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                    <h5>{{ $product->name }}</h5>
-                                    <p>₹ {{ $product->mrp }}</p>
-                                    <a href="#"
-                                        class="btn border border-secondary rounded-pill px-3 text-primary">
-                                        <i class="fa fa-shopping-bag me-2"></i>
-                                        Add to cart
-                                    </a>
-                                </div>
-
-                            </div>
-                        </div>
-                        @empty
-                        <p class="text-center">No products found</p>
-                        @endforelse
-                    </div>
-
-                    <div class="mt-4 d-flex justify-content-end">
-                        {{ $categoryProducts->links('pagination::bootstrap-5') }}
-                    </div>
 
                 </div>
 
             </div>
         </div>
-
-        <!-- Fruits Shop End-->
-        <script>
-            document.querySelectorAll('[href="#tab-1"]').forEach(el => {
-                el.addEventListener('click', function() {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('category_id');
-                    window.history.pushState({}, '', url);
-                });
-            });
-        </script>
-
+  
         <!-- Featurs Start -->
         <!-- Service/Featured Products Start -->
         <div class="container-fluid service py-5 bg-light">
@@ -563,20 +489,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Optional CSS for hover effect -->
-        <style>
-            .service-item {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            .service-item:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-            }
-        </style>
-
-        <!-- Featurs End -->
 
 
         <!-- Vesitable Shop Start-->
@@ -990,99 +902,6 @@
                 </div>
             </div>
         </div>
-
-
-
-        <!-- Fact Start -->
-
-
-        <!-- Tastimonial Start -->
-        <div class="container-fluid testimonial py-5">
-            <div class="container py-5">
-                <div class="testimonial-header text-center">
-                    <h4 class="text-primary">Our Testimonial</h4>
-                    <h1 class="display-5 mb-5 text-dark">Our Client Saying!</h1>
-                </div>
-                <div class="owl-carousel testimonial-carousel">
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Tastimonial End -->
 
 </body>
 
