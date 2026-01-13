@@ -124,7 +124,7 @@ class StockController extends Controller
 
             DB::beginTransaction();
 
-            // 1️⃣ Warehouse stock check
+            //Warehouse stock check
             $warehouseStock = WarehouseStock::where('warehouse_id', $warehouseId)
                 ->where('product_id', $productId)
                 ->lockForUpdate()
@@ -137,10 +137,10 @@ class StockController extends Controller
                 ]);
             }
 
-            // 2️⃣ Deduct warehouse stock
+            // Deduct warehouse stock
             $warehouseStock->decrement('quantity', $sellQty);
 
-            // 3️⃣ Deduct product_batches quantity
+            // Deduct product_batches quantity
             $remaining = $sellQty;
 
             $batches = ProductBatch::where('product_id', $productId)
@@ -156,7 +156,7 @@ class StockController extends Controller
                 $remaining -= $deduct;
             }
 
-            // 4️⃣ Get ANY ONE batch ID for stock movement
+            // Get ANY ONE batch ID for stock movement
             $batchForMovement = ProductBatch::where('product_id', $productId)
                 ->orderBy('id')
                 ->first();
@@ -168,7 +168,7 @@ class StockController extends Controller
                 ]);
             }
 
-            // 5️⃣ Stock movement OUT
+            // Stock movement OUT
             StockMovement::create([
                 'product_batch_id' => $batchForMovement->id,
                 'warehouse_id'     => $warehouseId,
@@ -219,7 +219,7 @@ class StockController extends Controller
 
     public function getSubCategories($warehouseId, $categoryId)
     {
-        // 🔍 Incoming request log
+        // Incoming request log
         Log::info('Fetching subcategories', [
             'warehouse_id' => $warehouseId,
             'category_id'  => $categoryId,
