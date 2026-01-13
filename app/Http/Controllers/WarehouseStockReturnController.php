@@ -24,23 +24,37 @@ class WarehouseStockReturnController extends Controller
     {
         $user = auth()->user();
         $warehouseId = $user->warehouse_id;
+        $userWarehouseType = $user->warehouse->type ?? null;
 
         $returns = WarehouseStockReturn::with([
             'fromWarehouse',
             'toWarehouse',
             'WarehouseStockReturnItem',
             'creator.role'
-        ])
-            ->where(function ($q) use ($warehouseId) {
-                $q->where('from_warehouse_id', $warehouseId)
-                    ->orWhere('to_warehouse_id', $warehouseId);
-            })
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        ]);
+
+        if ($userWarehouseType === 'district') {
+            // District sees what it sent OR needs to receive
+            $returns->where('from_warehouse_id', $warehouseId)
+                ->orWhere('to_warehouse_id', $warehouseId);
+        }
+
+        if ($userWarehouseType === 'master') {
+            // Master sees only incoming returns
+            $returns->where('to_warehouse_id', $warehouseId);
+        }
+
+        $returns = $returns->latest()->paginate(10);
+        // ->where(function ($q) use ($warehouseId) {
+        //     $q->where('from_warehouse_id', $warehouseId)
+        //         ->orWhere('to_warehouse_id', $warehouseId);
+        // })
+        // ->orderBy('id', 'desc')
+        // ->paginate(10);
 
         return view(
             'menus.warehouse-stock-return.stock-return-index',
-            compact('returns')
+            compact('returns', 'userWarehouseType')
         );
     }
 
@@ -80,7 +94,6 @@ class WarehouseStockReturnController extends Controller
         $fromWarehouse = $user->warehouse;
 
         $fromWarehouseId = $fromWarehouse->id ?? null;
-
         /**
          * FILTER TO WAREHOUSE BASED ON LEVEL
          */
