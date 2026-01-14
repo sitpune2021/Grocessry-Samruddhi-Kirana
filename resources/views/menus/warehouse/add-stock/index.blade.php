@@ -36,6 +36,8 @@
             </div>
 
             <!-- Search + Warehouse Filter -->
+            
+
             <div style="
                  display:flex;
                 justify-content:space-between;
@@ -44,16 +46,19 @@
                 padding:0.5rem 1rem;
                 flex-wrap:wrap; ">
 
-                <form method="GET" action="{{ route('index.addStock.warehouse') }}">
-                    <!-- <label>Search:</label> -->
+                <!-- <form method="GET" action="{{ route('index.addStock.warehouse') }}">
+                    <label>Search:</label>
                     <input type="search"
                         name="search"
                         value="{{ request('search') }}"
                         class="form-control"
                         placeholder="Search stock...">
-                </form>
+                </form> -->
 
-                <!-- Warehouse Dropdown (Super Admin only) -->
+                <div>  <x-datatable-search /> </div>
+
+               
+               
                 @if(Auth::user()->role_id == 1)
                 <form method="GET" action="{{ route('index.addStock.warehouse') }}">
                     <label class="form-label mb-1">Select Warehouse</label>

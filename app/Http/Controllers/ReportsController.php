@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 
 class ReportsController extends Controller
 {
+
+
     public function warehouse_stock_report(Request $request)
     {
         // Fetch filters from GET parameters
@@ -40,12 +42,12 @@ class ReportsController extends Controller
 
         // From Warehouse filter
         if ($fromWarehouse) {
-            $query->where('from_warehouse_id', $fromWarehouse);
+            $query->where('approved_by_warehouse_id', $fromWarehouse);
         }
 
         // To Warehouse filter
         if ($toWarehouse) {
-            $query->where('to_warehouse_id', $toWarehouse);
+            $query->where('requested_by_warehouse_id', $toWarehouse);
         }
 
         // Type filter (optional)
@@ -60,12 +62,12 @@ class ReportsController extends Controller
             if ($transfer->quantity <= 0) continue;
 
             // Warehouse names
-            $fromName = DB::table('warehouses')->where('id', $transfer->from_warehouse_id)->value('name') ?? '-';
-            $toName   = DB::table('warehouses')->where('id', $transfer->to_warehouse_id)->value('name') ?? '-';
+            $fromName = DB::table('warehouses')->where('id', $transfer->approved_by_warehouse_id)->value('name') ?? '-';
+            $toName   = DB::table('warehouses')->where('id', $transfer->requested_by_warehouse_id)->value('name') ?? '-';
 
             // Remaining Total Qty
             $remainingQty = DB::table('warehouse_stock')
-                ->where('warehouse_id', $transfer->to_warehouse_id)
+                ->where('warehouse_id', $transfer->requested_by_warehouse_id)
                 ->sum('quantity');
 
             $warehouseStock[] = [
@@ -114,6 +116,7 @@ class ReportsController extends Controller
 
         return view('reports.warehouse-transfers.warehouse-transfer', compact('warehouseStock'));
     }
+    
     public function stock_movement(Request $request)
     {
         $warehouseId = $request->query('warehouse_id');
@@ -209,71 +212,5 @@ class ReportsController extends Controller
         ]);
     }
 
-    // public function stock_movement(Request $request)
-    // {
-    //     $warehouseId = $request->query('warehouse_id');
-    //     $type        = $request->query('type');
-    //     $fromDate    = $request->query('from_date');
-    //     $toDate      = $request->query('to_date');
-    //     $download    = $request->query('download');
-
-    //     $query = DB::table('stock_movements')
-    //         ->orderBy('created_at', 'desc');
-
-    //     // Filter by warehouse
-    //     if ($warehouseId) {
-    //         $query->where('warehouse_id', $warehouseId);
-    //     }
-
-    //     // Filter by type (in / out / transfer)
-    //     if ($type) {
-    //         $query->where('type', $type);
-    //     }
-
-    //     // Date filter
-    //     if ($fromDate && $toDate && $fromDate <= $toDate) {
-    //         $query->whereBetween('created_at', [
-    //             $fromDate . ' 00:00:00',
-    //             $toDate . ' 23:59:59'
-    //         ]);
-    //     }
-
-    //     $movements = $query->get();
-
-    //     // CSV download
-    //     if ($download === 'csv') {
-    //         $filename = 'stock_movements_' . now()->format('Ymd_His') . '.csv';
-
-    //         return response()->stream(function () use ($movements) {
-    //             $file = fopen('php://output', 'w');
-
-    //             fputcsv($file, [
-    //                 'Warehouse',
-    //                 'Type',
-    //                 'Quantity',
-    //                 'Created Date'
-    //             ]);
-
-    //             foreach ($movements as $row) {
-    //                 $warehouse = DB::table('warehouses')
-    //                     ->where('id', $row->warehouse_id)
-    //                     ->value('name');
-
-    //                 fputcsv($file, [
-    //                     $warehouse,
-    //                     strtoupper($row->type),
-    //                     $row->quantity,
-    //                     $row->created_at,
-    //                 ]);
-    //             }
-
-    //             fclose($file);
-    //         }, 200, [
-    //             'Content-Type' => 'text/csv',
-    //             'Content-Disposition' => "attachment; filename=\"$filename\"",
-    //         ]);
-    //     }
-
-    //     return view('reports.stock-movements.stock-movement', compact('movements'));
-    // }
+ 
 }

@@ -9,8 +9,8 @@ class WarehouseTransfer extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'from_warehouse_id',
-        'to_warehouse_id',
+        'approved_by_warehouse_id',
+        'requested_by_warehouse_id',
         'category_id',
         'product_id',
         'batch_id',
@@ -20,12 +20,14 @@ class WarehouseTransfer extends Model
 
     // app/Models/WarehouseTransfer.php
 
-    public function fromWarehouse() {
-        return $this->belongsTo(Warehouse::class, 'from_warehouse_id');
+    public function approvedByWarehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'approved_by_warehouse_id');
     }
 
-    public function toWarehouse() {
-        return $this->belongsTo(Warehouse::class, 'to_warehouse_id');
+    public function requestedByWarehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'requested_by_warehouse_id');
     }
 
     public function category() {
@@ -36,17 +38,11 @@ class WarehouseTransfer extends Model
         return $this->belongsTo(Product::class);
     }
 
-    // public function batch() {
-    //     return $this->belongsTo(ProductBatch::class, 'batch_id');
-    // }
-
     public function batch()
     {
         return $this->belongsTo(ProductBatch::class, 'batch_id')
                     ->withTrashed(); // IMPORTANT
     }
-
-    
 
 
 }
