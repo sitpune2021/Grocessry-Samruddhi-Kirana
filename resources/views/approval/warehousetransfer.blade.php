@@ -43,16 +43,7 @@
                                 $t->status == 0 &&
                                 $t->approved_by_warehouse_id == auth()->user()->warehouse_id
                             )
-
                                 <div class="d-flex gap-1">
-                                    <form method="POST"
-                                        action="{{ route('warehouse.transfer.approve', $t->id) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-success">
-                                            Approve
-                                        </button>
-                                    </form>
-
                                     <form method="POST"
                                         action="{{ route('warehouse.transfer.reject', $t->id) }}"
                                         onsubmit="return confirm('Are you sure you want to reject this transfer?')">
@@ -62,6 +53,33 @@
                                         </button>
                                     </form>
                                 </div>
+                            @endif
+
+                            @if(
+                                $t->status == 1 &&
+                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id
+                            )
+                                <div class="d-flex gap-1">
+                                    <form method="POST"
+                                        action="{{ route('warehouse.transfer.approve', $t->id) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-success">
+                                            Approve
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                            @if($t->status == 0 && $t->approved_by_warehouse_id == auth()->user()->warehouse_id)
+                                <form method="POST" action="{{ route('warehouse.transfer.dispatch', $t->id) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-success">Dispatch</button>
+                                </form>
+                            @endif
+                            @if($t->status == 1 && $t->requested_by_warehouse_id == auth()->user()->warehouse_id)
+                                <form method="POST" action="{{ route('warehouse.transfer.receive', $t->id) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-primary">Receive</button>
+                                </form>
                             @endif
                         </td>
                     </tr>

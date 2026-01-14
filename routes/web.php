@@ -749,7 +749,14 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-     
+    Route::post('/warehouse-transfer/{transfer}/dispatch', 
+    [ApprovalController::class, 'dispatch']
+    )->name('warehouse.transfer.dispatch');
+
+    Route::post('/warehouse-transfer/{transfer}/receive', 
+        [ApprovalController::class, 'receive']
+    )->name('warehouse.transfer.receive');
+ 
 
      // Approval district to district-transfers
     Route::get(

@@ -19,6 +19,27 @@ class ApprovalController extends Controller
 {
 
   
+    // public function index()
+    // {
+    //     $userWarehouseId = auth()->user()->warehouse_id;
+
+    //     $transfers = WarehouseTransfer::with([
+    //         'approvedByWarehouse',
+    //         'requestedByWarehouse',
+    //         'product'
+    //     ])
+    //     ->where(function ($q) use ($userWarehouseId) {
+    //         $q->where('approved_by_warehouse_id', $userWarehouseId)   // Master
+    //         ->orWhere('requested_by_warehouse_id', $userWarehouseId); // District
+    //     })
+    //     ->where('status', 0)
+    //     ->latest()
+    //     ->paginate(10);
+
+    //     return view('approval.warehousetransfer', compact('transfers'));
+    // }
+
+    
     public function index()
     {
         $userWarehouseId = auth()->user()->warehouse_id;
@@ -29,16 +50,25 @@ class ApprovalController extends Controller
             'product'
         ])
         ->where(function ($q) use ($userWarehouseId) {
-            $q->where('approved_by_warehouse_id', $userWarehouseId)   // Master
-            ->orWhere('requested_by_warehouse_id', $userWarehouseId); // District
+
+            // Master ko sirf Pending dikhe
+            $q->where(function ($q2) use ($userWarehouseId) {
+                $q2->where('approved_by_warehouse_id', $userWarehouseId)
+                ->where('status', 0);
+            });
+
+            // District ko sirf Dispatched dikhe
+            $q->orWhere(function ($q2) use ($userWarehouseId) {
+                $q2->where('requested_by_warehouse_id', $userWarehouseId)
+                ->where('status', 1);
+            });
+
         })
-        ->where('status', 0)
         ->latest()
         ->paginate(10);
 
         return view('approval.warehousetransfer', compact('transfers'));
     }
-   
    
     public function approve(WarehouseTransfer $transfer)
     {
@@ -126,7 +156,6 @@ class ApprovalController extends Controller
         return back()->with('success', 'Transfer approved successfully');
     }
 
-
     public function reject(WarehouseTransfer $transfer)
     {
         if ($transfer->status != 0) {
@@ -142,5 +171,105 @@ class ApprovalController extends Controller
         return back()->with('success', 'Transfer rejected successfully');
     }
 
+    public function dispatch(WarehouseTransfer $transfer)
+    {
+        if ($transfer->status != 0) {
+            return back()->with('error', 'Only pending transfers can be dispatched');
+        }
+
+        DB::transaction(function () use ($transfer) {
+
+            $sourceWarehouseId = $transfer->approved_by_warehouse_id;
+
+            // Product Stock
+            $sourceStock = WarehouseStock::where('warehouse_id', $sourceWarehouseId)
+                ->where('product_id', $transfer->product_id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$sourceStock || $sourceStock->quantity < $transfer->quantity) {
+                throw new \Exception('Insufficient stock');
+            }
+
+            $sourceStock->decrement('quantity', $transfer->quantity);
+
+            // Product Batch
+            $sourceBatch = ProductBatch::where('id', $transfer->batch_id)
+                ->where('warehouse_id', $sourceWarehouseId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$sourceBatch || $sourceBatch->quantity < $transfer->quantity) {
+                throw new \Exception('Insufficient batch stock');
+            }
+
+            $sourceBatch->decrement('quantity', $transfer->quantity);
+
+            // Stock Movement (Dispatch)
+            StockMovement::create([
+                'product_batch_id' => $sourceBatch->id,
+                'type'             => 'dispatch',
+                'quantity'         => -$transfer->quantity,
+                'warehouse_id'     => $sourceWarehouseId,
+            ]);
+
+            // Update status
+            $transfer->update(['status' => 1]);
+        });
+
+        return back()->with('success', 'Stock dispatched successfully');
+    }
+
+    public function receive(WarehouseTransfer $transfer)
+    {
+        if ($transfer->status != 1) {
+            return back()->with('error', 'Only dispatched transfers can be received');
+        }
+
+        DB::transaction(function () use ($transfer) {
+
+            $destWarehouseId = $transfer->requested_by_warehouse_id;
+
+            $product = Product::findOrFail($transfer->product_id);
+
+            // Destination Stock
+            $destStock = WarehouseStock::firstOrNew([
+                'warehouse_id' => $destWarehouseId,
+                'product_id'   => $transfer->product_id,
+            ]);
+
+            $destStock->category_id = $product->category_id;
+            $destStock->quantity   = ($destStock->quantity ?? 0) + $transfer->quantity;
+            $destStock->save();
+
+            // Destination Batch
+            $destBatch = ProductBatch::firstOrNew([
+                'warehouse_id' => $destWarehouseId,
+                'product_id'   => $transfer->product_id,
+                'batch_no'     => ProductBatch::find($transfer->batch_id)->batch_no,
+            ]);
+
+            $sourceBatch = ProductBatch::findOrFail($transfer->batch_id);
+
+            $destBatch->category_id  = $product->category_id;
+            $destBatch->mfg_date     = $sourceBatch->mfg_date;
+            $destBatch->expiry_date = $sourceBatch->expiry_date;
+            $destBatch->quantity    = ($destBatch->quantity ?? 0) + $transfer->quantity;
+            $destBatch->save();
+
+            // Stock Movement (Receive)
+            StockMovement::create([
+                'product_batch_id' => $destBatch->id,
+                'type'             => 'transfer',
+                'quantity'         => $transfer->quantity,
+                'warehouse_id'     => $destWarehouseId,
+            ]);
+
+            // Final Status
+            $transfer->update(['status' => 2]);
+        });
+
+        return back()->with('success', 'Stock received successfully');
+    }
 
 }
