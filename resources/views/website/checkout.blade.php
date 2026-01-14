@@ -28,39 +28,39 @@
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">First Name<sup>*</sup></label>
-                                        <input type="text" name="first_name" class="form-control">
+                                        <input type="text" name="first_name" class="form-control" value="{{ $address->first_name ?? '' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-12 col-lg-6">
                                     <div class="form-item w-100">
                                         <label class="form-label my-3">Last Name<sup>*</sup></label>
-                                        <input type="text" name="last_name" class="form-control">
+                                        <input type="text" name="last_name" class="form-control" value="{{ $address->last_name ?? '' }}">
                                     </div>
                                 </div>
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Address <sup>*</sup></label>
-                                <input type="text" name="address" class="form-control" placeholder="House Number Street Name">
+                                <input type="text" name="address" class="form-control" placeholder="House Number Street Name" value="{{ $address->address ?? '' }}">
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Town/City<sup>*</sup></label>
-                                <input type="text" name="city" class="form-control">
+                                <input type="text" name="city" class="form-control" value="{{ $address->city ?? '' }}">
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Country<sup>*</sup></label>
-                                <input type="text" name="country" class="form-control">
+                                <input type="text" name="country" class="form-control" value="{{ $address->country ?? '' }}">
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Postcode/Zip<sup>*</sup></label>
-                                <input type="text" name="postcode" class="form-control">
+                                <input type="text" name="postcode" class="form-control" value="{{ $address->postcode ?? '' }}">
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Mobile<sup>*</sup></label>
-                                <input type="tel" name="phone" class="form-control">
+                                <input type="tel" name="phone" class="form-control" value="{{ $address->phone ?? '' }}">
                             </div>
                             <div class="form-item">
                                 <label class="form-label my-3">Email Address<sup>*</sup></label>
-                                <input type="email" name="email" class="form-control">
+                                <input type="email" name="email" class="form-control" value="{{ $address->email ?? '' }}">
                             </div>
 
                         </div>
@@ -117,16 +117,16 @@
                             <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
                                 <div class="col-12">
                                     <div class="form-check text-start my-3">
-                                        <input type="checkbox" class="form-check-input bg-primary border-0" id="Delivery-1" name="payment_method" value="cod">
-                                        <label class="form-check-label" for="Delivery-1">Cash On Delivery</label>
+                                        <input type="radio" class="form-check-input" name="payment_method" value="cod" id="cod">
+                                        <label for="cod">Cash On Delivery</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
                                 <div class="col-12">
                                     <div class="form-check text-start my-3">
-                                        <input type="checkbox" class="form-check-input bg-primary border-0" id="Paypal-1" name="payment_method" value="paypal">
-                                        <label class="form-check-label" for="Paypal-1">Paypal</label>
+                                        <input type="radio" class="form-check-input" name="payment_method" value="paypal" id="paypal">
+                                        <label for="paypal">Paypal</label>
                                     </div>
                                 </div>
                             </div>

@@ -12,13 +12,28 @@ class CustomerOrderController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    // public function index()
+    // {
+    //     $orders = CustomerOrder::with('customerOrderItems')->paginate(10);
+    //     $deliveryAgents = DeliveryAgent::with('user')
+    //         ->get();
+
+    //     return view('menus.customer-management.customer-order.index', compact('orders','deliveryAgents'));
+    // }
+
     public function index()
     {
-        $orders = CustomerOrder::with('customerOrderItems')->paginate(10);
-        $deliveryAgents = DeliveryAgent::with('user')
-            ->get();
+        $orders = Order::with(['items', 'user','orderItems'])
+            ->latest()
+            ->paginate(10);
 
-        return view('menus.customer-management.customer-order.index', compact('orders','deliveryAgents'));
+        $deliveryAgents = DeliveryAgent::with('user')->get();
+
+        return view(
+            'menus.customer-management.customer-order.index',
+            compact('orders', 'deliveryAgents')
+        );
     }
 
     /**
@@ -40,9 +55,15 @@ class CustomerOrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        $order = Order::with(['items', 'user', 'deliveryAgent'])
+            ->findOrFail($id);
+
+        return view(
+            'menus.customer-management.customer-order.show',
+            compact('order')
+        );
     }
 
     /**
@@ -86,5 +107,22 @@ class CustomerOrderController extends Controller
         return back()->with('success', 'Order Approved Successfully');
     }
 
-    
+    public function cancel(Request $request, $id)
+    {
+        $request->validate([
+            'cancel_reason' => 'required|string|max:255',
+            'cancel_comment' => 'nullable|string'
+        ]);
+
+        $order = Order::findOrFail($id);
+
+        $order->update([
+            'status' => 'cancelled',
+            'cancel_reason' => $request->cancel_reason,
+            'cancel_comment' => $request->cancel_comment,
+            'cancelled_at' => now(),
+        ]);
+
+        return back()->with('success', 'Order Cancelled');
+    }
 }

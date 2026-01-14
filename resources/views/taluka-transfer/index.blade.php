@@ -32,6 +32,7 @@
                             <th>Batch</th>
                             <th>Quantity</th>
                             <th>Date</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -46,6 +47,13 @@
                             <td>{{ $t->batch->batch_no  ?? ''}}</td>
                             <td>{{ $t->quantity }}</td>
                             <td>{{ $t->created_at->format('d-m-Y') }}</td>
+                            <td>
+                                @if ($t->status == 1)
+                                <span class="badge bg-success">Approved</span>
+                                @else
+                                <span class="badge bg-warning">Pending</span>
+                                @endif
+                            </td>
                             <td class="action-column" style="white-space:nowrap;">
                                 <x-action-buttons
                                     :view-url="route('taluka.transfer.show', $t->id)"
