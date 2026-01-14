@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Models\DeliveryAgent;
 use App\Models\DriverVehicle;
+use Illuminate\Support\Facades\Log;
+use App\Models\Order;
 
 class DeliveryAgentController extends Controller
 {
@@ -653,5 +655,122 @@ class DeliveryAgentController extends Controller
             'status' => true,
             'isOnline' => $user->is_online
         ]);
+    }
+
+    public function deliveryOtp(Request $request, $orderId, $type)
+    {
+        try {
+            $agent = $request->user();
+
+            // Only allow send or resend
+            if (!in_array($type, ['send', 'resend'])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid OTP type'
+                ], 422);
+            }
+
+            $order = Order::where('id', $orderId)
+                ->where('delivery_agent_id', $agent->id)
+                ->firstOrFail();
+
+            $customer = User::findOrFail($order->user_id);
+
+            $otp = rand(1000, 9999);
+
+            // Store OTP in customer (users table)
+            $customer->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5),
+            ]);
+
+            $message = $type === 'send'
+                ? "Your delivery OTP is {$otp}. Please share with delivery agent."
+                : "Your delivery OTP is {$otp}. (Resent) Please share with delivery agent.";
+
+            // Send OTP to CUSTOMER
+            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $customer->mobile,
+                'message'  => $message,
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => "OTP {$type} successfully"
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error('Delivery OTP Error', [
+                'order_id' => $orderId,
+                'type'     => $type,
+                'error'    => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to process delivery OTP'
+            ], 500);
+        }
+    }
+    public function verifyDeliveryOtp(Request $request, $orderId)
+    {
+        try {
+            $request->validate([
+                'otp' => 'required|digits:4'
+            ]);
+
+            $agent = $request->user();
+
+            $order = Order::where('id', $orderId)
+                ->where('delivery_agent_id', $agent->id)
+                ->firstOrFail();
+
+            $customer = User::findOrFail($order->user_id);
+
+            if ($customer->otp !== $request->otp) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid OTP'
+                ], 422);
+            }
+
+            if (now()->gt($customer->otp_expires_at)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'OTP expired'
+                ], 422);
+            }
+
+            // ✅ Mark order delivered
+            $order->update([
+                'status' => 'delivered'
+            ]);
+
+            // ✅ Clear OTP from customer
+            $customer->update([
+                'otp' => null,
+                'otp_expires_at' => null
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order delivered successfully'
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error('Verify Delivery OTP Error', [
+                'order_id' => $orderId,
+                'error'    => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to verify delivery OTP'
+            ], 500);
+        }
     }
 }

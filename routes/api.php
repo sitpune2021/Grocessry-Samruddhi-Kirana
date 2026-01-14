@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cart/clear', [ProductController::class, 'clearCart']);
     Route::delete('cart/single/product/remove', [ProductController::class, 'removeSingleItem']);
     Route::post('/cart/checkout', [ProductController::class, 'checkout']);
+    Route::post('/customer/product/return', [ProductController::class, 'returnProduct']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [DeliveryCouponsOffersController::class, 'getOffers']);
@@ -98,8 +99,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
     Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
-    Route::get('/partner/status/online-status',[DeliveryAgentController::class, 'onlineStatus']);
-    Route::get('/partner/stats/login-hours',[DeliveryAgentController::class, 'loginHours']);
+    Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);
+    Route::get('/partner/stats/login-hours', [DeliveryAgentController::class, 'loginHours']);
     Route::get('/notifications', [NotificationController::class, 'get_notifications']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
@@ -114,7 +115,8 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 });
 Route::middleware('auth:sanctum')->group(function () {
-
     Route::put('/partner/profile/address', [DeliveryAgentController::class, 'updateAddress']);
     Route::post('/partner/profile/image', [DeliveryAgentController::class, 'updateProfileImage']);
+    Route::post('partner/orders/{orderId}/delivery/verify-otp', [DeliveryAgentController::class, 'verifyDeliveryOtp']);
+    Route::post('/partner/orders/{orderId}/delivery/{type}-otp', [DeliveryAgentController::class, 'deliveryOtp']);
 });

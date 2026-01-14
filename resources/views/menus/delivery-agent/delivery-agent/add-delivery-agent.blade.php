@@ -187,27 +187,27 @@
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Profile Image</label>
 
-                                                    {{-- SHOW FILE INPUT ONLY IN EDIT MODE --}}
-                                                    @if ($mode === 'edit')
-                                                        <input type="file" name="profile_photo" class="form-control">
+                                                    {{-- SHOW FILE INPUT IN CREATE & EDIT --}}
+                                                    @if ($mode !== 'view')
+                                                        <input type="file" name="profile_photo" class="form-control"
+                                                            accept="image/*">
                                                     @endif
 
-                                                    {{-- VIEW IMAGE IF EXISTS --}}
+                                                    {{-- SHOW IMAGE IF EXISTS --}}
                                                     @if (!empty($agent?->user?->profile_photo))
                                                         <div class="mt-2">
                                                             <a href="{{ asset('storage/profile_photos/' . $agent->user->profile_photo) }}"
-                                                                target="_blank" class="text-primary">
+                                                                target="_self" class="text-primary">
                                                                 View Profile Image
                                                             </a>
                                                         </div>
                                                     @else
-                                                        {{-- SHOW "NO IMAGE" ONLY IN VIEW MODE --}}
+                                                        {{-- SHOW "NO IMAGE" ONLY IN VIEW --}}
                                                         @if ($mode === 'view')
                                                             <div class="text-muted mt-1">No Profile Image</div>
                                                         @endif
                                                     @endif
                                                 </div>
-
 
                                                 {{-- Aadhaar Card --}}
                                                 <div class="col-md-4">
@@ -235,10 +235,10 @@
                                                             </a>
                                                         </div>
                                                     @endif
-                                                      {{-- SHOW "NO IMAGE" ONLY IN VIEW MODE --}}
-                                                        @if ($mode === 'view')
-                                                            <div class="text-muted mt-1">No Aadhaar Card</div>
-                                                        @endif
+                                                    {{-- SHOW "NO IMAGE" ONLY IN VIEW MODE --}}
+                                                    @if ($mode === 'view')
+                                                        <div class="text-muted mt-1">No Aadhaar Card</div>
+                                                    @endif
                                                 </div>
 
                                                 {{-- Driving License --}}
@@ -268,10 +268,10 @@
                                                             </a>
                                                         </div>
                                                     @endif
-                                                     {{-- SHOW "NO IMAGE" ONLY IN VIEW MODE --}}
-                                                        @if ($mode === 'view')
-                                                            <div class="text-muted mt-1">No Driving License</div>
-                                                        @endif
+                                                    {{-- SHOW "NO IMAGE" ONLY IN VIEW MODE --}}
+                                                    @if ($mode === 'view')
+                                                        <div class="text-muted mt-1">No Driving License</div>
+                                                    @endif
                                                 </div>
 
 

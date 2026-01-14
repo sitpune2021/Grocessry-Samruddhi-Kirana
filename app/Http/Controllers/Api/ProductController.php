@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use Throwable;
 use App\Models\Offer;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -235,5 +236,76 @@ class ProductController extends Controller
         }
 
         return null; // ✅ allowed
+    }
+
+
+
+    public function returnProduct(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'order_item_id'     => 'required|exists:order_items,id',
+            'reason'            => 'required|string|max:191',
+            'return_type'       => 'required|in:refund,exchange',
+            'product_images'    => 'nullable|array',
+            'product_images.*'  => 'image|mimes:jpg,jpeg,png',
+        ]);
+
+        // Fetch order item
+        $orderItem = OrderItem::findOrFail($request->order_item_id);
+
+        // Ensure this order belongs to logged-in customer
+        if ($orderItem->order->user_id !== $user->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot return this product'
+            ], 403);
+        }
+
+        /* ================= Upload Return Images ================= */
+        $imagePaths = [];
+
+        if ($request->hasFile('product_images')) {
+            foreach ($request->file('product_images') as $image) {
+
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $path = $image->storeAs(
+                    'customer_return_products',
+                    $filename,
+                    'public'
+                );
+
+                $imagePaths[] = $path;
+            }
+        }
+
+        /* ================= Insert Return Request ================= */
+        $returnId = DB::table('customer_order_returns')->insertGetId([
+            'order_id'        => $orderItem->order_id,
+            'order_item_id'  => $orderItem->id,
+            'product_id'     => $orderItem->product_id,
+            'customer_id'    => $user->id,
+            'quantity'       => $orderItem->quantity,
+            'reason'         => $request->reason,
+            'return_type'    => $request->return_type,   // refund | exchange
+            'status'         => 'requested',
+            'qc_status'      => 'pending',
+            'product_images' => !empty($imagePaths) ? json_encode($imagePaths) : null,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        $returnData = DB::table('customer_order_returns')
+            ->where('id', $returnId)
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Return request submitted successfully',
+            'data' => $returnData
+        ]);
     }
 }

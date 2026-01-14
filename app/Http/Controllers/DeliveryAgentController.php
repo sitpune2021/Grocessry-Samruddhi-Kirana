@@ -68,7 +68,7 @@ class DeliveryAgentController extends Controller
                 'gender'          => 'nullable|in:male,female',
                 'address'         => 'nullable|string',
                 'active_status'   => 'required|boolean',
-                'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'aadhaar_card'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
@@ -95,15 +95,12 @@ class DeliveryAgentController extends Controller
             Log::info('Creating user record');
             $profileImage = null;
 
-            if ($request->hasFile('profile_image')) {
-                $file = $request->file('profile_image');
-                $profileImage = $file->getClientOriginalName();
+            if ($request->hasFile('profile_photo')) {
+                $file = $request->file('profile_photo');
+                $profileImage = time() . '_' . $file->getClientOriginalName();
                 $file->storeAs('profile_photos', $profileImage, 'public');
-
-                Log::info('Profile image uploaded', [
-                    'path' => $profileImage
-                ]);
             }
+
 
             $user = User::create([
                 'first_name'      => $validated['name'],

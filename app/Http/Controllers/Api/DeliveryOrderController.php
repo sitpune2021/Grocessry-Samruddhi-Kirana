@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\DeliveryNotification;
+use App\Models\DeliveryNotificationSetting;
+
 
 class DeliveryOrderController extends Controller
 {
@@ -24,7 +27,6 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
-
     public function acceptOrder(Request $request, $orderId)
     {
         $user = $request->user();
@@ -40,10 +42,36 @@ class DeliveryOrderController extends Controller
             ], 404);
         }
 
+        // ✅ Assign order
         $order->update([
             'status' => 'accepted',
             'delivery_agent_id' => $user->id
         ]);
+
+        // 🔔 CREATE OR GET NOTIFICATION SETTINGS
+        $settings = DeliveryNotificationSetting::firstOrCreate(
+            ['delivery_agent_id' => $user->id], // check if exists
+            [
+                'user_id' => $user->id,          // important!
+                'new_order' => 1,
+                'updates' => 1,
+                'chat' => 1,
+                'promo' => 1,
+                'app_updates' => 1
+            ]
+        );
+
+        // ✅ Create notification only if enabled
+        if ($settings->new_order == 1) {
+            DeliveryNotification::create([
+                'delivery_agent_id' => $user->id,
+                'user_id' => $order->user_id,  // user who placed order
+                'type' => 'new_order',
+                'title' => 'New Order Received',
+                'message' => 'You have accepted order #' . $order->order_number,
+                'is_read' => 0
+            ]);
+        }
 
         return response()->json([
             'status' => true,
@@ -51,6 +79,7 @@ class DeliveryOrderController extends Controller
             'data' => $order
         ]);
     }
+
     public function rejectOrder(Request $request, $orderId)
     {
         $order = Order::where('id', $orderId)
@@ -73,7 +102,6 @@ class DeliveryOrderController extends Controller
             'message' => 'Order rejected and removed from list'
         ]);
     }
-
 
     public function getAvailableOrders(Request $request)
     {
@@ -113,7 +141,6 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
-
 
     public function getOrderDetails(Request $request, $orderId)
     {
@@ -490,14 +517,13 @@ class DeliveryOrderController extends Controller
         ]);
     }
     public function totalOrders(Request $request)
-{
-    $user = $request->user();
-    $totalOrders = Order::where('delivery_agent_id', $user->id)->count();
+    {
+        $user = $request->user();
+        $totalOrders = Order::where('delivery_agent_id', $user->id)->count();
 
-    return response()->json([
-        'status' => true,
-        'totalOrders' => $totalOrders
-    ]);
-}
-
+        return response()->json([
+            'status' => true,
+            'totalOrders' => $totalOrders
+        ]);
+    }
 }
