@@ -67,6 +67,7 @@ class Product extends Model
     {
         return $this->belongsTo(Tax::class);
     }
+    
     public function getProductImageUrlsAttribute()
     {
         if (!$this->product_images) {
@@ -78,5 +79,10 @@ class Product extends Model
         return collect($images)->map(function ($image) {
             return asset('storage/products/' . $image);
         })->values();
+    }
+
+    public function stocks()
+    {
+        return $this->hasMany(WarehouseStock::class, 'product_id');
     }
 }

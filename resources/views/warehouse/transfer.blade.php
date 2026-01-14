@@ -71,6 +71,11 @@
                                                     @endforeach
  
                                                 </select>
+
+                                                <input type="hidden"
+                                                    name="to_warehouse_id"
+                                                    id="to_warehouse_id"
+                                                    value="{{ $toWarehouse->id }}">
                                             </div>
  
  
