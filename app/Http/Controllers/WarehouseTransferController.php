@@ -19,9 +19,29 @@ class WarehouseTransferController extends Controller
 {
     
  
+    // public function index()
+    // {
+    //     $userWarehouseId = auth()->user()->warehouse_id;
+
+    //     $transfers = WarehouseTransfer::with([
+    //         'approvedByWarehouse',
+    //         'requestedByWarehouse',
+    //         'category',
+    //         'product',
+    //         'batch'
+    //     ])
+    //     ->where('approved_by_warehouse_id', $userWarehouseId)   // 🔥 YAHI CHANGE
+    //     ->orderBy('created_at', 'desc')
+    //     ->get();
+
+    //     return view('warehouse.index', compact('transfers'));
+    // }
+ 
+    
     public function index()
     {
-        $userWarehouseId = auth()->user()->warehouse_id;
+        $user = auth()->user();
+        $userWarehouseId = $user->warehouse_id;
 
         $transfers = WarehouseTransfer::with([
             'approvedByWarehouse',
@@ -30,13 +50,25 @@ class WarehouseTransferController extends Controller
             'product',
             'batch'
         ])
-        ->where('approved_by_warehouse_id', $userWarehouseId)   // 🔥 YAHI CHANGE
+        ->where(function ($q) use ($userWarehouseId) {
+
+            // District: show only PENDING requests they created
+            $q->where(function ($sub) use ($userWarehouseId) {
+                $sub->where('requested_by_warehouse_id', $userWarehouseId)
+                    ->where('status', 0);
+            })
+
+            // Master: show all requests sent to them
+            ->orWhere(function ($sub) use ($userWarehouseId) {
+                $sub->where('approved_by_warehouse_id', $userWarehouseId);
+            });
+        })
         ->orderBy('created_at', 'desc')
         ->get();
 
         return view('warehouse.index', compact('transfers'));
     }
- 
+
     public function create()
     {
         $user = auth()->user();
@@ -160,8 +192,9 @@ class WarehouseTransferController extends Controller
  
         /* ================= FROM = Master Warehouses ================= */
         $fromWarehouses = Warehouse::where('status', 'active')
-            ->where('type', 'master')
+            ->where('id', $toWarehouse->parent_id)   // sirf parent warehouse
             ->get();
+
  
         /* ================= Default FROM (selected on edit) ================= */
         $defaultFromWarehouse = $fromWarehouses
@@ -197,6 +230,17 @@ class WarehouseTransferController extends Controller
             'products'              => $products,
             'batches'               => $batches,
             'selectedProducts'      => $selectedProducts,
+        ]);
+    }
+
+    public function getTransferQty(Request $request)
+    {
+        $transfer = WarehouseTransfer::where('id', $request->transfer_id)
+            ->where('status', 0)
+            ->first();
+
+        return response()->json([
+            'quantity' => $transfer->quantity ?? 0
         ]);
     }
  
