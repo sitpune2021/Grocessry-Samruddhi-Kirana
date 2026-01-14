@@ -11,16 +11,29 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ContactDetail;
 use Illuminate\Support\Facades\Auth;
+
 class WebsiteController extends Controller
 {
-    
+
     public function index(Request $request)
     {
         // banners
         $banners = Banner::latest()->get();
 
         // categories
-        $categories = Category::orderBy('name')->get();
+        // $categories = Category::orderBy('name')->get();
+        $categories = Category::whereNull('deleted_at')
+            ->whereHas('products', function ($q) {
+                $q->whereNull('deleted_at');
+            })
+            ->with(['products' => function ($q) {
+                $q->whereNull('deleted_at');
+            }])
+            ->orderBy('name')
+            ->take(10)
+            ->get();
+
+            
 
         // category id
         $categoryId = $request->category_id;
@@ -220,6 +233,4 @@ class WebsiteController extends Controller
 
         return redirect()->route('cart')->with('success', 'Product added to cart');
     }
-
-
 }
