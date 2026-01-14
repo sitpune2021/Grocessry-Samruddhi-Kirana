@@ -289,6 +289,10 @@ Route::middleware(['auth:admin'])->group(function () {
         [WarehouseTransferController::class, 'getBatchStock']
     );
 
+    Route::get('/ajax/transfer-qty', [WarehouseTransferController::class, 'getTransferQty'])
+    ->name('ajax.transfer.qty');
+
+
     //taluka-transfe
     Route::prefix('taluka-transfer')
         ->name('taluka.transfer.')

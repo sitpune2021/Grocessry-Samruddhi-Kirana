@@ -36,10 +36,19 @@
  
                                         <input type="hidden" name="category_id" value="1">
  
+                                        @if(isset($transfer))
+                                            <input type="hidden" id="current_transfer_id" value="{{ $transfer->id }}">
+                                        @endif
+
+                                        @if(isset($transfer))
+                                            <input type="hidden" id="current_product_id" value="{{ $transfer->product_id }}">
+                                        @endif
+
                                         <!-- Row 1: FROM & TO -->
                                         <div class="row g-3 mb-3">
+
                                             <div class="col-md-6">
-                                                <label class="form-label">From Warehouse<span class="text-danger">*</span></label>
+                                                <label class="form-label">Loged Warehouse<span class="text-danger">*</span></label>
  
                                                 <select class="form-select" disabled>
                                                     <option selected>{{ $toWarehouse->name }}</option>
@@ -48,8 +57,6 @@
                                                 <input type="hidden" name="requested_by_warehouse_id"
                                                     value="{{ $toWarehouse->id }}">
                                             </div>
- 
- 
  
                                             <div class="col-md-6">
                                                 <label class="form-label">
@@ -78,8 +85,6 @@
                                                     value="{{ $toWarehouse->id }}">
                                             </div>
  
- 
- 
                                         </div>
  
                                         <!-- Row 2: PRODUCT -->
@@ -97,7 +102,6 @@
                                                 <span class="text-danger mt-1">{{ $message }}</span>
                                                 @enderror
                                             </div>
- 
  
                                             <div class="col-md-6">
                                                 <label for="batch_id" class="form-label">Batch <span class="text-danger">*</span></label>
@@ -165,7 +169,6 @@
                                             </div>
                                             @endif
  
- 
                                         </div>
  
                                         <!-- Table -->
@@ -191,6 +194,7 @@
                                                     Product Transfer
                                                 </button>
                                             </div> -->
+                                            
                                         </div>
                                     </form>
                                 </div>
@@ -266,11 +270,21 @@
         }
  
         /* ================= INITIAL LOAD (MASTER DEFAULT) ================= */
-        // const initialFromWarehouse = fromWarehouseEl.val();
-        // if (initialFromWarehouse) {
-        //     loadProductsByWarehouse(initialFromWarehouse);
-        // }
- 
+        const initialFromWarehouse = fromWarehouseEl.val();
+
+        if (initialFromWarehouse) {
+            loadProductsByWarehouse(initialFromWarehouse, false);
+
+            const selectedProduct = $('#current_product_id').val();
+
+            if (selectedProduct) {
+                setTimeout(() => {
+                    productEl.val([selectedProduct]).trigger('change');  // AUTO SELECT
+                }, 800);
+            }
+        }
+
+
         /* ================= FROM WAREHOUSE CHANGE ================= */
         fromWarehouseEl.on('change', function() {
             const wid = $(this).val();
@@ -279,7 +293,8 @@
         });
  
         /* ================= PRODUCT CHANGE → FIFO BATCH + AUTO QTY ================= */
-        productEl.on('change', function() {
+        productEl.on('change', function() 
+        {
  
             const productIds = $(this).val();
  
@@ -316,7 +331,23 @@
  
                 // CSV qty for multi product
                 qtyEl.val(quantities.join(','));
+
+                @if(isset($transfer))
+const transferId = $('#current_transfer_id').val();
+
+if (transferId) {
+    $.get("{{ route('ajax.transfer.qty') }}", {
+        transfer_id: transferId
+    }, function(res) {
+        if (res.quantity) {
+            qtyEl.val(res.quantity);   // ✅ Yahin 200 aayega
+        }
+    });
+}
+@endif
+
             });
+            
         });
  
  

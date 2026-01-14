@@ -31,7 +31,9 @@
                             @if($t->status == 0)
                                 <span class="badge bg-warning">Pending</span>
                             @elseif($t->status == 1)
-                                <span class="badge bg-success">Approved</span>
+                                <span class="badge bg-success">Dispatched</span>
+                            @elseif($t->status == 2)
+                                <span class="badge bg-success">Approved</span>                           
                             @else
                                 <span class="badge bg-danger">Rejected</span>
                             @endif
