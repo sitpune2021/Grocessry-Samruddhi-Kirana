@@ -54,7 +54,18 @@
                                         @endif
                                     </td>
                                     <td class="action-column" style="white-space:nowrap;">
-                                        <x-action-buttons :view-url="route('transfer.show', $t->id)" :edit-url="route('transfer.edit', $t->id)" :delete-url="route('transfer.destroy', $t->id)" />
+                                        <x-action-buttons 
+                                            :view-url="route('transfer.show', $t->id)"
+                                            :delete-url="route('transfer.destroy', $t->id)" 
+                                        />
+                                        @if(
+                                            auth()->user()->warehouse_id == $t->requested_by_warehouse_id 
+                                            && $t->status == 0
+                                        )
+                                            <x-action-buttons                                                
+                                                :edit-url="route('transfer.edit', $t->id)"   
+                                            />
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
