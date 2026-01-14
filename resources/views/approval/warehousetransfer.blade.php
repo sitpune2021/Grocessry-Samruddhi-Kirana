@@ -5,15 +5,15 @@
 
     <div class="container bg-white mt-5 shadow rounded p-3">
 
-        <h5 class="card-title mt-5">District-Wise Warehouse Stock Transfer</h5>
+        <h5 class="card-title mt-5">Warehouse Stock Request Approve</h5>
 
         <div class="table-responsive mt-5">
 
             <table id="transfersTable" class="table table-bordered table-striped  mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>From</th>
-                        <th>To</th>
+                        <th>Approved By Warehouse</th>
+                        <th>Requested By Warehouse</th>
                         <th>Product</th>
                         <th>Qty</th>
                         <th>Status</th>
@@ -23,8 +23,8 @@
                 <tbody>
                     @foreach($transfers as $t)
                     <tr>
-                        <td>{{ $t->fromWarehouse->name }}</td>
-                        <td>{{ $t->toWarehouse->name }}</td>
+                        <td>{{ $t->approvedByWarehouse->name }}</td>
+                        <td>{{ $t->requestedByWarehouse->name }}</td>
                         <td>{{ $t->product->name }}</td>
                         <td>{{ $t->quantity }}</td>
                         <td>
@@ -37,8 +37,13 @@
                             @endif
                         </td>
                         <td>
-                            @if($t->status == 0)
-                                <div class="d-flex gap-1">
+                            @if(
+                                $t->status == 0 &&
+                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id &&
+                                auth()->user()->warehouse->parent_id == NULL
+                            )
+
+                              <div class="d-flex gap-1">
                                     <form method="POST"
                                         action="{{ route('warehouse.transfer.approve', $t->id) }}">
                                         @csrf

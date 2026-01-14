@@ -12,6 +12,31 @@ return [
             'route'   => 'dashboard',
         ],
 
+          /* ================ User Management ==============*/
+        [
+            'type'  => 'dropdown',
+            'key'   => 'userMenu',
+            'title' => 'User Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Role Management', 'route' => 'roles.index'],
+                ['title' => 'User Management', 'route' => 'user.profile'],
+                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+
+            ],
+        ],
+
+         /* ================= Supplier Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'suppplierMenu',
+            'title' => 'Supplier Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+            ],
+        ],
+
         /* ================= Product Management ================= */
         [
             'type'  => 'dropdown',
@@ -27,16 +52,6 @@ return [
             ],
         ],
 
-        /* ================= Supplier Management ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'suppplierMenu',
-            'title' => 'Supplier Management',
-            'icon'  => 'bx bx-package',
-            'children' => [
-                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
-            ],
-        ],
 
         /* ================= Warehouse Management ================= */
         [
@@ -50,21 +65,7 @@ return [
             ],
         ],
 
-        /* ================ User Management ==============*/
-        [
-            'type'  => 'dropdown',
-            'key'   => 'userMenu',
-            'title' => 'User Management',
-            'icon'  => 'bx bx-package',
-            'children' => [
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
-
-            ],
-        ],
-
-
+      
         /* ================= Inventory Management ================= */
         [
             'type'  => 'dropdown',
@@ -101,7 +102,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 [
-                    'title' => 'Stock Request Approval',
+                    'title' => 'Warehouse Stock Approve',
                     'route' => 'warehouse.transfer.index',
                 ],
                 // [
@@ -121,9 +122,9 @@ return [
                 //     'route' => 'taluka-distribution.transfer.index',
                 // ],
                 [
-                     'title' => 'Warehouse Stock Return Approval',
-                     'route' => 'stock-returns.index',
-                 ],
+                    'title' => 'Warehouse Stock Return Approval',
+                    'route' => 'stock-returns.index',
+                ],
 
             ],
         ],

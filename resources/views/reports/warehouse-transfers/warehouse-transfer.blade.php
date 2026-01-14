@@ -14,7 +14,7 @@
 
                 <div class="col-md-3">
                     <select name="from_warehouse" class="form-select">
-                        <option value="">From Warehouse (All)</option>
+                        <option value="">Approved Warehouse (All)</option>
                         @foreach (DB::table('warehouses')->get() as $wh)
                             <option value="{{ $wh->id }}"
                                 {{ request('from_warehouse') == $wh->id ? 'selected' : '' }}>
@@ -26,7 +26,7 @@
 
                 <div class="col-md-3">
                     <select name="to_warehouse" class="form-select">
-                        <option value="">To Warehouse (All)</option>
+                        <option value="">Request Warehouse (All)</option>
                         @foreach (DB::table('warehouses')->get() as $wh)
                             <option value="{{ $wh->id }}" {{ request('to_warehouse') == $wh->id ? 'selected' : '' }}>
                                 {{ $wh->name }}
@@ -59,9 +59,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Sr. No</th>
-                            <th>Warehouse From</th>
-                            <th>Warehouse To</th>
-
+                            <th>Warehouse Approved</th>
+                            <th>Warehouse Request</th>
                             <th>Transfer In</th>
                             <th>Remaining Total Qty</th>
                             <th>Created Date</th>
@@ -87,7 +86,6 @@
                         @endforelse
                     </tbody>
                 </table>
-
             </div>
             <div class="p-2">
                 {{-- {{ $stocks->links() }} --}}
