@@ -38,6 +38,12 @@
                             <th colspan="2">Action</th>
                         </tr>
                     </thead>
+                    @php
+                    $user = auth()->user();
+                    $userWarehouseId = $user->warehouse_id ?? null;
+                    $userWarehouseType = optional($user->warehouse)->type;
+                    @endphp
+
                     <tbody>
                         @forelse($returns as $key => $return)
 
@@ -91,63 +97,6 @@
                                     <i class="ri-file-pdf-line"></i>
                                 </a>
                             </td>
-                            <!-- <td>
-                                @php
-                                $userWarehouseId = auth()->user()->warehouse_id;
-
-                                @endphp
-
-                                @if($return->status === 'draft' &&
-                                $userWarehouseId == $return->to_warehouse_id)
-                                <form action="{{ route('stock-returns.send-for-approval', $return->id) }}"
-                                    method="POST" class="d-inline">
-                                    @csrf
-                                    <button class="btn btn-warning btn-sm">
-                                        Send for Approval
-                                    </button>
-                                </form>
-                                @endif
-
-                                {{-- DISTRICT: APPROVE --}}
-                                @if($return->canApprove($userWarehouseId))
-                                <form action="{{ route('stock-returns.approve', $return->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button class="btn btn-success btn-sm">
-                                        Approve
-                                    </button>
-                                </form>
-                                @endif
-
-                                @if($return->status == 'approved' &&
-                                $userWarehouseId == $return->to_warehouse_id)
-                                <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        Dispatch Stock
-                                    </button>
-                                </form>
-                                @endif
-
-
-
-                                @if($return->status == 'dispatched' &&
-                                $userWarehouseId == $return->from_warehouse_id)
-
-                                <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        Receive Stock
-                                    </button>
-                                </form>
-                                @endif
-
-                                @if($userWarehouseType === 'district')
-                                <a href="{{ route('stock-returns.create') }}" class="btn btn-primary btn-sm">
-                                    Send Stock to Master
-                                </a>
-                                @endif
-                            </td> -->
-
                             <td>
 
                                 {{-- DISTRICT: SEND FOR APPROVAL --}}

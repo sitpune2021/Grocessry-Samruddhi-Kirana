@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Controllers\DistrictWarehouseController;
 use App\Http\Controllers\TalukaWarehouseController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +12,7 @@ use App\Http\Controllers\Api\DeliveryOrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\DeliveryCouponsOffersController;
 use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
@@ -69,33 +69,52 @@ Route::prefix('auth')->group(function () {
     Route::post('/login/{type}', [DeliveryAgentController::class, 'login']);
     Route::post('/reset-password', [DeliveryAgentController::class, 'resetPassword']);
     Route::post('forgot-password/send-otp', [DeliveryAgentController::class, 'forgotPasswordSendOtp']);
-    Route::middleware('auth:sanctum')->post('logout', [DeliveryAgentController::class, 'logout']);
 });
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/partner/status/online', [DeliveryAgentController::class, 'goOnline']);
-    Route::post('/partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
+    Route::post('logout', [DeliveryAgentController::class, 'logout']);
+    Route::post('partner/status/online', [DeliveryAgentController::class, 'goOnline']);
+    Route::post('partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
 });
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
     Route::post('/delivery/orders/{order}/accept', [DeliveryOrderController::class, 'acceptOrder']);
     Route::post('/delivery/orders/{order}/reject', [DeliveryOrderController::class, 'rejectOrder']);
     Route::get('/delivery/orders/available', [DeliveryOrderController::class, 'getAvailableOrders']);
     Route::get('/delivery/orders/queue', [DeliveryOrderController::class, 'getDeliveryQueue']);
-});
-Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{orderId}', [DeliveryOrderController::class, 'getOrderDetails']);
     Route::get('orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
     Route::post('/orders/{orderId}/instructions/read', [DeliveryOrderController::class, 'confirmInstructionsRead']);
-});
-Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{orderId}/pickup', [DeliveryOrderController::class, 'getPickupDetails']);
     Route::post('/orders/{orderId}/items/{itemId}/verify', [DeliveryOrderController::class, 'verifyItem']);
     Route::post('/orders/{orderId}/items/{itemId}/issue', [DeliveryOrderController::class, 'reportItemIssue']);
     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
+    Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
+    Route::post('/orders/{orderId}/cancel', [DeliveryOrderController::class, 'cancelOrder']);
+    Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
+    Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
+    Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
+    Route::get('/orders/{orderId}/summary', [DeliveryOrderController::class, 'getOrderSummary']);
+    Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
+    Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
+    Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
+    Route::get('/partner/status/online-status',[DeliveryAgentController::class, 'onlineStatus']);
+    Route::get('/partner/stats/login-hours',[DeliveryAgentController::class, 'loginHours']);
+    Route::get('/notifications', [NotificationController::class, 'get_notifications']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::get('/notifications/settings', [NotificationController::class, 'getSettings']);
+    Route::put('/notifications/settings', [NotificationController::class, 'updateSettings']);
+    Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
+
+    Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
+    Route::put(
+        '/delivery_boy/profile/{type}',
+        [DeliveryAgentController::class, 'updateProfileField']
+    );
 });
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
-    Route::post('/orders/{orderId}/cancel',[DeliveryOrderController::class, 'cancelOrder']);
+
+    Route::put('/partner/profile/address', [DeliveryAgentController::class, 'updateAddress']);
+    Route::post('/partner/profile/image', [DeliveryAgentController::class, 'updateProfileImage']);
 });
