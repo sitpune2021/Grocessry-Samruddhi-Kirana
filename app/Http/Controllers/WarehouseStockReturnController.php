@@ -231,33 +231,33 @@ class WarehouseStockReturnController extends Controller
                 ]);
 
                 /** 🔒 LOCK WAREHOUSE STOCK */
-                $warehouseStock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
-                    ->where('product_id', $item['product_id'])
-                    ->where('batch_id', $item['batch_id'])
-                    ->lockForUpdate()
-                    ->firstOrFail();
+                // $warehouseStock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
+                //     ->where('product_id', $item['product_id'])
+                //     ->where('batch_id', $item['batch_id'])
+                //     ->lockForUpdate()
+                //     ->firstOrFail();
 
-                Log::info('Warehouse Stock Locked', [
-                    'warehouse_stock_id' => $warehouseStock->id,
-                    'available_qty' => $warehouseStock->quantity
-                ]);
+                // Log::info('Warehouse Stock Locked', [
+                //     'warehouse_stock_id' => $warehouseStock->id,
+                //     'available_qty' => $warehouseStock->quantity
+                // ]);
 
-                if ($item['return_qty'] > $warehouseStock->quantity) {
-                    Log::error('Return Qty Exceeds Warehouse Stock', [
-                        'warehouse_stock_id' => $warehouseStock->id,
-                        'requested' => $item['return_qty'],
-                        'available' => $warehouseStock->quantity
-                    ]);
+                // if ($item['return_qty'] > $warehouseStock->quantity) {
+                //     Log::error('Return Qty Exceeds Warehouse Stock', [
+                //         'warehouse_stock_id' => $warehouseStock->id,
+                //         'requested' => $item['return_qty'],
+                //         'available' => $warehouseStock->quantity
+                //     ]);
 
-                    throw new \Exception('Return quantity exceeds warehouse stock.');
-                }
+                //     throw new \Exception('Return quantity exceeds warehouse stock.');
+                // }
 
-                $warehouseStock->decrement('quantity', $item['return_qty']);
+                // $warehouseStock->decrement('quantity', $item['return_qty']);
 
-                Log::info('Warehouse Stock Quantity Updated', [
-                    'warehouse_stock_id' => $warehouseStock->id,
-                    'remaining_qty' => $warehouseStock->quantity
-                ]);
+                // Log::info('Warehouse Stock Quantity Updated', [
+                //     'warehouse_stock_id' => $warehouseStock->id,
+                //     'remaining_qty' => $warehouseStock->quantity
+                // ]);
 
                 /** 📸 IMAGE */
                 $imagePath = null;

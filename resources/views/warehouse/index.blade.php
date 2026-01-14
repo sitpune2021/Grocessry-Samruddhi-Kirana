@@ -11,75 +11,10 @@
             $canDelete = hasPermission('warehouse_transfer_request.delete');
             @endphp
 
-                <!-- Header -->
-                <div class="row card-header flex-column flex-md-row pb-0">
-                    <div class="col-md-auto me-auto">
-                        <h5 class="card-title">Warehouse Stock Transfers</h5>
-                    </div>
-                    <div class="col-md-auto ms-auto mt-5">
-                        <a href="{{ route('transfer.create') }}" class="btn btn-success">
-                           Request Stock
-                        </a>
-                    </div>
-                </div><br><br>
-                <!-- Search -->
-                <x-datatable-search />
-                <div class="table-responsive mt-3">
-                    <table id="transfersTable" class="table table-bordered table-striped  mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <!-- <th>Approved By Warehouse</th> -->
-                                <th>Requested By Warehouse</th>
-                                <th>Category</th>
-                                <th>Product</th>
-                                <th>Batch</th>
-                                <th>Quantity</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($transfers as $t)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <!-- <td>{{ $t->approvedByWarehouse->name ?? '' }}</td> -->
-                                    <td>{{ $t->requestedByWarehouse->name  ?? '' }}</td>
-                                    <td>{{ $t->category->name }}</td>
-                                    <td>{{ $t->product->name }}</td>
-                                    <td>{{ $t->batch->batch_no ?? '' }}</td>
-                                    <td>{{ $t->quantity }}</td>
-                                    <td>{{ $t->created_at->format('d-m-Y') }}</td>
-                                    <td>
-                                        @if ($t->status == 1)
-                                            <span class="badge bg-success">Approved</span>
-                                        @else
-                                            <span class="badge bg-warning">Pending</span>
-                                        @endif
-                                    </td>
-                                    <td class="action-column" style="white-space:nowrap;">
-                                        <x-action-buttons 
-                                            :view-url="route('transfer.show', $t->id)"
-                                            :delete-url="route('transfer.destroy', $t->id)" 
-                                        />
-                                        @if(
-                                            auth()->user()->warehouse_id == $t->requested_by_warehouse_id 
-                                            && $t->status == 0
-                                        )
-                                            <x-action-buttons                                                
-                                                :edit-url="route('transfer.edit', $t->id)"   
-                                            />
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center">No transfers found</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <!-- Header -->
+            <div class="row card-header flex-column flex-md-row pb-0">
+                <div class="col-md-auto me-auto">
+                    <h5 class="card-title">Warehouse Stock Transfers</h5>
                 </div>
                 @if(hasPermission('warehouse_transfer_request.create') && Auth::user()->role_id != 1)
                 <div class="col-md-auto ms-auto mt-5">
@@ -88,6 +23,7 @@
                     </a>
                 </div>
                 @endif
+              
             </div><br><br>
             <!-- Search -->
             <x-datatable-search />
@@ -129,13 +65,22 @@
                             </td>
 
                             @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
+                            <td class="action-column" style="white-space:nowrap;">
+                                <!-- view Button -->
                                 @if($canView)
                                 <a href="{{ route('transfer.show', $t->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
+
+                                <!-- Edit Button -->
+                                @if(
+                                auth()->user()->warehouse_id == $t->requested_by_warehouse_id
+                                && $t->status == 0 )
                                 @if($canEdit)
                                 <a href="{{ route('transfer.edit', $t->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
+                                @endif
+
+                                <!-- Delete Button -->
                                 @if($canDelete)
                                 <form action="{{ route('transfer.destroy', $t->id) }}" method="POST" class="d-inline">
                                     @csrf
@@ -147,6 +92,7 @@
                                 @endif
                             </td>
                             @endif
+                        
                         </tr>
                         @empty
                         <tr>
