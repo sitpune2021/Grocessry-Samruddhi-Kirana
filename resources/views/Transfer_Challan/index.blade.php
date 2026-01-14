@@ -5,18 +5,25 @@
 
         <div class="card shadow-sm p-2">
             <div class="card-datatable text-nowrap">
+                @php
+                    $canView = hasPermission('transfer_challan.view');
+                    $canEdit = hasPermission('transfer_challan.edit');
+                    $canDelete = hasPermission('transfer_challan.delete');
+                    @endphp
 
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title mb-0">Transfer Challans</h5>
                     </div>
+                    @if(hasPermission('transfer_challan.create'))
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('transfer-challans.create') }}"
                             class="btn btn-success btn-sm d-flex align-items-center gap-1">
                             <i class="bx bx-plus"></i> Add Transfer Challan
                         </a>
                     </div>
+                    @endif
                 </div>
 
                 <!-- Search -->
@@ -58,7 +65,9 @@
                                 <th>To Warehouse</th>
                                 <th>Transfer Date</th>
                                 {{-- <th>Status</th> --}}
+                                @if($canView)
                                 <th class="text-center" style="width:150px;">Actions</th>
+                                @endif
                             </tr>
                         </thead>
 
@@ -84,7 +93,7 @@
                                     {{ ucfirst($item->status) }}
                                 </span>
                             </td> --}}
-
+                                    @if($canView)
                                     <td class="text-center">
                                         <x-action-buttons :view-url="route('transfer-challans.show', $item->id)" :edit-url="route('transfer-challans.edit', $item->id)" :delete-url="route('transfer-challans.destroy', $item->id)" />
                                         <a href="{{ route('transfer-challans.download.pdf', $item->id) }}"
@@ -93,6 +102,7 @@
                                         <a href="{{ route('transfer-challans.download.csv', $item->id) }}"
                                             class="btn btn-sm btn-outline-success mt-1">CSV</a>
                                     </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>

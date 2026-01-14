@@ -19,6 +19,8 @@ class CustomerOrderReturnController extends Controller
             'product',
             'orderItem'
         ])->latest()->get();
+
+        
         return view('menus.customer-management.customer-return.index', compact('returns'));
     }
 

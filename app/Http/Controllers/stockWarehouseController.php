@@ -20,99 +20,121 @@ use Illuminate\Support\Facades\Auth;
 
 class stockWarehouseController extends Controller
 {
-public function indexWarehouse(Request $request)
-{
-    $user = Auth::user();
-    $search = $request->search;
+    public function indexWarehouse(Request $request)
+    {
+        $user = Auth::user();
 
-    $query = WarehouseStock::with([
-        'warehouse:id,name',
-        'category:id,name',
-        'product:id,name',
-        'supplier:id,supplier_name',
-    ])->orderBy('id', 'desc');
+    
+        $query = WarehouseStock::with([
+            'warehouse:id,name,type,parent_id',
+            'category:id,name',
+            'product:id,name',
+            'supplier:id,supplier_name',
+        ])->orderBy('id', 'desc');
 
-    // 🔹 Super Admin: warehouse filter
-    if ($user->role_id == 1 && $request->warehouse_id) {
+      
+        if ($user->role_id == 1) {
+             if ($request->filled('warehouse_id')) {
         $query->where('warehouse_id', $request->warehouse_id);
     }
+        }
 
-    // 🔹 Non Super Admin: force own warehouse
-    if ($user->role_id != 1) {
-        $query->where('warehouse_id', $user->warehouse_id);
+   
+        elseif ($user->warehouse->type === 'master') {
+
+            $masterWarehouseId = $user->warehouse_id;
+
+            $districtIds = Warehouse::where('type', 'district')
+                ->where('parent_id', $masterWarehouseId)
+                ->pluck('id');
+
+          
+            $talukaIds = Warehouse::where('type', 'taluka')
+                ->whereIn('parent_id', $districtIds)
+                ->pluck('id');
+
+            $allowedWarehouseIds = collect([$masterWarehouseId])
+                ->merge($districtIds)
+                ->merge($talukaIds);
+
+            $query->whereIn('warehouse_id', $allowedWarehouseIds);
+        }
+        
+        elseif ($user->warehouse->type === 'district') {
+
+            $districtWarehouseId = $user->warehouse_id;
+
+            $talukaIds = Warehouse::where('type', 'taluka')
+                ->where('parent_id', $districtWarehouseId)
+                ->pluck('id');
+
+            $allowedWarehouseIds = collect([$districtWarehouseId])
+                ->merge($talukaIds);
+
+            $query->whereIn('warehouse_id', $allowedWarehouseIds);
+        }
+
+    
+        else {
+            $query->where('warehouse_id', $user->warehouse_id);
+        }
+
+     
+        $stocks = $query->paginate(20);
+
+        
+        $warehouses = $user->role_id == 1
+            ? Warehouse::select('id', 'name')->orderBy('name')->get()
+            : collect();
+
+        return view(
+            'menus.warehouse.add-stock.index',
+            compact('stocks', 'warehouses')
+        );
     }
 
-    // 🔹 SEARCH (IMPORTANT)
-    if ($search) {
-        $query->where(function ($q) use ($search) {
-            $q->whereHas('warehouse', fn ($w) =>
-                    $w->where('name', 'like', "%{$search}%")
-                )
-              ->orWhereHas('category', fn ($c) =>
-                    $c->where('name', 'like', "%{$search}%")
-                )
-              ->orWhereHas('product', fn ($p) =>
-                    $p->where('name', 'like', "%{$search}%")
-                )
-              ->orWhereHas('supplier', fn ($s) =>
-                    $s->where('supplier_name', 'like', "%{$search}%")
-                );
-        });
+
+    public function addStockForm()
+    {
+        $mode = 'add';
+        $user = User::with('warehouse')->find(Auth::id());
+
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
+        $userWarehouse = $user->warehouse;
+        $readonly = true;
+
+        $categories = Category::all();
+        $products = collect();
+        $product_batches = ProductBatch::all();
+        $sub_categories = [];
+        $suppliers = Supplier::select('id', 'supplier_name')->get();
+
+        // ✅ IMPORTANT: define warehouses always
+        $warehouses = collect();
+
+        // ✅ Only Super Admin gets all warehouses
+        if ($user->role_id == 1) {
+            $warehouses = Warehouse::orderBy('name')->get();
+        }
+
+        return view(
+            'menus.warehouse.add-stock.add-stock',
+            compact(
+                'mode',
+                'userWarehouse',
+                'categories',
+                'product_batches',
+                'products',
+                'sub_categories',
+                'suppliers',
+                'readonly',
+                'warehouses'
+            )
+        );
     }
-
-    $stocks = $query->paginate(20)->withQueryString();
-
-    $warehouses = $user->role_id == 1
-        ? Warehouse::select('id', 'name')->orderBy('name')->get()
-        : collect();
-
-    return view(
-        'menus.warehouse.add-stock.index',
-        compact('stocks', 'warehouses')
-    );
-}
-
-   public function addStockForm()
-{
-    $mode = 'add';
-    $user = User::with('warehouse')->find(Auth::id());
-
-    if (!$user) {
-        abort(401, 'Unauthenticated');
-    }
-
-    $userWarehouse = $user->warehouse;
-    $readonly = true;
-
-    $categories = Category::all();
-    $products = collect();
-    $product_batches = ProductBatch::all();
-    $sub_categories = [];
-    $suppliers = Supplier::select('id', 'supplier_name')->get();
-
-    // ✅ IMPORTANT: define warehouses always
-    $warehouses = collect();
-
-    // ✅ Only Super Admin gets all warehouses
-    if ($user->role_id == 1) {
-        $warehouses = Warehouse::orderBy('name')->get();
-    }
-
-    return view(
-        'menus.warehouse.add-stock.add-stock',
-        compact(
-            'mode',
-            'userWarehouse',
-            'categories',
-            'product_batches',
-            'products',
-            'sub_categories',
-            'suppliers',
-            'readonly',
-            'warehouses'
-        )
-    );
-}
 
     public function byCategory($categoryId)
     {
@@ -282,7 +304,7 @@ public function indexWarehouse(Request $request)
             ->select('id', 'name')
             ->get();
 
-            $warehouses = Warehouse::select('id', 'name')->get();
+        $warehouses = Warehouse::select('id', 'name')->get();
 
         return view('menus.warehouse.add-stock.add-stock', compact(
             'warehouses',
@@ -388,7 +410,7 @@ public function indexWarehouse(Request $request)
         return response()->json($categories);
     }
 
-     /**
+    /**
      * Get products by sub category (AJAX)
      */
     public function getProductBySubCategory($subCategoryId)

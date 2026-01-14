@@ -14,16 +14,7 @@
 
     <!-- Hero Start -->
     <div class="py-5 mb-5">
-        <div class="py-5" style="
-                min-height: 500px;
-                margin: 0px auto;
-                background:
-                    linear-gradient(rgba(248, 223, 173, 0.1), rgba(248, 223, 173, 0.1)),
-                    url('/website/img/hero-img.jpg');
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: cover;
-            ">
+     
             <div class="row g-5 align-items-center">
                 <div class="col-md-12 col-lg-7"><br><br><br><br><br><br>
                     <h4 class="mb-3 text-secondary" style="padding: 0px 70px;">100% Organic Foods</h4>
@@ -66,12 +57,13 @@
 
         <!-- Featurs Section Start -->
         <div class="container-fluid featurs py-5">
-            <div class="container py-5">
+            <div class="container py-5 p">
                 <div class="row g-4">
+                    <!-- Feature 1 -->
                     <div class="col-md-6 col-lg-3">
                         <div class="featurs-item text-center rounded bg-light p-4">
-                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                                <i class="fas fa-car-side fa-3x text-white"></i>
+                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
+                                <i class="fas fa-car-side fa-2x text-white"></i>
                             </div>
                             <div class="featurs-content text-center">
                                 <h5>Free Shipping</h5>
@@ -79,10 +71,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Feature 2 -->
                     <div class="col-md-6 col-lg-3">
                         <div class="featurs-item text-center rounded bg-light p-4">
-                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                                <i class="fas fa-user-shield fa-3x text-white"></i>
+                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
+                                <i class="fas fa-user-shield fa-2x text-white"></i>
                             </div>
                             <div class="featurs-content text-center">
                                 <h5>Security Payment</h5>
@@ -90,10 +84,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Feature 3 -->
                     <div class="col-md-6 col-lg-3">
                         <div class="featurs-item text-center rounded bg-light p-4">
-                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                                <i class="fas fa-exchange-alt fa-3x text-white"></i>
+                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
+                                <i class="fas fa-exchange-alt fa-2x text-white"></i>
                             </div>
                             <div class="featurs-content text-center">
                                 <h5>30 Day Return</h5>
@@ -101,10 +97,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Feature 4 -->
                     <div class="col-md-6 col-lg-3">
                         <div class="featurs-item text-center rounded bg-light p-4">
-                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
-                                <i class="fa fa-phone-alt fa-3x text-white"></i>
+                            <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
+                                <i class="fa fa-phone-alt fa-2x text-white"></i>
                             </div>
                             <div class="featurs-content text-center">
                                 <h5>24/7 Support</h5>
@@ -115,6 +113,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Featurs Section End -->
 
         <style>
@@ -134,6 +133,91 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+
+            /* /// */
+
+            /* Small product card (Blinkit style) */
+            .product-sm-card {
+                border: 1px solid #eee;
+                border-radius: 12px;
+                padding: 10px;
+                background: #fff;
+                height: 100%;
+                transition: box-shadow 0.2s ease;
+            }
+
+            .product-sm-card:hover {
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            }
+
+            .product-sm-img {
+                height: 120px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .product-sm-img img {
+                max-height: 100%;
+                max-width: 100%;
+                object-fit: contain;
+            }
+
+            .product-sm-title {
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 1.2;
+                margin: 8px 0 4px;
+            }
+
+            .product-sm-weight {
+                font-size: 12px;
+                color: #777;
+            }
+
+            .product-sm-footer {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 8px;
+            }
+
+            .product-sm-price {
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            .btn-add-sm {
+                border: 1px solid #28a745;
+                color: #28a745;
+                background: #fff;
+                padding: 3px 14px;
+                font-size: 13px;
+                border-radius: 8px;
+            }
+
+            .btn-add-sm:hover {
+                background: #28a745;
+                color: #fff;
+            }
+
+            .counter:hover {
+                transform: translateY(-5px);
+                transition: all 0.3s ease;
+            }
+
+            .hover-shadow {
+                transition: all 0.3s ease;
+            }
+
+            .service-item {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .service-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
             }
         </style>
 
@@ -286,58 +370,109 @@
 
                 </div>
             </div>
+
         </div>
-        <!-- Fruits Shop End-->
-        <script>
-            document.querySelectorAll('[href="#tab-1"]').forEach(el => {
-                el.addEventListener('click', function() {
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('category_id');
-                    window.history.pushState({}, '', url);
-                });
-            });
-        </script>
+
+        <div class="container py-5">
+            <div class="tab-content">
+
+                <!-- TAB 1 : ALL PRODUCTS (Small Cards) -->
+                <div id="tab-1"
+                    class="tab-pane fade show {{ empty($categoryId) ? 'active' : '' }}">
+
+                    <div class="container-fluid fruite py-5">
+                        <div class="container">
+
+                            <div class="row mb-4">
+                                <div class="col text-start">
+                                    <h3>Spices & Masala</h3>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+
+                                @forelse($allProducts as $product)
+                                @php
+                                $image = $product->product_images[0] ?? null;
+                                @endphp
+
+                                <div class="col-6 col-md-4 col-lg-2">
+                                    <div class="product-sm-card">
+
+                                        <div class="product-sm-img">
+                                            <img src="{{ $image
+                                            ? asset('storage/products/'.$image)
+                                            : asset('website/img/no-image.png') }}"
+                                                alt="{{ $product->name }}">
+                                        </div>
+
+                                        <div class="product-sm-title">
+                                            {{ Str::limit($product->name, 35) }}
+                                        </div>
+
+                                        <div class="product-sm-footer">
+                                            <span class="price">₹{{ $product->mrp }}</span>
+                                            <button class="btn-add-sm">ADD</button>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                @empty
+                                <p class="text-center">No products found</p>
+                                @endforelse
+
+                            </div>
+
+                        </div>
+                    </div>
 
 
+
+                </div>
+
+            </div>
+        </div>
+  
         <!-- Featurs Start -->
-        <div class="container-fluid service py-5">
+        <!-- Service/Featured Products Start -->
+        <div class="container-fluid service py-5 bg-light">
             <div class="container py-5">
                 <div class="row g-4 justify-content-center">
+                    <!-- Service 1 -->
                     <div class="col-md-6 col-lg-4">
-                        <a href="#">
-                            <div class="service-item bg-secondary rounded border border-secondary">
-                                <img src="{{ asset('website/img/featur-1.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                                <div class="px-4 rounded-bottom">
-                                    <div class="service-content bg-primary text-center p-4 rounded">
-                                        <h5 class="text-white">Fresh Apples</h5>
-                                        <h3 class="mb-0">20% OFF</h3>
-                                    </div>
+                        <a href="#" class="text-decoration-none">
+                            <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
+                                <img src="{{ asset('website/img/featur-1.jpg') }}" class="img-fluid w-100 rounded-top" alt="Fresh Apples">
+                                <div class="service-content text-center p-4 bg-primary text-white">
+                                    <h5>Fresh Apples</h5>
+                                    <h3 class="mb-0">20% OFF</h3>
                                 </div>
                             </div>
                         </a>
                     </div>
+
+                    <!-- Service 2 -->
                     <div class="col-md-6 col-lg-4">
-                        <a href="#">
-                            <div class="service-item bg-dark rounded border border-dark">
-                                <img src="{{ asset('website/img/featur-2.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                                <div class="px-4 rounded-bottom">
-                                    <div class="service-content bg-light text-center p-4 rounded">
-                                        <h5 class="text-primary">Tasty Fruits</h5>
-                                        <h3 class="mb-0">Free delivery</h3>
-                                    </div>
+                        <a href="#" class="text-decoration-none">
+                            <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
+                                <img src="{{ asset('website/img/featur-2.jpg') }}" class="img-fluid w-100 rounded-top" alt="Tasty Fruits">
+                                <div class="service-content text-center p-4 bg-light text-primary">
+                                    <h5>Tasty Fruits</h5>
+                                    <h3 class="mb-0">Free Delivery</h3>
                                 </div>
                             </div>
                         </a>
                     </div>
+
+                    <!-- Service 3 -->
                     <div class="col-md-6 col-lg-4">
-                        <a href="#">
-                            <div class="service-item bg-primary rounded border border-primary">
-                                <img src="{{ asset('website/img/featur-3.jpg') }}" class="img-fluid rounded-top w-100" alt="">
-                                <div class="px-4 rounded-bottom">
-                                    <div class="service-content bg-secondary text-center p-4 rounded">
-                                        <h5 class="text-white">Exotic Vegitable</h5>
-                                        <h3 class="mb-0">Discount 30$</h3>
-                                    </div>
+                        <a href="#" class="text-decoration-none">
+                            <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
+                                <img src="{{ asset('website/img/featur-3.jpg') }}" class="img-fluid w-100 rounded-top" alt="Exotic Vegetable">
+                                <div class="service-content text-center p-4 bg-secondary text-white">
+                                    <h5>Exotic Vegetable</h5>
+                                    <h3 class="mb-0">Discount $30</h3>
                                 </div>
                             </div>
                         </a>
@@ -345,7 +480,6 @@
                 </div>
             </div>
         </div>
-        <!-- Featurs End -->
 
 
         <!-- Vesitable Shop Start-->
@@ -710,132 +844,55 @@
 
 
         <!-- Fact Start -->
-        <div class="container-fluid py-5">
+        <div class="container-fluid py-5 bg-light">
             <div class="container">
-                <div class="bg-light p-5 rounded">
-                    <div class="row g-4 justify-content-center">
-                        <div class="col-md-6 col-lg-6 col-xl-3">
-                            <div class="counter bg-white rounded p-5">
-                                <i class="fa fa-users text-secondary"></i>
-                                <h4>satisfied customers</h4>
-                                <h1>1963</h1>
+                <div class="row g-4 justify-content-center">
+                    <!-- Fact Item 1 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
+                            <div class="counter-icon mb-3">
+                                <i class="fa fa-users fa-2x text-primary"></i>
                             </div>
+                            <h4 class="text-uppercase text-secondary mb-2">Satisfied Customers</h4>
+                            <h1 class="display-5 text-dark mb-0">1963</h1>
                         </div>
-                        <div class="col-md-6 col-lg-6 col-xl-3">
-                            <div class="counter bg-white rounded p-5">
-                                <i class="fa fa-users text-secondary"></i>
-                                <h4>quality of service</h4>
-                                <h1>99%</h1>
+                    </div>
+
+                    <!-- Fact Item 2 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
+                            <div class="counter-icon mb-3">
+                                <i class="fa fa-award fa-2x text-primary"></i>
                             </div>
+                            <h4 class="text-uppercase text-secondary mb-2">Quality of Service</h4>
+                            <h1 class="display-5 text-dark mb-0">99%</h1>
                         </div>
-                        <div class="col-md-6 col-lg-6 col-xl-3">
-                            <div class="counter bg-white rounded p-5">
-                                <i class="fa fa-users text-secondary"></i>
-                                <h4>quality certificates</h4>
-                                <h1>33</h1>
+                    </div>
+
+                    <!-- Fact Item 3 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
+                            <div class="counter-icon mb-3">
+                                <i class="fa fa-certificate fa-2x text-primary"></i>
                             </div>
+                            <h4 class="text-uppercase text-secondary mb-2">Quality Certificates</h4>
+                            <h1 class="display-5 text-dark mb-0">33</h1>
                         </div>
-                        <div class="col-md-6 col-lg-6 col-xl-3">
-                            <div class="counter bg-white rounded p-5">
-                                <i class="fa fa-users text-secondary"></i>
-                                <h4>Available Products</h4>
-                                <h1>789</h1>
+                    </div>
+
+                    <!-- Fact Item 4 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
+                            <div class="counter-icon mb-3">
+                                <i class="fa fa-boxes fa-2x text-primary"></i>
                             </div>
+                            <h4 class="text-uppercase text-secondary mb-2">Available Products</h4>
+                            <h1 class="display-5 text-dark mb-0">789</h1>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Fact Start -->
-
-
-        <!-- Tastimonial Start -->
-        <div class="container-fluid testimonial py-5">
-            <div class="container py-5">
-                <div class="testimonial-header text-center">
-                    <h4 class="text-primary">Our Testimonial</h4>
-                    <h1 class="display-5 mb-5 text-dark">Our Client Saying!</h1>
-                </div>
-                <div class="owl-carousel testimonial-carousel">
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="testimonial-item img-border-radius bg-light rounded p-4">
-                        <div class="position-relative">
-                            <i class="fa fa-quote-right fa-2x text-secondary position-absolute" style="bottom: 30px; right: 0;"></i>
-                            <div class="mb-4 pb-4 border-bottom border-secondary">
-                                <p class="mb-0">Lorem Ipsum is simply dummy text of the printing Ipsum has been the industry's standard dummy text ever since the 1500s,
-                                </p>
-                            </div>
-                            <div class="d-flex align-items-center flex-nowrap">
-                                <div class="bg-secondary rounded">
-                                    <img src="{{ asset('website/img/testimonial-1.jpg') }}" class="img-fluid rounded" style="width: 100px; height: 100px;" alt="">
-                                </div>
-                                <div class="ms-4 d-block">
-                                    <h4 class="text-dark">Client Name</h4>
-                                    <p class="m-0 pb-3">Profession</p>
-                                    <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Tastimonial End -->
 
 </body>
 
