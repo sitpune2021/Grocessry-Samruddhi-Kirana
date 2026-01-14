@@ -57,10 +57,10 @@
                             <td>{{ $t->quantity }}</td>
                             <td>{{ optional($t->created_at)->format('d-m-Y') }}</td>
                             <td>
-                             @if ($t->status == 1)
+                                        @if ($t->status == 1)
                                             <span class="badge bg-success">Dispatched</span>
                                         @elseif($t->status == 2)
-                                            <span class="badge bg-success">Approved</span>
+                                            <span class="badge bg-success">Recived</span>
                                         @else
                                             <span class="badge bg-warning">Pending</span>
                                         @endif
