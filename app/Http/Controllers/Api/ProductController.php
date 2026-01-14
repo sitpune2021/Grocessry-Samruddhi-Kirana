@@ -7,10 +7,12 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Throwable;
 use App\Models\Offer;
+use App\Models\WarehouseStock;
 use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 
@@ -26,26 +28,77 @@ class ProductController extends Controller
             'quantity'   => 'nullable|integer|min:1',
         ]);
 
-        $cart = Cart::where('user_id', $user->id)
-            ->where('product_id', $request->product_id)
+        $qty = $request->quantity ?? 1;
+
+        $product = Product::findOrFail($request->product_id);
+
+        // 🔹 Get stock from warehouse_stock (REAL STOCK)
+        $availableStock = WarehouseStock::where('product_id', $product->id)
+            ->sum('quantity');
+
+        if ($availableStock <= 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product out of stock'
+            ], 400);
+        }
+
+        // 🔹 Get or create cart
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'subtotal' => 0,
+                'discount' => 0,
+                'total'    => 0
+            ]
+        );
+
+        // 🔹 Check existing cart item
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
             ->first();
 
-        if ($cart) {
-            $cart->quantity += $request->quantity ?? 1;
-            $cart->save();
+        $existingQty = $cartItem ? $cartItem->qty : 0;
+        $finalQty = $existingQty + $qty;
+
+        // ✅ FINAL & CORRECT STOCK CHECK
+        if ($finalQty > $availableStock) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only ' . $availableStock . ' items available'
+            ], 400);
+        }
+
+        if ($cartItem) {
+            $cartItem->qty = $finalQty;
+            $cartItem->line_total = $finalQty * $cartItem->price;
+            $cartItem->save();
         } else {
-            Cart::create([
-                'user_id'    => $user->id,
-                'product_id' => $request->product_id,
-                'quantity'   => $request->quantity ?? 1,
+            CartItem::create([
+                'cart_id'    => $cart->id,
+                'product_id' => $product->id,
+                'batch_id'   => null,
+                'qty'        => $qty,
+                'price'      => $product->retailer_price,
+                'line_total' => $qty * $product->retailer_price
             ]);
         }
 
+        // 🔹 Recalculate cart totals
+        $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+
+        $cart->update([
+            'subtotal' => $subtotal,
+            'discount' => 0,
+            'total'    => $subtotal
+        ]);
+
         return response()->json([
             'status' => true,
-            'message' => 'Product added to cart'
+            'message' => 'Product added to cart successfully'
         ]);
     }
+
 
     public function viewCart(Request $request)
     {
@@ -80,7 +133,6 @@ class ProductController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        // Validate ke user ne product choose keli aahe ki nahi
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
@@ -114,107 +166,171 @@ class ProductController extends Controller
         ]);
     }
 
-
     public function checkout(Request $request)
     {
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $cartItems = Cart::with('product')
-            ->where('user_id', $user->id)
-            ->get();
+        DB::beginTransaction();
 
-        if ($cartItems->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Cart is empty'
-            ], 400);
-        }
+        try {
 
-        // Subtotal
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $price = $item->product->retailer_price ?? 0;
-            $subtotal += $price * $item->quantity;
-        }
+            // 🔹 Get cart
+            $cart = Cart::where('user_id', $user->id)->first();
 
-        $deliveryCharge = 50;
-        $couponDiscount = 0;
-        $offerId = null;
-        $couponCode = null;
-
-        // Coupon Apply
-        if ($request->coupon_code) {
-            $offer = Offer::where('code', $request->coupon_code)
-                ->where('status', 1)
-                ->whereDate('start_date', '<=', now())
-                ->whereDate('end_date', '>=', now())
-                ->first();
-
-            if (!$offer) {
+            if (!$cart) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid coupon'
+                    'message' => 'Cart is empty'
                 ], 400);
             }
 
-            if ($subtotal < $offer->min_amount) {
+            $cartItems = CartItem::with('product')
+                ->where('cart_id', $cart->id)
+                ->get();
+
+            if ($cartItems->isEmpty()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Minimum order amount not met'
+                    'message' => 'Cart is empty'
                 ], 400);
             }
 
-            $couponDiscount = $offer->discount_type === 'flat'
-                ? $offer->discount_value
-                : ($subtotal * $offer->discount_value) / 100;
+            // 🔹 Subtotal
+            $subtotal = 0;
+            foreach ($cartItems as $item) {
+                $subtotal += ($item->price * $item->qty);
+            }
 
-            $offerId = $offer->id;
-            $couponCode = $offer->code;
-        }
+            // 🔹 Delivery & coupon
+            $deliveryCharge = 50;
+            $couponDiscount = 0;
+            $offerId = null;
+            $couponCode = null;
 
-        $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
+            if ($request->coupon_code) {
 
-        // Create Order
-        $order = Order::create([
-            'user_id' => $user->id,
-            'order_number' => 'ORD-' . time(),
-            'subtotal' => $subtotal,
-            'delivery_charge' => $deliveryCharge,
-            'coupon_discount' => $couponDiscount,
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-            'offer_id' => $offerId,
-            'coupon_code' => $couponCode
-        ]);
+                $offer = Offer::where('code', $request->coupon_code)
+                    ->where('status', 1)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->first();
 
-        // Order Items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => $item->product->retailer_price ?? 0,
-                'total' => ($item->product->retailer_price ?? 0) * $item->quantity
-            ]);
-        }
+                if (!$offer) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid coupon'
+                    ], 400);
+                }
 
-        // Clear Cart
-        Cart::where('user_id', $user->id)->delete();
+                if ($subtotal < $offer->min_amount) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Minimum order amount not met'
+                    ], 400);
+                }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Order placed successfully',
-            'data' => [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
+                $couponDiscount = $offer->discount_type === 'flat'
+                    ? $offer->discount_value
+                    : ($subtotal * $offer->discount_value) / 100;
+
+                $offerId = $offer->id;
+                $couponCode = $offer->code;
+            }
+
+            $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
+
+            // 🔹 STOCK CHECK (CRITICAL)
+            foreach ($cartItems as $item) {
+
+                $availableStock = (int) WarehouseStock::where('product_id', $item->product_id)
+                    ->sum('quantity');
+
+                if ($item->qty > $availableStock) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Insufficient stock for ' . $item->product->name
+                    ], 400);
+                }
+            }
+
+            // 🔹 Create Order
+            $order = Order::create([
+                'user_id' => $user->id,
+                'order_number' => 'ORD-' . time(),
                 'subtotal' => $subtotal,
                 'delivery_charge' => $deliveryCharge,
                 'coupon_discount' => $couponDiscount,
-                'total_amount' => $totalAmount
-            ]
-        ]);
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'offer_id' => $offerId,
+                'coupon_code' => $couponCode
+            ]);
+
+            // 🔹 Order Items + Warehouse stock deduct (FIFO)
+            foreach ($cartItems as $item) {
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->qty,
+                    'price' => $item->price,
+                    'total' => $item->qty * $item->price
+                ]);
+
+                // 🔥 Deduct stock FIFO
+                $remainingQty = $item->qty;
+
+                $stocks = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('quantity', '>', 0)
+                    ->orderBy('created_at')
+                    ->get();
+
+                foreach ($stocks as $stock) {
+                    if ($remainingQty <= 0) break;
+
+                    if ($stock->quantity >= $remainingQty) {
+                        $stock->quantity -= $remainingQty;
+                        $stock->save();
+                        $remainingQty = 0;
+                    } else {
+                        $remainingQty -= $stock->quantity;
+                        $stock->quantity = 0;
+                        $stock->save();
+                    }
+                }
+            }
+
+            // 🔹 Clear cart
+            CartItem::where('cart_id', $cart->id)->delete();
+            $cart->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order placed successfully',
+                'data' => [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'subtotal' => $subtotal,
+                    'delivery_charge' => $deliveryCharge,
+                    'coupon_discount' => $couponDiscount,
+                    'total_amount' => $totalAmount
+                ]
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Checkout failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     protected function checkCustomer($user)
     {

@@ -17,7 +17,10 @@ class DeliveryOrderController extends Controller
         $user = $request->user();
         $perPage = $request->get('per_page', 10);
 
-        $orders = Order::with('orderItems.product')
+        $orders = Order::with([
+            'orderItems.product',
+            'customerAddress:id,user_id,latitude,longitude'
+        ])
             ->where('status', 'pending')
             ->paginate($perPage);
 
@@ -115,7 +118,10 @@ class DeliveryOrderController extends Controller
             ]);
         }
 
-        $orders = Order::with('orderItems.product')
+        $orders = Order::with([
+            'orderItems.product',
+            'customerAddress:id,user_id,latitude,longitude'
+        ])
             ->where('status', 'pending')
             ->paginate($perPage);
 

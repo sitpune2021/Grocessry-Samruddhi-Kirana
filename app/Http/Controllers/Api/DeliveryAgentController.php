@@ -141,6 +141,31 @@ class DeliveryAgentController extends Controller
         ]);
     }
 
+    public function getProfileImage(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Profile image path
+        if (!$user->profile_photo) {
+            return response()->json([
+                'status' => true,
+                'imageUrl' => null
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'imageUrl' => asset('storage/' . $user->profile_photo)
+        ]);
+    }
+
     public function verifyOtp(Request $request, $type)
     {
         if (!in_array($type, ['login', 'forgot'])) {
@@ -772,5 +797,63 @@ class DeliveryAgentController extends Controller
                 'message' => 'Failed to verify delivery OTP'
             ], 500);
         }
+    }
+
+    public function getCurrentTask(Request $request)
+    {
+        $partner = $request->user();
+
+        // Optional: save partner live location
+        if ($request->latitude && $request->longitude) {
+            $partner->update([
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude
+            ]);
+        }
+
+        // Get current active order
+        $order = Order::with([
+            'customer:id,first_name,last_name,mobile',
+            'deliveryAddress'
+        ])
+            ->where('delivery_agent_id', $partner->id)
+            ->whereIn('status', [
+                'assigned',
+                'accepted',
+                'picked_up',
+                'out_for_delivery'
+            ])
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // ❌ No active task
+        if (!$order) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Not Yet Started',
+                'data' => null
+            ]);
+        }
+
+        // ✅ Active task found
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'orderId' => $order->id,
+                'status'  => ucfirst(str_replace('_', ' ', $order->status)),
+
+                'customer' => [
+                    'name'   => $order->customer->first_name . ' ' . $order->customer->last_name,
+                    'mobile' => $order->customer->mobile
+                ],
+
+                'deliveryAddress' => [
+                    'address' => $order->deliveryAddress->address,
+                    'area'    => $order->deliveryAddress->area ?? null,
+                    'city'    => $order->deliveryAddress->city ?? null,
+                    'pincode' => $order->deliveryAddress->pincode ?? null
+                ]
+            ]
+        ]);
     }
 }

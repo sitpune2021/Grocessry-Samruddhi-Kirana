@@ -16,5 +16,7 @@ class UserAddress extends Model
         'postcode',
         'phone',
         'email',
+        'latitude',
+        'longitude',
     ];
 }

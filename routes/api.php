@@ -75,6 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [DeliveryAgentController::class, 'logout']);
     Route::post('partner/status/online', [DeliveryAgentController::class, 'goOnline']);
     Route::post('partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
+    Route::get('/partner/profile/image', [DeliveryAgentController::class, 'getProfileImage']);
+    Route::get('/partner/orders/current',[DeliveryAgentController::class, 'getCurrentTask']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);

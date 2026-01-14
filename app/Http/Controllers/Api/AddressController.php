@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Address;
+use App\Models\UserAddress;
 
 use Validator;
 
@@ -27,8 +27,7 @@ class AddressController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $addresses = Address::where('user_id', $user->id)
-            ->orderByDesc('is_default')
+        $addresses = UserAddress::where('user_id', $user->id)
             ->get();
 
         return response()->json([
@@ -36,6 +35,7 @@ class AddressController extends Controller
             'data' => $addresses
         ]);
     }
+
 
     // ➕ Add address
     public function add(Request $request)
@@ -57,24 +57,23 @@ class AddressController extends Controller
 
         // ⭐ Handle default address
         if ($request->is_default == 1) {
-            Address::where('user_id', $user->id)
+            UserAddress::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
-        // ✅ Create address
-        $address = Address::create([
-            'user_id' => $user->id,
-            'name' => $request->name,
-            'mobile' => $request->mobile,
-            'address_line' => $request->address_line,
-            'landmark' => $request->landmark,
-            'city' => $request->city,
-            'state' => $request->state,
-            'pincode' => $request->pincode,
-            'latitude' => $request->latitude,
+        $address = UserAddress::create([
+            'user_id'   => $user->id,
+            'first_name' => $request->name,
+            'phone'     => $request->mobile,
+            'address'   => $request->address_line,
+            'city'      => $request->city,
+            'country'   => $request->state,
+            'postcode'  => $request->pincode,
+            'email'     => $user->email,
+            'latitude'  => $request->latitude,
             'longitude' => $request->longitude,
-            'is_default' => $request->is_default ?? 0
         ]);
+
 
         return response()->json([
             'status' => true,
@@ -89,7 +88,7 @@ class AddressController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $address = Address::where('id', $id)
+        $address = UserAddress::where('id', $id)
             ->where('user_id', $user->id)
             ->first();
 
@@ -100,23 +99,24 @@ class AddressController extends Controller
             ], 404);
         }
 
+        // ⭐ Handle default address
         if ($request->is_default == 1) {
-            Address::where('user_id', $user->id)
+            UserAddress::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
-        $address->update($request->only([
-            'name',
-            'mobile',
-            'address_line',
-            'landmark',
-            'city',
-            'state',
-            'pincode',
-            'latitude',
-            'longitude',
-            'is_default'
-        ]));
+        // ✅ Update with correct DB column mapping
+        $address->update([
+            'first_name' => $request->name,
+            'phone'      => $request->mobile,
+            'address'    => $request->address_line,
+            'city'       => $request->city,
+            'country'    => $request->state,
+            'postcode'   => $request->pincode,
+            'latitude'   => $request->latitude,
+            'longitude'  => $request->longitude,
+            'is_default' => $request->is_default ?? $address->is_default,
+        ]);
 
         return response()->json([
             'status' => true,
@@ -125,13 +125,14 @@ class AddressController extends Controller
         ]);
     }
 
+
     // ❌ Delete address
     public function delete(Request $request, $id)
     {
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $address = Address::where('id', $id)
+        $address = UserAddress::where('id', $id)
             ->where('user_id', $user->id)
             ->first();
 
