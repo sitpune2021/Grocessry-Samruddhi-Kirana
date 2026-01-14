@@ -36,14 +36,13 @@
                                 <span class="badge bg-danger">Rejected</span>
                             @endif
                         </td>
-                        <td>
+                        <td>                           
                             @if(
                                 $t->status == 0 &&
-                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id &&
-                                auth()->user()->warehouse->parent_id == NULL
+                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id
                             )
 
-                              <div class="d-flex gap-1">
+                                <div class="d-flex gap-1">
                                     <form method="POST"
                                         action="{{ route('warehouse.transfer.approve', $t->id) }}">
                                         @csrf
