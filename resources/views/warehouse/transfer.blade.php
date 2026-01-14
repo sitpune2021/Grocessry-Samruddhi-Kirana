@@ -53,7 +53,7 @@
  
                                             <div class="col-md-6">
                                                 <label class="form-label">
-                                                    To Warehouse <span class="text-danger">*</span>
+                                                    Request Warehouse <span class="text-danger">*</span>
                                                 </label>
  
                                                 <select name="approved_by_warehouse_id"
@@ -290,7 +290,8 @@
             }
  
             $.get("{{ route('ajax.product.batches') }}", {
-                product_ids: productIds
+                product_ids: productIds,
+                warehouse_id: fromWarehouseEl.val()
             }, function(res) {
  
                 if (!res.data || !res.data.length) {
@@ -338,7 +339,8 @@
                 const pid = pids[0];
  
                 $.get("{{ route('ajax.product.batches') }}", {
-                    product_ids: [pid]
+                    product_ids: [pid],
+                    warehouse_id: fromWarehouseEl.val()
                 }, function(res) {
  
                     const batch = res.data[0];
@@ -369,7 +371,8 @@
                 const rid = index++;
  
                 $.get("{{ route('ajax.product.batches') }}", {
-                    product_ids: [pid]
+                    product_ids: [pid],
+                    warehouse_id: fromWarehouseEl.val()
                 }, function(res) {
  
                     const batch = res.data[0];

@@ -13,7 +13,7 @@
                     </div>
                     <div class="col-md-auto ms-auto mt-5">
                         <a href="{{ route('transfer.create') }}" class="btn btn-success">
-                           Transfer Stock
+                           Request Stock
                         </a>
                     </div>
                 </div><br><br>
@@ -24,7 +24,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Approved By Warehouse</th>
+                                <!-- <th>Approved By Warehouse</th> -->
                                 <th>Requested By Warehouse</th>
                                 <th>Category</th>
                                 <th>Product</th>
@@ -39,7 +39,7 @@
                             @forelse($transfers as $t)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $t->approvedByWarehouse->name ?? '' }}</td>
+                                    <!-- <td>{{ $t->approvedByWarehouse->name ?? '' }}</td> -->
                                     <td>{{ $t->requestedByWarehouse->name  ?? '' }}</td>
                                     <td>{{ $t->category->name }}</td>
                                     <td>{{ $t->product->name }}</td>
