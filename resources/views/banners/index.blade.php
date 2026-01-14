@@ -10,7 +10,7 @@
                     $canView = hasPermission('banner.view');
                     $canEdit = hasPermission('banner.edit');
                     $canDelete = hasPermission('banner.delete');  
-                    @endphp
+                @endphp
 
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row pb-0">
