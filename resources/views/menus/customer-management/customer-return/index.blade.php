@@ -74,8 +74,6 @@
                                 @endforelse
                             </td>
 
-
-
                             <td>
                                 ₹{{ number_format($return->orderItem->price ?? 0, 2) }}
                             </td>
