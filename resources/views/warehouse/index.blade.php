@@ -23,6 +23,7 @@
                     </a>
                 </div>
                 @endif
+                @endif
             </div><br><br>
             <!-- Search -->
             <x-datatable-search />
@@ -64,13 +65,22 @@
                             </td>
 
                             @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
+                            <td class="action-column" style="white-space:nowrap;">
+                                //view Button
                                 @if($canView)
                                 <a href="{{ route('transfer.show', $t->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
+
+                                //Edit Button
+                                @if(
+                                auth()->user()->warehouse_id == $t->requested_by_warehouse_id
+                                && $t->status == 0 )
                                 @if($canEdit)
                                 <a href="{{ route('transfer.edit', $t->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
+                                @endif
+
+                                //Delete Button
                                 @if($canDelete)
                                 <form action="{{ route('transfer.destroy', $t->id) }}" method="POST" class="d-inline">
                                     @csrf
@@ -80,6 +90,8 @@
                                     </button>
                                 </form>
                                 @endif
+                            </td>
+                            @endif
                             </td>
                             @endif
                         </tr>
