@@ -1,26 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container-xxl flex-grow-1 container-p-y">
 
-    <div class="card shadow-sm">
-        <div class="card-datatable text-nowrap">
-            @php
-            $canView = hasPermission( 'delivery_agent.view');
-            $canEdit = hasPermission('delivery_agent.edit');
-            $canDelete = hasPermission('delivery_agent.delete');
-            @endphp
-            <!-- Header -->
-            <div class="row card-header flex-column flex-md-row align-items-center pb-2">
-                <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Delivery Agent</h5>
+        <div class="card shadow-sm">
+            <div class="card-datatable text-nowrap">
+                @php
+                    $canView = hasPermission('delivery_agent.view');
+                    $canEdit = hasPermission('delivery_agent.edit');
+                    $canDelete = hasPermission('delivery_agent.delete');
+                @endphp
+                <!-- Header -->
+                <div class="row card-header flex-column flex-md-row align-items-center pb-2">
+                    <div class="col-md-auto me-auto">
+                        <h5 class="card-title mb-0">Delivery Agent</h5>
+                    </div>
+                    <div class="col-md-auto ms-auto">
+                        <a href="{{ route('delivery-agents.create') }}"
+                            class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <i class="bx bx-plus"></i> Add Agent
+                        </a>
+                    </div>
+
                 </div>
-                <div class="col-md-auto ms-auto">
-                    <a href="{{ route('delivery-agents.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Agent
-                    </a>
-                </div>
+
+              
 
             </div>
 
@@ -138,13 +142,10 @@
             </div>
 
         </div>
-    </div>
 
-</div>
+    </div>
 @endsection
 
 @push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-
-
+    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 @endpush

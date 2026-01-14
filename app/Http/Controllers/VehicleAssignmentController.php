@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class VehicleAssignmentController extends Controller
 {
@@ -31,7 +32,7 @@ class VehicleAssignmentController extends Controller
     public function create()
     {
         $mode = 'add';
-        
+
         $deliveryAgentRoleId = Role::where('name', 'Delivery Agent')->value('id');
         $agents = User::where('role_id', $deliveryAgentRoleId)
             ->select('id', 'first_name', 'last_name')
@@ -55,10 +56,10 @@ class VehicleAssignmentController extends Controller
             // Validate input
             $validated = $request->validate([
                 'driver_id'     => 'required|exists:users,id',
-                'vehicle_no'    => 'required|string|max:255',
+                'vehicle_no'    => 'required|string|max:255|unique:driver_vehicles,vehicle_no',
                 'vehicle_type'  => 'nullable|string|max:255',
-                'license_no'    => 'nullable|string|max:255',
-                'active_status' => 'required|boolean', // 0 = inactive, 1 = active
+                'license_no'    => 'nullable|string|max:255|unique:driver_vehicles,license_no',
+                'active_status' => 'required|boolean',
             ]);
 
             // Create record
@@ -171,9 +172,22 @@ class VehicleAssignmentController extends Controller
 
             $validated = $request->validate([
                 'driver_id'     => 'required|exists:users,id',
-                'vehicle_no'    => 'required|string|max:255',
-                'vehicle_type'  => 'nullable|string|max:255',
-                'license_no'    => 'nullable|string|max:255',
+                'vehicle_no' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('driver_vehicles', 'vehicle_no')->ignore($id),
+                ],
+
+                'vehicle_type' => 'nullable|string|max:255',
+
+                'license_no' => [
+                    'nullable',
+                    'string',
+                    'max:255',
+                    Rule::unique('driver_vehicles', 'license_no')->ignore($id),
+                ],
+
                 'active_status' => 'required|in:0,1',
             ]);
 

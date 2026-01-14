@@ -32,12 +32,12 @@ class CustomerOrderReturn extends Model
 
     public function order()
     {
-        return $this->belongsTo(CustomerOrder::class, 'order_id');
+        return $this->belongsTo(Order::class, 'order_id');
     }
 
     public function orderItem()
     {
-        return $this->belongsTo(CustomerOrderItem::class, 'order_item_id');
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 
     public function product()

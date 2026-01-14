@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model
 {
     use SoftDeletes;
+    protected $appends = ['product_image_urls'];
 
     protected $fillable = [
         'category_id',
@@ -66,9 +67,22 @@ class Product extends Model
     {
         return $this->belongsTo(Tax::class);
     }
+    
+    public function getProductImageUrlsAttribute()
+    {
+        if (!$this->product_images) {
+            return [];
+        }
+
+        $images = json_decode($this->product_images, true);
+
+        return collect($images)->map(function ($image) {
+            return asset('storage/products/' . $image);
+        })->values();
+    }
 
     public function stocks()
-{
-    return $this->hasMany(WarehouseStock::class, 'product_id');
-}
+    {
+        return $this->hasMany(WarehouseStock::class, 'product_id');
+    }
 }

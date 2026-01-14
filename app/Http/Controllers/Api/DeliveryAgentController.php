@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use App\Models\Role;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Models\DeliveryAgent;
+use App\Models\DriverVehicle;
 
 class DeliveryAgentController extends Controller
 {
@@ -368,7 +370,7 @@ class DeliveryAgentController extends Controller
             'message' => 'Agent is online',
             'data' => [
                 'agent_id' => $agent->id,
-                'is_online' => $agent->is_online
+                // 'is_online' => $agent->is_online
             ]
         ]);
     }
@@ -400,7 +402,7 @@ class DeliveryAgentController extends Controller
             'message' => 'Agent is offline',
             'data' => [
                 'agent_id' => $agent->id,
-                'is_online' => $agent->is_online
+                // 'is_online' => $agent->is_online
             ]
         ]);
     }
@@ -435,6 +437,221 @@ class DeliveryAgentController extends Controller
             'status' => true,
             'message' => 'Current order fetched',
             'data' => $order
+        ]);
+    }
+
+    public function profile(Request $request)
+    {
+        $agent = DeliveryAgent::with('user')
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agent profile not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'agent_id' => $agent->id,
+                'shop_id' => $agent->shop_id,
+                'dob' => $agent->dob,
+                'gender' => $agent->gender,
+                'aadhaar_card' => $agent->aadhaar_card,
+                'driving_license' => $agent->driving_license,
+                'vehicle_type' => $agent->vehicle_type,
+                'vehicle_number' => $agent->vehicle_number,
+                'address' => $agent->address,
+                'status' => $agent->status,
+
+                // 👇 from users table
+                'user' => [
+                    'id' => $agent->user->id,
+                    'first_name' => $agent->user->first_name,
+                    'last_name' => $agent->user->last_name,
+                    'email' => $agent->user->email,
+                    'mobile' => $agent->user->mobile,
+                    'profile_photo' => $agent->user->profile_photo,
+                    'is_online' => $agent->user->is_online,
+                ]
+            ]
+        ]);
+    }
+
+    public function updateProfileField(Request $request, $type)
+    {
+        $user = $request->user();
+
+        if ($type === 'phone') {
+            $request->validate([
+                'phone' => 'required|string'
+            ]);
+
+            $user->update([
+                'mobile' => $request->phone
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Phone updated successfully'
+            ]);
+        }
+
+        if ($type === 'email') {
+            $request->validate([
+                'email' => 'required|email'
+            ]);
+
+            $user->update([
+                'email' => $request->email
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Email updated successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid update type'
+        ], 400);
+    }
+    public function updateAddress(Request $request)
+    {
+        $user = $request->user(); // logged-in partner
+
+        $request->validate([
+            'address'  => 'required|string|max:255',
+        ]);
+
+        $agent = DeliveryAgent::where('user_id', $user->id)->first();
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Delivery agent not found'
+            ], 404);
+        }
+
+        $agent->update([
+            'address'  => $request->address,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Address updated successfully',
+            'data' => $agent
+        ]);
+    }
+    public function updateProfileImage(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'profile_photo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('profile_photo')) {
+
+            $file = $request->file('profile_photo'); // ✅ correct key
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $path = $file->storeAs('profile_photos', $filename, 'public');
+
+            $user->profile_photo = $path;
+            $user->save();
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile image updated successfully',
+            'profile_photo' => $user->profile_photo
+        ]);
+    }
+
+
+    public function updateVehicle(Request $request)
+    {
+        $request->validate([
+            'vehicleType'   => 'required|string',
+            'vehicleNumber' => 'required|string'
+        ]);
+
+        // Find delivery agent
+        $agent = DeliveryAgent::where('user_id', $request->user()->id)->first();
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Delivery agent not found'
+            ], 404);
+        }
+
+        // Update delivery_agents table (optional if you still need it)
+        $agent->update([
+            'vehicle_type'   => $request->vehicleType,
+            'vehicle_number' => $request->vehicleNumber
+        ]);
+
+        // Update driver_vehicles table
+        $driverVehicle = DriverVehicle::where('driver_id', $request->user()->id)->first();
+
+        if ($driverVehicle) {
+            // Update existing vehicle record
+            $driverVehicle->update([
+                'vehicle_type' => $request->vehicleType,
+                'vehicle_no'   => $request->vehicleNumber,
+                'updated_at'   => now()
+            ]);
+        } else {
+            // If no record exists, create one
+            DriverVehicle::create([
+                'driver_id'     => $request->user()->id,
+                'vehicle_type'  => $request->vehicleType,
+                'vehicle_no'    => $request->vehicleNumber,
+                'active'        => 1,
+                'created_at'    => now(),
+                'updated_at'    => now()
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Vehicle updated successfully'
+        ]);
+    }
+
+    public function loginHours(Request $request)
+    {
+        $agent = DeliveryAgent::where('user_id', $request->user()->id)->first();
+
+        if (!$agent) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Delivery agent not found'
+            ], 404);
+        }
+
+        $hours = Carbon::parse($agent->created_at)
+            ->diffInHours(Carbon::parse($agent->updated_at));
+
+        return response()->json([
+            'status' => true,
+            'totalHours' => $hours
+        ]);
+    }
+
+    public function onlineStatus(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'status' => true,
+            'isOnline' => $user->is_online
         ]);
     }
 }
