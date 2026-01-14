@@ -55,7 +55,7 @@
                             <td>{{ $t->product->name }}</td>
                             <td>{{ $t->batch->batch_no ?? '' }}</td>
                             <td>{{ $t->quantity }}</td>
-                            <td>{{ $t->created_at->format('d-m-Y') }}</td>
+                            <td>{{ optional($t->created_at)->format('d-m-Y') }}</td>
                             <td>
                                 @if ($t->status == 1)
                                 <span class="badge bg-success">Approved</span>
