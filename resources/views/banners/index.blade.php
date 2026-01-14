@@ -7,9 +7,9 @@
         <div class="card shadow-sm p-2">
             <div class="card-datatable">
                  @php
-                    $canView = hasPermission('banner.view');
-                    $canEdit = hasPermission('banner.edit');
-                    $canDelete = hasPermission('banner.delete');  
+                    $canView = hasPermission('banners.view');
+                    $canEdit = hasPermission('banners.edit');
+                    $canDelete = hasPermission('banners.delete');  
                 @endphp
 
                 <!-- Header -->
@@ -17,7 +17,7 @@
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title"> Banner List</h5>
                     </div>
-                    @if(hasPermission('banner.create'))
+                    @if(hasPermission('banners.create'))
                     <div class="col-md-auto ms-auto mt-5">
                         <a href="{{ route('banners.create') }}" class="btn btn-success">
                            Add Banner
