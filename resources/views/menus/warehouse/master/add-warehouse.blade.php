@@ -165,7 +165,7 @@
                                                     @enderror
                                                 </div>
 
-                                                @if($mode !== 'add')
+                                                @if($mode !== 'add' && $mode !== 'edit')
                                                 {{-- GSTIN --}}
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">

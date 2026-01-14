@@ -44,15 +44,15 @@
                     <tbody>
                         @forelse($orders as $index => $order)
 
-                        @foreach($order->customerOrderItems as $item)
+                        @foreach($order->orderItems as $item)
                         <tr>
                             <td class="text-center">
                                 {{ $loop->parent->iteration }}
                             </td>
 
                             <td>
-                                {{ $order->customer->first_name ?? '-' }}
-                                {{ $order->customer->last_name ?? '' }}
+                                {{ $order->user->first_name ?? '-' }}
+                                {{ $order->user->last_name ?? '' }}
                             </td>
 
                             <td>

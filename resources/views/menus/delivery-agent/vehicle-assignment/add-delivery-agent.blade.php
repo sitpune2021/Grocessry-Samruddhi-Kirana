@@ -28,7 +28,7 @@
 
                                     {{-- Card Header --}}
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-category me-1"></i>
+                                        {{-- <i class="bx bx-category me-1"></i> --}}
                                         @if ($mode === 'add')
                                             Add Vehicle Assignemnt
                                         @elseif($mode === 'edit')
@@ -99,26 +99,29 @@
                                                         placeholder="Enter license no"
                                                         value="{{ old('license_no', $driverVehicle->license_no ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
-
+                                                    @error('license_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 {{-- Active Status --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium d-block">Active <span
-                                                            class="text-danger">*</span></label>
+                                                    <label class="form-label fw-medium d-block">
+                                                        Active <span class="text-danger">*</span>
+                                                    </label>
 
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio"
                                                             name="active_status" value="1"
-                                                            {{ old('active_status', $driverVehicle->active_status ?? '') == 1 ? 'checked' : '' }}
+                                                            {{ old('active_status', $driverVehicle->active ?? 1) == 1 ? 'checked' : '' }}
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <label class="form-check-label">Yes</label>
                                                     </div>
 
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio"
-                                                            name="active_status" value="0" checked
-                                                            {{ old('active_status', $driverVehicle->active_status ?? '') == 0 ? 'checked' : '' }}
+                                                            name="active_status" value="0"
+                                                            {{ old('active_status', $driverVehicle->active ?? 1) == 0 ? 'checked' : '' }}
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <label class="form-check-label">No</label>
                                                     </div>
@@ -127,6 +130,7 @@
                                                         <div class="text-danger small">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
                                             </div>
 
 
@@ -175,7 +179,7 @@
 
         slugInput.addEventListener('input', function() {
             this.dataset.manual = true;
-        });
+        }); 
 
         function generateSlug(text) {
             return text
