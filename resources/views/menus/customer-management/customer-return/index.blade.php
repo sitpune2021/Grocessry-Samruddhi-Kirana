@@ -59,7 +59,20 @@
                             <td>
                                 {{ $return->product->name ?? '-' }}
                             </td>
-                            <td></td>
+                            <td>
+                                @forelse($return->product_images ?? [] as $image)
+                                <a href="{{ asset('storage/customer_return_products/'.$image) }}"
+                                    target="_blank">
+                                    <img src="{{ asset('storage/'.$image) }}"
+                                        width="50"
+                                        height="50"
+                                        class="rounded border me-1 mb-1"
+                                        style="cursor:pointer;">
+                                </a>
+                                @empty
+                                <span class="text-muted">No Images</span>
+                                @endforelse
+                            </td>
 
                             <td>
                                 ₹{{ number_format($return->orderItem->price ?? 0, 2) }}
@@ -85,14 +98,72 @@
                                     class="btn btn-sm btn-warning">
                                     QC
                                 </a> -->
-
+                                @if(in_array($return->qc_status, [null, 'pending']) && $return->status === 'requested')
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-warning"
                                     data-bs-toggle="modal"
                                     data-bs-target="#qcModal{{ $return->id }}">
                                     QC
                                 </a>
+                                @else
+                                <span class="badge bg-success">QC Completed</span>
+                                @endif
 
+
+                                <!-- QC Modal -->
+                                <div class="modal fade" id="qcModal{{ $return->id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-md modal-dialog-centered">
+                                        <div class="modal-content">
+
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Quality Check (QC)</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+
+                                            <form method="POST" action="{{ route('customer-returns.update', $return->id) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">QC Status</label>
+                                                        <select name="qc_status" class="form-select" required>
+                                                            <option value="">Select</option>
+                                                            <option value="passed">Passed</option>
+                                                            <option value="failed">Failed</option>
+                                                            <option value="partial">Partial</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Action</label>
+                                                        <select name="return_type" class="form-select" required>
+                                                            <option value="refund">Refund</option>
+                                                            <option value="exchange">Exchange</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Return Status</label>
+                                                        <select name="status" class="form-select" required>
+                                                            <option value="approved">Approved</option>
+                                                            <option value="rejected">Rejected</option>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-success">
+                                                        Submit QC
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -115,60 +186,7 @@
         </div>
     </div>
 </div>
-<!-- QC Modal -->
-<div class="modal fade" id="qcModal{{ $return->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Quality Check (QC)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <form method="POST" action="{{ route('customer-returns.update', $return->id) }}">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">QC Status</label>
-                        <select name="qc_status" class="form-select" required>
-                            <option value="">Select</option>
-                            <option value="passed">Passed</option>
-                            <option value="failed">Failed</option>
-                            <option value="partial">Partial</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Action</label>
-                        <select name="return_type" class="form-select" required>
-                            <option value="refund">Refund</option>
-                            <option value="exchange">Exchange</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Return Status</label>
-                        <select name="status" class="form-select" required>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">
-                        Submit QC
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @endsection
 

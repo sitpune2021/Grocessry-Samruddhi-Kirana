@@ -19,20 +19,56 @@ class WarehouseTransferController extends Controller
 {
     
  
+    // public function index()
+    // {
+    //     $userWarehouseId = auth()->user()->warehouse_id;
+
+    //     $transfers = WarehouseTransfer::with([
+    //         'approvedByWarehouse',
+    //         'requestedByWarehouse',
+    //         'category',
+    //         'product',
+    //         'batch'
+    //     ])
+    //     ->where('approved_by_warehouse_id', $userWarehouseId)   // 🔥 YAHI CHANGE
+    //     ->orderBy('created_at', 'desc')
+    //     ->get();
+
+    //     return view('warehouse.index', compact('transfers'));
+    // }
+ 
+    
     public function index()
     {
-        // Eager load related models for display
+        $user = auth()->user();
+        $userWarehouseId = $user->warehouse_id;
+
         $transfers = WarehouseTransfer::with([
             'approvedByWarehouse',
             'requestedByWarehouse',
             'category',
             'product',
             'batch'
-        ])->orderBy('created_at', 'desc')->get();
- 
+        ])
+        ->where(function ($q) use ($userWarehouseId) {
+
+            // District: show only PENDING requests they created
+            $q->where(function ($sub) use ($userWarehouseId) {
+                $sub->where('requested_by_warehouse_id', $userWarehouseId)
+                    ->where('status', 0);
+            })
+
+            // Master: show all requests sent to them
+            ->orWhere(function ($sub) use ($userWarehouseId) {
+                $sub->where('approved_by_warehouse_id', $userWarehouseId);
+            });
+        })
+        ->orderBy('created_at', 'desc')
+        ->get();
+
         return view('warehouse.index', compact('transfers'));
     }
- 
+
     public function create()
     {
         $user = auth()->user();
@@ -64,19 +100,20 @@ class WarehouseTransferController extends Controller
  
     public function getBatchesByProducts(Request $request)
     {
-        if ($request->has('product_ids')) {
- 
+        if ($request->has('product_ids') && $request->has('warehouse_id')) {
+
             $batches = ProductBatch::whereIn('id', function ($query) use ($request) {
                 $query->selectRaw('MIN(id)')
                     ->from('product_batches')
                     ->whereIn('product_id', $request->product_ids)
+                    ->where('warehouse_id', $request->warehouse_id)   // 🔥 FIX
                     ->where('is_blocked', 0)
                     ->whereDate('expiry_date', '>=', now())
                     ->groupBy('product_id');
             })
-                ->select('id', 'product_id', 'batch_no', 'quantity') // 🔥 ADD quantity
-                ->get();
- 
+            ->select('id', 'product_id', 'batch_no', 'quantity')
+            ->get();
+
             return response()->json([
                 'type' => 'batches',
                 'data' => $batches
@@ -155,8 +192,9 @@ class WarehouseTransferController extends Controller
  
         /* ================= FROM = Master Warehouses ================= */
         $fromWarehouses = Warehouse::where('status', 'active')
-            ->where('type', 'master')
+            ->where('id', $toWarehouse->parent_id)   // sirf parent warehouse
             ->get();
+
  
         /* ================= Default FROM (selected on edit) ================= */
         $defaultFromWarehouse = $fromWarehouses
@@ -192,6 +230,17 @@ class WarehouseTransferController extends Controller
             'products'              => $products,
             'batches'               => $batches,
             'selectedProducts'      => $selectedProducts,
+        ]);
+    }
+
+    public function getTransferQty(Request $request)
+    {
+        $transfer = WarehouseTransfer::where('id', $request->transfer_id)
+            ->where('status', 0)
+            ->first();
+
+        return response()->json([
+            'quantity' => $transfer->quantity ?? 0
         ]);
     }
  
@@ -335,6 +384,7 @@ class WarehouseTransferController extends Controller
         if ($request->has('product_ids')) {
  
             $batches = ProductBatch::whereIn('product_id', $request->product_ids)
+                ->where('warehouse_id', $request->warehouse_id)
                 ->where('is_blocked', 0)
                 ->whereDate('expiry_date', '>=', now())
                 ->select('id', 'product_id', 'batch_no', 'quantity')
@@ -349,13 +399,14 @@ class WarehouseTransferController extends Controller
         return response()->json([]);
     }
  
-    public function getBatchStock($batchId)
+    public function getBatchStock(Request $request)
     {
-        $batch = ProductBatch::where('id', $batchId)
+        $batch = ProductBatch::where('id', $request->batch_id)
+            ->where('warehouse_id', $request->warehouse_id)   // 🔥 FIX
             ->where('is_blocked', 0)
             ->whereDate('expiry_date', '>=', now())
             ->first();
- 
+
         return response()->json([
             'quantity' => $batch->quantity ?? 0
         ]);

@@ -31,27 +31,19 @@
                             @if($t->status == 0)
                                 <span class="badge bg-warning">Pending</span>
                             @elseif($t->status == 1)
-                                <span class="badge bg-success">Approved</span>
+                                <span class="badge bg-success">Dispatched</span>
+                            @elseif($t->status == 2)
+                                <span class="badge bg-success">Approved</span>                           
                             @else
                                 <span class="badge bg-danger">Rejected</span>
                             @endif
                         </td>
-                        <td>
+                        <td>                           
                             @if(
                                 $t->status == 0 &&
-                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id &&
-                                auth()->user()->warehouse->parent_id == NULL
+                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id
                             )
-
-                              <div class="d-flex gap-1">
-                                    <form method="POST"
-                                        action="{{ route('warehouse.transfer.approve', $t->id) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-success">
-                                            Approve
-                                        </button>
-                                    </form>
-
+                                <div class="d-flex gap-1">
                                     <form method="POST"
                                         action="{{ route('warehouse.transfer.reject', $t->id) }}"
                                         onsubmit="return confirm('Are you sure you want to reject this transfer?')">
@@ -61,6 +53,33 @@
                                         </button>
                                     </form>
                                 </div>
+                            @endif
+
+                            @if(
+                                $t->status == 1 &&
+                                $t->approved_by_warehouse_id == auth()->user()->warehouse_id
+                            )
+                                <div class="d-flex gap-1">
+                                    <form method="POST"
+                                        action="{{ route('warehouse.transfer.approve', $t->id) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-success">
+                                            Approve
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+                            @if($t->status == 0 && $t->approved_by_warehouse_id == auth()->user()->warehouse_id)
+                                <form method="POST" action="{{ route('warehouse.transfer.dispatch', $t->id) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-success">Dispatch</button>
+                                </form>
+                            @endif
+                            @if($t->status == 1 && $t->requested_by_warehouse_id == auth()->user()->warehouse_id)
+                                <form method="POST" action="{{ route('warehouse.transfer.receive', $t->id) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-primary">Receive</button>
+                                </form>
                             @endif
                         </td>
                     </tr>

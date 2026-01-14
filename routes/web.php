@@ -289,6 +289,10 @@ Route::middleware(['auth:admin'])->group(function () {
         [WarehouseTransferController::class, 'getBatchStock']
     );
 
+    Route::get('/ajax/transfer-qty', [WarehouseTransferController::class, 'getTransferQty'])
+    ->name('ajax.transfer.qty');
+
+
     //taluka-transfe
     Route::prefix('taluka-transfer')
         ->name('taluka.transfer.')
@@ -403,9 +407,9 @@ Route::middleware(['auth:admin'])->group(function () {
             );
         });
 
-  //////////////////////////
+    //////////////////////////
 
-     //taluka-shop-transfer
+    //taluka-shop-transfer
     Route::prefix('taluka-shop')
         ->name('taluka-shop.')
         ->group(function () {
@@ -461,8 +465,8 @@ Route::middleware(['auth:admin'])->group(function () {
                 [TalukashopTransferController::class, 'getBatchStock']
             );
         });
-/////////////////////
- // district to district-transfer
+    /////////////////////
+    // district to district-transfer
     Route::prefix('district-district')
         ->name('district-district.')
         ->group(function () {
@@ -631,7 +635,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
             ->name('show');
-            
+
         Route::get(
             '/get-taluka-warehouses/{district_warehouse_id}',
             [GroceryShopController::class, 'getTalukaWarehouses']
@@ -710,9 +714,9 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
     // Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
-     // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
+    // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategories']);
-   
+
     Route::get(
         '/sell/ws/products/{warehouse}/{subCategory}',
         [StockController::class, 'getProductsBySubCategory']
@@ -745,9 +749,17 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-     
+    Route::post('/warehouse-transfer/{transfer}/dispatch', 
+    [ApprovalController::class, 'dispatch']
+    )->name('warehouse.transfer.dispatch');
 
-     // Approval district to district-transfers
+    Route::post('/warehouse-transfer/{transfer}/receive', 
+        [ApprovalController::class, 'receive']
+    )->name('warehouse.transfer.receive');
+ 
+
+
+    // Approval district to district-transfers
     Route::get(
         '/district-transfers/approval',
         [DistrictToDistrictApprovalController::class, 'index']
@@ -763,7 +775,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-     // Approval district to taluka-transfers
+    // Approval district to taluka-transfers
     Route::get(
         '/taluka-transfers/approval',
         [DistrictToTalukaApprovalController::class, 'index']
@@ -806,8 +818,8 @@ Route::middleware(['auth:admin'])->group(function () {
         '/taluka-distribution-transfer/{transfer}/reject',
         [TalukaToDistributionApprovalController::class, 'reject']
     )->name('taluka-distribution.transfer.reject');
-    
-    
+
+
 
     // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
@@ -919,6 +931,19 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('user.profile');
 
     //auth closing
+
+    // Banners admin route
+    Route::prefix('banners')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('banners.index');
+        Route::get('/create', [BannerController::class, 'create'])->name('banners.create');
+        Route::post('/store', [BannerController::class, 'store'])->name('banners.store');
+
+        // same page for edit
+        Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('banners.edit');
+        Route::post('/update/{id}', [BannerController::class, 'update'])->name('banners.update');
+
+        Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
+    });
 });
 Route::get('/dev/run/{action}', function ($action) {
     try {
@@ -970,18 +995,6 @@ Route::get('/dev/run/{action}', function ($action) {
 /////////////////////////////////////////   WEBSITE START   ////////////////////////////////////////////////////////////
 
 
-// Banners admin route
-Route::prefix('banners')->group(function () {
-    Route::get('/', [BannerController::class, 'index'])->name('banners.index');
-    Route::get('/create', [BannerController::class, 'create'])->name('banners.create');
-    Route::post('/store', [BannerController::class, 'store'])->name('banners.store');
-
-    // same page for edit
-    Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('banners.edit');
-    Route::post('/update/{id}', [BannerController::class, 'update'])->name('banners.update');
-
-    Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
-});
 
 // Admin contact list
 Route::prefix('contacts-details')->group(function () {
@@ -996,8 +1009,7 @@ Route::prefix('pages')->group(function () {
     Route::get('aboutus', [BannerController::class, 'aboutus'])
         ->name('admin.aboutus');
     Route::post('aboutus/store', [BannerController::class, 'storeAboutUs'])
-    ->name('admin.aboutus.store');
-
+        ->name('admin.aboutus.store');
 });
 
 // website banner route

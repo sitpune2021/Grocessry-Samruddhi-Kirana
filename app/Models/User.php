@@ -104,10 +104,18 @@ class User extends Authenticatable
         return in_array($permission, $permissions);
     }
 
-    // 🔗 User has many addresses
     public function addresses()
     {
         return $this->hasMany(Address::class);
+    }
+    public function notifications()
+    {
+        return $this->hasMany(DeliveryNotification::class, 'delivery_agent_id');
+    }
+
+    public function notificationSettings()
+    {
+        return $this->hasOne(DeliveryNotificationSetting::class, 'delivery_agent_id');
     }
     // public function hasPermission(string $permission): bool
     // {
