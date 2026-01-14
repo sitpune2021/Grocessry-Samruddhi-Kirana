@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\DeliveryNotification;
 use App\Models\DeliveryNotificationSetting;
+use Illuminate\Support\Facades\DB;
 
 
 class DeliveryOrderController extends Controller
@@ -17,11 +18,21 @@ class DeliveryOrderController extends Controller
         $user = $request->user();
         $perPage = $request->get('per_page', 10);
 
+        // ❌ already active order आहे
+        if ($this->agentHasActiveOrder($user->id)) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
+        // ✅ available orders
         $orders = Order::with([
             'orderItems.product',
             'customerAddress:id,user_id,latitude,longitude'
         ])
             ->where('status', 'pending')
+            ->whereNull('delivery_agent_id') // 🔥 important
             ->paginate($perPage);
 
         return response()->json([
@@ -29,56 +40,43 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
-
     public function acceptOrder(Request $request, $orderId)
     {
         $user = $request->user();
 
+        if ($this->agentHasActiveOrder($user->id)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You already have an active order'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+
         $order = Order::where('id', $orderId)
             ->where('status', 'pending')
+            ->whereNull('delivery_agent_id')
+            ->lockForUpdate()
             ->first();
 
         if (!$order) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => 'Order not available'
             ], 404);
         }
 
-        // ✅ Assign order
         $order->update([
             'status' => 'accepted',
             'delivery_agent_id' => $user->id
         ]);
 
-        // 🔔 CREATE OR GET NOTIFICATION SETTINGS
-        $settings = DeliveryNotificationSetting::firstOrCreate(
-            ['delivery_agent_id' => $user->id], // check if exists
-            [
-                'user_id' => $user->id,          // important!
-                'new_order' => 1,
-                'updates' => 1,
-                'chat' => 1,
-                'promo' => 1,
-                'app_updates' => 1
-            ]
-        );
-
-        // ✅ Create notification only if enabled
-        if ($settings->new_order == 1) {
-            DeliveryNotification::create([
-                'delivery_agent_id' => $user->id,
-                'user_id' => $order->user_id,  // user who placed order
-                'type' => 'new_order',
-                'title' => 'New Order Received',
-                'message' => 'You have accepted order #' . $order->order_number,
-                'is_read' => 0
-            ]);
-        }
+        DB::commit();
 
         return response()->json([
             'status' => true,
-            'message' => 'Order accepted & added to delivery queue',
+            'message' => 'Order accepted successfully',
             'data' => $order
         ]);
     }
