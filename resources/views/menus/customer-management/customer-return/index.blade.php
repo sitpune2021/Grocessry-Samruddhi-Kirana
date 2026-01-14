@@ -59,7 +59,22 @@
                             <td>
                                 {{ $return->product->name ?? '-' }}
                             </td>
-                            <td></td>
+                            <td>
+                                @forelse($return->product_images ?? [] as $image)
+                                <a href="{{ asset('storage/customer_return_products/'.$image) }}"
+                                    target="_blank">
+                                    <img src="{{ asset('storage/'.$image) }}"
+                                        width="50"
+                                        height="50"
+                                        class="rounded border me-1 mb-1"
+                                        style="cursor:pointer;">
+                                </a>
+                                @empty
+                                <span class="text-muted">No Images</span>
+                                @endforelse
+                            </td>
+
+
 
                             <td>
                                 ₹{{ number_format($return->orderItem->price ?? 0, 2) }}
@@ -85,13 +100,16 @@
                                     class="btn btn-sm btn-warning">
                                     QC
                                 </a> -->
-
+                                @if(in_array($return->qc_status, [null, 'pending']) && $return->status === 'requested')
                                 <a href="javascript:void(0)"
                                     class="btn btn-sm btn-warning"
                                     data-bs-toggle="modal"
                                     data-bs-target="#qcModal{{ $return->id }}">
                                     QC
                                 </a>
+                                @else
+                                <span class="badge bg-success">QC Completed</span>
+                                @endif
 
 
                                 <!-- QC Modal -->
