@@ -20,25 +20,6 @@ class WarehouseTransferController extends Controller
 {
     
  
-    // public function index()
-    // {
-    //     $userWarehouseId = auth()->user()->warehouse_id;
-
-    //     $transfers = WarehouseTransfer::with([
-    //         'approvedByWarehouse',
-    //         'requestedByWarehouse',
-    //         'category',
-    //         'product',
-    //         'batch'
-    //     ])
-    //     ->where('approved_by_warehouse_id', $userWarehouseId)   // 🔥 YAHI CHANGE
-    //     ->orderBy('created_at', 'desc')
-    //     ->get();
-
-    //     return view('warehouse.index', compact('transfers'));
-    // }
- 
-    
     public function index()
     {
         $user = auth()->user();
@@ -121,51 +102,6 @@ class WarehouseTransferController extends Controller
             ]);
         }
     }
- 
-    // Multiple product store function
-    // public function store(Request $request)
-    // {
-    //     //dd($request->all());
-    //     // dd($request->items);
- 
-    //     $request->validate([
-    //         'items'                         => 'required|array|min:1',
-    //         'items.*.approved_by_warehouse_id'     => 'required|exists:warehouses,id',
-    //         'items.*.requested_by_warehouse_id'       => 'required|different:items.*.approved_by_warehouse_id|exists:warehouses,id',
-    //         'items.*.category_id'           => 'required|exists:categories,id',
-    //         'items.*.product_id'            => 'required|exists:products,id',
-    //         'items.*.batch_id'              => 'required|exists:product_batches,id',
-    //         'items.*.quantity'              => 'required|integer|min:1',
-    //     ]);
- 
-    //     DB::transaction(function () use ($request) {
- 
-    //         foreach ($request->items as $item) {
- 
-    //             // ✅ ONLY batch validity (expiry / blocked)
-    //             $batch = ProductBatch::findOrFail($item['batch_id']);
- 
-    //             if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
-    //                 throw new \Exception("Batch {$batch->batch_no} is expired or blocked");
-    //             }
- 
-    //             WarehouseTransfer::create([
-    //                 'approved_by_warehouse_id' => $item['approved_by_warehouse_id'],
-    //                 'requested_by_warehouse_id'   => $item['requested_by_warehouse_id'],
-    //                 'category_id'       => $item['category_id'],
-    //                 'product_id'        => $item['product_id'],
-    //                 'batch_id'          => $item['batch_id'],
-    //                 'quantity'          => $item['quantity'],
-    //                 'status'            => 0,
-    //                 'created_by'        => Auth::id(),
-    //             ]);
-    //         }
-    //     });
- 
-    //     return redirect()
-    //         ->route('transfer.index')
-    //         ->with('success', 'Transfer entry saved successfully');
-    // }
 
     public function store(Request $request)
     {
@@ -189,6 +125,12 @@ class WarehouseTransferController extends Controller
             foreach ($request->items as $item) {
 
                 $batch = ProductBatch::findOrFail($item['batch_id']);
+                if ($item['quantity'] > $batch->quantity) {
+                    throw new \Exception(
+                        "{$batch->product->name} ke liye sirf {$batch->quantity} qty available hai"
+                    );
+                }
+
 
                 if ($batch->is_blocked || $batch->expiry_date < now()->toDateString()) {
                     Log::error('Blocked or Expired Batch Used', [
