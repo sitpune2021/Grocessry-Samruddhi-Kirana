@@ -25,8 +25,14 @@ class Order extends Model
         'cancel_reason',
         'cancel_comment',
         'cancelled_at',
-    ];
+        'customer_rating',
+        'customer_rating_tags',
+        'delivered_at',
 
+    ];
+    protected $casts = [
+        'customer_rating_tags' => 'array',
+    ];
     public function items()
     {
         return $this->hasMany(OrderItem::class);
@@ -40,10 +46,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-    public function customerAddress()
-    {
-        return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
-    }
+    // public function customerAddress()
+    // {
+    //     return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
+    // }
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');

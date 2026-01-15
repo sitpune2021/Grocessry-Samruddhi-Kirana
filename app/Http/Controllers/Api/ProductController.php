@@ -99,7 +99,6 @@ class ProductController extends Controller
         ]);
     }
 
-
     public function viewCart(Request $request)
     {
         $user = $request->user();
@@ -331,7 +330,6 @@ class ProductController extends Controller
         }
     }
 
-
     protected function checkCustomer($user)
     {
         if (!$user) {
@@ -353,8 +351,6 @@ class ProductController extends Controller
 
         return null; // ✅ allowed
     }
-
-
 
     public function returnProduct(Request $request)
     {
@@ -422,6 +418,84 @@ class ProductController extends Controller
             'status' => true,
             'message' => 'Return request submitted successfully',
             'data' => $returnData
+        ]);
+    }
+    public function pastOrders(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $perPage = $request->per_page ?? 10;
+
+        $orders = Order::with([
+            'orderItems.product:id,name,product_images',
+        ])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['delivered', 'cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'status' => true,
+            'data' => $orders
+        ]);
+    }
+    public function newOrders(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $orders = Order::with([
+            'orderItems.product:id,name,product_images',
+            'deliveryAddress'
+        ])
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', ['delivered', 'cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $orders
+        ]);
+    }
+    public function rateOrder(Request $request, $orderId)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'tags'   => 'nullable|array'
+        ]);
+
+        $order = Order::where('id', $orderId)
+            ->where('user_id', $user->id)
+            ->where('status', 'delivered')
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not delivered yet'
+            ], 400);
+        }
+
+        if ($order->customer_rating) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rating already submitted'
+            ], 400);
+        }
+
+        $order->update([
+            'customer_rating' => $request->rating,
+            'customer_rating_tags' => $request->tags
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Thank you for rating your order'
         ]);
     }
 }

@@ -21,23 +21,39 @@ class AddressController extends Controller
         return null;
     }
 
-    // 📄 List addresses
     public function list(Request $request)
     {
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
         $addresses = UserAddress::where('user_id', $user->id)
-            ->get();
+            ->orderByDesc('is_default')
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id'           => $a->id,
+                    'name'         => $a->first_name,
+                    'mobile'       => $a->phone,
+                    'address_line' => $a->address,
+                    'landmark'     => $a->landmark, // ✅
+                    'city'         => $a->city,
+                    'state'        => $a->country,
+                    'pincode'      => $a->postcode,
+                    'latitude'     => $a->latitude,
+                    'longitude'    => $a->longitude,
+                    'is_default'   => (bool) $a->is_default,
+                    'created_at'   => $a->created_at,
+                    'updated_at'   => $a->updated_at
+                ];
+            });
 
         return response()->json([
             'status' => true,
-            'data' => $addresses
+            'data'   => $addresses
         ]);
     }
 
 
-    // ➕ Add address
     public function add(Request $request)
     {
         $user = $request->user();
@@ -50,6 +66,7 @@ class AddressController extends Controller
             'name' => 'required|string',
             'mobile' => 'required|digits:10',
             'address_line' => 'required|string',
+            'landmark'     => 'nullable|string', // ✅ ADD
             'city' => 'required|string',
             'state' => 'required|string',
             'pincode' => 'required|digits:6'
@@ -68,6 +85,7 @@ class AddressController extends Controller
             'address'   => $request->address_line,
             'city'      => $request->city,
             'country'   => $request->state,
+            'landmark'     => $request->landmark,
             'postcode'  => $request->pincode,
             'email'     => $user->email,
             'latitude'  => $request->latitude,
@@ -82,10 +100,10 @@ class AddressController extends Controller
         ]);
     }
 
-    // ✏️ Update address
     public function update(Request $request, $id)
     {
         $user = $request->user();
+
         if ($res = $this->checkCustomer($user)) return $res;
 
         $address = UserAddress::where('id', $id)
@@ -99,20 +117,33 @@ class AddressController extends Controller
             ], 404);
         }
 
-        // ⭐ Handle default address
+        $request->validate([
+            'name'         => 'required|string',
+            'mobile'       => 'required|digits:10',
+            'address_line' => 'required|string',
+            'landmark'     => 'nullable|string',
+            'city'         => 'required|string',
+            'state'        => 'required|string',
+            'pincode'      => 'required|digits:6',
+            'latitude'     => 'nullable|numeric',
+            'longitude'    => 'nullable|numeric',
+            'is_default'   => 'nullable|in:0,1',
+        ]);
+
         if ($request->is_default == 1) {
             UserAddress::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
-        // ✅ Update with correct DB column mapping
         $address->update([
             'first_name' => $request->name,
             'phone'      => $request->mobile,
             'address'    => $request->address_line,
+            'landmark'     => $request->landmark,
             'city'       => $request->city,
             'country'    => $request->state,
             'postcode'   => $request->pincode,
+            'email'      => $user->email,
             'latitude'   => $request->latitude,
             'longitude'  => $request->longitude,
             'is_default' => $request->is_default ?? $address->is_default,
@@ -125,8 +156,6 @@ class AddressController extends Controller
         ]);
     }
 
-
-    // ❌ Delete address
     public function delete(Request $request, $id)
     {
         $user = $request->user();

@@ -47,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('cart/single/product/remove', [ProductController::class, 'removeSingleItem']);
     Route::post('/cart/checkout', [ProductController::class, 'checkout']);
     Route::post('/customer/product/return', [ProductController::class, 'returnProduct']);
+    Route::get('/orders/history', [ProductController::class, 'pastOrders']);
+    Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
+    Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [DeliveryCouponsOffersController::class, 'getOffers']);
@@ -76,46 +79,109 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('partner/status/online', [DeliveryAgentController::class, 'goOnline']);
     Route::post('partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
     Route::get('/partner/profile/image', [DeliveryAgentController::class, 'getProfileImage']);
-    Route::get('/partner/orders/current',[DeliveryAgentController::class, 'getCurrentTask']);
+    Route::get('/partner/orders/current', [DeliveryAgentController::class, 'getCurrentTask']);
 });
 Route::middleware('auth:sanctum')->group(function () {
+
+    // 🔹 DELIVERY ORDER LISTING
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
-    Route::post('/delivery/orders/{order}/accept', [DeliveryOrderController::class, 'acceptOrder']);
-    Route::post('/delivery/orders/{order}/reject', [DeliveryOrderController::class, 'rejectOrder']);
     Route::get('/delivery/orders/available', [DeliveryOrderController::class, 'getAvailableOrders']);
     Route::get('/delivery/orders/queue', [DeliveryOrderController::class, 'getDeliveryQueue']);
-    Route::get('/orders/{orderId}', [DeliveryOrderController::class, 'getOrderDetails']);
-    Route::get('orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
-    Route::post('/orders/{orderId}/instructions/read', [DeliveryOrderController::class, 'confirmInstructionsRead']);
+
+    // 🔹 CANCELLATION (STATIC FIRST ✅)
+    Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
+
+    // 🔹 ORDER ACTIONS
+    Route::post('/delivery/orders/{order}/accept', [DeliveryOrderController::class, 'acceptOrder']);
+    Route::post('/delivery/orders/{order}/reject', [DeliveryOrderController::class, 'rejectOrder']);
+
+    // 🔹 ORDER ITEMS
+    Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
+    Route::get('/partner/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
+
+    // 🔹 PICKUP FLOW
     Route::get('/orders/{orderId}/pickup', [DeliveryOrderController::class, 'getPickupDetails']);
-    Route::post('/orders/{orderId}/items/{itemId}/verify', [DeliveryOrderController::class, 'verifyItem']);
-    Route::post('/orders/{orderId}/items/{itemId}/issue', [DeliveryOrderController::class, 'reportItemIssue']);
     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
-    Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
+
+    // 🔹 ITEM VERIFICATION
+    Route::post('/orders/{orderId}/items/{itemId}/verify', [DeliveryOrderController::class, 'verifyItem']);
+    Route::post('/orders/{orderId}/items/{itemId}/issue', [DeliveryOrderController::class, 'reportItemIssue']);
+
+    // 🔹 ORDER CANCEL (DYNAMIC AFTER STATIC ✅)
     Route::post('/orders/{orderId}/cancel', [DeliveryOrderController::class, 'cancelOrder']);
-    Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
-    Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
-    Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
+
+    // 🔹 ORDER DETAILS (KEEP LOWEST)
+    Route::get('/orders/{orderId}', [DeliveryOrderController::class, 'getOrderDetails']);
     Route::get('/orders/{orderId}/summary', [DeliveryOrderController::class, 'getOrderSummary']);
     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
     Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
+
+    // 🔹 DELIVERIES
+    Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
+    Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
+    Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
+     Route::get('/partner/deliveries/summary',[DeliveryOrderController::class, 'deliverySummary']);
+
+    // 🔹 PARTNER STATUS
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
     Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);
     Route::get('/partner/stats/login-hours', [DeliveryAgentController::class, 'loginHours']);
+
+    // 🔹 NOTIFICATIONS
     Route::get('/notifications', [NotificationController::class, 'get_notifications']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::get('/notifications/settings', [NotificationController::class, 'getSettings']);
     Route::put('/notifications/settings', [NotificationController::class, 'updateSettings']);
-    Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
 
+    // 🔹 PROFILE
+    Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
     Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
-    Route::put(
-        '/delivery_boy/profile/{type}',
-        [DeliveryAgentController::class, 'updateProfileField']
-    );
+    Route::put('/delivery_boy/profile/{type}', [DeliveryAgentController::class, 'updateProfileField']);
+    Route::get('/partner/profile/summary',[DeliveryAgentController::class, 'profileSummary']);
+    Route::get('/partner/performance/graph',[DeliveryAgentController::class, 'performanceGraph']);
 });
+
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
+//     Route::post('/delivery/orders/{order}/accept', [DeliveryOrderController::class, 'acceptOrder']);
+//     Route::post('/delivery/orders/{order}/reject', [DeliveryOrderController::class, 'rejectOrder']);
+//     Route::get('/delivery/orders/available', [DeliveryOrderController::class, 'getAvailableOrders']);
+//     Route::get('/delivery/orders/queue', [DeliveryOrderController::class, 'getDeliveryQueue']);
+//     Route::get('/orders/{orderId}', [DeliveryOrderController::class, 'getOrderDetails']);
+//     Route::get('orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
+//     Route::post('/orders/{orderId}/instructions/read', [DeliveryOrderController::class, 'confirmInstructionsRead']);
+//     Route::get('/orders/{orderId}/pickup', [DeliveryOrderController::class, 'getPickupDetails']);
+//     Route::post('/orders/{orderId}/items/{itemId}/verify', [DeliveryOrderController::class, 'verifyItem']);
+//     Route::post('/orders/{orderId}/items/{itemId}/issue', [DeliveryOrderController::class, 'reportItemIssue']);
+//     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
+//     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
+//     Route::get('/partner/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
+//     Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
+//     Route::post('/orders/{orderId}/cancel', [DeliveryOrderController::class, 'cancelOrder']);
+//     Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
+//     Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
+//     Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
+//     Route::get('/orders/{orderId}/summary', [DeliveryOrderController::class, 'getOrderSummary']);
+//     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
+//     Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
+//     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
+//     Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);
+//     Route::get('/partner/stats/login-hours', [DeliveryAgentController::class, 'loginHours']);
+//     Route::get('/notifications', [NotificationController::class, 'get_notifications']);
+//     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
+//     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+//     Route::get('/notifications/settings', [NotificationController::class, 'getSettings']);
+//     Route::put('/notifications/settings', [NotificationController::class, 'updateSettings']);
+//     Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
+
+//     Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
+//     Route::put(
+//         '/delivery_boy/profile/{type}',
+//         [DeliveryAgentController::class, 'updateProfileField']
+//     );
+// });
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/partner/profile/address', [DeliveryAgentController::class, 'updateAddress']);
     Route::post('/partner/profile/image', [DeliveryAgentController::class, 'updateProfileImage']);

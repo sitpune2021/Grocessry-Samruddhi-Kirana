@@ -29,7 +29,7 @@ class DeliveryOrderController extends Controller
         // ✅ available orders
         $orders = Order::with([
             'orderItems.product',
-            'customerAddress:id,user_id,latitude,longitude'
+            'deliveryAddress:id,user_id,latitude,longitude'
         ])
             ->where('status', 'pending')
             ->whereNull('delivery_agent_id') // 🔥 important
@@ -308,37 +308,134 @@ class DeliveryOrderController extends Controller
     }
     public function getCancellationReasons()
     {
-        $reasons = Order::whereNotNull('cancel_reason')
-            ->distinct()
-            ->pluck('cancel_reason');
         return response()->json([
             'status' => true,
-            'data' => $reasons
+            'data' => [
+                [
+                    'id' => 1,
+                    'reason' => 'Customer not available'
+                ],
+                [
+                    'id' => 2,
+                    'reason' => 'Wrong address'
+                ],
+                [
+                    'id' => 3,
+                    'reason' => 'Item damaged'
+                ],
+                [
+                    'id' => 4,
+                    'reason' => 'Customer cancelled'
+                ],
+                [
+                    'id' => 5,
+                    'reason' => 'Other'
+                ]
+            ]
         ]);
     }
+
     public function cancelOrder(Request $request, $orderId)
     {
+        $user = $request->user();
+
+        // 🔐 Delivery agent check
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        // ✅ Validation
         $request->validate([
-            'cancel_reason' => 'required|string',
-            'cancel_comment' => 'nullable|string'
+            'reasonId' => 'required|integer',
+            'comment'  => 'nullable|string'
         ]);
-        $order = Order::find($orderId);
+
+        // 🔍 Order must belong to this agent
+        $order = Order::where('id', $orderId)
+            ->where('delivery_agent_id', $user->id)
+            ->first();
+
         if (!$order) {
             return response()->json([
                 'status' => false,
                 'message' => 'Order not found'
             ], 404);
         }
-        $order->status = 'cancelled';
-        $order->cancel_reason = $request->cancel_reason;
-        $order->cancel_comment = $request->cancel_comment;
-        $order->cancelled_at = now();
-        $order->save();
+
+        // ❌ Cannot cancel after delivery
+        if ($order->status === 'delivered') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Delivered order cannot be cancelled'
+            ], 400);
+        }
+
+        // 🔁 Reason mapping
+        $reasons = [
+            1 => 'Customer not available',
+            2 => 'Wrong address',
+            3 => 'Item damaged',
+            4 => 'Customer cancelled',
+            5 => 'Other'
+        ];
+
+        if (!isset($reasons[$request->reasonId])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid cancellation reason'
+            ], 400);
+        }
+
+        // ✅ Cancel order
+        $order->update([
+            'status'         => 'cancelled',
+            'cancel_reason'  => $reasons[$request->reasonId],
+            'cancel_comment' => $request->comment,
+            'cancelled_at'   => now()
+        ]);
+
         return response()->json([
             'status' => true,
             'message' => 'Order cancelled successfully'
         ]);
     }
+
+    // public function getCancellationReasons()
+    // {
+    //     $reasons = Order::whereNotNull('cancel_reason')
+    //         ->distinct()
+    //         ->pluck('cancel_reason');
+    //     return response()->json([
+    //         'status' => true,
+    //         'data' => $reasons
+    //     ]);
+    // }
+    // public function cancelOrder(Request $request, $orderId)
+    // {
+    //     $request->validate([
+    //         'cancel_reason' => 'required|string',
+    //         'cancel_comment' => 'nullable|string'
+    //     ]);
+    //     $order = Order::find($orderId);
+    //     if (!$order) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Order not found'
+    //         ], 404);
+    //     }
+    //     $order->status = 'cancelled';
+    //     $order->cancel_reason = $request->cancel_reason;
+    //     $order->cancel_comment = $request->cancel_comment;
+    //     $order->cancelled_at = now();
+    //     $order->save();
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Order cancelled successfully'
+    //     ]);
+    // }
 
     private function agentHasActiveOrder($userId)
     {
@@ -376,7 +473,6 @@ class DeliveryOrderController extends Controller
             'data' => $deliveries
         ]);
     }
-    //Search by order_id, customer name, mobile
     public function search(Request $request)
     {
         $request->validate([
@@ -400,8 +496,6 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
-    // Get Delivery Status
-    //Filters: dateFrom, dateTo
     public function status(Request $request)
     {
         $deliveryBoy = $request->user();
@@ -528,6 +622,103 @@ class DeliveryOrderController extends Controller
         return response()->json([
             'status' => true,
             'totalOrders' => $totalOrders
+        ]);
+    }
+    public function getPickupItems(Request $request, $orderId)
+    {
+        $user = $request->user();
+
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $order = Order::with(['orderItems.product'])
+            ->where('id', $orderId)
+            ->where('delivery_agent_id', $user->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        $items = $order->orderItems->map(function ($item) {
+            return [
+                'id'       => $item->id,
+                'name'     => $item->product->name ?? null,
+                'quantity' => $item->qty,
+                'image'    => $item->product->product_images[0] ?? null,
+                'isPicked' => (bool) $item->is_picked, // column in order_items
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'orderId' => $order->id,
+                'items'   => $items
+            ]
+        ]);
+    }
+    public function deliverySummary(Request $request)
+    {
+        $user = $request->user();
+
+        // 🔐 Delivery agent only
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        // Base query → completed deliveries
+        $query = Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'delivered')
+            ->whereNotNull('delivered_at');
+
+        // 📅 Date range filter
+        if ($request->dateRange === 'today') {
+            $query->whereDate('delivered_at', today());
+        }
+
+        if ($request->dateRange === 'week') {
+            $query->whereBetween('delivered_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek()
+            ]);
+        }
+
+        if ($request->dateRange === 'month') {
+            $query->whereMonth('delivered_at', now()->month)
+                ->whereYear('delivered_at', now()->year);
+        }
+
+        if ($request->dateRange === 'custom') {
+            $request->validate([
+                'fromDate' => 'required|date',
+                'toDate'   => 'required|date'
+            ]);
+
+            $query->whereBetween('delivered_at', [
+                $request->fromDate,
+                $request->toDate
+            ]);
+        }
+
+        $completedCount = $query->count();
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'completedCount'      => $completedCount,
+                'totalDistanceKm'     => 0,
+                'avgDeliveryTimeMin'  => 0
+            ]
         ]);
     }
 }
