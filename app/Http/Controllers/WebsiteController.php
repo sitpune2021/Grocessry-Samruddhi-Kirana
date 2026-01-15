@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Banner;
-use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ContactDetail;
+use App\Models\Cart;
+use App\Models\CartItem;
 use Illuminate\Support\Facades\Auth;
+
+
 class WebsiteController extends Controller
 {
     
@@ -220,6 +222,40 @@ class WebsiteController extends Controller
 
         return redirect()->route('cart')->with('success', 'Product added to cart');
     }
+
+    public function cart()
+    {
+        $userId = Auth::id() ?? session()->getId();
+
+        $cart = Cart::with('items.product')
+            ->where('user_id', $userId)
+            ->first();
+
+        return view('website.cart', compact('cart'));
+    }
+
+    public function removeItem($id)
+    {
+        $item = CartItem::findOrFail($id);
+        $item->delete();
+
+        return redirect()->back()->with('success', 'Item removed from cart.');
+    }
+
+    public function productdetails($id)
+    {
+        $product = Product::findOrFail($id);
+
+        // Same category ke related products (current product ko chhod kar)
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->latest()
+            ->take(8)   // jitne chaho utne
+            ->get();
+
+        return view('website.shop_detail', compact('product', 'relatedProducts'));
+    }
+
 
 
 }
