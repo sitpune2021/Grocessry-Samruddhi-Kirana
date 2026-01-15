@@ -101,12 +101,12 @@
                             </form>
                         @endif
                         {{-- DISTRICT: Single Receive --}}
-                        @if($t->status == 1 && $t->requested_by_warehouse_id == $userWarehouseId)
+                        <!-- @if($t->status == 1 && $t->requested_by_warehouse_id == $userWarehouseId)
                             <form method="POST" action="{{ route('warehouse.transfer.receive.single', $t->id) }}" class="d-inline">
                                 @csrf
                                 <button class="btn btn-sm btn-primary">Receive</button>
                             </form>
-                        @endif
+                        @endif -->
                     </td>
 
                     </tr>
