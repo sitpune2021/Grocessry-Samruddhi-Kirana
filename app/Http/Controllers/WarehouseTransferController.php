@@ -349,8 +349,8 @@ class WarehouseTransferController extends Controller
         $transfer = WarehouseTransfer::with([
             'product',
             'batch',
-            'fromWarehouse',
-            'toWarehouse'
+            'approvedByWarehouse',
+            'requestedByWarehouse'
         ])->findOrFail($id);
  
         return view('warehouse.show', compact('transfer'));

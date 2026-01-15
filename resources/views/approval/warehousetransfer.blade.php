@@ -5,7 +5,7 @@
 
     <div class="container bg-white mt-5 shadow rounded p-3">
 
-        <h5 class="card-title mt-5">Warehouse Stock Request Approve</h5>
+        <h5 class="card-title mt-5">Warehouse / Distribution Center Stock Request Approve</h5>
 
         <div class="table-responsive mt-5">
 

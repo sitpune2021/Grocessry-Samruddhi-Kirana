@@ -24,7 +24,7 @@
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
                                 <h4 class="card-header text-center">
-                                   District Warehouse Stock Request
+                                   Warehouse / Distribution Center Stock Request
                                 </h4>
  
                                 <div class="card-body">
@@ -48,7 +48,7 @@
                                         <div class="row g-3 mb-3">
 
                                             <div class="col-md-6">
-                                                <label class="form-label">Loged Warehouse<span class="text-danger">*</span></label>
+                                                <label class="form-label">From Warehouse<span class="text-danger">*</span></label>
  
                                                 <select class="form-select" disabled>
                                                     <option selected>{{ $toWarehouse->name }}</option>
@@ -64,7 +64,7 @@
  
                                             <div class="col-md-6">
                                                 <label class="form-label">
-                                                    Request Warehouse <span class="text-danger">*</span>
+                                                    To Request Warehouse <span class="text-danger">*</span>
                                                 </label>
  
                                                 <select name="approved_by_warehouse_id"
