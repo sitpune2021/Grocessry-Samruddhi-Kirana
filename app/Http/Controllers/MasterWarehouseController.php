@@ -45,10 +45,15 @@ class MasterWarehouseController extends Controller
                 ->whereIn('parent_id', $districtIds)
                 ->pluck('id');
 
+            $shopIds = Warehouse::where('type','distribution_center')
+                ->whereIn('parent_id',$talukaIds)
+                ->pluck('id');
+
             
             $allowedWarehouseIds = collect([$masterWarehouseId])
                 ->merge($districtIds)
-                ->merge($talukaIds);
+                ->merge($talukaIds)
+                ->merge($shopIds);
 
             $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
                 ->orderBy('id', 'desc')
@@ -85,7 +90,7 @@ class MasterWarehouseController extends Controller
     public function create()
     {
         $mode = 'add';
-        $warehouses = Warehouse::with('district')->get();
+        $warehouses = Warehouse::with(['district','taluka'])->get();
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
@@ -98,10 +103,11 @@ class MasterWarehouseController extends Controller
 
     public function store(Request $request)
     {
+       
         DB::beginTransaction();
         $request->validate([
             'name' => 'required|string|max:255|unique:warehouses,name',
-            'type' => 'required|in:master,district,taluka',
+            'type' => 'required|in:master,district,taluka,distribution_center',
             'contact_person' => 'nullable|string|min:3|max:50',
             'email' => 'nullable|email',
             'contact_number' => [
@@ -109,7 +115,7 @@ class MasterWarehouseController extends Controller
                 'regex:/^[6-9]\d{9}$/',
                 Rule::unique('warehouses', 'contact_number'),
             ],
-            'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|integer',
+            'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|required_if:type,distribution_center|integer',
             'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
             'taluka_id'   => 'required_if:type,taluka|integer',
             'address'     => 'required|string|max:500',
@@ -239,7 +245,7 @@ class MasterWarehouseController extends Controller
 
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'type' => 'required|in:master,district,taluka',
+                'type' => 'required|in:master,district,taluka,distribution_center',
                 'address' => 'nullable|string|max:500',
                 //     'contact_person' => 'nullable|string|max:255',
                 //     'contact_number' => [
