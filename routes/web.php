@@ -757,6 +757,24 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
  
+    Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
+    ->name('warehouse.transfer.dispatch.bulk');
+
+    Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
+    ->name('warehouse.transfer.receive.bulk');
+
+    Route::post('/warehouse-transfer/dispatch/{transfer}', 
+        [ApprovalController::class, 'singleDispatch']
+    )->name('warehouse.transfer.dispatch.single');
+
+    Route::post('/warehouse-transfer/reject/{transfer}', 
+        [ApprovalController::class, 'reject']
+    )->name('warehouse.transfer.reject');
+
+    Route::post('/warehouse-transfer/receive/{transfer}', 
+        [ApprovalController::class, 'singleReceive']
+    )->name('warehouse.transfer.receive.single');
+
 
 
     // Approval district to district-transfers
