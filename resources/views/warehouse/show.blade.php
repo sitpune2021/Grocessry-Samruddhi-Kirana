@@ -32,13 +32,13 @@
                     <div class="col-md-6 mb-3">
                         <label>From Warehouse</label>
                         <input type="text" class="form-control"
-                            value="{{ $transfer->fromWarehouse->name ?? '-' }}" readonly>
+                            value="{{ $transfer->approvedByWarehouse->name ?? '-' }}" readonly>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label>To Warehouse</label>
                         <input type="text" class="form-control"
-                            value="{{ $transfer->toWarehouse->name ?? '-' }}" readonly>
+                            value="{{ $transfer->requestedByWarehouse->name ?? '-' }}" readonly>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -62,8 +62,8 @@
                 </div>
 
                 <div class="mt-4">
-                    <a href="{{ route('district-taluka-transfer.index') }}"
-                        class="btn btn-secondary">
+                    <a href="{{ route('transfer.index') }}"
+                        class="btn btn-success">
                         ⬅ Back
                     </a>
                 </div>
