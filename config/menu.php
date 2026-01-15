@@ -57,11 +57,11 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'warehouseMenu',
-            'title' => 'Warehouse / Distribution Management',
+            'title' => 'Warehouse / Distribution Center',
             'icon'  => 'bx bx-store',
             'children' => [
-                ['title' => 'Add Warehouse', 'route' => 'warehouse.index'],
-                ['title' => 'Add Warehouse Stock', 'route' => 'index.addStock.warehouse'],
+                ['title' => 'Warehouse', 'route' => 'warehouse.index'],
+                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
             ],
         ],
 

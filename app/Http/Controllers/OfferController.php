@@ -20,7 +20,7 @@ class OfferController extends Controller
     public function create()
     {
           $warehouses = Warehouse::all();
-        return view('offers.create')->with('mode', 'add');
+        return view('offers.create',compact('warehouses'))->with('mode', 'add');
     }
 
     public function store(Request $request) {}
