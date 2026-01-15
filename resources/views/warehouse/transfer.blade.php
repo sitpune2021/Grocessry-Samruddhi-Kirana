@@ -6,15 +6,15 @@
         <div class="layout-container">
  
             <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
+                <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                    @include('layouts.sidebar')
+                </aside>
             <!-- / Menu -->
  
             <!-- Layout container -->
             <div class="layout-page">
                 <!-- Navbar -->
-                @include('layouts.navbar')
+                    @include('layouts.navbar')
                 <!-- / Navbar -->
  
                 <!-- Content wrapper -->
@@ -54,8 +54,12 @@
                                                     <option selected>{{ $toWarehouse->name }}</option>
                                                 </select>
  
-                                                <input type="hidden" name="requested_by_warehouse_id"
-                                                    value="{{ $toWarehouse->id }}">
+                                                <input type="hidden"
+                                                name="requested_by_warehouse_id"
+                                                id="requested_by_warehouse_id"
+                                                value="{{ $toWarehouse->id }}"
+                                                data-name="{{ $toWarehouse->name }}">
+
                                             </div>
  
                                             <div class="col-md-6">
@@ -124,39 +128,35 @@
  
                                         <!-- Row 3: QTY -->
                                         @if(!isset($transfers))
-                                        <!-- Row 3: QTY -->
-                                        <div class="row g-3 mb-3">
-                                            <div class="col-md-6">
-                                                <label for="quantity" class="form-label">
-                                                    Quantity <span class="text-danger">*</span>
-                                                </label>
- 
-                                                <input type="text"
-                                                    name="quantity"
-                                                    id="quantity"
-                                                    class="form-control"
-                                                    placeholder="qty"
-                                                    value="{{ old('quantity', $transfer->quantity ?? '') }}">
+                                            <!-- Row 3: QTY -->
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="quantity" class="form-label">
+                                                        Quantity <span class="text-danger">*</span>
+                                                    </label>
+    
+                                                    <input type="text"
+                                                        name="quantity"
+                                                        id="quantity"
+                                                        class="form-control"
+                                                        placeholder="qty"
+                                                        value="{{ old('quantity', $transfer->quantity ?? '') }}">
+                                                </div>
                                             </div>
-                                        </div>
- 
                                         @endif
  
                                         @if (request()->is('warehouse-transfer/*/edit'))
-                                        <div class="text-end mt-3">
-                                            <button type="submit" class="btn btn-success" style="">
-                                                Update
-                                            </button>
-                                        </div>
- 
-                                        <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
- 
+                                            <div class="text-end mt-3">
+                                                <button type="submit" class="btn btn-success" style="">
+                                                    Update
+                                                </button>
+                                            </div>
+                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
                                         @else
  
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
- 
  
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
                                                     Add
@@ -168,17 +168,17 @@
                                                 </button>
                                             </div>
                                             @endif
- 
                                         </div>
- 
+
                                         <!-- Table -->
                                         <div class="table-responsive mt-4" id="workOrderTableWrapper" style="display: none;">
+                                            
                                             <table class="table table-bordered" id="workOrderTable">
                                                 <thead class="bg-light">
                                                     <tr>
                                                         <th style="width:100px;">Sr No </th>
-                                                        <th>From Warehouse</th>
-                                                        <th>To Warehouse</th>
+                                                        <th>Approve Warehouse</th>
+                                                        <th>Request Warehouse</th>
                                                         <th>Product</th>
                                                         <th>Batch</th>
                                                         <th style="width:10%;">Quantity</th>
@@ -187,6 +187,7 @@
                                                 </thead>
                                                 <tbody></tbody>
                                             </table>
+
                                             <div id="itemsContainer"></div>
  
                                             <!-- <div class="text-end mt-3">
@@ -196,6 +197,7 @@
                                             </div> -->
                                             
                                         </div>
+
                                     </form>
                                 </div>
                             </div>
@@ -333,18 +335,18 @@
                 qtyEl.val(quantities.join(','));
 
                 @if(isset($transfer))
-const transferId = $('#current_transfer_id').val();
+                const transferId = $('#current_transfer_id').val();
 
-if (transferId) {
-    $.get("{{ route('ajax.transfer.qty') }}", {
-        transfer_id: transferId
-    }, function(res) {
-        if (res.quantity) {
-            qtyEl.val(res.quantity);   // ✅ Yahin 200 aayega
-        }
-    });
-}
-@endif
+                if (transferId) {
+                    $.get("{{ route('ajax.transfer.qty') }}", {
+                        transfer_id: transferId
+                    }, function(res) {
+                        if (res.quantity) {
+                            qtyEl.val(res.quantity);   // ✅ Yahin 200 aayega
+                        }
+                    });
+                }
+                @endif
 
             });
             
@@ -378,7 +380,7 @@ if (transferId) {
  
                     const row = $(`#row_${editIndex}`);
                     row.find('td:eq(1)').text(fromWarehouseEl.find(':selected').text());
-                    row.find('td:eq(2)').text($('#requested_by_warehouse_id option:selected').text());
+                    row.find('td:eq(2)').text($('#requested_by_warehouse_id').data('name'));
                     row.find('td:eq(3)').text(productEl.find(`option[value="${pid}"]`).text());
                     row.find('td:eq(4)').text(batch.batch_no);
                     row.find('.qty-input').val(qty);
@@ -412,7 +414,7 @@ if (transferId) {
                     <tr id="row_${rid}">
                         <td>${rid + 1}</td>
                         <td>${fromWarehouseEl.find(':selected').text()}</td>
-                        <td>${$('#requested_by_warehouse_id option:selected').text()}</td>
+                        <td>${$('#requested_by_warehouse_id').data('name')}</td>
                         <td>${productEl.find(`option[value="${pid}"]`).text()}</td>
                         <td>${batch.batch_no}</td>
                         <td>
