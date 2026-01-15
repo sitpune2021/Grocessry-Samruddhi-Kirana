@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Coupon;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -10,146 +12,134 @@ use Illuminate\Support\Facades\Log;
 class CouponController extends Controller
 {
     public function index()
-{
-    Log::info('Coupon index accessed', [
-        'user_id' => Auth::id()
-    ]);
-
-    $coupons = Coupon::orderByDesc('id')->paginate(10);
-
-    Log::info('Coupons fetched', [
-        'total' => $coupons->total()
-    ]);
-
-    return view('coupons.index', compact('coupons'));
-}
-
-
+    {
+        $offers = Coupon::with(['product', 'category'])->paginate(10);
+        return view('coupons.index', compact('offers'));
+    }
     public function create()
-{
-    Log::info('Coupon create page opened', [
-        'user_id' => Auth::id()
-    ]);
+    {
 
-    $mode = 'add';
-    return view('coupons.create', compact('mode'));
-}
+        $products = Product::all();
+        $categories = Category::all();
+        return view('coupons.create', compact('products', 'categories',))->with('mode', 'add');
+    }
 
     public function store(Request $request)
-{
-    Log::info('Coupon store request received', [
-        'request_data' => $request->except(['_token'])
-    ]);
+    {
+        // convert "all" to null
+        if ($request->category_id === 'all') {
+            $request->merge(['category_id' => null]);
+        }
 
-    $request->validate([
-        'code' => 'required|string|unique:coupons,code',
-        'type' => 'required|in:flat,percent,free_shipping',
-        'value' => 'required|numeric|min:0',
-        'min_cart_amount' => 'required|numeric|min:0',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
-        'usage_limit' => 'nullable|integer|min:1',
-        'per_user_limit' => 'nullable|integer|min:1',
-        'is_active' => 'required|in:0,1',
-    ]);
+        if ($request->product_id === 'all') {
+            $request->merge(['product_id' => null]);
+        }
 
-    try {
-        $coupon = Coupon::create($request->all());
+        Log::info('Offer Store Request Received', $request->all());
 
-        Log::info('Coupon created successfully', [
-            'coupon_id' => $coupon->id,
-            'code' => $coupon->code,
-            'user_id' => Auth::id()
+        $validated = $request->validate([
+            'code' => 'required|string|unique:offers,code',
+            'title' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'product_id' => 'nullable|exists:products,id',
+            'discount_type' => 'required|in:percentage,flat',
+            'discount_value' => 'required|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'min_amount' => 'required|numeric|min:0',
+            'max_usage' => 'required|integer|min:1',
+            'description' => 'nullable|string',
+            'terms_condition' => 'nullable|string',
+            'status' => 'required|in:0,1',
         ]);
 
-        return redirect()
-            ->route('coupons.index')
-            ->with('success', 'Coupon created successfully.');
+        $offer = Coupon::create($validated);
 
-    } catch (\Exception $e) {
+        Log::info('Offer Created', ['offer_id' => $offer->id]);
 
-        Log::error('Coupon creation failed', [
-            'error' => $e->getMessage(),
+        return redirect()->route('coupons.index')->with('success', 'Offer created successfully');
+    }
+
+
+
+    public function show(Coupon $offer)
+    {
+        $products = Product::all();
+        $categories = Category::all();
+        return view('coupons.create', compact('offer', 'products', 'categories'))->with('mode', 'view');
+    }
+
+    public function edit(Coupon $offer)
+    {
+        $products = Product::all();
+        $categories = Category::all();
+        return view('coupons.create', compact('offer', 'products', 'categories'))->with('mode', 'edit');
+    }
+
+    public function update(Request $request, Coupon $offer)
+    {
+        Log::info('Offer Update Request Received', [
+            'user_id' => Auth::id(),
+            'offer_id' => $offer->id,
             'request_data' => $request->all()
         ]);
 
-        return back()->with('error', 'Something went wrong');
-    }
-}
-
-   public function show(Coupon $coupon)
-{
-    Log::info('Coupon viewed', [
-        'coupon_id' => $coupon->id,
-        'user_id' => Auth::id()
-    ]);
-
-    $mode = 'view';
-    return view('coupons.create', compact('coupon', 'mode'));
-}
-
-
-    public function edit(Coupon $coupon)
-{
-    Log::info('Coupon edit page opened', [
-        'coupon_id' => $coupon->id,
-        'user_id' => Auth::id()
-    ]);
-
-    $mode = 'edit';
-    return view('coupons.create', compact('coupon', 'mode'));
-}
-
-public function update(Request $request, Coupon $coupon)
-{
-    Log::info('Coupon update request received', [
-        'coupon_id' => $coupon->id,
-        'request_data' => $request->except(['_token', '_method'])
-    ]);
-
-    $request->validate([
-        'code' => 'required|string|unique:coupons,code,' . $coupon->id,
-        'type' => 'required|in:flat,percent,free_shipping',
-        'value' => 'required|numeric|min:0',
-        'min_cart_amount' => 'required|numeric|min:0',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
-        'usage_limit' => 'nullable|integer|min:1',
-        'per_user_limit' => 'nullable|integer|min:1',
-        'is_active' => 'required|in:0,1',
-    ]);
-
-    try {
-        $coupon->update($request->all());
-
-        Log::info('Coupon updated successfully', [
-            'coupon_id' => $coupon->id,
-            'user_id' => Auth::id()
+        $validated = $request->validate([
+            'code' => 'required|string|unique:offers,code,' . $offer->id,
+            'title' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'product_id' => 'nullable|exists:products,id',
+            'discount_type' => 'required|in:percentage,flat',
+            'discount_value' => 'required|numeric|min:0',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'min_amount' => 'required|numeric|min:0',
+            'max_usage' => 'required|integer|min:1',
+            'description' => 'nullable|string',
+            'terms_condition' => 'nullable|string',
+            'status' => 'required|boolean',
         ]);
 
-        return redirect()
-            ->route('coupons.index')
-            ->with('success', 'Coupon updated successfully.');
+        try {
+            // 🔹 Store old data for logs
+            $oldData = $offer->only(array_keys($validated));
 
-    } catch (\Exception $e) {
+            // 🔹 Update offer (ONLY validated fields)
+            $offer->update($validated);
 
-        Log::error('Coupon update failed', [
-            'coupon_id' => $coupon->id,
-            'error' => $e->getMessage()
-        ]);
+            Log::info('Offer Updated Successfully', [
+                'offer_id' => $offer->id,
+                'old_data' => $oldData,
+                'new_data' => $offer->only(array_keys($validated))
+            ]);
 
-        return back()->with('error', 'Update failed');
+            return redirect()
+                ->route('coupons.index')
+                ->with('success', 'Offer updated successfully');
+        } catch (\Exception $e) {
+
+            Log::error('Offer Update Failed', [
+                'offer_id' => $offer->id,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong while updating offer');
+        }
     }
-}
 
-
-    public function destroy(Coupon $coupon)
+    public function destroy(Coupon $offer)
     {
-        $coupon->delete();
-
-        return redirect()
-            ->route('coupons.index')
-            ->with('success', 'Coupon deleted successfully');
+        $offer->delete();
+        return redirect()->route('coupons.index')->with('success', 'Offer deleted successfully');
     }
-
+    public function productsByCategory($categoryId)
+    {
+        return Product::where('category_id', $categoryId)
+            ->select('id', 'name')
+            ->get();
+    }
 }

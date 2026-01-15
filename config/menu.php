@@ -12,7 +12,7 @@ return [
             'route'   => 'dashboard',
         ],
 
-          /* ================ User Management ==============*/
+        /* ================ User Management ==============*/
         [
             'type'  => 'dropdown',
             'key'   => 'userMenu',
@@ -26,7 +26,7 @@ return [
             ],
         ],
 
-         /* ================= Supplier Management ================= */
+        /* ================= Supplier Management ================= */
         [
             'type'  => 'dropdown',
             'key'   => 'suppplierMenu',
@@ -57,15 +57,15 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'warehouseMenu',
-            'title' => 'Warehouse Management',
+            'title' => 'Warehouse / Distribution Center',
             'icon'  => 'bx bx-store',
             'children' => [
-                ['title' => 'Add Warehouse', 'route' => 'warehouse.index'],
-                ['title' => 'Add Warehouse Stock', 'route' => 'index.addStock.warehouse'],
+                ['title' => 'Warehouse', 'route' => 'warehouse.index'],
+                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
             ],
         ],
 
-      
+
         /* ================= Inventory Management ================= */
         [
             'type'  => 'dropdown',
@@ -76,6 +76,7 @@ return [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
                 ['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
+                ['title' => 'Sale Product', 'route' => 'sale.create'],
             ],
         ],
 
@@ -134,10 +135,10 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'shopMenu',
-            'title' => 'Distribution Center',
+            'title' => 'Delivery Agent',
             'icon'  => 'bx bx-store',
             'children' => [
-                ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
+                // ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
                 ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
                 ['title' => 'Vehicle Assignment', 'route' => 'vehicle-assignments.index'],
             ],
@@ -164,9 +165,9 @@ return [
             'title' => 'Offer / Scheme Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Offer Management', 'route' => 'sale.create'],
+                ['title' => 'Offer Management', 'route' => 'offers.index'],
                 ['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
-                ['title' => 'Coupon Management', 'route' => 'offers.index'],
+                ['title' => 'Coupon Management', 'route' => 'coupons.index'],
             ],
         ],
 
