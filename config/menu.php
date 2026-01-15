@@ -99,7 +99,7 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'OrderMenu',
-            'title' => 'Order & Approval',
+            'title' => 'Approval / Order',
             'icon'  => 'bx bx-package',
             'children' => [
                 [

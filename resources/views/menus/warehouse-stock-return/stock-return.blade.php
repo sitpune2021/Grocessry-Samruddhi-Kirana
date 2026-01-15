@@ -129,7 +129,7 @@
                                                                     class="form-control product-image"
                                                                     accept="image/*">
 
-                                                                <img src="{{ asset('images/no-image.png') }}"
+                                                                <img src="{{ asset('images/') }}"
                                                                     class="img-thumbnail mt-1 image-preview"
                                                                     width="70">
                                                             </td>
@@ -198,7 +198,7 @@
     let rowIndex = 1;
 
     /* ================= ADD ROW ================= */
-    document.getElementById('addRow').addEventListener('click', function() {
+    document.getElementById('addRow').addEventListener('click', function () {
         let table = document.querySelector('#productTable tbody');
         let row = table.rows[0].cloneNode(true);
 
@@ -220,9 +220,9 @@
     });
 
     /* ================= ALL CHANGE EVENTS ================= */
-    document.addEventListener('change', function(e) {
+    document.addEventListener('change', function (e) {
 
-        // Product change
+        /* PRODUCT CHANGE */
         if (e.target.classList.contains('product-select')) {
             let row = e.target.closest('tr');
             let batchSelect = row.querySelector('.batch-select');
@@ -243,16 +243,31 @@
             });
         }
 
-        // Batch change
+        /* BATCH CHANGE */
         if (e.target.classList.contains('batch-select')) {
             let row = e.target.closest('tr');
             let stockInput = row.querySelector('.available-stock');
             let stock = e.target.selectedOptions[0]?.dataset.stock ?? 0;
             stockInput.value = stock;
         }
+
+        /* IMAGE PREVIEW */
+        if (e.target.classList.contains('product-image')) {
+            let row = e.target.closest('tr');
+            let preview = row.querySelector('.image-preview');
+
+            if (e.target.files && e.target.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function (ev) {
+                    preview.src = ev.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        }
     });
+
     /* ================= STOCK VALIDATION ================= */
-    document.addEventListener('input', function(e) {
+    document.addEventListener('input', function (e) {
         if (e.target.classList.contains('return-qty')) {
             let row = e.target.closest('tr');
             let available =

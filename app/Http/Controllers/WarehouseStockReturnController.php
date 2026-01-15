@@ -89,6 +89,7 @@ class WarehouseStockReturnController extends Controller
 
     public function create()
     {
+
         $user = User::with('warehouse')->findOrFail(auth()->id());
 
         $fromWarehouse = $user->warehouse;
@@ -117,7 +118,6 @@ class WarehouseStockReturnController extends Controller
             ->where('warehouse_id', $fromWarehouseId)
             ->where('is_blocked', 0)
             ->get();
-
         return view('menus.warehouse-stock-return.stock-return', compact(
             'warehouses',
             'user',
@@ -131,16 +131,200 @@ class WarehouseStockReturnController extends Controller
      * Store a newly created resource in storage.
      */
 
-    public function store(Request $request)
+    // public function store(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         Log::info('Stock Return Store Initiated', [
+    //             'user_id' => Auth::id(),
+    //             'payload' => $request->all()
+    //         ]);
+
+    //         /** ✅ VALIDATION */
+    //         $request->validate([
+    //             'from_warehouse_id' => 'required|exists:warehouses,id',
+    //             'to_warehouse_id'   => 'required|exists:warehouses,id|different:from_warehouse_id',
+    //             'return_reason'     => 'required|string',
+    //             'remarks'           => 'nullable|string',
+
+    //             'items'                     => 'required|array|min:1',
+    //             'items.*.product_id'        => 'required|exists:products,id',
+    //             'items.*.batch_id'          => 'required|exists:product_batches,id',
+    //             'items.*.return_qty'        => 'required|integer|min:1',
+    //             'items.*.product_image'     => 'nullable|image|max:2048',
+    //         ]);
+
+    //         Log::info('Validation Passed');
+
+    //         /** 🔐 WAREHOUSE FLOW VALIDATION */
+    //         $fromWarehouse = Warehouse::findOrFail($request->from_warehouse_id);
+    //         $toWarehouse   = Warehouse::findOrFail($request->to_warehouse_id);
+
+    //         Log::info('Warehouse Flow Check', [
+    //             'from' => $fromWarehouse->type,
+    //             'to'   => $toWarehouse->type,
+    //         ]);
+
+    //         if (
+    //             ($fromWarehouse->type === 'taluka' && $toWarehouse->type !== 'district') ||
+    //             ($fromWarehouse->type === 'district' && $toWarehouse->type !== 'master')
+    //         ) {
+    //             Log::warning('Invalid Warehouse Flow Attempt', [
+    //                 'from_warehouse' => $fromWarehouse->id,
+    //                 'to_warehouse'   => $toWarehouse->id
+    //             ]);
+
+    //             abort(403, 'Invalid warehouse return flow.');
+    //         }
+
+    //         /** 🧾 CREATE STOCK RETURN */
+    //         $stockReturn = WarehouseStockReturn::create([
+    //             'from_warehouse_id' => $request->from_warehouse_id,
+    //             'to_warehouse_id'   => $request->to_warehouse_id,
+    //             'return_reason'     => $request->return_reason,
+    //             'remarks'           => $request->remarks,
+    //             'status'            => 'draft',
+    //             'created_by'        => Auth::id(),
+    //         ]);
+
+    //         Log::info('Stock Return Created', [
+    //             'stock_return_id' => $stockReturn->id
+    //         ]);
+
+    //         /** 📦 PROCESS ITEMS */
+    //         foreach ($request->items as $index => $item) {
+
+    //             Log::info('Processing Item', [
+    //                 'index' => $index,
+    //                 'item'  => $item
+    //             ]);
+
+    //             /** 🔒 LOCK PRODUCT BATCH */
+    //             $batch = ProductBatch::where([
+    //                 'id'           => $item['batch_id'],
+    //                 'warehouse_id' => $request->from_warehouse_id,
+    //                 'product_id'   => $item['product_id'],
+    //             ])->lockForUpdate()->firstOrFail();
+
+    //             Log::info('Batch Locked', [
+    //                 'batch_id' => $batch->id,
+    //                 'available_qty' => $batch->quantity
+    //             ]);
+
+    //             if ($item['return_qty'] > $batch->quantity) {
+    //                 Log::error('Return Qty Exceeds Batch Stock', [
+    //                     'batch_id' => $batch->id,
+    //                     'requested' => $item['return_qty'],
+    //                     'available' => $batch->quantity
+    //                 ]);
+
+    //                 throw new \Exception('Return quantity exceeds batch stock.');
+    //             }
+
+    //             $batch->decrement('quantity', $item['return_qty']);
+
+    //             Log::info('Batch Quantity Updated', [
+    //                 'batch_id' => $batch->id,
+    //                 'remaining_qty' => $batch->quantity
+    //             ]);
+
+    //             /** 🔒 LOCK WAREHOUSE STOCK */
+    //             $warehouseStock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
+    //                 ->where('product_id', $item['product_id'])
+    //                 ->where('batch_id', $item['batch_id'])
+    //                 ->lockForUpdate()
+    //                 ->firstOrFail();
+
+    //             Log::info('Warehouse Stock Locked', [
+    //                 'warehouse_stock_id' => $warehouseStock->id,
+    //                 'available_qty' => $warehouseStock->quantity
+    //             ]);
+
+    //             if ($item['return_qty'] > $warehouseStock->quantity) {
+    //                 Log::error('Return Qty Exceeds Warehouse Stock', [
+    //                     'warehouse_stock_id' => $warehouseStock->id,
+    //                     'requested' => $item['return_qty'],
+    //                     'available' => $warehouseStock->quantity
+    //                 ]);
+
+    //                 throw new \Exception('Return quantity exceeds warehouse stock.');
+    //             }
+
+    //             $warehouseStock->decrement('quantity', $item['return_qty']);
+
+    //             Log::info('Warehouse Stock Quantity Updated', [
+    //                 'warehouse_stock_id' => $warehouseStock->id,
+    //                 'remaining_qty' => $warehouseStock->quantity
+    //             ]);
+
+    //             /** 📸 IMAGE */
+    //             $imagePath = null;
+    //             if (!empty($item['product_image'])) {
+    //                 $imagePath = $item['product_image']->store('stock-returns', 'public');
+
+    //                 Log::info('Product Image Stored', [
+    //                     'path' => $imagePath
+    //                 ]);
+    //             }
+
+    //             /** 🧾 RETURN ITEM */
+    //             WarehouseStockReturnItem::create([
+    //                 'stock_return_id' => $stockReturn->id,
+    //                 'product_id'      => $item['product_id'],
+    //                 'batch_no'        => $item['batch_id'],
+    //                 'return_qty'      => $item['return_qty'],
+    //                 'product_image'   => $imagePath,
+    //                 'condition'       => 'good',
+    //             ]);
+
+    //             Log::info('Stock Return Item Created', [
+    //                 'batch_id' => $item['batch_id'],
+    //                 'qty'      => $item['return_qty']
+    //             ]);
+
+    //             /** 🔁 STOCK MOVEMENT */
+    //             StockMovement::create([
+    //                 'product_batch_id' => $item['batch_id'],
+    //                 'warehouse_id'     => $request->from_warehouse_id,
+    //                 'type'             => 'out',
+    //                 'quantity'         => $item['return_qty'],
+    //             ]);
+
+    //             Log::info('Stock Movement Logged');
+    //         }
+
+    //         DB::commit();
+
+    //         Log::info('Stock Return Completed Successfully', [
+    //             'stock_return_id' => $stockReturn->id
+    //         ]);
+
+    //         return redirect()
+    //             ->route('stock-returns.index')
+    //             ->with('success', 'Warehouse stock return created successfully.');
+    //     } catch (\Exception $e) {
+
+    //         DB::rollBack();
+
+    //         Log::error('Stock Return Failed', [
+    //             'message' => $e->getMessage(),
+    //             'line'    => $e->getLine(),
+    //             'file'    => $e->getFile(),
+    //         ]);
+
+    //         return back()
+    //             ->withInput()
+    //             ->with('error', $e->getMessage());
+    //     }
+    // }
+
+ public function store(Request $request)
     {
         DB::beginTransaction();
 
         try {
-
-            Log::info('Stock Return Store Initiated', [
-                'user_id' => Auth::id(),
-                'payload' => $request->all()
-            ]);
 
             /** ✅ VALIDATION */
             $request->validate([
@@ -155,27 +339,15 @@ class WarehouseStockReturnController extends Controller
                 'items.*.return_qty'        => 'required|integer|min:1',
                 'items.*.product_image'     => 'nullable|image|max:2048',
             ]);
-
-            Log::info('Validation Passed');
-
+ 
             /** 🔐 WAREHOUSE FLOW VALIDATION */
             $fromWarehouse = Warehouse::findOrFail($request->from_warehouse_id);
             $toWarehouse   = Warehouse::findOrFail($request->to_warehouse_id);
-
-            Log::info('Warehouse Flow Check', [
-                'from' => $fromWarehouse->type,
-                'to'   => $toWarehouse->type,
-            ]);
 
             if (
                 ($fromWarehouse->type === 'taluka' && $toWarehouse->type !== 'district') ||
                 ($fromWarehouse->type === 'district' && $toWarehouse->type !== 'master')
             ) {
-                Log::warning('Invalid Warehouse Flow Attempt', [
-                    'from_warehouse' => $fromWarehouse->id,
-                    'to_warehouse'   => $toWarehouse->id
-                ]);
-
                 abort(403, 'Invalid warehouse return flow.');
             }
 
@@ -189,17 +361,8 @@ class WarehouseStockReturnController extends Controller
                 'created_by'        => Auth::id(),
             ]);
 
-            Log::info('Stock Return Created', [
-                'stock_return_id' => $stockReturn->id
-            ]);
-
             /** 📦 PROCESS ITEMS */
-            foreach ($request->items as $index => $item) {
-
-                Log::info('Processing Item', [
-                    'index' => $index,
-                    'item'  => $item
-                ]);
+            foreach ($request->items as $item) {
 
                 /** 🔒 LOCK PRODUCT BATCH */
                 $batch = ProductBatch::where([
@@ -208,65 +371,30 @@ class WarehouseStockReturnController extends Controller
                     'product_id'   => $item['product_id'],
                 ])->lockForUpdate()->firstOrFail();
 
-                Log::info('Batch Locked', [
-                    'batch_id' => $batch->id,
-                    'available_qty' => $batch->quantity
-                ]);
-
                 if ($item['return_qty'] > $batch->quantity) {
-                    Log::error('Return Qty Exceeds Batch Stock', [
-                        'batch_id' => $batch->id,
-                        'requested' => $item['return_qty'],
-                        'available' => $batch->quantity
-                    ]);
-
                     throw new \Exception('Return quantity exceeds batch stock.');
                 }
 
                 $batch->decrement('quantity', $item['return_qty']);
 
-                Log::info('Batch Quantity Updated', [
-                    'batch_id' => $batch->id,
-                    'remaining_qty' => $batch->quantity
-                ]);
-
                 /** 🔒 LOCK WAREHOUSE STOCK */
-                // $warehouseStock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
-                //     ->where('product_id', $item['product_id'])
-                //     ->where('batch_id', $item['batch_id'])
-                //     ->lockForUpdate()
-                //     ->firstOrFail();
+                $warehouseStock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
+                    ->where('product_id', $item['product_id'])
+                    // ->where('batch_id', $item['batch_id'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-                // Log::info('Warehouse Stock Locked', [
-                //     'warehouse_stock_id' => $warehouseStock->id,
-                //     'available_qty' => $warehouseStock->quantity
-                // ]);
+// w-3 p-2 b-4
+                if ($item['return_qty'] > $warehouseStock->quantity) {
+                    throw new \Exception('Return quantity exceeds warehouse stock.');
+                }
 
-                // if ($item['return_qty'] > $warehouseStock->quantity) {
-                //     Log::error('Return Qty Exceeds Warehouse Stock', [
-                //         'warehouse_stock_id' => $warehouseStock->id,
-                //         'requested' => $item['return_qty'],
-                //         'available' => $warehouseStock->quantity
-                //     ]);
-
-                //     throw new \Exception('Return quantity exceeds warehouse stock.');
-                // }
-
-                // $warehouseStock->decrement('quantity', $item['return_qty']);
-
-                // Log::info('Warehouse Stock Quantity Updated', [
-                //     'warehouse_stock_id' => $warehouseStock->id,
-                //     'remaining_qty' => $warehouseStock->quantity
-                // ]);
+                $warehouseStock->decrement('quantity', $item['return_qty']);
 
                 /** 📸 IMAGE */
                 $imagePath = null;
                 if (!empty($item['product_image'])) {
                     $imagePath = $item['product_image']->store('stock-returns', 'public');
-
-                    Log::info('Product Image Stored', [
-                        'path' => $imagePath
-                    ]);
                 }
 
                 /** 🧾 RETURN ITEM */
@@ -279,11 +407,6 @@ class WarehouseStockReturnController extends Controller
                     'condition'       => 'good',
                 ]);
 
-                Log::info('Stock Return Item Created', [
-                    'batch_id' => $item['batch_id'],
-                    'qty'      => $item['return_qty']
-                ]);
-
                 /** 🔁 STOCK MOVEMENT */
                 StockMovement::create([
                     'product_batch_id' => $item['batch_id'],
@@ -291,15 +414,9 @@ class WarehouseStockReturnController extends Controller
                     'type'             => 'out',
                     'quantity'         => $item['return_qty'],
                 ]);
-
-                Log::info('Stock Movement Logged');
             }
 
             DB::commit();
-
-            Log::info('Stock Return Completed Successfully', [
-                'stock_return_id' => $stockReturn->id
-            ]);
 
             return redirect()
                 ->route('stock-returns.index')
@@ -308,19 +425,11 @@ class WarehouseStockReturnController extends Controller
 
             DB::rollBack();
 
-            Log::error('Stock Return Failed', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-                'file'    => $e->getFile(),
-            ]);
-
             return back()
                 ->withInput()
                 ->with('error', $e->getMessage());
         }
     }
-
-
 
     /**
      * Display the specified resource.
@@ -374,7 +483,7 @@ class WarehouseStockReturnController extends Controller
     }
 
     public function sendForApproval($id)
-    {
+    {     
 
         try {
             $stockReturn = WarehouseStockReturn::where('id', $id)
@@ -386,7 +495,7 @@ class WarehouseStockReturnController extends Controller
             }
 
             $stockReturn->update([
-                'status'      => 'pending_approval',
+                'status'      => 'approved',
                 'approved_by' => auth()->id(),
             ]);
 
