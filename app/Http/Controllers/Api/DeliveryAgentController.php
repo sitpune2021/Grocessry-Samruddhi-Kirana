@@ -388,15 +388,24 @@ class DeliveryAgentController extends Controller
             ], 403);
         }
 
-        // ✅ Store login time
+        // ❌ Already online
+        if ($user->is_online == 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agent already online'
+            ], 400);
+        }
+
+        // ✅ Go online & start duty
         $user->update([
-            'is_online'     => 1,
-            'last_login_at' => now()
+            'is_online'       => 1,
+            'duty_start_time' => now()
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Agent is online'
+            'message' => 'Agent is online',
+            'dutyStartTime' => now()->toDateTimeString()
         ]);
     }
 
@@ -418,16 +427,54 @@ class DeliveryAgentController extends Controller
             ], 403);
         }
 
+        // ❌ Already offline
+        if ($user->is_online == 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agent already offline'
+            ], 400);
+        }
+
+        // 🛑 FALLBACK: no duty start time
+        if (!$user->duty_start_time) {
+            $user->update([
+                'is_online' => 0,
+                'duty_start_time' => null
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Agent is offline (no duty time recorded)',
+                'sessionDutyMinutes' => 0,
+                'totalDutyMinutes' => $user->total_duty_minutes ?? 0
+            ]);
+        }
+
+        // ✅ NORMAL FLOW
+        $dutyEndTime = now();
+
+        $sessionMinutes = $dutyEndTime->diffInMinutes(
+            \Carbon\Carbon::parse($user->duty_start_time)
+        );
+
+        $totalDutyMinutes = ($user->total_duty_minutes ?? 0) + $sessionMinutes;
+
         $user->update([
-            'is_online'     => 0,
-            'last_login_at' => null
+            'is_online' => 0,
+            'duty_start_time' => null,
+            'total_duty_minutes' => $totalDutyMinutes
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Agent is offline'
+            'message' => 'Agent is offline',
+            'dutyEndTime' => $dutyEndTime->toDateTimeString(),
+            'sessionDutyMinutes' => $sessionMinutes,
+            'totalDutyMinutes' => $totalDutyMinutes
         ]);
     }
+
+
 
     public function currentOrder(Request $request)
     {
