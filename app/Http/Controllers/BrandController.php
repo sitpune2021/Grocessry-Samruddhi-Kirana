@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
- 
+
 
 class BrandController extends Controller
 {
@@ -26,23 +28,53 @@ class BrandController extends Controller
      */
     public function create()
     {
-        return view('menus.brands.add-brands', ['mode' => 'add']);
+        return view('menus.brands.add-brands', [
+            'categories'    => Category::select('id', 'name')->orderBy('name')->get(),
+            'subCategories' => collect(),
+            'mode'          => 'add',
+        ]);
     }
+
+//     public function edit($id)
+// {
+//     $brand = Brand::findOrFail($id);
+
+//     return view('menus.brands.add-brands', [
+//         'brand'         => $brand,
+//         'categories'    => Category::select('id', 'name')->orderBy('name')->get(),
+//         'subCategories' => SubCategory::where('category_id', $brand->category_id)
+//                                 ->select('id', 'name')
+//                                 ->orderBy('name')
+//                                 ->get(),
+//         'mode'          => 'edit',
+//     ]);
+// }
 
 
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
+
         $validated = $request->validate([
-            'name'        => 'required|string|max:255|unique:brands,name',
-            'description' => 'nullable|string',
-            'logo'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'      => 'required|boolean',
+            'category_id'      => 'required|exists:categories,id',
+            'sub_category_id'  => 'required|exists:sub_categories,id',
+
+            'name'             => 'required|string|max:255|unique:brands,name',
+            'slug'             => 'nullable|string|max:255|unique:brands,slug',
+            'description'      => 'nullable|string',
+            'logo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status'           => 'required|boolean',
         ]);
 
-        $slug = Str::slug($validated['name']);
+        if (empty($validated['slug'])) {
+            $slug = Str::slug($validated['name']);
+        } else {
+            $slug = Str::slug($validated['slug']);
+        }
+
         $originalSlug = $slug;
         $count = 1;
 
@@ -53,30 +85,34 @@ class BrandController extends Controller
         $validated['slug'] = $slug;
 
         if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+            $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $originalName = $request->file('logo')->getClientOriginalName();
-
-            $fileName = time() . '_' . $originalName;
-
-            $request->file('logo')->storeAs('brands', $fileName, 'public');
-
+            $file->storeAs('brands', $fileName, 'public');
             $validated['logo'] = $fileName;
         }
 
-
         Brand::create($validated);
 
-        return redirect()->route('brands.index')
+        return redirect()
+            ->route('brands.index')
             ->with('success', 'Brand created successfully');
     }
 
     public function show($id)
     {
         $brand = Brand::findOrFail($id);
+        $categories = Category::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+        $subCategories = SubCategory::where('category_id', $brand->category_id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
 
-        $mode = 'view'; // 👈 important for readonly fields
+        $mode = 'view';
 
-        return view('menus.brands.add-brands', compact('brand', 'mode'));
+        return view('menus.brands.add-brands', compact('brand', 'categories', 'subCategories', 'mode'));
     }
 
 
@@ -86,21 +122,40 @@ class BrandController extends Controller
     public function edit(Brand $brand)
     {
         return view('menus.brands.add-brands', [
+            'categories'    => Category::select('id', 'name')
+                ->orderBy('name')
+                ->get(),
+            'subCategories' => SubCategory::where('category_id', $brand->category_id)
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get(),
             'brand' => $brand,
             'mode' => 'edit'
         ]);
     }
 
+
     public function update(Request $request, Brand $brand)
     {
+
         $validated = $request->validate([
-            'name'        => 'required|string|max:255|unique:brands,name,' . $brand->id,
-            'description' => 'nullable|string',
-            'logo'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'      => 'required|boolean',
+            'category_id'     => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+
+            'name'            => 'required|string|max:255|unique:brands,name,' . $brand->id,
+            'slug'            => 'nullable|string|max:255|unique:brands,slug,' . $brand->id,
+            'description'     => 'nullable|string',
+            'logo'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status'          => 'required|boolean',
         ]);
 
-        $slug = Str::slug($validated['name']);
+
+        if (empty($validated['slug'])) {
+            $slug = Str::slug($validated['name']);
+        } else {
+            $slug = Str::slug($validated['slug']);
+        }
+
         $originalSlug = $slug;
         $count = 1;
 
@@ -120,19 +175,19 @@ class BrandController extends Controller
                 Storage::disk('public')->delete('brands/' . $brand->logo);
             }
 
-            $originalName = $request->file('logo')->getClientOriginalName();
-            $fileName = time() . '_' . $originalName;
+            $file = $request->file('logo');
+            $fileName = time() . '_' . $file->getClientOriginalName();
 
-            $request->file('logo')->storeAs('brands', $fileName, 'public');
+            $file->storeAs('brands', $fileName, 'public');
             $validated['logo'] = $fileName;
         }
-
         $brand->update($validated);
 
         return redirect()
             ->route('brands.index')
             ->with('success', 'Brand updated successfully');
     }
+
 
     public function destroy(Brand $brand)
     {
@@ -143,16 +198,15 @@ class BrandController extends Controller
     }
 
     public function updateStatus(Request $request)
-{
-    // Find brand by ID or fail
-    $brand = Brand::findOrFail($request->id);
+    {
+        // Find brand by ID or fail
+        $brand = Brand::findOrFail($request->id);
 
-    // Toggle status: if 1 -> 0, if 0 -> 1
-    $brand->status = $brand->status ? 0 : 1;
-    $brand->save();
+        // Toggle status: if 1 -> 0, if 0 -> 1
+        $brand->status = $brand->status ? 0 : 1;
+        $brand->save();
 
-    // Return JSON if called via AJAX, or back() if standard
-   return back();
-}
-
+        // Return JSON if called via AJAX, or back() if standard
+        return back();
+    }
 }

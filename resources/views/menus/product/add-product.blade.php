@@ -117,8 +117,30 @@
                                                     </div>
                                                 </div>
 
+                                                {{-- Brand --}}
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Brand <span class="text-danger">*</span>
+                                                    </label>
 
+                                                    <select name="brand_id" id="brand_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <option value="">Select Brand</option>
 
+                                                        @if($mode !== 'add')
+                                                        @foreach ($brands as $brand)
+                                                        <option value="{{ $brand->id }}"
+                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                                                            {{ $brand->name }}
+                                                        </option>
+                                                        @endforeach
+                                                        @endif
+                                                    </select>
+
+                                                    @error('brand_id')
+                                                    <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+                                                </div>
 
                                                 {{-- Product Name --}}
                                                 <div class="col-md-4">
@@ -149,27 +171,6 @@
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
-
-                                                {{-- Brand --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Brand <span class="text-danger">*</span>
-                                                    </label>
-
-                                                    <select name="brand_id" id="brand_id" class="form-select"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="">Select Brand</option>
-                                                        @foreach ($brands as $brand)
-                                                        <option value="{{ $brand->id }}"
-                                                            {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
-                                                            {{ $brand->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('brand_id')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                    @enderror
                                                 </div>
 
                                                 {{-- Description --}}
@@ -394,6 +395,62 @@
 </script>
 
 <script>
+$(document).ready(function () {
+
+    /* ===============================
+       LOAD SUB-CATEGORIES BY CATEGORY
+       =============================== */
+    $('#category_id').on('change', function () {
+        let categoryId = $(this).val();
+        let subCategorySelect = $('#sub_category_id');
+        let brandSelect = $('#brand_id');
+
+        subCategorySelect.html('<option value="">Loading...</option>');
+        brandSelect.html('<option value="">Select Brand</option>');
+
+        if (!categoryId) {
+            subCategorySelect.html('<option value="">Select Sub Category</option>');
+            return;
+        }
+
+        $.get("{{ url('get-sub-categories') }}/" + categoryId, function (data) {
+            let options = '<option value="">Select Sub Category</option>';
+            data.forEach(item => {
+                options += `<option value="${item.id}">${item.name}</option>`;
+            });
+            subCategorySelect.html(options);
+        });
+    });
+
+
+    /* ===============================
+       LOAD BRANDS BY SUB-CATEGORY
+       =============================== */
+    $('#sub_category_id').on('change', function () {
+        let subCategoryId = $(this).val();
+        let brandSelect = $('#brand_id');
+
+        brandSelect.html('<option value="">Loading...</option>');
+
+        if (!subCategoryId) {
+            brandSelect.html('<option value="">Select Brand</option>');
+            return;
+        }
+
+        $.get("{{ url('get-brands-by-sub-category') }}/" + subCategoryId, function (data) {
+            let options = '<option value="">Select Brand</option>';
+            data.forEach(item => {
+                options += `<option value="${item.id}">${item.name}</option>`;
+            });
+            brandSelect.html(options);
+        });
+    });
+
+});
+</script>
+
+<!-- 
+<script>
     $(document).ready(function() {
 
         let categorySelect = $('#category_id');
@@ -453,4 +510,4 @@
             });
         }
     });
-</script>
+</script> -->

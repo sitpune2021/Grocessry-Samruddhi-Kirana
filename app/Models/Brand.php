@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Brand extends Model
 {
     protected $fillable = [
+        'category_id',
+        'sub_category_id',
         'name',
         'slug',
         'description',
@@ -14,8 +16,8 @@ class Brand extends Model
         'status'
     ];
 
-    public function categories()
+    public function subCategories()
     {
-        return $this->hasMany(Category::class, 'brand_id');
+        return $this->belongsTo(SubCategory::class);
     }
 }

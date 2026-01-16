@@ -43,7 +43,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             // Discount fields
-            $table->decimal('discount_value', 10, 2);
+            $table->decimal('discount_value', 10, 2)->nullable();
             $table->decimal('max_discount', 10, 2)->nullable();
             $table->decimal('min_order_amount', 10, 2);
 
