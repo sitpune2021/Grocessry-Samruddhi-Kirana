@@ -18,16 +18,13 @@
         border-radius: 10px;
     }
 </style>
-<!-- Page Header -->
-<!-- <div class="container-fluid page-header py-5">
-    <h1 class="text-center text-white display-6">Login</h1>
-</div> -->
+ 
 
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-4 col-md-6">
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-4 col-md-6 ">
 
-            <div class="card shadow border-0 rounded-4">
+            <div class="card shadow border-0 rounded-4 mt-5">
                 <div class="card-body p-4">
 
                     <h4 class="text-center mb-4">Welcome Back</h4>

@@ -228,6 +228,70 @@
         transform: translateY(-4px);
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     }
+
+    .hero-banner {
+        height: 420px;
+        position: relative;
+    }
+
+    .hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right,
+                rgba(0, 0, 0, 0.55),
+                rgba(0, 0, 0, 0.1));
+    }
+
+    .hero-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* horizontal center */
+    }
+
+    .hero-title {
+        margin-top: 220px;
+        /* title thoda upar */
+        text-align: center;
+        font-size: 42px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .hero-btn {
+        margin-top: 140px;
+        /* 🔥 push button to bottom */
+        margin-bottom: 40px;
+        /* bottom spacing */
+        background: #81c408;
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 100px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 22px;
+            margin-top: 20px;
+        }
+
+        .hero-btn {
+            margin-bottom: 20px;
+        }
+    }
 </style>
 
 <body>
@@ -238,48 +302,79 @@
     </div>
 
     <!-- Hero Start -->
-    <div class="py-5 mb-5">
 
-        <div class="row g-5 align-items-center">
-            <div class="col-md-12 col-lg-7"><br><br><br><br><br><br>
-                <h4 class="mb-3 text-secondary" style="padding: 0px 70px;">100% Organic Foods</h4>
-                <h1 class="mb-5 text-primary" style="padding: 0px 70px;">Organic Veggies & Fruits Foods</h1>
-                <div class="position-relative mx-auto" style="padding: 0px 70px;">
-                    <input class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill" type="number" placeholder="Search">
-                    <button type="submit" class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100" style="top: 0; right: 25%;">Submit Now</button>
-                </div>
-            </div>
-            <!-- line change -->
-            <div class="col-md-12 col-lg-7 px-3 px-lg-5">
-                <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
-                    <div class="carousel-inner" role="listbox"><br><br><br><br><br><br>
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+
+                <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+                    <div class="carousel-inner rounded-4 overflow-hidden">
 
                         @foreach($banners as $key => $banner)
-                        <div class="carousel-item {{ $key == 0 ? 'active' : '' }} rounded">
-                            <img
-                                src="{{ asset('storage/'.$banner->image) }}"
-                                class="img-fluid w-100 h-100 bg-secondary rounded"
-                                alt="{{ $banner->name }}">
-                            <a href="#" class="btn px-4 py-2 text-white rounded">
-                                {{ $banner->name }}
-                            </a>
+                        <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
+                            <div class="hero-banner position-relative">
+
+                                <img src="{{ asset('storage/'.$banner->image) }}"
+                                    alt="{{ $banner->name }}"
+                                    class="hero-img">
+
+                                <!-- Overlay -->
+                                <div class="hero-overlay"></div>
+
+                                <!-- Content -->
+                                <div class="hero-content">
+
+                                    <h1 class="hero-title">
+                                        {{ $banner->name }}
+                                    </h1>
+
+                                    <a href="#" class="btn hero-btn">
+                                        Shop Now
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                         @endforeach
-
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
                     </div>
+                    <!-- Controls -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Hero End -->
+
+    <!-- <div class="container py-4">
+        <div class="row g-4">
+
+            @foreach($categoriestop as $category)
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ route('home', ['category_id' => $category->id]) }}"
+                    class="category-card text-center">
+
+                    <div class="category-img">
+                        <img src="{{ asset($category->image ?? 'img/default.png') }}"
+                            alt="{{ $category->name }}">
+                    </div>
+
+                    <p class="category-title">
+                        {{ $category->name }}
+                    </p>
+
+                </a>
+            </div>
+            @endforeach
+
+        </div>
+    </div> -->
+
+
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite py-5">
         <div class="container py-5">
@@ -317,7 +412,7 @@
                             <div class="col-md-6 col-lg-3">
                                 <div class="rounded position-relative fruite-item">
                                     @php
-                                    $images = $product->product_images; // Already array
+                                    $images = $product->product_images;
                                     $image = $images[0] ?? null;
                                     @endphp
 
@@ -422,137 +517,9 @@
                                     of {{ $categoryProducts->total() }} results
                                 </div> -->
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-        </div>
-
-    </div>
-
-
-    <div class="container py-4">
-        <div class="row g-4">
-
-            <!-- CATEGORY ITEM -->
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/paan.png" alt="Paan Corner">
-                    </div>
-                    <p class="category-title">Paan<br>Corner</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/dairy.png" alt="">
-                    </div>
-                    <p class="category-title">Dairy, Bread<br>& Eggs</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/fruits.png">
-                    </div>
-                    <p class="category-title">Fruits &<br>Vegetables</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/drinks.png">
-                    </div>
-                    <p class="category-title">Cold Drinks<br>& Juices</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/snacks.png">
-                    </div>
-                    <p class="category-title">Snacks &<br>Munchies</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/breakfast.png">
-                    </div>
-                    <p class="category-title">Breakfast &<br>Instant Food</p>
-                </a>
-            </div>
-
-            <!-- repeat same structure for all categories -->
-
-        </div>
-        <div class="row g-4">
-
-            <!-- CATEGORY ITEM -->
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/paan.png" alt="Paan Corner">
-                    </div>
-                    <p class="category-title">Paan<br>Corner</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/dairy.png" alt="">
-                    </div>
-                    <p class="category-title">Dairy, Bread<br>& Eggs</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/fruits.png">
-                    </div>
-                    <p class="category-title">Fruits &<br>Vegetables</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/drinks.png">
-                    </div>
-                    <p class="category-title">Cold Drinks<br>& Juices</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/snacks.png">
-                    </div>
-                    <p class="category-title">Snacks &<br>Munchies</p>
-                </a>
-            </div>
-
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="#" class="category-card text-center">
-                    <div class="category-img">
-                        <img src="img/breakfast.png">
-                    </div>
-                    <p class="category-title">Breakfast &<br>Instant Food</p>
-                </a>
-            </div>
-
-            <!-- repeat same structure for all categories -->
-
         </div>
     </div>
 
@@ -650,84 +617,11 @@
     </div>
 
     <!-- Banner Section Start-->
-    <div class="container-fluid banner bg-secondary my-5">
-        <div class="container py-5">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-6">
-                    <div class="py-4">
-                        <h1 class="display-3 text-white">Fresh Exotic Fruits</h1>
-                        <p class="fw-normal display-3 text-dark mb-4">in Our Store</p>
-                        <p class="mb-4 text-dark">The generated Lorem Ipsum is therefore always free from repetition injected humour, or non-characteristic words etc.</p>
-                        <a href="#" class="banner-btn btn border-2 border-white rounded-pill text-dark py-3 px-5">BUY</a>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="position-relative">
-                        <img src="{{ asset('website/img/baner-1.png') }}" class="img-fluid w-100 rounded" alt="">
-                        <div class="d-flex align-items-center justify-content-center bg-white rounded-circle position-absolute" style="width: 140px; height: 140px; top: 0; left: 0;">
-                            <h1 style="font-size: 100px;">1</h1>
-                            <div class="d-flex flex-column">
-                                <span class="h2 mb-0">50$</span>
-                                <span class="h4 text-muted mb-0">kg</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+ 
     <!-- Banner Section End -->
 
     <!-- Fact Start -->
-    <div class="container-fluid py-5 bg-light">
-        <div class="container">
-            <div class="row g-4 justify-content-center">
-                <!-- Fact Item 1 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
-                        <div class="counter-icon mb-3">
-                            <i class="fa fa-users fa-2x text-primary"></i>
-                        </div>
-                        <h4 class="text-uppercase text-secondary mb-2">Satisfied Customers</h4>
-                        <h1 class="display-5 text-dark mb-0">1963</h1>
-                    </div>
-                </div>
-
-                <!-- Fact Item 2 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
-                        <div class="counter-icon mb-3">
-                            <i class="fa fa-award fa-2x text-primary"></i>
-                        </div>
-                        <h4 class="text-uppercase text-secondary mb-2">Quality of Service</h4>
-                        <h1 class="display-5 text-dark mb-0">99%</h1>
-                    </div>
-                </div>
-
-                <!-- Fact Item 3 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
-                        <div class="counter-icon mb-3">
-                            <i class="fa fa-certificate fa-2x text-primary"></i>
-                        </div>
-                        <h4 class="text-uppercase text-secondary mb-2">Quality Certificates</h4>
-                        <h1 class="display-5 text-dark mb-0">33</h1>
-                    </div>
-                </div>
-
-                <!-- Fact Item 4 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="counter bg-white rounded text-center p-4 shadow-sm hover-shadow">
-                        <div class="counter-icon mb-3">
-                            <i class="fa fa-boxes fa-2x text-primary"></i>
-                        </div>
-                        <h4 class="text-uppercase text-secondary mb-2">Available Products</h4>
-                        <h1 class="display-5 text-dark mb-0">789</h1>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs">

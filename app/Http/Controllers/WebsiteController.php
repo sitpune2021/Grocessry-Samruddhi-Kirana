@@ -33,7 +33,10 @@ class WebsiteController extends Controller
             ->take(10)
             ->get();
 
-            
+        $categoriestop = Category::orderBy('name')->orderBy('name')
+            ->take(12)
+            ->get();
+
 
         // category id
         $categoryId = $request->category_id;
@@ -57,6 +60,7 @@ class WebsiteController extends Controller
             'categories',
             'categoryId',
             'allProducts',
+            'categoriestop',
             'categoryProducts'
         ));
     }
