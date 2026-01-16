@@ -14,11 +14,11 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Coupon</h5>
+                    <h5 class="card-title mb-0">Offers</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('offers.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Coupon
+                        <i class="bx bx-plus"></i> Add Offer
                     </a>
                 </div>
             </div>
@@ -48,55 +48,7 @@
                         </tr>
                     </thead>
 
-                    <tbody>
-                        @forelse ($offers as $index => $offer)
-                        <tr>
-                            <td class="text-center fw-semibold">
-                                {{ $offers->firstItem() + $index }}
-                            </td>
-
-                            <td>{{ $offer->code }}</td>
-                            <td>
-                                {{ $offer->discount_type }}
-                            </td>
-                            <td>{{ $offer->discount_value }}</td>
-
-                            <td>
-                                {{ \Carbon\Carbon::parse($offer->start_date)->format('d M Y') }}
-                            </td>
-                            <td> {{ \Carbon\Carbon::parse($offer->end_date)->format('d M Y') }}
-                            </td>
-                            <td>{{ $offer->min_amount }}</td>
-                            <td>{{ $offer->max_usage }}</td>
-
-                            <td>{{ $offer->status ? 'Active' : 'Inactive' }}</td>
-
-                            @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
-                                @if(hasPermission('offers.view'))
-                                <a href="{{ route('offers.show', $offer->id) }}" class="btn btn-sm btn-primary">View</a>
-                                @endif
-                                @if(hasPermission('offers.edit'))
-                                <a href="{{ route('offers.edit', $offer->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                @endif
-                                @if(hasPermission('offers.delete'))
-                                <form action="{{ route('offers.destroy', $offer->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button onclick="return confirm('Delete offers?')" class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
-                                </form>
-                                @endif
-                            </td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">No offers found</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                 
                 </table>
             </div>
 
