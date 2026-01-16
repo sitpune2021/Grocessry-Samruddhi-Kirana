@@ -57,46 +57,74 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
 
+
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
-//Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
-// Route::get('/admin-login', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 
 Route::post('/admin-logout', [AdminAuthController::class, 'logout'])->name('logout');
 Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
 
-Route::middleware(['auth:admin'])->group(function () {
+
+Route::middleware(['auth:admin'])->group(function () 
+{
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/products', [ProductController::class, 'index'])
-        ->middleware('permission:product.view');
-
-    Route::get('/products/create', [ProductController::class, 'create'])
-        ->middleware('permission:product.create');
-
-    Route::post('/products', [ProductController::class, 'store'])
-        ->middleware('permission:product.create');
-
-    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])
-        ->middleware('permission:product.edit');
-
-    Route::delete('/products/{id}', [ProductController::class, 'destroy'])
-        ->middleware('permission:product.delete');
+    
+    // Product CRUD
+    Route::resource('products', ProductController::class)
+    ->middleware([
+        'index' => 'permission:product.view',
+        'create' => 'permission:product.create',
+        'store' => 'permission:product.create',
+        'edit' => 'permission:product.edit',
+        'destroy' => 'permission:product.delete',
+    ]);
 
 
-    // User Profile 
-    Route::get('/user-profile', [AdminAuthController::class, 'index'])->name('user.profile');
-    Route::get('/user-profile/create', [AdminAuthController::class, 'createUser'])->name('user.create');
-    Route::post('/user-profile/store', [AdminAuthController::class, 'store'])->name('user.store');
-    Route::get('/user/{id}', [AdminAuthController::class, 'show'])->name('user.show');
-    Route::get('/user/{id}/edit', [AdminAuthController::class, 'editUser'])->name('user.edit');
-    Route::put('/user/{id}', [AdminAuthController::class, 'update'])->name('user.update');
-    Route::delete('/user/{id}', [AdminAuthController::class, 'destroy'])->name('user.destroy');
+    // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
+    Route::prefix('user')->group(function () {
+
+        // LIST
+        Route::get('/profile', [AdminAuthController::class, 'index'])
+            ->name('user.profile')
+            ->middleware('permission:user.view');
+
+        // CREATE
+        Route::get('/profile/create', [AdminAuthController::class, 'createUser'])
+            ->name('user.create')
+            ->middleware('permission:user.create');
+
+        Route::post('/profile/store', [AdminAuthController::class, 'store'])
+            ->name('user.store')
+            ->middleware('permission:user.create');
+
+        // SHOW
+        Route::get('/{id}', [AdminAuthController::class, 'show'])
+            ->name('user.show')
+            ->middleware('permission:user.view');
+
+        // EDIT / UPDATE
+        Route::get('/{id}/edit', [AdminAuthController::class, 'editUser'])
+            ->name('user.edit')
+            ->middleware('permission:user.edit');
+
+        Route::put('/{id}', [AdminAuthController::class, 'update'])
+            ->name('user.update')
+            ->middleware('permission:user.edit');
+
+        // DELETE
+        Route::delete('/{id}', [AdminAuthController::class, 'destroy'])
+            ->name('user.destroy')
+            ->middleware('permission:user.delete');
+
+    });
+
 
     Route::get('rolepermission', [RolePermissionController::class, 'RolePermission'])->name('RolePermission');
     Route::post('rolepermission/store', [RolePermissionController::class, 'Store'])->name('Store');
     Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getRolePermissions']);
+
 
     Route::resource('/category', CategoryController::class);
     Route::resource('/sub-category', SubCategoryController::class);
@@ -105,6 +133,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
 
+
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
     // Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
@@ -112,128 +141,110 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/get-sub-categories/{categoryId}', [ProductController::class, 'getSubCategories']);
 
 
+    // WAREHOUSE STOCK (SAFE GROUPED)
+    Route::controller(stockWarehouseController::class)->group(function () {
 
-    Route::get('/index-warehouse', [stockWarehouseController::class, 'indexWarehouse'])->name('index.addStock.warehouse');
-    Route::get('/add-stock-warehouse', [stockWarehouseController::class, 'addStockForm'])->name('warehouse.addStockForm');
-    Route::post('/add-stock-warehouse', [stockWarehouseController::class, 'addStock'])->name('warehouse.addStock');
-    Route::get('/view-stock-warehouse/{id}', [stockWarehouseController::class, 'showStockForm'])->name('warehouse.viewStockForm');
-    Route::get('/edit-stock-warehouse/{id}', [stockWarehouseController::class, 'editStockForm'])->name('warehouse.editStockForm');
-    Route::put('/stock/{id}/update', [stockWarehouseController::class, 'updateStock'])
-        ->name('stock.update');
-    Route::delete('/stock/{id}/delete', [stockWarehouseController::class, 'destroyStock'])
-        ->name('stock.delete');
+        // LIST
+        Route::get('/index-warehouse', 'indexWarehouse')
+            ->name('index.addStock.warehouse');
+
+        // CREATE
+        Route::get('/add-stock-warehouse', 'addStockForm')
+            ->name('warehouse.addStockForm');
+
+        Route::post('/add-stock-warehouse', 'addStock')
+            ->name('warehouse.addStock');
+
+        // VIEW
+        Route::get('/view-stock-warehouse/{id}', 'showStockForm')
+            ->name('warehouse.viewStockForm');
+
+        // EDIT
+        Route::get('/edit-stock-warehouse/{id}', 'editStockForm')
+            ->name('warehouse.editStockForm');
+
+        // UPDATE
+        Route::put('/stock/{id}/update', 'updateStock')
+            ->name('stock.update');
+
+        // DELETE
+        Route::delete('/stock/{id}/delete', 'destroyStock')
+            ->name('stock.delete');
+    });
 
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
     );
     Route::get('/get-products-by-sub-category/{subCategoryId}', [stockWarehouseController::class, 'getProductBySubCategory'])->name('stockProduct.bySubCategory');
-
-
     Route::get('/get-categories-by-warehouse/{warehouse}', [stockWarehouseController::class, 'getCategories']);
+
 
     Route::get('/get-states/{country}', [LocationController::class, 'getStates']);
     Route::get('/get-districts/{state}', [LocationController::class, 'getDistricts']);
     Route::get('/get-talukas/{district}', [LocationController::class, 'getTalukas']);
 
-    // double route 
 
-    Route::get('/warehouse-transfers', [WarehouseTransferController::class, 'index'])->name('transfer.index');
-    Route::get('/warehouse-transfer/create', [WarehouseTransferController::class, 'create'])
-        ->name('transfer.create');
+    // ROLES MANAGEMENT (SAFE GROUPED)
+    Route::controller(RoleController::class)->group(function () {
 
-    Route::post('/warehouse-transfer', [WarehouseTransferController::class, 'store'])->name('transfer.store');
-    Route::get('/warehouse-transfer/{id}/edit', [WarehouseTransferController::class, 'edit'])->name('transfer.edit');
-    Route::put('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'update'])->name('transfer.update');
-    // Soft delete
-    Route::delete('/warehouse-transfer/{id}', [WarehouseTransferController::class, 'destroy'])->name('transfer.destroy');
+        // LIST
+        Route::get('/roles/index', 'index')
+            ->name('roles.index');
 
-    Route::get(
-        '/get-products-by-category/{category_id}',
-        [WarehouseTransferController::class, 'getProductsByCategory']
-    );
-    Route::get(
-        '/get-batches-by-product/{product_id}',
-        [WarehouseTransferController::class, 'getBatchesByProduct']
-    );
-    Route::get('/get-warehouse-stock/{warehouse_id}/{batch_id}', [WarehouseTransferController::class, 'getWarehouseStock']);
+        // CREATE
+        Route::get('/roles/create', 'create')
+            ->name('roles.create');
 
+        Route::post('/roles/store', 'store')
+            ->name('roles.store');
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/categories',
-        [WarehouseTransferController::class, 'getCategoriesByWarehouse']
-    )->name('ajax.warehouse.categories');
+        // SHOW
+        Route::get('/roles-show/{id}', 'show')
+            ->name('roles.show');
 
-    Route::get(
-        '/ajax/warehouse/{warehouse_id}/all-multiselect',
-        [WarehouseTransferController::class, 'getWarehouseAllData']
-    )->name('warehouse.multiselect');
+        // EDIT
+        Route::get('/roles/{id}/edit', 'edit')
+            ->name('roles.edit');
 
-    Route::get(
-        '/ajax/warehouse-stock-data',
-        [WarehouseTransferController::class, 'getWarehouseStockData']
-    )->name('ajax.warehouse.stock.data');
+        // UPDATE
+        Route::put('/roles/update/{id}', 'update')
+            ->name('roles.update');
 
-    Route::get(
-        '/warehouse-transfer/{batch}',
-        [WarehouseTransferController::class, 'show']
-    )->name('transfer.show');
+        // DELETE (SAFE – dono rakhe gaye)
+        Route::delete('/roles/{id}', 'destroy')
+            ->name('roles.destroy');
 
-    // double route end
+        Route::get('/roles-destroy/{id}', 'destroy')
+            ->name('roles.destroy');
+    });
 
-    Route::get('/roles/index', [RoleController::class, 'index'])
-        ->name('roles.index');
-
-    Route::get('/roles/create', [RoleController::class, 'create'])
-        ->name('roles.create');
-
-    Route::post('/roles/store', [RoleController::class, 'store'])
-        ->name('roles.store');
-
-    Route::get('/roles-show/{id}', [RoleController::class, 'show'])
-        ->name('roles.show');
-
-    Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
-        ->name('roles.edit');
-
-    Route::put('/roles/update/{id}', [RoleController::class, 'update'])->name('roles.update');
-
-    Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
-        ->name('roles.destroy');
-
-
-    //Route::get('/roles/{id}', [RoleController::class, 'edit'])
-    //  ->name('roles.edit');
-
-    Route::get('/roles-destroy/{id}', [RoleController::class, 'destroy'])
-        ->name('roles.destroy');
 
     Route::resource('/vehicle-assignments', VehicleAssignmentController::class);
 
-    Route::resource('/delivery-agents', DeliveryAgentController::class);
 
+    Route::resource('/delivery-agents', DeliveryAgentController::class);
     Route::post(
         '/admin-assign-delivery',
         [DeliveryAgentController::class, 'assignDelivery']
     )->name('admin.assign.delivery');
 
+
     // Deliveries List
     Route::resource('/customer-orders', CustomerOrderController::class);
     Route::resource('/customer-returns', CustomerOrderReturnController::class);
+
+
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
     Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
     Route::post(
         'stock-returns/{id}/send-for-approval',
         [WarehouseStockReturnController::class, 'sendForApproval']
-    )->name('stock-returns.send-for-approval');
-    // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
-
+    )->name('stock-returns.send-for-approval');   
     Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
         ->name('stock-returns.dispatch');
-
     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
         ->name('stock-returns.receive');
-
     Route::post(
         'stock-returns/{id}/close',
         [WarehouseStockReturnController::class, 'close']
@@ -241,16 +252,11 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-
-
-    // Route::post('/stock-returns/submit', WarehouseStockReturnController::class)->name('stock.returns.submit');
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
-    Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
-
+    Route::prefix('warehouse-transfer')->name('transfer.')->group(function ()
+    {
         Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
         Route::get('/create', [WarehouseTransferController::class, 'create'])->name('create');
         Route::post('/store', [WarehouseTransferController::class, 'store'])->name('store');
@@ -258,6 +264,11 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::put('/{id}', [WarehouseTransferController::class, 'update'])->name('update');
         Route::delete('/{id}', [WarehouseTransferController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get(
+        '/ajax/warehouse-stock-data',
+        [WarehouseTransferController::class, 'getWarehouseStockData']
+    )->name('ajax.warehouse.stock.data');
 
     Route::get(
         '/get-products-by-category/{category_id}',
@@ -289,235 +300,9 @@ Route::middleware(['auth:admin'])->group(function () {
         [WarehouseTransferController::class, 'getBatchStock']
     );
 
-    //taluka-transfe
-    Route::prefix('taluka-transfer')
-        ->name('taluka.transfer.')
-        ->group(function () {
+    Route::get('/ajax/transfer-qty', [WarehouseTransferController::class, 'getTransferQty'])
+    ->name('ajax.transfer.qty');
 
-            Route::get('/', [TalukaTransferController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [TalukaTransferController::class, 'create'])
-                ->name('create');
-
-            Route::post('/store', [TalukaTransferController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}/edit', [TalukaTransferController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [TalukaTransferController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [TalukaTransferController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{id}', [TalukaTransferController::class, 'show'])
-                ->name('show');
-
-            Route::get(
-                '/get-products-by-category/{category_id}',
-                [TalukaTransferController::class, 'getProductsByCategory']
-            );
-
-            Route::get(
-                '/get-batches-by-product/{product_id}',
-                [TalukaTransferController::class, 'getBatchesByProduct']
-            );
-
-            Route::get(
-                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
-                [TalukaTransferController::class, 'getWarehouseStock']
-            );
-
-            Route::get(
-                '/ajax/warehouse/{warehouse_id}/categories',
-                [TalukaTransferController::class, 'getCategoriesByWarehouse']
-            )->name('ajax.warehouse.categories');
-
-            Route::get(
-                '/ajax/product-batches',
-                [TalukaTransferController::class, 'getBatchesByProducts']
-            )->name('ajax.product.batches');
-
-            Route::get(
-                '/get-batch-stock/{batch}',
-                [TalukaTransferController::class, 'getBatchStock']
-            );
-        });
-
-    //district-taluka-transfer
-    Route::prefix('district-taluka-transfer')
-        ->name('district-taluka-transfer.')
-        ->group(function () {
-
-            Route::get('/', [DistrictToTalukaTransferController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [DistrictToTalukaTransferController::class, 'create'])
-                ->name('create');
-
-            Route::post('/store', [DistrictToTalukaTransferController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}/edit', [DistrictToTalukaTransferController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [DistrictToTalukaTransferController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [DistrictToTalukaTransferController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{id}', [DistrictToTalukaTransferController::class, 'show'])
-                ->name('show');
-
-            Route::get(
-                '/get-products-by-category/{category_id}',
-                [DistrictToTalukaTransferController::class, 'getProductsByCategory']
-            );
-
-            Route::get(
-                '/get-batches-by-product/{product_id}',
-                [DistrictToTalukaTransferController::class, 'getBatchesByProduct']
-            );
-
-            Route::get(
-                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
-                [DistrictToTalukaTransferController::class, 'getWarehouseStock']
-            );
-
-            Route::get(
-                '/ajax/warehouse/{warehouse_id}/categories',
-                [DistrictToTalukaTransferController::class, 'getCategoriesByWarehouse']
-            )->name('ajax.warehouse.categories');
-
-            Route::get(
-                '/ajax/product-batches',
-                [DistrictToTalukaTransferController::class, 'getBatchesByProducts']
-            )->name('ajax.product.batches');
-
-            Route::get(
-                '/get-batch-stock/{batch}',
-                [DistrictToTalukaTransferController::class, 'getBatchStock']
-            );
-        });
-
-  //////////////////////////
-
-     //taluka-shop-transfer
-    Route::prefix('taluka-shop')
-        ->name('taluka-shop.')
-        ->group(function () {
-
-            Route::get('/', [TalukashopTransferController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [TalukashopTransferController::class, 'create'])
-                ->name('create');
-
-            Route::post('/store', [TalukashopTransferController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}/edit', [TalukashopTransferController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [TalukashopTransferController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [TalukashopTransferController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{id}', [TalukashopTransferController::class, 'show'])
-                ->name('show');
-
-            Route::get(
-                '/get-products-by-category/{category_id}',
-                [TalukashopTransferController::class, 'getProductsByCategory']
-            );
-
-            Route::get(
-                '/get-batches-by-product/{product_id}',
-                [TalukashopTransferController::class, 'getBatchesByProduct']
-            );
-
-            Route::get(
-                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
-                [TalukashopTransferController::class, 'getWarehouseStock']
-            );
-
-            Route::get(
-                '/ajax/warehouse/{warehouse_id}/categories',
-                [TalukashopTransferController::class, 'getCategoriesByWarehouse']
-            )->name('ajax.warehouse.categories');
-
-            Route::get(
-                '/ajax/product-batches',
-                [TalukashopTransferController::class, 'getBatchesByProducts']
-            )->name('ajax.product.batches');
-
-            Route::get(
-                '/get-batch-stock/{batch}',
-                [TalukashopTransferController::class, 'getBatchStock']
-            );
-        });
-/////////////////////
- // district to district-transfer
-    Route::prefix('district-district')
-        ->name('district-district.')
-        ->group(function () {
-
-            Route::get('/', [DistrictToDistrictTransferController::class, 'index'])
-                ->name('index');
-
-            Route::get('/create', [DistrictToDistrictTransferController::class, 'create'])
-                ->name('create');
-
-            Route::post('/store', [DistrictToDistrictTransferController::class, 'store'])
-                ->name('store');
-
-            Route::get('/{id}/edit', [DistrictToDistrictTransferController::class, 'edit'])
-                ->name('edit');
-
-            Route::put('/{id}', [DistrictToDistrictTransferController::class, 'update'])
-                ->name('update');
-
-            Route::delete('/{id}', [DistrictToDistrictTransferController::class, 'destroy'])
-                ->name('destroy');
-
-            Route::get('/{id}', [DistrictToDistrictTransferController::class, 'show'])
-                ->name('show');
-
-            Route::get(
-                '/get-products-by-category/{category_id}',
-                [DistrictToDistrictTransferController::class, 'getProductsByCategory']
-            );
-
-            Route::get(
-                '/get-batches-by-product/{product_id}',
-                [DistrictToDistrictTransferController::class, 'getBatchesByProduct']
-            );
-
-            Route::get(
-                '/get-warehouse-stock/{warehouse_id}/{batch_id}',
-                [DistrictToDistrictTransferController::class, 'getWarehouseStock']
-            );
-
-            Route::get(
-                '/ajax/warehouse/{warehouse_id}/categories',
-                [DistrictToDistrictTransferController::class, 'getCategoriesByWarehouse']
-            )->name('ajax.warehouse.categories');
-
-            Route::get(
-                '/ajax/product-batches',
-                [DistrictToDistrictTransferController::class, 'getBatchesByProducts']
-            )->name('ajax.product.batches');
-
-            Route::get(
-                '/get-batch-stock/{batch}',
-                [DistrictToDistrictTransferController::class, 'getBatchStock']
-            );
-        });
 
     // RETAILERS
     Route::prefix('retailers')->name('retailers.')->group(function () {
@@ -595,18 +380,6 @@ Route::middleware(['auth:admin'])->group(function () {
         )->name('ajax.get.warehouses');
     });
 
-    //coupons
-    Route::prefix('coupons')->name('coupons.')->group(function () {
-
-        Route::get('/', [CouponController::class, 'index'])->name('index');
-        Route::get('/create', [CouponController::class, 'create'])->name('create');
-        Route::post('/', [CouponController::class, 'store'])->name('store');
-        Route::get('/{coupon}/edit', [CouponController::class, 'edit'])->name('edit');
-        Route::put('/{coupon}', [CouponController::class, 'update'])->name('update');
-        Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
-
-        Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
-    });
 
     // GROCER SHOP
     Route::prefix('grocery-shops')->name('grocery-shops.')->group(function () {
@@ -631,7 +404,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::get('/{groceryShop}', [GroceryShopController::class, 'show'])
             ->name('show');
-            
+
         Route::get(
             '/get-taluka-warehouses/{district_warehouse_id}',
             [GroceryShopController::class, 'getTalukaWarehouses']
@@ -640,41 +413,6 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::get('/talukas/by-district/{district}', [GroceryShopController::class, 'byDistrict'])
         ->name('talukas.by-district');
-
-
-    //  PURCHASE ORDER  
-    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase.orders.create');
-    Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
-
-    // PURCHASE ORDER AJAX
-    Route::get(
-        '/po/subcategories/{category_id}',
-        [PurchaseOrderController::class, 'getSubCategories']
-    );
-
-    Route::get(
-        '/po/products/{sub_category_id}',
-        [PurchaseOrderController::class, 'getProducts']
-    );
-
-    Route::get(
-        '/po/all-products',
-        [PurchaseOrderController::class, 'getAllProducts']
-    );
-
-    Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
-
-    Route::get(
-        '/purchase-orders/{po}/invoice',
-        [PurchaseOrderController::class, 'invoice']
-    )
-        ->name('purchase.invoice');
-
-    Route::get(
-        '/purchase-orders',
-        [PurchaseOrderController::class, 'index']
-    )
-        ->name('purchase.orders.index');
 
 
     // PRODUCT BATCH MANAGEMENT
@@ -703,16 +441,15 @@ Route::middleware(['auth:admin'])->group(function () {
     // EXPIRY ALERT
     Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
 
+
     // SELL PRODUCT
     Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
     Route::get('/sale/{product?}', [StockController::class, 'create'])
         ->name('sale.create');
     Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
 
-    // Route::get('/sell/ws/categories/{warehouse}', [StockController::class, 'getCategoriesByWarehouse']);
-     // Route::get('/sell/ws/products/{warehouse}/{subCategory}', [StockController::class, 'getProductsBySubCategory']);
     Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategories']);
-   
+
     Route::get(
         '/sell/ws/products/{warehouse}/{subCategory}',
         [StockController::class, 'getProductsBySubCategory']
@@ -745,69 +482,32 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-     
+    Route::post('/warehouse-transfer/{transfer}/dispatch', 
+    [ApprovalController::class, 'dispatch']
+    )->name('warehouse.transfer.dispatch');
 
-     // Approval district to district-transfers
-    Route::get(
-        '/district-transfers/approval',
-        [DistrictToDistrictApprovalController::class, 'index']
-    )->name('district.transfer.index');
-    Route::post(
-        '/district-transfers/{transfer}/approve',
-        [DistrictToDistrictApprovalController::class, 'approve']
-    )->name('district.transfer.approve');
-    Route::post(
-        '/district-transfer/{transfer}/reject',
-        [DistrictToDistrictApprovalController::class, 'reject']
-    )->name('district.transfer.reject');
+    Route::post('/warehouse-transfer/{transfer}/receive', 
+        [ApprovalController::class, 'receive']
+    )->name('warehouse.transfer.receive');
+ 
+    Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
+    ->name('warehouse.transfer.dispatch.bulk');
 
+    Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
+    ->name('warehouse.transfer.receive.bulk');
 
+    Route::post('/warehouse-transfer/dispatch/{transfer}', 
+        [ApprovalController::class, 'singleDispatch']
+    )->name('warehouse.transfer.dispatch.single');
 
-     // Approval district to taluka-transfers
-    Route::get(
-        '/taluka-transfers/approval',
-        [DistrictToTalukaApprovalController::class, 'index']
-    )->name('district-taluka.transfer.index');
-    Route::post(
-        '/taluka-transfers/{transfer}/approve',
-        [DistrictToTalukaApprovalController::class, 'approve']
-    )->name('district-taluka.transfer.approve');
-    Route::post(
-        '/taluka-transfer/{transfer}/reject',
-        [DistrictToTalukaApprovalController::class, 'reject']
-    )->name('district-taluka.transfer.reject');
+    Route::post('/warehouse-transfer/reject/{transfer}', 
+        [ApprovalController::class, 'reject']
+    )->name('warehouse.transfer.reject');
 
+    Route::post('/warehouse-transfer/receive/{transfer}', 
+        [ApprovalController::class, 'singleReceive']
+    )->name('warehouse.transfer.receive.single');
 
-    // Approval Taluka to taluka-transfers
-    Route::get(
-        '/taluka-taluka-transfers/approval',
-        [TalukaToTalukaApprovalController::class, 'index']
-    )->name('taluka-taluka.transfer.index');
-    Route::post(
-        '/taluka-taluka-transfers/{transfer}/approve',
-        [TalukaToTalukaApprovalController::class, 'approve']
-    )->name('taluka-taluka.transfer.approve');
-    Route::post(
-        '/taluka-taluka-transfer/{transfer}/reject',
-        [TalukaToTalukaApprovalController::class, 'reject']
-    )->name('taluka-taluka.transfer.reject');
-
-
-    // Approval taluka-distribution-transfers
-    Route::get(
-        '/taluka-distribution-transfers/approval',
-        [TalukaToDistributionApprovalController::class, 'index']
-    )->name('taluka-distribution.transfer.index');
-    Route::post(
-        '/taluka-distribution-transfers/{transfer}/approve',
-        [TalukaToDistributionApprovalController::class, 'approve']
-    )->name('taluka-distribution.transfer.approve');
-    Route::post(
-        '/taluka-distribution-transfer/{transfer}/reject',
-        [TalukaToDistributionApprovalController::class, 'reject']
-    )->name('taluka-distribution.transfer.reject');
-    
-    
 
     // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
@@ -817,27 +517,75 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
 
-    // Purches Order Request
-    Route::prefix('warehouse-transfer-request')->group(function () {
-        Route::get('/', [WarehouseTransferRequestController::class, 'index'])
-            ->name('warehouse-transfer-request.index');
+    
+    // Still Comment this module
+        //  PURCHASE ORDER  
+        Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase.orders.create');
+        Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
-        Route::get('/create', [WarehouseTransferRequestController::class, 'create'])
-            ->name('warehouse_transfer.create');
-        Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
-
-        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
-        Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
-        Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+        // PURCHASE ORDER AJAX
         Route::get(
-            '/purchase-orders/{id}/items',
-            [WarehouseTransferRequestController::class, 'items']
+            '/po/subcategories/{category_id}',
+            [PurchaseOrderController::class, 'getSubCategories']
         );
+
+        Route::get(
+            '/po/products/{sub_category_id}',
+            [PurchaseOrderController::class, 'getProducts']
+        );
+
+        Route::get(
+            '/po/all-products',
+            [PurchaseOrderController::class, 'getAllProducts']
+        );
+
+        Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
+
+        Route::get(
+            '/purchase-orders/{po}/invoice',
+            [PurchaseOrderController::class, 'invoice']
+        )
+            ->name('purchase.invoice');
+
+        Route::get(
+            '/purchase-orders',
+            [PurchaseOrderController::class, 'index']
+        )
+            ->name('purchase.orders.index');
+
+        // Purches Order Request
+        Route::prefix('warehouse-transfer-request')->group(function () {
+            Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+                ->name('warehouse-transfer-request.index');
+
+            Route::get('/create', [WarehouseTransferRequestController::class, 'create'])
+                ->name('warehouse_transfer.create');
+            Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+
+            Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
+            Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+            Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
+            Route::get(
+                '/purchase-orders/{id}/items',
+                [WarehouseTransferRequestController::class, 'items']
+            );
+        });
+ 
+
+/////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+
+
+     //coupons
+    Route::prefix('coupons')->name('coupons.')->group(function () {
+        Route::get('/', [CouponController::class, 'index'])->name('index');
+        Route::get('/create', [CouponController::class, 'create'])->name('create');
+        Route::post('/', [CouponController::class, 'store'])->name('store');
+        Route::get('/{coupon}/edit', [CouponController::class, 'edit'])->name('edit');
+        Route::put('/{coupon}', [CouponController::class, 'update'])->name('update');
+        Route::delete('/{coupon}', [CouponController::class, 'destroy'])->name('destroy');
+        Route::get('/{coupon}', [CouponController::class, 'show'])->name('show');
     });
 
-
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Route::prefix('supplier')->name('supplier.')->group(function () {
 
@@ -859,12 +607,14 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
     });
 
-    //product offer 
 
+    //product offer 
     Route::prefix('offer')->group(function () {
         Route::resource('offers', OfferController::class);
         Route::get('products-by-category/{category}', [OfferController::class, 'productsByCategory']);
     });
+
+
     Route::prefix('retailer-offers')->name('retailer-offers.')->group(function () {
         Route::get('/', [RetailerOfferController::class, 'index'])->name('index');
         Route::get('create', [RetailerOfferController::class, 'create'])->name('create');
@@ -875,12 +625,12 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
     });
 
+
     Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
         ->name('warehouse-stock.report');
-
-
     Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
         ->name('stock-movement.report');
+
 
     Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
 
@@ -904,6 +654,7 @@ Route::middleware(['auth:admin'])->group(function () {
         )->name('download.csv');
     });
 
+
     // Taxes
     Route::prefix('settings')->group(function () {
         Route::resource('taxes', TaxController::class);
@@ -918,87 +669,43 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/users/profile', [UserController::class, 'profile'])
         ->name('user.profile');
 
-    //auth closing
-});
-Route::get('/dev/run/{action}', function ($action) {
-    try {
-        switch ($action) {
-            case 'clear':
-                Artisan::call('config:clear');
-                Artisan::call('cache:clear');
-                Artisan::call('route:clear');
-                Artisan::call('view:clear');
-                return "Cleared config, cache, route, and view.";
-
-            case 'migrate':
-                Artisan::call('session:table');
-                Artisan::call('migrate');
-                return "Migration completed successfully!";
-
-            case 'migrate-fresh':
-                Artisan::call('migrate:fresh', ['--seed' => true]);
-                return "Fresh migration and seed completed!";
-
-            case 'seed':
-                Artisan::call('db:seed');
-                return "Database seeding completed!";
-
-            case 'seed-menu':
-                Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
-                return "MenuSeeder database seeding completed!";
-
-            case 'seed-role':
-                Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
-                return "RoleSeeder database seeding completed!";
-
-            case 'storage-link':
-                Artisan::call('storage:link');
-                $output = Artisan::output();
-                return "Storage link created!"  . nl2br($output);
-
-            case 'install':
-                exec('composer install');
-                return "composer install executed!";
-            default:
-                return "Invalid action: $action";
-        }
-    } catch (\Exception $e) {
-        return "Error running action [$action]: " . $e->getMessage();
-    }
-});
-
-/////////////////////////////////////////   WEBSITE START   ////////////////////////////////////////////////////////////
 
 
-// Banners admin route
-Route::prefix('banners')->group(function () {
-    Route::get('/', [BannerController::class, 'index'])->name('banners.index');
-    Route::get('/create', [BannerController::class, 'create'])->name('banners.create');
-    Route::post('/store', [BannerController::class, 'store'])->name('banners.store');
+/////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
-    // same page for edit
-    Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('banners.edit');
-    Route::post('/update/{id}', [BannerController::class, 'update'])->name('banners.update');
 
-    Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
-});
+    // Admin contact list
+    Route::prefix('contacts-details')->group(function () {
+        Route::get('contacts', [BannerController::class, 'contactList'])
+            ->name('admin.contacts');
+    });
 
-// Admin contact list
-Route::prefix('contacts-details')->group(function () {
-    Route::get('contacts', [BannerController::class, 'contactList'])
-        ->name('admin.contacts');
-});
+    // Admin - about Pages
+    Route::prefix('pages')->group(function () {
 
-// Admin Pages
-Route::prefix('pages')->group(function () {
+        // about us
+        Route::get('aboutus', [BannerController::class, 'aboutus'])
+            ->name('admin.aboutus');
+        Route::post('aboutus/store', [BannerController::class, 'storeAboutUs'])
+            ->name('admin.aboutus.store');
+    });
 
-    // about us
-    Route::get('aboutus', [BannerController::class, 'aboutus'])
-        ->name('admin.aboutus');
-    Route::post('aboutus/store', [BannerController::class, 'storeAboutUs'])
-    ->name('admin.aboutus.store');
+    // Banners admin route
+    Route::prefix('banners')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('banners.index');
+        Route::get('/create', [BannerController::class, 'create'])->name('banners.create');
+        Route::post('/store', [BannerController::class, 'store'])->name('banners.store');
+
+        // same page for edit
+        Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('banners.edit');
+        Route::post('/update/{id}', [BannerController::class, 'update'])->name('banners.update');
+
+        Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
+    });
 
 });
+// end admin auth 
+
 
 // website banner route
 Route::get('/', [WebsiteController::class, 'index'])->name('home');
@@ -1051,3 +758,54 @@ Route::get('/orders', [CustomerOrderController::class, 'userorder'])
 
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
+
+
+/////////////////////////////////////////   SHEKHAR DEVELOP - WEBSITE END   ////////////////////////////////////////////////////////////
+
+
+Route::get('/dev/run/{action}', function ($action) {
+    try {
+        switch ($action) {
+            case 'clear':
+                Artisan::call('config:clear');
+                Artisan::call('cache:clear');
+                Artisan::call('route:clear');
+                Artisan::call('view:clear');
+                return "Cleared config, cache, route, and view.";
+
+            case 'migrate':
+                Artisan::call('session:table');
+                Artisan::call('migrate');
+                return "Migration completed successfully!";
+
+            case 'migrate-fresh':
+                Artisan::call('migrate:fresh', ['--seed' => true]);
+                return "Fresh migration and seed completed!";
+
+            case 'seed':
+                Artisan::call('db:seed');
+                return "Database seeding completed!";
+
+            case 'seed-menu':
+                Artisan::call('db:seed', ['--class' => 'MenuSeeder']);
+                return "MenuSeeder database seeding completed!";
+
+            case 'seed-role':
+                Artisan::call('db:seed', ['--class' => 'RoleSeeder']);
+                return "RoleSeeder database seeding completed!";
+
+            case 'storage-link':
+                Artisan::call('storage:link');
+                $output = Artisan::output();
+                return "Storage link created!"  . nl2br($output);
+
+            case 'install':
+                exec('composer install');
+                return "composer install executed!";
+            default:
+                return "Invalid action: $action";
+        }
+    } catch (\Exception $e) {
+        return "Error running action [$action]: " . $e->getMessage();
+    }
+});

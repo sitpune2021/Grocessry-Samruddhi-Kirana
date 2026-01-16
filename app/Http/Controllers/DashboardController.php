@@ -8,12 +8,14 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Batch;
+use App\Models\CustomerOrderReturn;
 use App\Models\ProductBatch;
 use App\Models\Warehouse;
 use App\Models\WarehouseStock;
 use App\Models\WarehouseTransfer;
 use App\Models\GroceryShop;
 use App\Models\User;
+use App\Models\WarehouseStockReturn;
 
 class DashboardController extends Controller
 {
@@ -60,6 +62,57 @@ class DashboardController extends Controller
             ])
             ->count();
 
+
+        // =====================
+        // 🔁 RETURN COUNTS (NEW)
+        // =====================
+        $user = auth()->user()->load('warehouse');
+        $warehouse = $user->warehouse;
+
+        $warehouseStockReturnCount = null;
+        $customerOrderReturnCount  = null;
+
+        if ($warehouse) {
+
+            // TALUKA → Only returns raised by taluka
+            if ($warehouse->type === 'taluka') {
+                $warehouseStockReturnCount =
+                    WarehouseStockReturn::where('from_warehouse_id', $warehouse->id)
+                    ->where('status', '!=', 'received')
+                    ->count();
+            }
+
+            // DISTRICT → Taluka + District
+            if ($warehouse->type === 'district') {
+                $warehouseStockReturnCount =
+                    WarehouseStockReturn::where(function ($q) use ($warehouse) {
+                        $q->where('from_warehouse_id', $warehouse->id)
+                            ->orWhere('to_warehouse_id', $warehouse->id);
+                    })
+                    ->where('status', '!=', 'received')
+                    ->count();
+            }
+
+            // MASTER → All warehouse returns
+            // if ($warehouse->type === 'master') {
+            //     $warehouseStockReturnCount =
+            //         WarehouseStockReturn::where('status', '!=', 'received')->count();
+
+            //     $customerOrderReturnCount =
+            //         CustomerOrderReturn::where('status', 'pending')->count();
+            // }
+        }
+
+        // ADMIN → See everything
+        // if ($user->role->name === 'Super Admin') {
+        //     $warehouseStockReturnCount =
+        //         WarehouseStockReturn::where('status', '!=', 'received')->count();
+
+        //     $customerOrderReturnCount =
+        //         CustomerOrderReturn::where('status', 'pending')->count();
+        // }
+
+
         // =====================
         // Send Data to Dashboard
         // =====================
@@ -75,7 +128,9 @@ class DashboardController extends Controller
             'expiringSoonCount',
             'warehouseDistrict',
             'warehouseTaluka',
-            'shops'
+            'shops',
+            'warehouseStockReturnCount',
+            'customerOrderReturnCount'
         ));
     }
 }

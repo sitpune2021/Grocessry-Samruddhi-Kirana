@@ -14,7 +14,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Warehouse</h5>
+                    <h5 class="card-title">Warehouse/ Distribution Center</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
                     @if(hasPermission('warehouse.create'))
@@ -38,6 +38,7 @@
                         <thead class="table-light">
                             <th>Sr No</th>
                             <th>Warehouse Name</th>
+                            <th>Type</th>
                             <th>Address</th>
                             <th>Contact Person</th>
                             <th>Contact Number</th>
@@ -55,13 +56,15 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $warehouse->name }}</td>
+                            <td>{{ $warehouse->type }}</td>
                             <td>{{ $warehouse->address ?? '-' }}</td>
                             <td>{{ $warehouse->contact_person ?? '-' }}</td>
                             <td>{{ $warehouse->contact_number ?? '-'}}</td>
                             <td>{{ $warehouse->email ?? '-'}}</td>
                             <td>{{$warehouse->status ?? '-'}}</td>
 
-                            @if($canView || $canEdit ) {{-- || $canDelete --}}                             <td class="text-center" style="white-space:nowrap;">
+                            @if($canView || $canEdit ) {{-- || $canDelete --}}                            
+                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('warehouse.view'))
                                 <a href="{{ route('warehouse.show', $warehouse->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
