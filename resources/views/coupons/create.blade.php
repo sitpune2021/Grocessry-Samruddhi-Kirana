@@ -9,196 +9,224 @@
                 @include('layouts.sidebar')
             </aside>
 
-            <!-- Layout page -->
+            <!-- Page -->
             <div class="layout-page">
                 @include('layouts.navbar')
 
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
 
-                        <div class="row g-6">
-                            <div class="col-12">
-                                <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card shadow-sm border-0 rounded-3">
 
-                                    <!-- Card Header -->
-                                    <div class="card-header bg-white fw-semibold">
+                            <!-- Header -->
+                            <div class="card-header bg-white fw-semibold">
+                                @if ($mode === 'add')
+                                    <h4>Add Coupon</h4>
+                                @elseif ($mode === 'edit')
+                                    <h4>Edit Coupon</h4>
+                                @else
+                                    <h4>View Coupon</h4>
+                                @endif
+                            </div>
+
+                            <!-- Body -->
+                            <div class="card-body">
+                                <form
+                                    action="{{ $mode === 'edit' ? route('offers.update', $offer->id) : route('offers.store') }}"
+                                    method="POST">
+                                    @csrf
+                                    @if ($mode === 'edit')
+                                        @method('PUT')
+                                    @endif
+
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Code <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" name="code" class="form-control"
+                                                placeholder="Enter code" value="{{ old('code', $offer->code ?? '') }}"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>
+                                            @error('code')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Offer Name --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Title</label>
+                                            <input type="text" name="title" class="form-control "
+                                                placeholder="Enter title"
+                                                value="{{ old('title', $offer->title ?? '') }}"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>
+
+                                        </div>
+                                        {{-- Discount Type --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Discount Type<span
+                                                    class="text-danger">*</span></label>
+                                            <select name="discount_type" class="form-control"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                <option value="percentage"
+                                                    {{ old('discount_type', $offer->discount_type ?? '') == 'percentage' ? 'selected' : '' }}>
+                                                    Percentage (%)
+                                                </option>
+                                                <option value="flat"
+                                                    {{ old('discount_type', $offer->discount_type ?? '') == 'flat' ? 'selected' : '' }}>
+                                                    Flat Amount
+                                                </option>
+                                            </select>
+                                            @error('discount_type')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        {{-- Discount Value --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Discount Value<span
+                                                    class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" name="discount_value"
+                                                class="form-control" placeholder="Enter discount value"
+                                                value="{{ old('discount_value', $offer->discount_value ?? '') }}"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>
+                                            @error('discount_value')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        {{-- Start Date --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Start Date</label>
+                                            <input type="date" name="start_date" class="form-control"
+                                                value="{{ old('start_date', $offer->start_date ?? '') }}"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>
+                                        </div>
+
+                                        {{-- End Date --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">End Date</label>
+                                            <input type="date" name="end_date" class="form-control"
+                                                value="{{ old('end_date', $offer->end_date ?? '') }}"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">
+                                                Minimum Amount <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" name="min_amount" class="form-control"
+                                                placeholder="Enter minimum amount"
+                                                value="{{ old('min_amount', $offer->min_amount ?? '') }}"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+                                            @error('min_amount')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">
+                                                Maximum Usage <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" name="max_usage" class="form-control"
+                                                placeholder="Enter maximum usage"
+                                                value="{{ old('max_usage', $offer->max_usage ?? '') }}"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+                                            @error('max_usage')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Status --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Status<span
+                                                    class="text-danger">*</span></label>
+                                            <select name="status" class="form-control"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                <option value="1"
+                                                    {{ old('status', $offer->status ?? 1) == 1 ? 'selected' : '' }}>
+                                                    Active
+                                                </option>
+                                                <option value="0"
+                                                    {{ old('status', $offer->status ?? 1) == 0 ? 'selected' : '' }}>
+                                                    Inactive
+                                                </option>
+                                            </select>
+                                            @error('status')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        {{-- Category --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Category</label>
+                                            <select name="category_id" class="form-control"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                <option value="" disabled selected>
+                                                    Select Categories
+                                                </option>
+                                                <option value="all"
+                                                    {{ old('category_id', $offer->category_id ?? '') === 'all' ? 'selected' : '' }}>
+                                                    All Categories
+                                                </option>
+
+                                                @foreach ($categories as $category)
+                                                    <option value="{{ $category->id }}"
+                                                        {{ old('category_id', $offer->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                        {{ $category->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        {{-- Product --}}
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-medium">Product</label>
+                                            <select name="product_id" class="form-control"
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+
+                                                <option value="" disabled selected>
+                                                    Select Product
+                                                </option>
+
+                                                <option value="all"
+                                                    {{ old('product_id', $offer->product_id ?? '') === 'all' ? 'selected' : '' }}>
+                                                    All Products
+                                                </option>
+
+                                                @foreach ($products as $product)
+                                                    <option value="{{ $product->id }}"
+                                                        {{ old('product_id', $offer->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                        {{ $product->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-medium">Description</label>
+                                            <textarea name="description" class="form-control" rows="3" placeholder="Enter description"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>{{ trim(old('description', $offer->description ?? '')) }}</textarea>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <label class="form-label fw-medium">Terms & Condition</label>
+                                            <textarea name="terms_condition" class="form-control" rows="3" placeholder="Enter terms and condition"
+                                                {{ $mode === 'view' ? 'readonly' : '' }}>{{ old('terms_condition', $offer->terms_condition ?? '') }}</textarea>
+                                        </div>
+
+                                    </div>
+
+                                    {{-- Buttons --}}
+                                    <div class="mt-4 d-flex justify-content-end gap-2">
+                                        <a href="{{ route('offers.index') }}" class="btn btn-success">
+                                            <i class="bx bx-arrow-back"></i> Back
+                                        </a>
+
                                         @if ($mode === 'add')
-                                        <h4>Add Coupon</h4>
-                                        @elseif($mode === 'edit')
-                                        <h4>Edit Coupon</h4>
-                                        @else
-                                        <h4>View Coupon</h4>
+                                            <button type="submit" class="btn btn-success">Save Offer</button>
+                                        @elseif ($mode === 'edit')
+                                            <button type="submit" class="btn btn-success">Update Offer</button>
                                         @endif
                                     </div>
 
-                                    <div class="card-body">
-                                        <form
-                                            action="{{ isset($coupon) ? route('coupons.update', $coupon->id) : route('coupons.store') }}"
-                                            method="POST">
-                                            @csrf
-                                            @if (isset($coupon))
-                                            @method('PUT')
-                                            @endif
-
-                                            <div class="row g-3">
-
-                                                {{-- Coupon Code --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Coupon Code <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="code"
-                                                        class="form-control @error('code') is-invalid @enderror"
-                                                        value="{{ old('code', $coupon->code ?? '') }}"
-                                                        placeholder="e.g. SAVE10"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('code')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                {{-- Coupon Type --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Discount Type <span class="text-danger">*</span>
-                                                    </label>
-                                                    <select name="type" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="flat"
-                                                            {{ old('type', $coupon->type ?? '') == 'flat' ? 'selected' : '' }}>
-                                                            Flat (₹)
-                                                        </option>
-                                                        <option value="percent"
-                                                            {{ old('type', $coupon->type ?? '') == 'percent' ? 'selected' : '' }}>
-                                                            Percentage (%)
-                                                        </option>
-                                                        <option value="free_shipping"
-                                                            {{ old('type', $coupon->type ?? '') == 'free_shipping' ? 'selected' : '' }}>
-                                                            Free Shipping
-                                                        </option>
-                                                    </select>
-                                                </div>
-
-                                                {{-- Discount Value --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Discount Value <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="number" name="value" step="0.01"
-                                                        class="form-control @error('value') is-invalid @enderror"
-                                                        value="{{ old('value', $coupon->value ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('value')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                {{-- Minimum Cart Amount --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Minimum Cart Amount</label>
-                                                    <input type="number" name="min_cart_amount" step="0.01"
-                                                        class="form-control"
-                                                        value="{{ old('min_cart_amount', $coupon->min_cart_amount ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                </div>
-
-                                                {{-- Start Date --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Start Date <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="date" name="start_date"
-                                                        class="form-control"
-                                                        value="{{ old('start_date', $coupon->start_date ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                </div>
-
-                                                {{-- End Date --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        End Date <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="date" name="end_date"
-                                                        class="form-control"
-                                                        value="{{ old('end_date', $coupon->end_date ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                </div>
-
-                                                {{-- Usage Limit --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Usage Limit
-                                                        <small class="text-muted">(Total uses)</small>
-                                                    </label>
-
-                                                    <input type="number"
-                                                        name="usage_limit"
-                                                        min="1"
-                                                        class="form-control @error('usage_limit') is-invalid @enderror"
-                                                        value="{{ old('usage_limit', $coupon->usage_limit ?? '') }}"
-                                                        placeholder="e.g. 100"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                </div>
-
-                                                {{-- Per User Limit --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Per User Limit
-                                                        <small class="text-muted">(Uses per user)</small>
-                                                    </label>
-
-                                                    <input type="number"
-                                                        name="per_user_limit"
-                                                        min="1"
-                                                        class="form-control @error('per_user_limit') is-invalid @enderror"
-                                                        value="{{ old('per_user_limit', $coupon->per_user_limit ?? '') }}"
-                                                        placeholder="e.g. 1"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-
-                                                </div>
-
-
-                                                {{-- Status --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Status <span class="text-danger">*</span>
-                                                    </label>
-                                                    <select name="is_active" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="1"
-                                                            {{ old('is_active', $coupon->is_active ?? 1) == 1 ? 'selected' : '' }}>
-                                                            Active
-                                                        </option>
-                                                        <option value="0"
-                                                            {{ old('is_active', $coupon->is_active ?? 1) == 0 ? 'selected' : '' }}>
-                                                            Inactive
-                                                        </option>
-                                                    </select>
-                                                </div>
-
-                                            </div>
-
-                                            {{-- Buttons --}}
-                                            <div class="mt-4 d-flex justify-content-end gap-2">
-                                                <a href="{{ route('coupons.index') }}" class="btn btn-success">
-                                                    <i class="bx bx-arrow-back"></i> Back
-                                                </a>
-
-                                                @if ($mode === 'add')
-                                                <button type="submit" class="btn btn-success">
-                                                    Save Coupon
-                                                </button>
-                                                @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-success">
-                                                    Update Coupon
-                                                </button>
-                                                @endif
-                                            </div>
-
-                                        </form>
-                                    </div>
-
-                                </div>
+                                </form>
                             </div>
                         </div>
 
@@ -210,3 +238,92 @@
         </div>
     </div>
 </body>
+{{-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const categorySelect = document.querySelector('select[name="category_id"]');
+        const productSelect = document.querySelector('select[name="product_id"]');
+
+        categorySelect.addEventListener('change', function() {
+
+            let categoryId = this.value;
+
+            productSelect.innerHTML = '<option value="">Loading...</option>';
+
+            if (!categoryId) {
+                productSelect.innerHTML = '<option value="">Select Product</option>';
+                return;
+            }
+
+            fetch(`/offer/products-by-category/${categoryId}`)
+                .then(response => response.json())
+                .then(products => {
+                    productSelect.innerHTML = '<option value="">Select Product</option>';
+
+                    products.forEach(product => {
+                        productSelect.innerHTML +=
+                            `<option value="${product.id}">${product.name}</option>`;
+                    });
+                })
+                .catch(() => {
+                    productSelect.innerHTML = '<option value="">No products found</option>';
+                });
+        });
+
+    });
+</script> --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const categorySelect = document.querySelector('select[name="category_id"]');
+    const productSelect = document.querySelector('select[name="product_id"]');
+
+    categorySelect.addEventListener('change', function () {
+
+        let categoryId = this.value;
+
+        // Reset product dropdown
+        productSelect.innerHTML = `
+            <option value="" disabled selected>Select Product</option>
+            <option value="all">All Products</option>
+        `;
+
+        // 🔹 If "Select Categories"
+        if (!categoryId) {
+            return;
+        }
+
+        // 🔹 If "All Categories" → load ALL products
+        if (categoryId === 'all') {
+            fetch(`/offer/all-products`)
+                .then(response => response.json())
+                .then(products => {
+                    products.forEach(product => {
+                        productSelect.innerHTML +=
+                            `<option value="${product.id}">${product.name}</option>`;
+                    });
+                })
+                .catch(() => {
+                    productSelect.innerHTML +=
+                        `<option value="">No products found</option>`;
+                });
+            return;
+        }
+
+        // 🔹 Particular category → load category products
+        fetch(`/offer/products-by-category/${categoryId}`)
+            .then(response => response.json())
+            .then(products => {
+                products.forEach(product => {
+                    productSelect.innerHTML +=
+                        `<option value="${product.id}">${product.name}</option>`;
+                });
+            })
+            .catch(() => {
+                productSelect.innerHTML +=
+                    `<option value="">No products found</option>`;
+            });
+    });
+
+});
+</script>
