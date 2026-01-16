@@ -29,6 +29,7 @@
                             <tr>
                                 <th>Order #</th>
                                 <th>User</th>
+                                <th>Order Number</th>
                                 <th>Product Name</th>
                                 <th>Total</th>
                                 <th>Status</th>
@@ -40,6 +41,7 @@
                             <tr>
                                 <td>{{ $order->id }}</td>
                                 <td>{{ $order->user->first_name ?? 'N/A' }}</td>
+                                <td>{{ $order->order_number }}</td>
                                 <!-- PRODUCTS -->
                                 <td>
                                     @foreach($order->items as $item)
