@@ -230,57 +230,51 @@
     }
 
     .hero-banner {
-        height: 420px;
-        position: relative;
+    height: 380px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;        /* 🔴 KEY LINE */
+    border-radius: 16px;
+    background: #000;        /* gap येऊ नये म्हणून */
+}
+
+.hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;       /* 🔴 image crop होईल पण बाहेर जाणार नाही */
+    object-position: center;
+    display: block;
+}
+
+/* Overlay safe */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.1)
+    );
+    z-index: 1;
+}
+
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.45);
+        border-radius: 50%;
     }
 
-    .hero-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        background-size: 18px 18px;
     }
 
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right,
-                rgba(0, 0, 0, 0.55),
-                rgba(0, 0, 0, 0.1));
-    }
-
-    .hero-content {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        /* horizontal center */
-    }
-
-    .hero-title {
-        margin-top: 220px;
-        /* title thoda upar */
-        text-align: center;
-        font-size: 42px;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    .hero-btn {
-        margin-top: 140px;
-        /* 🔥 push button to bottom */
-        margin-bottom: 40px;
-        /* bottom spacing */
-        background: #81c408;
-        color: #fff;
-        padding: 12px 28px;
-        border-radius: 100px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-
-
+    
     /* Mobile */
     @media (max-width: 768px) {
         .hero-title {
@@ -290,6 +284,82 @@
 
         .hero-btn {
             margin-bottom: 20px;
+        }
+    }
+
+    /* ===== BETTER TAB SEARCH UI ===== */
+
+    .nav-pills {
+        gap: 10px;
+    }
+
+    /* TAB BUTTON */
+    .nav-pills .nav-link,
+    .nav-pills a {
+        background: #f5f5f5 !important;
+        border-radius: 20px !important;
+        padding: 8px 18px !important;
+        transition: all 0.25s ease;
+        border: 1px solid #e0e0e0;
+    }
+
+    /* TAB TEXT */
+    .nav-pills span {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* ACTIVE TAB */
+    .nav-pills .active {
+        background: #28a745 !important;
+        border-color: #28a745 !important;
+    }
+
+    .nav-pills .active span {
+        color: #fff !important;
+    }
+
+    /* ===== CATEGORY SEARCH DROPDOWN ===== */
+
+    form .form-select {
+        height: 44px;
+        border-radius: 10px;
+        border: 1px solid #dcdcdc;
+        font-size: 14px;
+        font-weight: 600;
+        padding-left: 14px;
+        background-color: #fff;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    /* Hover */
+    form .form-select:hover {
+        border-color: #28a745;
+    }
+
+    /* Focus */
+    form .form-select:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.15rem rgba(40, 167, 69, 0.25);
+    }
+
+    /* Optional container look */
+    form .col-md-4 {
+        position: relative;
+    }
+
+    /* Mobile full width */
+    @media (max-width: 768px) {
+        form .col-md-4 {
+            width: 100%;
+        }
+    }
+
+    /* ALIGN RIGHT NICELY */
+    @media (min-width: 992px) {
+        .nav-pills {
+            justify-content: flex-end;
         }
     }
 </style>
@@ -314,25 +384,10 @@
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
                             <div class="hero-banner position-relative">
-
                                 <img src="{{ asset('storage/'.$banner->image) }}"
                                     alt="{{ $banner->name }}"
                                     class="hero-img">
-
-                                <!-- Overlay -->
                                 <div class="hero-overlay"></div>
-
-                                <!-- Content -->
-                                <div class="hero-content">
-
-                                    <h1 class="hero-title">
-                                        {{ $banner->name }}
-                                    </h1>
-
-                                    <a href="#" class="btn hero-btn">
-                                        Shop Now
-                                    </a>
-                                </div>
                             </div>
                         </div>
                         @endforeach
@@ -350,7 +405,7 @@
         </div>
     </div>
 
-    <!-- <div class="container py-4">
+    <div class="container py-4">
         <div class="row g-4">
 
             @foreach($categoriestop as $category)
@@ -372,20 +427,19 @@
             @endforeach
 
         </div>
-    </div> -->
-
+    </div>
 
     <!-- Fruits Shop Start-->
-    <div class="container-fluid fruite py-5">
-        <div class="container py-5">
+    <div class="container-fluid fruite">
+        <div class="container">
             <div class="tab-class text-center">
 
                 <div class="row g-4">
                     <div class="col-lg-4 text-start">
-                        <h1>Our Organic Products</h1>
+                        <h4>Our Organic Products</h4>
                     </div>
                     <div class="col-lg-8 text-end">
-                        <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                        <ul class="nav nav-pills d-inline-flex text-center">
                             <li class="nav-item">
                                 <a class="d-flex m-2 py-2 bg-light rounded-pill {{ empty($categoryId) ? 'active' : '' }}"
                                     data-bs-toggle="pill" href="#tab-1">
@@ -432,12 +486,11 @@
                                         @endif
                                     </div>
 
-                                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                    <div class="p-4 border border-top-0  ">
                                         <h4>{{ $product->name }}</h4>
                                         <p>₹ {{ $product->mrp }}</p>
-                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                        <a href="#" class="btn-add-sm"><i></i> Add to cart</a>
                                     </div>
-
                                 </div>
                             </div>
                             @endforeach
@@ -471,7 +524,7 @@
 
                         <div class="row g-4">
                             @forelse($categoryProducts as $product)
-                            <div class="col-md-6 col-lg-3">
+                            <div class="col-md-2 col-lg-2">
                                 <div class="rounded position-relative fruite-item">
                                     @php
                                     $images = $product->product_images; // Already array
@@ -526,7 +579,7 @@
 
     <!-- slide product  -->
     <div class="container py-2">
-        @foreach($categories as $category)
+        @foreach($cate as $category)
         @if($category->products->count())
         <div class="row p-3">
             <div class="col text-start">
@@ -567,61 +620,6 @@
         @endforeach
 
     </div>
-
-
-    <!-- Featurs Start -->
-    <!-- Service/Featured Products Start -->
-    <div class="container-fluid service py-5 bg-light">
-        <div class="container py-5">
-            <div class="row g-4 justify-content-center">
-                <!-- Service 1 -->
-                <div class="col-md-6 col-lg-4">
-                    <a href="#" class="text-decoration-none">
-                        <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
-                            <img src="{{ asset('website/img/featur-1.jpg') }}" class="img-fluid w-100 rounded-top" alt="Fresh Apples">
-                            <div class="service-content text-center p-4 bg-primary text-white">
-                                <h5>Fresh Apples</h5>
-                                <h3 class="mb-0">20% OFF</h3>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Service 2 -->
-                <div class="col-md-6 col-lg-4">
-                    <a href="#" class="text-decoration-none">
-                        <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
-                            <img src="{{ asset('website/img/featur-2.jpg') }}" class="img-fluid w-100 rounded-top" alt="Tasty Fruits">
-                            <div class="service-content text-center p-4 bg-light text-primary">
-                                <h5>Tasty Fruits</h5>
-                                <h3 class="mb-0">Free Delivery</h3>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <!-- Service 3 -->
-                <div class="col-md-6 col-lg-4">
-                    <a href="#" class="text-decoration-none">
-                        <div class="service-item rounded overflow-hidden shadow-sm hover-scale">
-                            <img src="{{ asset('website/img/featur-3.jpg') }}" class="img-fluid w-100 rounded-top" alt="Exotic Vegetable">
-                            <div class="service-content text-center p-4 bg-secondary text-white">
-                                <h5>Exotic Vegetable</h5>
-                                <h3 class="mb-0">Discount $30</h3>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Banner Section Start-->
- 
-    <!-- Banner Section End -->
-
-    <!-- Fact Start -->
-   
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs">
