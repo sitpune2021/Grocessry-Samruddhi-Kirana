@@ -17,6 +17,12 @@
                     @include('layouts.navbar')
                 <!-- / Navbar -->
  
+                @if(session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+                @endif
+
                 <!-- Content wrapper -->
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="row justify-content-center">
@@ -159,12 +165,12 @@
                                                 <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
  
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
-                                                    Add
+                                                    Add Stock
                                                 </button>
                                             </div>
                                             <div class="text-end mt-3">
                                                 <button type="submit" class="btn btn-success" style="">
-                                                    Product Transfer
+                                                    Product Stock Request
                                                 </button>
                                             </div>
                                             @endif
@@ -218,7 +224,35 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
  
 <script>
-    $(document).ready(function() {
+    $(document).ready(function() 
+    {
+
+        $('form').on('submit', function(e) 
+        {
+
+            let error = false;
+            let msg = '';
+
+            $('.qty-input').each(function() {
+
+                const enteredQty = parseInt($(this).val());
+                const availableStock = parseInt($(this).data('stock'));
+                const productName = $(this).closest('tr').find('td:eq(3)').text();
+
+                if (enteredQty > availableStock) {
+                    error = true;
+                    msg = `❌ ${productName} ke liye sirf ${availableStock} qty available hai`;
+                    return false; 
+                }
+            });
+
+            if (error) {
+                e.preventDefault();
+                alert(msg);
+                return false;
+            }
+        });
+
  
         /* ================= SELECT2 ================= */
         $('#product_id').select2({
@@ -254,7 +288,7 @@
                 warehouse_id: wid
             }, function(res) {
  
-                let opt = '<option></option>';
+                let opt = '';
                 if (res.data && res.data.length) {
                     res.data.forEach(p => {
                         opt += `<option value="${p.id}">${p.name}</option>`;
@@ -359,7 +393,8 @@
             const fw = fromWarehouseEl.val();
             const tw = toWarehouseHidden.val();
             const pids = productEl.val();
-            const qty = qtyEl.val();
+            const qty = $('#quantity').val().trim();
+            const qtyArr = qty ? qty.split(',') : [];
  
             if (!fw || !tw || !pids || !pids.length || !qty) {
                 alert('Fill all fields');
@@ -399,7 +434,7 @@
             }
  
             /* ================= ADD MODE (MULTI PRODUCT) ================= */
-            pids.forEach(pid => {
+            pids.forEach((pid, i) => {
  
                 const rid = index++;
  
@@ -418,11 +453,14 @@
                         <td>${productEl.find(`option[value="${pid}"]`).text()}</td>
                         <td>${batch.batch_no}</td>
                         <td>
-                            <input type="number"
-                                   class="form-control form-control-sm qty-input"
-                                   value="${qty}"
-                                   min="1"
-                                   data-index="${rid}">
+                            
+                                   <input type="number"
+                                    class="form-control form-control-sm qty-input"
+                                    value="${qtyArr[i] ?? 1}"
+                                    min="1"
+                                    data-index="${rid}"
+                                    data-stock="${batch.quantity}">
+
                         </td>
                         <td>
                             <button type="button" class="btn btn-warning btn-sm edit-row" data-i="${rid}">Edit</button>
@@ -437,7 +475,7 @@
                     <input type="hidden" name="items[${rid}][requested_by_warehouse_id]" value="${tw}">
                     <input type="hidden" name="items[${rid}][product_id]" value="${pid}">
                     <input type="hidden" name="items[${rid}][batch_id]" value="${batch.id}">
-                    <input type="hidden" name="items[${rid}][quantity]" value="${qty}">
+                    <input type="hidden" name="items[${rid}][quantity]" value="${qtyArr[i] ?? 1}">
                 `);
  
                     tableWrapper.show();
