@@ -22,6 +22,7 @@ return [
                 ['title' => 'Role Management', 'route' => 'roles.index'],
                 ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Permission Management', 'route' => 'RolePermission'],
+                ['title' => 'Tax Management', 'route' => 'taxes.index'],
 
             ],
         ],
@@ -75,8 +76,8 @@ return [
             'children' => [
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
-                ['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
-                ['title' => 'Sale Product', 'route' => 'sale.create'],
+                //['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
+                //['title' => 'Sale Product', 'route' => 'sale.create'],
             ],
         ],
 
@@ -99,7 +100,7 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'OrderMenu',
-            'title' => 'Approval / Order',
+            'title' => 'Approval / Recieve',
             'icon'  => 'bx bx-package',
             'children' => [
                 [
@@ -145,18 +146,18 @@ return [
         ],
 
         /* ================= POS System ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'PosMenu',
-            'title' => 'POS System',
-            'icon'  => 'bx bx-package',
-            'children' => [
-                ['title' => 'Add Purches List', 'route' => 'purchase.orders.create'],
-                ['title' => 'Purches History', 'route' => 'purchase.orders.index'],
-                ['title' => 'Stock Request', 'route' => 'warehouse_transfer.create'],
-                ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
-            ],
-        ],
+        // [
+        //     'type'  => 'dropdown',
+        //     'key'   => 'PosMenu',
+        //     'title' => 'POS System',
+        //     'icon'  => 'bx bx-package',
+        //     'children' => [
+        //         ['title' => 'Add Purches List', 'route' => 'purchase.orders.create'],
+        //         ['title' => 'Purches History', 'route' => 'purchase.orders.index'],
+        //         ['title' => 'Stock Request', 'route' => 'warehouse_transfer.create'],
+        //         ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
+        //     ],
+        // ],
 
         /* ================= Offer / Scheme Management ================= */
         [
@@ -166,7 +167,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Offer Management', 'route' => 'offers.index'],
-                ['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
+                //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
                 ['title' => 'Coupon Management', 'route' => 'coupons.index'],
             ],
         ],
@@ -200,36 +201,48 @@ return [
         ],
 
         /* ================= Setting ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'SettingMenu',
-            'title' => 'Setting',
-            'icon'  => 'bx bx-cog',
-            'children' => [
-                ['title' => 'Tax Management', 'route' => 'taxes.index'],
-            ],
-        ],
+        // [
+        //     'type'  => 'dropdown',
+        //     'key'   => 'SettingMenu',
+        //     'title' => 'Setting',
+        //     'icon'  => 'bx bx-cog',
+        //     'children' => [
+        //         ['title' => 'Tax Management', 'route' => 'taxes.index'],
+        //     ],
+        // ],
 
         /* ================= Website ================= */
-        [
-            'type'  => 'single',
-            'title' => 'Banner Management',
-            'icon'  => 'bx bx-package',
-            'route' => 'banners.index',
-        ],
+        // [
+        //     'type'  => 'single',
+        //     'title' => 'Banner Management',
+        //     'icon'  => 'bx bx-package',
+        //     'route' => 'banners.index',
+        // ],
+
+        // [
+        //     'type'  => 'single',
+        //     'title' => 'User Contact Details',
+        //     'icon'  => 'bx bx-package',
+        //     'route' => 'admin.contacts',
+        // ],
+
+        // [
+        //     'type'  => 'single',
+        //     'title' => 'About us',
+        //     'icon'  => 'bx bx-info-circle',
+        //     'route' => 'admin.aboutus',
+        // ],
 
         [
-            'type'  => 'single',
-            'title' => 'User Contact Details',
-            'icon'  => 'bx bx-package',
-            'route' => 'admin.contacts',
-        ],
-
-        [
-            'type'  => 'single',
-            'title' => 'About us',
-            'icon'  => 'bx bx-info-circle',
-            'route' => 'admin.aboutus',
+            'type'  => 'dropdown',
+            'key'   => 'wesiteMenu',
+            'title' => 'Website Management',
+            'icon'  => 'bx bx-store',
+            'children' => [
+                ['title' => 'Banner Management', 'route' => 'banners.index'],
+                ['title' => 'User Contact Details', 'route' => 'admin.contacts'],
+                ['title' => 'About Us', 'route' => 'admin.aboutus'],
+            ],
         ],
 
     ],
