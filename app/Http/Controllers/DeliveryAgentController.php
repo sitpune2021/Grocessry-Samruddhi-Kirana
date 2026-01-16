@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Models\Warehouse;
+
 use Illuminate\Validation\ValidationException;
 
 class DeliveryAgentController extends Controller
@@ -36,13 +38,11 @@ class DeliveryAgentController extends Controller
     {
         $mode = 'add';
         $agent = null;
-        $shops = GroceryShop::where('status', 'active')->get();
+        $shops = Warehouse::where('status', 'active')->get();
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('mode', 'agent', 'shops'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
 
@@ -63,7 +63,8 @@ class DeliveryAgentController extends Controller
                 'mobile'          => 'required|digits:10|unique:users,mobile',
                 'email'           => 'nullable|email|unique:users,email',
                 'password'        => 'nullable|min:6',
-                'shop_id'         => 'required|exists:grocery_shops,id',
+                'warehouse_id' => 'required|exists:warehouses,id',
+                // 'shop_id'         => 'required|exists:grocery_shops,id',
                 'dob'             => 'nullable|date',
                 'gender'          => 'nullable|in:male,female',
                 'address'         => 'nullable|string',
@@ -110,7 +111,7 @@ class DeliveryAgentController extends Controller
                 'password'  => Hash::make('Agent@123'),
                 'role_id'   => $role->id,
                 'profile_photo'   => $profileImage,
-
+                'warehouse_id' => $validated['warehouse_id'], 
             ]);
 
             Log::info('User created successfully', [
