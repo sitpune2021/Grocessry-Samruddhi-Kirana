@@ -2,65 +2,83 @@
 <div class="container-fluid bg-light footer">
     <div class="container py-3">
         <div class="mb-3" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5);">
-            <div class="row g-3 align-items-center">
-                <div class="col-lg-3 col-12 text-center text-lg-start mb-2 mb-lg-0">
-                    <a href="#">
-                        <img src="{{ asset('website/img/samrudhi-kirana-logo1.png') }}" style="width:150px" alt="Logo">
-                    </a>
-                </div>
-                <div class="col-lg-6 col-12 mb-2 mb-lg-0">
-                    <div class="position-relative mx-auto">
-                        <input class="form-control border-0 w-100 py-2 px-3 rounded-pill" type="email" placeholder="Your Email">
-                        <button type="submit" class="btn btn-primary border-0 py-2 px-3 position-absolute rounded-pill text-white" style="top:0; right:0;">Subscribe Now</button>
+
+        </div>
+
+        <div class="container py-4">
+            <div class="row g-4 align-items-start">
+
+                <!-- LOGO & SOCIAL -->
+                <div class="col-lg-3 col-md-6 col-12">
+                    <div class="footer-item text-center text-lg-start">
+                        <a href="#" class="d-inline-block mb-3">
+                            <img src="{{ asset('website/img/samrudhi-kirana-logo1.png') }}"
+                                style="max-width:160px" alt="Logo">
+                        </a>
+
+                        <div class="d-flex justify-content-center justify-content-lg-start gap-2">
+                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-12">
-                    <div class="d-flex justify-content-center justify-content-lg-end">
-                        <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-youtube"></i></a>
-                        <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="#"><i class="fab fa-linkedin-in"></i></a>
+
+                <!-- SHOP INFO -->
+                <div class="col-lg-3 col-md-6 col-12">
+                    <div class="footer-item">
+                        <h4 class="text-dark mb-3">Shop Info</h4>
+                        <ul class="list-unstyled">
+                            <li><a class="text-dark d-block mb-2" href="#">About Us</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Contact Us</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Privacy Policy</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Terms & Condition</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Return Policy</a></li>
+                            <li><a class="text-dark d-block" href="#">FAQs & Help</a></li>
+                        </ul>
                     </div>
                 </div>
+
+                <!-- ACCOUNT -->
+                <div class="col-lg-3 col-md-6 col-12">
+                    <div class="footer-item">
+                        <h4 class="text-dark mb-3">Account</h4>
+                        <ul class="list-unstyled">
+                            <li><a class="text-dark d-block mb-2" href="#">My Account</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Shopping Cart</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li>
+                            <li><a class="text-dark d-block mb-2" href="#">Order History</a></li>
+                            <li><a class="text-dark d-block" href="#">International Orders</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="col-lg-3 col-md-6 col-12">
+                    <div class="footer-item">
+                        <h4 class="text-dark mb-3">Contact</h4>
+                        <p class="mb-2">📍 1429 Netus Rd, NY 48247</p>
+                        <p class="mb-2">📧 Example@gmail.com</p>
+                        <p class="mb-2">📞 +0123 4567 8910</p>
+                        <p class="mb-2 fw-semibold">Payment Accepted</p>
+                        <img src="{{ asset('website/img/payment.png') }}"
+                            class="img-fluid" style="max-width:200px" alt="Payments">
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-lg-3 col-md-6">
-                <div class="d-flex flex-column text-start footer-item">
-                    <h4 class="text-dark mb-2">Shop Info</h4>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">About Us</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Contact Us</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Privacy Policy</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Terms & Condition</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Return Policy</a>
-                    <a class="btn-link text-dark fs-6" href="#">FAQs & Help</a>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="d-flex flex-column text-start footer-item">
-                    <h4 class="text-dark mb-2">Account</h4>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">My Account</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Shop details</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Shopping Cart</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Wishlist</a>
-                    <a class="btn-link text-dark fs-6 mb-1" href="#">Order History</a>
-                    <a class="btn-link text-dark fs-6" href="#">International Orders</a>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6">
-                <div class="footer-item text-dark fs-6">
-                    <h4 class="text-dark mb-2">Contact</h4>
-                    <p class="mb-1">Address: 1429 Netus Rd, NY 48247</p>
-                    <p class="mb-1">Email: Example@gmail.com</p>
-                    <p class="mb-1">Phone: +0123 4567 8910</p>
-                    <p class="mb-1">Payment Accepted</p>
-                    <img src="img/payment.png" class="img-fluid" alt="Payments">
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
