@@ -1,11 +1,15 @@
 @include('layouts.header')
 
 <body class="login-body" >
-
+<style>
+    .a{
+       
+    }
+</style>
 <div class="container min-vh-100 align-items-center justify-content-center p-10 "> 
-    <div class="login-card card">
+    <div class="login-card " style=" background-color: rgba(240, 240, 240, 0.5); ">
         <div class="card-body p-4">
-
+    
             <!-- Logo -->
             <div class="text-center mb-4">
                 <a href="{{ route('login.form') }}">
