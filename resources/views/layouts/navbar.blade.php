@@ -28,20 +28,19 @@
                     data-bs-toggle="dropdown">
 
                     <div class="avatar avatar-online">
-                      @if(Auth::check())
-    <img
-        src="{{ Auth::user()->profile_photo
-            ? asset('storage/' . Auth::user()->profile_photo)
-            : asset('admin/assets/img/avatars/1.png') }}"
-        class="rounded-circle"
-        width="40"
-        height="40"
-        alt="User Avatar"
-    >
-@else
-    <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">
-@endif
-
+                        @if(Auth::check())
+                            <img
+                                src="{{ Auth::user()->profile_photo
+                                    ? asset('storage/' . Auth::user()->profile_photo)
+                                    : asset('admin/assets/img/avatars/1.png') }}"
+                                class="rounded-circle"
+                                width="40"
+                                height="40"
+                                alt="User Avatar"
+                            >
+                        @else
+                            <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">
+                        @endif
                     </div>
                 </a>
 
@@ -53,8 +52,19 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset('admin/assets/img/avatars/1.png') }}"
-                                            class="w-px-40 h-auto rounded-circle" />
+                                        @if(Auth::check())
+                                            <img
+                                                src="{{ Auth::user()->profile_photo
+                                                    ? asset('storage/' . Auth::user()->profile_photo)
+                                                    : asset('admin/assets/img/avatars/1.png') }}"
+                                                class="rounded-circle"
+                                                width="40"
+                                                height="40"
+                                                alt="User Avatar"
+                                            >
+                                        @else
+                                            <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">
+                                        @endif
                                     </div>
                                 </div>
 
