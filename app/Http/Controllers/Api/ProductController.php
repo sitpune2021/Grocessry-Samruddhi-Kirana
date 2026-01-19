@@ -158,16 +158,16 @@ class ProductController extends Controller
         $sgstAmount = ($price * $sgstPercent / 100) * $finalQty;
         $taxTotal   = $cgstAmount + $sgstAmount;
 
-        $lineTotal = ($price * $finalQty) + $taxTotal;
+        $itemTotal = ($price * $finalQty) + $taxTotal;
 
         if ($cartItem) {
             $cartItem->update([
-                'qty'          => $finalQty,
-                'price'        => $price,
-                'cgst_amount'  => $cgstAmount,
-                'sgst_amount'  => $sgstAmount,
-                'tax_total'    => $taxTotal,
-                'line_total'   => $lineTotal
+                'qty'         => $finalQty,
+                'price'       => $price,
+                'cgst_amount' => $cgstAmount,
+                'sgst_amount' => $sgstAmount,
+                'tax_total'   => $taxTotal,
+                'item_total'  => $itemTotal
             ]);
         } else {
             CartItem::create([
@@ -178,7 +178,7 @@ class ProductController extends Controller
                 'cgst_amount' => ($price * $cgstPercent / 100) * $qty,
                 'sgst_amount' => ($price * $sgstPercent / 100) * $qty,
                 'tax_total'   => (($price * $cgstPercent / 100) + ($price * $sgstPercent / 100)) * $qty,
-                'line_total'  => (($price * $qty) + ((($price * $cgstPercent / 100) + ($price * $sgstPercent / 100)) * $qty))
+                'item_total'  => (($price * $qty) + ((($price * $cgstPercent / 100) + ($price * $sgstPercent / 100)) * $qty))
             ]);
         }
 
@@ -186,7 +186,8 @@ class ProductController extends Controller
         $subtotal = CartItem::where('cart_id', $cart->id)
             ->sum(DB::raw('price * qty'));
 
-        $taxTotal = CartItem::where('cart_id', $cart->id)->sum('tax_total');
+        $taxTotal = CartItem::where('cart_id', $cart->id)
+            ->sum('tax_total');
 
         $cart->update([
             'subtotal'  => $subtotal,
@@ -200,6 +201,7 @@ class ProductController extends Controller
             'message' => 'Product added to cart successfully'
         ]);
     }
+
     public function viewCart(Request $request)
     {
         $user = $request->user();
@@ -214,6 +216,7 @@ class ProductController extends Controller
             'data'   => $cart
         ]);
     }
+
 
     // public function viewCart(Request $request)
     // {

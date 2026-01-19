@@ -55,16 +55,18 @@
                                                         Shop Name <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <select name="shop_id" id="shop_id" class="form-select"
+                                                    <select name="warehouse_id" id="warehouse_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                                         <option value="">Select Shop</option>
 
                                                         @foreach ($shops as $shop)
                                                             <option value="{{ $shop->id }}"
-                                                                {{ old('shop_id', $agent->shop_id ?? '') == $shop->id ? 'selected' : '' }}>
-                                                                {{ $shop->shop_name }}
+                                                                {{ old('warehouse_id', $agent->warehouse_id ?? '') == $shop->id ? 'selected' : '' }}>
+                                                                {{ $shop->name }}
                                                             </option>
                                                         @endforeach
+
                                                     </select>
 
                                                     @error('shop_id')
