@@ -37,6 +37,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
+                            <th>Image</th>
                             <th style="width: 30%;">Category Name</th>
                             <th style="width: 40%;">Slug</th>
                             @if($canView || $canEdit || $canDelete)
@@ -50,6 +51,24 @@
                         <tr>
                             <td class="text-center fw-semibold">
                                 {{ $categories->firstItem() + $index }}
+                            </td>
+                             {{-- Product Image --}}
+                            <td>
+                                @if (!empty($category->category_images))
+                                @php
+                                $images = $category->category_images; // Already array
+                                $image = $images[0] ?? null;
+                                @endphp
+
+                                @if ($image)
+                                <img src="{{ asset('storage/categories/' . $image) }}" alt="category Image"
+                                    width="60" height="60" class="rounded border">
+                                @else
+                                <span class="text-muted">No Image</span>
+                                @endif
+                                @else
+                                <span class="text-muted">No Image</span>
+                                @endif
                             </td>
                             <td>
                                 <span class="fw-medium">{{ $category->name }}</span>
