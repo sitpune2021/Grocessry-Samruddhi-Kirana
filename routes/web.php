@@ -126,6 +126,11 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
+   Route::get(
+    'get-brands-by-sub-category/{subCategory}',
+    [ProductController::class, 'getBrands']
+);
+    
 
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
