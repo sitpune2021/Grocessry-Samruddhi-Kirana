@@ -234,14 +234,14 @@
         /* 🔴 KEY LINE */
         border-radius: 16px;
         background: #000;
-        /* gap येऊ नये म्हणून */
+
     }
 
     .hero-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        /* 🔴 image crop होईल पण बाहेर जाणार नाही */
+
         object-position: center;
         display: block;
     }
@@ -377,7 +377,7 @@
 
                 <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel">
 
-                    <div class="carousel-inner rounded-4 overflow-hidden">
+                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 75px;">
 
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
@@ -485,9 +485,14 @@
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
-                                        <h4>{{ $product->name }}</h4>
-                                        <p>₹ {{ $product->mrp }}</p>
-                                        <a href="#" class="btn-add-sm"><i></i> Add to cart</a>
+
+                                        <form action="{{ route('add_cart') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <button type="submit" class="btn-add-sm">Add to cart</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -545,10 +550,15 @@
                                         @endif
                                     </div>
 
-                                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                        <h4>{{ $product->name }}</h4>
-                                        <p>₹ {{ $product->mrp }}</p>
-                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                    <div class="p-4 border border-top-0  ">
+
+                                        <form action="{{ route('add_cart') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <button type="submit" class="btn-add-sm">Add to cart</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -598,8 +608,14 @@
                             {{ Str::limit($product->name, 35) }}
                         </div>
                         <div class="product-sm-footer">
-                            <span class="price">₹{{ $product->mrp }}</span>
-                            <button class="btn-add-sm">ADD</button>
+
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                <p>₹ {{ $product->mrp }}</p>
+                                <button type="submit" class="btn-add-sm">Add to cart</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -612,6 +628,55 @@
         @endforeach
 
     </div>
+
+    <div class="container py-2">
+
+        <div class="row p-3">
+            <div class="col text-start">
+                <h4 class="fw-bold text-dark">Latest Products</h4>
+            </div>
+        </div>
+
+        <div class="position-relative product-slider-wrapper">
+            <button class="slider-arrow left">&#10094;</button>
+
+            <div class="product-slider">
+                @foreach($latestPro as $product)
+                @php
+                $image = $product->product_images[0] ?? null;
+                @endphp
+
+                <div class="product-slide-item">
+                    <div class="product-sm-card">
+                        <div class="product-sm-img">
+                            <img src="{{ $image 
+                                ? asset('storage/products/'.$image) 
+                                : asset('website/img/no-image.png') }}">
+                        </div>
+
+                        <div class="product-sm-title">
+                            {{ Str::limit($product->name, 35) }}
+                        </div>
+
+                        <div class="product-sm-footer">
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                <p>₹ {{ $product->mrp }}</p>
+                                <button type="submit" class="btn-add-sm">Add to cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <button class="slider-arrow right">&#10095;</button>
+        </div>
+
+    </div>
+
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs">

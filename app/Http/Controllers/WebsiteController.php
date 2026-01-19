@@ -33,6 +33,12 @@ class WebsiteController extends Controller
             ->take(3)
             ->get();
 
+        //letest product
+        $latestPro = Product::whereNull('deleted_at')
+            ->orderBy('id', 'DESC')   // latest first (id किंवा created_at)
+            ->take(12)                // 12 products
+            ->get();
+
         $categoriestop = Category::orderBy('name')->orderBy('name')
             ->take(12)
             ->get();
@@ -62,7 +68,8 @@ class WebsiteController extends Controller
             'cate',
             'allProducts',
             'categoriestop',
-            'categoryProducts'
+            'categoryProducts',
+            'latestPro'
         ));
     }
 
@@ -201,6 +208,22 @@ class WebsiteController extends Controller
         ]);
 
         $product = Product::findOrFail($request->product_id);
+         $qty = $request->qty ?? 1;
+
+    $cart = session()->get('cart', []);
+
+    if (isset($cart[$product->id])) {
+        $cart[$product->id]['qty'] += $qty;
+    } else {
+        $cart[$product->id] = [
+            'name'  => $product->name,
+            'price' => $product->mrp,
+            'qty'   => $qty,
+            'image' => $product->product_images[0] ?? null,
+        ];
+    }
+
+    
 
         $userId = Auth::id() ?? session()->getId();
 
@@ -271,7 +294,4 @@ class WebsiteController extends Controller
 
         return view('website.shop_detail', compact('product', 'relatedProducts'));
     }
-
-
-
 }
