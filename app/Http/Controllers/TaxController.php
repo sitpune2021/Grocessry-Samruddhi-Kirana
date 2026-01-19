@@ -14,7 +14,7 @@ class TaxController extends Controller
      */
     public function index()
     {
-        $taxes = Tax::orderBy('id', 'desc')->paginate(10);
+        $taxes = Tax::orderBy('id', 'desc')->paginate(20);
         return view('menus.taxes.tax-index', compact('taxes'));
     }
 
