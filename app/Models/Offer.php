@@ -16,7 +16,6 @@ class Offer extends Model
     protected $fillable = [
         'title',
         'description',
-        'warehouse_id',
         'offer_type',
         'discount_value',
         'max_discount',
