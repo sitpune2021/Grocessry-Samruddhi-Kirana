@@ -9,7 +9,6 @@
 <!-- Featurs Section End -->
 
 <style>
-    /* FORCE pagination to horizontal row */
     .pagination {
         justify-content: center !important;
         flex-wrap: wrap;
@@ -20,14 +19,16 @@
     }
 
     .pagination .page-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 1.2;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 4px;
     }
 
-    /* /// */
 
-    /* Small product card (Blinkit style) */
+    /* Small product card () */
     .product-sm-card {
         border: 1px solid #eee;
         border-radius: 12px;
@@ -122,10 +123,6 @@
         overflow: hidden;
     }
 
-    .pagination {
-        justify-content: center !important;
-        flex-wrap: wrap;
-    }
 
     img {
         max-width: 100%;
@@ -230,33 +227,34 @@
     }
 
     .hero-banner {
-    height: 380px;
-    width: 100%;
-    position: relative;
-    overflow: hidden;        /* 🔴 KEY LINE */
-    border-radius: 16px;
-    background: #000;        /* gap येऊ नये म्हणून */
-}
+        height: 380px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        /* 🔴 KEY LINE */
+        border-radius: 16px;
+        background: #000;
+        /* gap येऊ नये म्हणून */
+    }
 
-.hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;       /* 🔴 image crop होईल पण बाहेर जाणार नाही */
-    object-position: center;
-    display: block;
-}
+    .hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* 🔴 image crop होईल पण बाहेर जाणार नाही */
+        object-position: center;
+        display: block;
+    }
 
-/* Overlay safe */
-.hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.55),
-        rgba(0, 0, 0, 0.1)
-    );
-    z-index: 1;
-}
+    /* Overlay safe */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right,
+                rgba(0, 0, 0, 0.55),
+                rgba(0, 0, 0, 0.1));
+        z-index: 1;
+    }
 
 
     .carousel-control-prev,
@@ -274,7 +272,7 @@
         background-size: 18px 18px;
     }
 
-    
+
     /* Mobile */
     @media (max-width: 768px) {
         .hero-title {
@@ -563,19 +561,13 @@
                             {{-- Pagination --}}
                             {{ $categoryProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
 
-                            {{-- Showing result text --}}
-                            <!-- <div class="mt-2 text-muted">
-                                    Showing {{ $categoryProducts->firstItem() }}
-                                    to {{ $categoryProducts->lastItem() }}
-                                    of {{ $categoryProducts->total() }} results
-                                </div> -->
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 
     <!-- slide product  -->
     <div class="container py-2">

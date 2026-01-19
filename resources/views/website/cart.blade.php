@@ -45,7 +45,7 @@
 
                             <!-- Quantity -->
                             <div class="col-4 col-md-2 text-md-center">
-                                <span class="badge bg-light text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
+                                <span class="badge  text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
                             </div>
 
                             <!-- Remove -->
