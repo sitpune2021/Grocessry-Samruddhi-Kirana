@@ -53,9 +53,15 @@ class stockWarehouseController extends Controller
                 ->whereIn('parent_id', $districtIds)
                 ->pluck('id');
 
+            $shopIds = Warehouse::where('type','distribution_center')
+                ->whereIn('parent_id',$talukaIds)
+                ->pluck('id');
+
+
             $allowedWarehouseIds = collect([$masterWarehouseId])
                 ->merge($districtIds)
-                ->merge($talukaIds);
+                ->merge($talukaIds)
+                ->merge($shopIds);
 
             $query->whereIn('warehouse_id', $allowedWarehouseIds);
         }
@@ -68,8 +74,28 @@ class stockWarehouseController extends Controller
                 ->where('parent_id', $districtWarehouseId)
                 ->pluck('id');
 
+             $shopIds = Warehouse::where('type','distribution_center')
+                ->whereIn('parent_id',$talukaIds)
+                ->pluck('id');
+
             $allowedWarehouseIds = collect([$districtWarehouseId])
-                ->merge($talukaIds);
+                ->merge($talukaIds)
+                ->merge($shopIds);
+
+            $query->whereIn('warehouse_id', $allowedWarehouseIds);
+        }
+
+        elseif ($user->warehouse->type === 'taluka') {
+
+            $talukaWarehouseId = $user->warehouse_id;
+
+            $shopIds = Warehouse::where('type', 'distribution_center')
+                ->where('parent_id', $talukaWarehouseId)
+                ->pluck('id');
+
+
+            $allowedWarehouseIds = collect([$talukaWarehouseId])
+                ->merge($shopIds);
 
             $query->whereIn('warehouse_id', $allowedWarehouseIds);
         }

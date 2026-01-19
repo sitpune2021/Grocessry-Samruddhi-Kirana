@@ -39,7 +39,7 @@
             <form action="{{ route('admin.login') }}" method="POST">
                 @csrf
 
-                <div class="mb-3">
+                <!-- <div class="mb-3">
                     <label class="form-label">Email Id</label>
                     <input type="email"
                            name="email"
@@ -47,7 +47,17 @@
                            placeholder="Enter email"
                            value="{{ old('email') }}"
                            required>
+                </div> -->
+                <div class="mb-3">
+                    <label class="form-label">Email or Mobile</label>
+                    <input type="text"
+                        name="login"
+                        class="form-control"
+                        placeholder="Enter email or mobile"
+                        value="{{ old('login') }}"
+                        required>
                 </div>
+
 
                 <div class="mb-3">
                     <label class="form-label">Password</label>

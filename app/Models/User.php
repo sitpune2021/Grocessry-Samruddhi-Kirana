@@ -108,15 +108,31 @@ class User extends Authenticatable
     {
         return $this->hasMany(Address::class);
     }
-    public function notifications()
+    // public function notifications()
+    // {
+    //     return $this->hasMany(DeliveryNotification::class, 'delivery_agent_id');
+    // }
+
+    // public function notificationSettings()
+    // {
+    //     return $this->hasOne(DeliveryNotificationSetting::class, 'delivery_agent_id');
+    // }
+    public function deliveryNotifications()
     {
-        return $this->hasMany(DeliveryNotification::class, 'delivery_agent_id');
+        return $this->hasMany(
+            DeliveryNotification::class,
+            'delivery_agent_id'
+        );
     }
 
     public function notificationSettings()
     {
-        return $this->hasOne(DeliveryNotificationSetting::class, 'delivery_agent_id');
+        return $this->hasOne(
+            DeliveryNotificationSetting::class,
+            'delivery_agent_id'
+        );
     }
+
     // public function hasPermission(string $permission): bool
     // {
 

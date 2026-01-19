@@ -14,7 +14,7 @@ class WarehouseStockReturnItem extends Model
         'received_qty',
         'damaged_qty',
         'condition',
-        'condition_image'
+        'product_image'
     ];
 
     public function stockReturn()

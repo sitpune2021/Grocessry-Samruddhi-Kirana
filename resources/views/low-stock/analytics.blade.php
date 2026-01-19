@@ -24,7 +24,7 @@
                         <thead>
                             <tr>
                                 <th>Warehouse</th>
-                                <th>Low Stock Count</th>
+                                <th>Low Stock Product Count</th>
                             </tr>
                         </thead>
                         <tbody>

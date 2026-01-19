@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Models\Warehouse;
+
 use Illuminate\Validation\ValidationException;
 
 class DeliveryAgentController extends Controller
@@ -36,13 +38,11 @@ class DeliveryAgentController extends Controller
     {
         $mode = 'add';
         $agent = null;
-        $shops = GroceryShop::where('status', 'active')->get();
+        $shops = Warehouse::where('status', 'active')->get();
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('mode', 'agent', 'shops'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
 
@@ -63,12 +63,13 @@ class DeliveryAgentController extends Controller
                 'mobile'          => 'required|digits:10|unique:users,mobile',
                 'email'           => 'nullable|email|unique:users,email',
                 'password'        => 'nullable|min:6',
-                'shop_id'         => 'required|exists:grocery_shops,id',
+                'warehouse_id' => 'required|exists:warehouses,id',
+                // 'shop_id'         => 'required|exists:grocery_shops,id',
                 'dob'             => 'nullable|date',
                 'gender'          => 'nullable|in:male,female',
                 'address'         => 'nullable|string',
                 'active_status'   => 'required|boolean',
-                'profile_image'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'aadhaar_card'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
                 'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
@@ -95,15 +96,12 @@ class DeliveryAgentController extends Controller
             Log::info('Creating user record');
             $profileImage = null;
 
-            if ($request->hasFile('profile_image')) {
-                $file = $request->file('profile_image');
-                $profileImage = $file->getClientOriginalName();
+            if ($request->hasFile('profile_photo')) {
+                $file = $request->file('profile_photo');
+                $profileImage = time() . '_' . $file->getClientOriginalName();
                 $file->storeAs('profile_photos', $profileImage, 'public');
-
-                Log::info('Profile image uploaded', [
-                    'path' => $profileImage
-                ]);
             }
+
 
             $user = User::create([
                 'first_name'      => $validated['name'],
@@ -113,7 +111,7 @@ class DeliveryAgentController extends Controller
                 'password'  => Hash::make('Agent@123'),
                 'role_id'   => $role->id,
                 'profile_photo'   => $profileImage,
-
+                'warehouse_id' => $validated['warehouse_id'], 
             ]);
 
             Log::info('User created successfully', [

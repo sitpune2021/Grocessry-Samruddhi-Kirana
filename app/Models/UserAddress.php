@@ -14,7 +14,11 @@ class UserAddress extends Model
         'city',
         'country',
         'postcode',
+        'landmark',     
+        'is_default',
         'phone',
         'email',
+        'latitude',
+        'longitude',
     ];
 }

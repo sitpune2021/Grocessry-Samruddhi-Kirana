@@ -21,28 +21,27 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    Log::info('Product Index Page Loaded');
+    public function index()
+    {
+        Log::info('Product Index Page Loaded');
 
-    try {
-        $products = Product::with(['category', 'tax'])
-            ->latest()
-            ->paginate(20);
+        try {
+            $products = Product::with(['category', 'tax'])
+                ->latest()
+                ->paginate(20);
 
-        return view('menus.product.index', compact('products'));
+            return view('menus.product.index', compact('products'));
+        } catch (\Throwable $e) {
 
-    } catch (\Throwable $e) {
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
 
-        Log::error('Product Index Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
-
-        return redirect()->back()
-            ->with('error', 'Unable to load products');
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
     }
-}
 
 
 
@@ -55,9 +54,11 @@ class ProductController extends Controller
             Log::info('Product Create Page Loaded');
 
             $mode = 'add';
-            $brands = Brand::where('status', 1)->orderBy('name')->get();
-            $categories = collect();
+            $categories = Category::select('id', 'name')
+                ->orderBy('name')
+                ->get();
             $subCategories = collect();
+            $brands = collect();
             $taxes = Tax::where('is_active', 1)->get();
 
             return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes'));
@@ -78,7 +79,7 @@ class ProductController extends Controller
         Log::info('Product Store Request', [
             'request' => $request->all(),
         ]);
-             
+
         try {
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
@@ -233,7 +234,8 @@ class ProductController extends Controller
 
             $mode = 'edit';
             $categories = Category::select('id', 'name')->get();
-            $brands = Brand::where('status', 1)
+            $brands = Brand::where('sub_category_id', $product->sub_category_id)
+                ->select('id', 'name')
                 ->orderBy('name')
                 ->get();
             $taxes = Tax::where('is_active', 1)->get();
@@ -390,5 +392,17 @@ class ProductController extends Controller
                 ->orderBy('name')
                 ->get()
         );
+    }
+
+    public function getBrands($subCategoryId)
+    {
+        Log::info('Loading brands for sub-category', [
+            'sub_category_id' => $subCategoryId
+        ]);
+
+        return Brand::where('sub_category_id', $subCategoryId)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
     }
 }
