@@ -21,8 +21,8 @@ class WebsiteController extends Controller
         $banners = Banner::latest()->get();
 
         // categories
-        // $categories = Category::orderBy('name')->get();
-        $categories = Category::whereNull('deleted_at')
+        $categories = Category::orderBy('name')->get();
+        $cate = Category::whereNull('deleted_at')
             ->whereHas('products', function ($q) {
                 $q->whereNull('deleted_at');
             })
@@ -30,7 +30,7 @@ class WebsiteController extends Controller
                 $q->whereNull('deleted_at');
             }])
             ->orderBy('name')
-            ->take(10)
+            ->take(3)
             ->get();
 
         $categoriestop = Category::orderBy('name')->orderBy('name')
@@ -59,6 +59,7 @@ class WebsiteController extends Controller
             'banners',
             'categories',
             'categoryId',
+            'cate',
             'allProducts',
             'categoriestop',
             'categoryProducts'

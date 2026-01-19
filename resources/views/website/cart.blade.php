@@ -1,107 +1,123 @@
 @extends('website.layout')
 
-@section('title', 'Home')
-
+@section('title', 'Cart')
 
 @section('content')
 
-    <body>
+<!-- Page Header -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Cart</h1>
+</div>
 
-        <!-- Single Page Header start -->
-        <div class="container-fluid page-header py-5">
-            <h1 class="text-center text-white display-6">Cart</h1>
-        </div>
-        <!-- Single Page Header End -->
+<!-- Cart Page -->
+<div class="container-fluid py-5">
+    <div class="container">
 
-        <!-- Cart Page Start -->
-        <div class="container-fluid py-5">
-            <div class="container py-5">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Products</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Handle</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                            @if($cart && $cart->items->count())
-                                @foreach($cart->items as $item)
-                                <tr>
-                                    <td>
-                                        <img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}"
-                                            style="width:80px;height:80px;" class="rounded-circle">
-                                    </td>
+        <div class="row g-4">
 
-                                    <td>{{ $item->product->name }}</td>
+            <!-- CART ITEMS -->
+            <div class="col-lg-8">
 
-                                    <td>₹ {{ $item->price }}</td>
+                @if($cart && $cart->items->count())
+                @foreach($cart->items as $item)
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
 
-                                    <td>{{ $item->qty }}</td>
+                        <div class="row align-items-center g-3">
 
-                                    <td>₹ {{ $item->line_total }}</td>
-
-                                    <td>
-                                        <form action="{{ route('remove_cart_item', $item->id) }}" method="POST">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-danger btn-sm">
-                                                <i class="fa fa-times"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            @else
-                            <tr>
-                                <td colspan="6" class="text-center">Cart is empty</td>
-                            </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- <div class="mt-5">
-                    <input type="text" class="border-0 border-bottom rounded me-5 py-3 mb-4" placeholder="Coupon Code">
-                    <button class="btn border-secondary rounded-pill px-4 py-3 text-primary" type="button">Apply Coupon</button>
-                </div> -->
-
-                <div class="row g-4 justify-content-end">
-                    <div class="col-8"></div>
-                    <div class="col-sm-8 col-md-7 col-lg-6 col-xl-4">
-                        <div class="bg-light rounded">
-
-                            <div class="p-4">
-                                <h1 class="display-6 mb-4">Cart <span class="fw-normal">Total</span></h1>
-                                
-                                <div class="d-flex justify-content-between mb-4">
-                                    <h5 class="mb-0 me-4">Subtotal:</h5>
-                                    <p class="mb-0">
-                                        ₹ {{ $cart ? number_format($cart->subtotal, 2) : '0.00' }}
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div class="py-4 mb-4 border-top border-bottom d-flex justify-content-between">
-                                <h5 class="mb-0 ps-4 me-4">Total</h5>
-                                <p class="mb-0 pe-4">
-                                    ₹ {{ $cart ? number_format($cart->total, 2) : '0.00' }}
-                                </p>
+                            <!-- Image -->
+                            <div class="col-3 col-md-2 text-center">
+                                <img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}"
+                                    class="img-fluid rounded" style="max-height:90px;">
                             </div>
 
-                            <a href="{{ route('checkout') }}" 
-                                class="btn border-secondary rounded-pill px-4 py-3 text-primary text-uppercase mb-4 ms-4">
-                                Proceed Checkout
-                            </a>
+                            <!-- Details -->
+                            <div class="col-9 col-md-5">
+                                <h6 class="fw-semibold mb-1">{{ $item->product->name }}</h6>
+                                <p class="text-muted small mb-1">Seller: Store</p>
+                                <p class="text-success small mb-0">In Stock</p>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-4 col-md-2 text-md-center">
+                                <strong>₹ {{ $item->price }}</strong>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="col-4 col-md-2 text-md-center">
+                                <span class="badge bg-light text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
+                            </div>
+
+                            <!-- Remove -->
+                            <div class="col-4 col-md-1 text-end">
+                                <form action="{{ route('remove_cart_item', $item->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
 
                         </div>
+
+                        <hr class="my-2">
+
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Item Total</span>
+                            <strong>₹ {{ $item->line_total }}</strong>
+                        </div>
+
+                    </div>
+                </div>
+                @endforeach
+                @else
+                <div class="alert alert-info text-center">
+                    Your cart is empty
+                </div>
+                @endif
+
+            </div>
+
+            <!-- PRICE DETAILS -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm sticky-top" style="top:90px;">
+                    <div class="card-body">
+
+                        <h6 class="fw-bold text-uppercase text-muted mb-3">Price Details</h6>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <span>₹ {{ $cart ? number_format($cart->subtotal,2) : '0.00' }}</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Delivery</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total</span>
+                            <span>₹ {{ $cart ? number_format($cart->total,2) : '0.00' }}</span>
+                        </div>
+
+                        <a href="{{ route('checkout') }}"
+                            class="btn btn-warning w-100 mt-4 fw-semibold text-uppercase">
+                            Place Order
+                        </a>
+
+                        <p class="text-success small mt-3 mb-0">
+                            You will save more on this order
+                        </p>
+
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- Cart Page End -->
 
-    </body>
+        </div>
+    </div>
+</div>
+
+@endsection
