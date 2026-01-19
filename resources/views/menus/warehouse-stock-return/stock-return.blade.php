@@ -119,8 +119,6 @@
                                                                     </option>
                                                                     @endforeach
                                                                 </select>
-
-
                                                             </td>
                                                             {{-- Product Image --}}
                                                             <td class="text-center">

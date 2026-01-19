@@ -16,7 +16,7 @@
 
                 @endphp
 
-                @if ($warehouseType === 'taluka' && $warehouseType === 'district' && $warehouseType === '')
+                @if ($warehouseType === 'taluka' || $warehouseType === 'district')
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('stock-returns.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Raise Return
@@ -136,9 +136,9 @@
                                 </form>
                                 @endif
 
-                                @if($warehouseType === 'district')
+                                @if($warehouseType === 'district' && $return->status == 'received')
                                 <div class="col-md-auto ms-auto">
-                                    <a href="{{ route('stock-returns.create') }}" class="btn btn-success">
+                                    <a href="{{ route('stock-returns.edit',$return->id) }}" class="btn btn-success">
                                         Raise Return
                                     </a>
                                 </div>
