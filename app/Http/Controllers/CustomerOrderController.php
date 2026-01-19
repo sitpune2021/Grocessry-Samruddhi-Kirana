@@ -92,7 +92,11 @@ class CustomerOrderController extends Controller
 
     public function userorder()
     {
-        $orders = Order::latest()->get();
+        //$orders = Order::latest()->get();
+        $orders = Order::with(['items.product'])
+                ->latest()
+                ->get();
+                
         return view('website.user_order', compact('orders'));
     }
 

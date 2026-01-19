@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Brand;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
+use App\Models\WarehouseStock;
 
 class CategoryProductController extends Controller
 {
@@ -43,14 +44,14 @@ class CategoryProductController extends Controller
                 ->select('id', 'name')
                 ->orderBy('id')
                 ->get();
-            
-            
+
+
             return response()->json([
                 'status'  => true,
                 'message' => $subcategories->isEmpty()
                     ? 'No subcategories found'
                     : 'Subcategories fetched successfully',
-                    'category_id' => (int) $id,
+                'category_id' => (int) $id,
                 'data'    => $subcategories
             ], 200);
         } catch (\Exception $e) {
@@ -83,67 +84,64 @@ class CategoryProductController extends Controller
         }
     }
 
+
     public function getProductsBySubcategory($id)
     {
-        try {
-            $subcategory = SubCategory::find($id);
+        $subcategory = SubCategory::find($id);
 
-            if (!$subcategory) {
-                return response()->json([
-                    'status'  => true,
-                    'message' => 'Subcategory not found',
-                    'data'    => []
-                ], 200);
-            }
-
-            // Fetch products
-            $products = Product::where('sub_category_id', $id)
-                ->select(
-                    'id',
-                    'category_id',
-                    'sub_category_id',
-                    'name',
-                    'base_price',
-                    'retailer_price',
-                    'mrp',
-                    'gst_percentage',
-                    'stock',
-                    'product_images'
-                )
-                ->get()
-                ->map(function ($product) {
-
-                    $images = is_string($product->product_images)
-                        ? json_decode($product->product_images, true)
-                        : $product->product_images;
-
-                    $product->image_urls = collect($images)->map(function ($img) {
-                        return asset('storage/products/' . $img);
-                    });
-
-                    unset($product->product_images);
-
-                    return $product;
-                });
-
+        if (!$subcategory) {
             return response()->json([
-                'status'      => true,
-                'message'     => $products->isEmpty()
-                    ? 'No products found for this subcategory'
-                    : 'Products fetched successfully',
-                'subcategory' => [
-                    'id'   => $subcategory->id,
-                    'name' => $subcategory->name
-                ],
-                'data'        => $products
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Internal server error'
-            ], 500);
+                'status' => true,
+                'message' => 'Subcategory not found',
+                'data' => []
+            ]);
         }
+
+        $products = Product::where('sub_category_id', $id)
+            ->get()
+            ->map(function ($product) {
+
+                // ✅ REAL STOCK from warehouse_stock
+                $availableStock = WarehouseStock::where('product_id', $product->id)
+                    ->sum('quantity');
+
+                $images = is_string($product->product_images)
+                    ? json_decode($product->product_images, true)
+                    : $product->product_images;
+
+                return [
+                    'id' => $product->id,
+                    'category_id' => $product->category_id,
+                    'sub_category_id' => $product->sub_category_id,
+                    'name' => $product->name,
+                    'base_price' => $product->base_price,
+                    'retailer_price' => $product->retailer_price,
+                    'mrp' => $product->mrp,
+                    'gst_percentage' => $product->gst_percentage,
+
+                    // ✅ FIX HERE
+                    'stock' => $availableStock,
+                    'quantity' => 1,
+                    'max_quantity' => $availableStock,
+
+                    'image_urls' => collect($images)->map(
+                        fn($img) =>
+                        asset('storage/products/' . $img)
+                    )
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Products fetched successfully',
+            'subcategory' => [
+                'id' => $subcategory->id,
+                'name' => $subcategory->name
+            ],
+            'data' => $products
+        ]);
     }
+
 
     public function getProductsByBrand($id)
     {

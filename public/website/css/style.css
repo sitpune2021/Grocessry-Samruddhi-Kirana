@@ -1,3 +1,16 @@
+    .card {
+        background: #fff;
+    }
+
+    .form-control {
+        border-radius: 10px;
+    }
+
+    .btn {
+        border-radius: 10px;
+    }
+
+
 
 /*** Spinner Start ***/
 #spinner {
@@ -5,15 +18,15 @@
     visibility: hidden;
     transition: opacity .8s ease-out, visibility 0s linear .5s;
     z-index: 99999;
- }
+}
 
- #spinner.show {
-     transition: opacity .8s ease-out, visibility 0s linear .0s;
-     visibility: visible;
-     opacity: 1;
- }
+#spinner.show {
+    transition: opacity .8s ease-out, visibility 0s linear .0s;
+    visibility: visible;
+    opacity: 1;
+}
 
- .back-to-top {
+.back-to-top {
     position: fixed;
     right: 30px;
     bottom: 30px;
@@ -25,6 +38,7 @@
     transition: 0.5s;
     z-index: 99;
 }
+
 /*** Spinner End ***/
 
 
@@ -114,6 +128,7 @@
 .topbar .top-link a small:hover i {
     color: var(--bs-primary) !important;
 }
+
 /*** Topbar End ***/
 
 /*** Navbar Start ***/
@@ -174,6 +189,7 @@
 #searchModal .modal-content {
     background: rgba(255, 255, 255, .8);
 }
+
 /*** Navbar End ***/
 
 /*** Hero Header ***/
@@ -226,6 +242,7 @@
 }
 
 @media (min-width: 992px) {
+
     .hero-header,
     .page-header {
         margin-top: 152px !important;
@@ -233,11 +250,13 @@
 }
 
 @media (max-width: 992px) {
+
     .hero-header,
     .page-header {
         margin-top: 97px !important;
     }
 }
+
 /*** Hero Header end ***/
 
 
@@ -248,66 +267,129 @@
     height: 120px;
 }
 
- 
+
 /*** featurs End ***/
 
 
 /*** service Start ***/
 .service .service-item .service-content {
     position: relative;
-    width: 250px; 
-    height: 130px; 
-    top: -50%; 
-    left: 50%; 
+    width: 250px;
+    height: 130px;
+    top: -50%;
+    left: 50%;
     transform: translate(-50%, -50%);
 }
 
 /*** service End ***/
 
 
-/*** Fruits Start ***/
-.fruite .tab-class .nav-item a.active {
-    background: var(--bs-secondary) !important;
-}
+/* ===== SMALL PRODUCT CARD ===== */
 
-.fruite .tab-class .nav-item a.active span {
-    color: var(--bs-white) !important; 
-}
-
-.fruite .fruite-categorie .fruite-name {
-    line-height: 40px;
-}
-
-.fruite .fruite-categorie .fruite-name a {
-    transition: 0.5s;
-}
-
-.fruite .fruite-categorie .fruite-name a:hover {
-    color: var(--bs-secondary);
-}
-
-.fruite .fruite-item {
+.fruite-item {
+    border-radius: 10px;
     height: 100%;
-    transition: 0.5s;
-}
-.fruite .fruite-item:hover {
-    box-shadow: 0 0 55px rgba(0, 0, 0, 0.4);
 }
 
-.fruite .fruite-item .fruite-img {
+/* IMAGE SMALL */
+.fruite-item .fruite-img {
+    height: 120px;
+    /* 👈 small image */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    transition: 0.5s;
-    border-radius: 10px 10px 0 0;
 }
 
-.fruite .fruite-item .fruite-img img {
-    transition: 0.5s;
+.fruite-item .fruite-img img {
+    height: 110px !important;
+    width: auto !important;
+    object-fit: contain !important;
 }
 
-.fruite .fruite-item .fruite-img img:hover {
-    transform: scale(1.3);
+/* CONTENT SMALL */
+.fruite-item .p-4 {
+    padding: 10px !important;
 }
-/*** Fruits End ***/
+
+/* PRODUCT NAME SMALL */
+.fruite-item h4 {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 4px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* PRICE SMALL */
+.fruite-item p {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+/* ADD BUTTON SMALL */
+.fruite-item .btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+@media (min-width: 1200px) {
+    #tab-1 .col-lg-3 {
+        flex: 0 0 auto;
+        width: 16.66666667%;
+        /* 100 / 6 */
+    }
+}
+
+/* ===== PRODUCT CARD BORDER + SHADOW ===== */
+
+.fruite-item {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+/* Soft shadow on hover */
+.fruite-item:hover {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+/* IMAGE RADIUS */
+.fruite-item .fruite-img {
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+}
+
+/* CONTENT BORDER CLEAN */
+.fruite-item .p-4 {
+    border: none !important;
+}
+
+/* ADD BUTTON SMALL */
+.btn-add-sm {
+    display: inline-block;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #28a745;
+    color: #28a745;
+    background: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-add-sm:hover {
+    background: #28a745;
+    color: #fff;
+}
 
 
 /*** vesitable Start ***/
@@ -371,6 +453,7 @@
     background: var(--bs-secondary);
     color: var(--bs-white);
 }
+
 /*** vesitable End ***/
 
 
@@ -378,7 +461,9 @@
 .banner .banner-btn:hover {
     background: var(--bs-primary);
 }
+
 /*** Banner Section End ***/
+
 
 
 /*** Facts Start ***/
@@ -402,6 +487,7 @@
 .counter h1 {
     margin-bottom: 0;
 }
+
 /*** Facts End ***/
 
 
@@ -437,6 +523,7 @@
     background: var(--bs-secondary);
     color: var(--bs-white);
 }
+
 /*** testimonial End ***/
 
 
@@ -444,7 +531,7 @@
 .pagination {
     display: inline-block;
 }
-  
+
 .pagination a {
     color: var(--bs-dark);
     padding: 10px 16px;
@@ -453,18 +540,21 @@
     border: 1px solid var(--bs-secondary);
     margin: 0 4px;
 }
-  
+
 .pagination a.active {
     background-color: var(--bs-primary);
     color: var(--bs-light);
     border: 1px solid var(--bs-secondary);
 }
-  
-.pagination a:hover:not(.active) {background-color: var(--bs-primary)}
+
+.pagination a:hover:not(.active) {
+    background-color: var(--bs-primary)
+}
 
 .nav.nav-tabs .nav-link.active {
     border-bottom: 2px solid var(--bs-secondary) !important;
 }
+
 /*** Single Page End ***/
 
 
@@ -482,5 +572,5 @@
 .footer .footer-item p.mb-4 {
     line-height: 35px;
 }
-/*** Footer End ***/
 
+/*** Footer End ***/

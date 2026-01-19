@@ -45,9 +45,14 @@ return [
             'provider' => 'users',
         ],
         'api' => [
-            'driver' => 'sanctum', // important for API tokens
+            'driver' => 'sanctum',
             'provider' => 'users',
         ],
+        'delivery' => [
+            'driver' => 'sanctum',
+            'provider' => 'delivery_agents',
+        ],
+
     ],
 
     /*
@@ -71,6 +76,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'delivery_agents' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\DeliveryAgent::class,
         ],
 
     ],

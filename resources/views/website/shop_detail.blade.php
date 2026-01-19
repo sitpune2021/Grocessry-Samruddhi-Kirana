@@ -1,235 +1,109 @@
 @extends('website.layout')
 
-@section('title', 'Home')
-
+@section('title', $product->name)
 
 @section('content')
 
-    <body>       
+<!-- Page Header -->
+<div class="container-fluid page-header py-4 mb-5 bg-dark">
+    <h1 class="text-center text-white display-6">Product Details</h1>
+</div>
 
-        <!-- Single Page Header start -->
-        <div class="container-fluid page-header py-5">
-            <h1 class="text-center text-white display-6">Shop</h1>
-        </div>
-        <!-- Single Page Header End -->
+<!-- Product Detail -->
+<div class="container mb-5">
+    <div class="row g-4">
 
-
-        <!-- Single Product Start -->
-        <div class="container-fluid py-5 mt-5">
-            <div class="container py-5">
-                <div class="row g-4 mb-5">
-                    <div class="col-lg-8 col-xl-9">
-                        <div class="row g-4">
-
-                            <div class="col-lg-6">
-                                <div class="border rounded">
-                                    <a href="#">
-                                        <img src="{{ asset('storage/products/'.$product->product_images[0]) }}"
-                                        class="img-fluid rounded">
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <h4 class="fw-bold mb-3">{{ $product->name }}</h4>
-                                <p class="mb-3">Category: {{ $product->category->name ?? 'N/A' }}</p>
-                                <p class="fs-4 fw-bold text-primary">₹{{ $product->mrp }}</p>
-                                
-                                <form action="{{ route('add_cart') }}" method="POST">
-                                    @csrf
-
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                                    <div class="input-group quantity mb-3" style="width: 120px;">
-                                        <button type="button" class="btn btn-sm btn-minus">-</button>
-
-                                        <input type="number" name="qty" value="1" min="1"
-                                        class="form-control text-center">
-
-                                        <button type="button" class="btn btn-sm btn-plus">+</button>
-                                    </div>
-
-                                    <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                                        <i class="fa fa-shopping-bag me-2"></i> Add to cart
-                                    </button>
-                                </form>
-
-                            </div>
-
-                            <div class="col-lg-12">
-
-                                <nav>
-                                    <div class="nav nav-tabs mb-3">
-                                        <button class="nav-link active border-white border-bottom-0" type="button" role="tab"
-                                            id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about"
-                                            aria-controls="nav-about" aria-selected="true">Description</button>
-                                        <button class="nav-link border-white border-bottom-0" type="button" role="tab"
-                                            id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission"
-                                            aria-controls="nav-mission" aria-selected="false">Reviews</button>
-                                    </div>
-                                </nav>
-
-                                <div class="tab-content mb-5">
-
-                                    <div class="tab-pane active" id="nav-about" role="tabpanel" aria-labelledby="nav-about-tab">
-                                    
-                                        <p class="mb-4">{{ $product->description }}</p>
-                                   
-                                        <!-- <div class="px-2">
-                                            <div class="row g-4">
-                                                <div class="col-6">
-                                                    <div class="row bg-light align-items-center text-center justify-content-center py-2">
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Weight</p>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <p class="mb-0">1 kg</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row text-center align-items-center justify-content-center py-2">
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Country of Origin</p>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Agro Farm</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row bg-light text-center align-items-center justify-content-center py-2">
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Quality</p>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Organic</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row text-center align-items-center justify-content-center py-2">
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Сheck</p>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Healthy</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row bg-light text-center align-items-center justify-content-center py-2">
-                                                        <div class="col-6">
-                                                            <p class="mb-0">Min Weight</p>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <p class="mb-0">250 Kg</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div> -->
-
-                                    </div>
-
-                                    <div class="tab-pane" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab">
-                                        <!-- <div class="d-flex">
-                                            <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                            <div class="">
-                                                <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
-                                                <div class="d-flex justify-content-between">
-                                                    <h5>Jason Smith</h5>
-                                                    <div class="d-flex mb-3">
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star"></i>
-                                                    </div>
-                                                </div>
-                                                <p>The generated Lorem Ipsum is therefore always free from repetition injected humour, or non-characteristic 
-                                                    words etc. Susp endisse ultricies nisi vel quam suscipit </p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex">
-                                            <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                            <div class="">
-                                                <p class="mb-2" style="font-size: 14px;">April 12, 2024</p>
-                                                <div class="d-flex justify-content-between">
-                                                    <h5>Sam Peters</h5>
-                                                    <div class="d-flex mb-3">
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star text-secondary"></i>
-                                                        <i class="fa fa-star"></i>
-                                                        <i class="fa fa-star"></i>
-                                                    </div>
-                                                </div>
-                                                <p class="text-dark">The generated Lorem Ipsum is therefore always free from repetition injected humour, or non-characteristic 
-                                                    words etc. Susp endisse ultricies nisi vel quam suscipit </p>
-                                            </div>
-                                        </div> -->
-                                    </div>
-
-                                    <div class="tab-pane" id="nav-vision" role="tabpanel">
-                                        <p class="text-dark">Tempor erat elitr rebum at clita. Diam dolor diam ipsum et tempor sit. Aliqu diam
-                                            amet diam et eos labore. 3</p>
-                                        <p class="mb-0">Diam dolor diam ipsum et tempor sit. Aliqu diam amet diam et eos labore.
-                                            Clita erat ipsum et lorem et sit</p>
-                                    </div>
-                                </div>
-                            </div>
-                           
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-xl-3">
-                        <div class="row g-4 fruite">
-                            
-                            <div class="col-lg-12">
-                                <div class="position-relative">
-                                    <img src="/website/img/banner-fruits.jpg" class="img-fluid w-100 rounded" alt="">
-                                    <div class="position-absolute" style="top: 50%; right: 10px; transform: translateY(-50%);">
-                                        <h3 class="text-secondary fw-bold">Fresh <br> Fruits <br> Banner</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h1 class="fw-bold mb-0">Related products</h1>
-
-                <div class="vesitable">
-                    <div class="owl-carousel vegetable-carousel justify-content-center">
-
-                        @foreach($relatedProducts as $related)
-                            <div class="border border-primary rounded position-relative vesitable-item">
-
-                                <div class="vesitable-img">
-                                    <img src="{{ asset('storage/products/'.$related->product_images[0]) }}"
-                                        class="img-fluid rounded">
-                                </div>
-
-                                <div class="text-white bg-primary px-3 py-1 rounded position-absolute"
-                                    style="top: 10px; right: 10px;">
-                                    {{ $related->category->name ?? 'Category' }}
-                                </div>
-
-                                <div class="p-4 pb-0 rounded-bottom">
-                                    <h4>{{ $related->name }}</h4>
-
-                                    <div class="d-flex justify-content-between flex-lg-wrap">
-                                        <p class="fs-4 fw-bold text-primary">₹{{ $related->mrp }}</p>
-
-                                        <form action="{{ route('add_cart') }}" method="POST">
-                                            @csrf
-                                            <input type="hidden" name="product_id" value="{{ $related->id }}">
-
-                                            <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                <i class="fa fa-shopping-bag me-2"></i> Add to cart
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-
-                            </div>
-                        @endforeach
-
-                    </div>
-                </div>
-
+        <!-- Product Images -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <img src="{{ asset('storage/products/'.$product->product_images[0]) }}"
+                    class="img-fluid rounded" alt="{{ $product->name }}">
             </div>
         </div>
-        <!-- Single Product End -->
-    
+
+        <!-- Product Info -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="fw-bold">{{ $product->name }}</h3>
+                    <p class="text-muted mb-2">Category: {{ $product->category->name ?? 'N/A' }}</p>
+
+                    <h4 class="text-primary fw-bold mb-3">₹{{ $product->mrp }}</h4>
+
+                    <form action="{{ route('add_cart') }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                        <div class="input-group" style="width:130px;">
+                            <button type="button" class="btn btn-outline-secondary btn-minus">-</button>
+                            <input type="number" name="qty" value="1" min="1" class="form-control text-center">
+                            <button type="button" class="btn btn-outline-secondary btn-plus">+</button>
+                        </div>
+
+                        <button class="btn btn-primary rounded-pill px-4">
+                            <i class="fa fa-shopping-bag me-2"></i>Add to Cart
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Description</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="description">
+                            <p>{{ $product->description }}</p>
+                        </div>
+                        <div class="tab-pane fade" id="reviews">
+                            <p class="text-muted">No reviews available.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="mt-5">
+        <h3 class="fw-bold mb-4">Related Products</h3>
+
+        <div class="row g-4">
+            @foreach($relatedProducts as $related)
+            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                <div class="card h-100 shadow-sm position-relative">
+
+                    <span class="badge bg-primary position-absolute top-0 end-0 m-2">
+                        {{ $related->category->name ?? 'Category' }}
+                    </span>
+
+                    <img src="{{ asset('storage/products/'.$related->product_images[0]) }}"
+                        class="card-img-top" alt="{{ $related->name }}">
+
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="fw-bold">{{ $related->name }}</h6>
+                        <p class="text-primary fw-bold mb-3">₹{{ $related->mrp }}</p>
+
+                        <form action="{{ route('add_cart') }}" method="POST" class="mt-auto">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $related->id }}">
+                            <button class="btn btn-outline-primary w-100 rounded-pill">
+                                <i class="fa fa-shopping-bag me-2"></i>Add to Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+@endsection

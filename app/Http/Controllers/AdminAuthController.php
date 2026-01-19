@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminAuthController extends Controller
 {
+
+
     public function index()
     {
         $users = User::with('role')->orderBy('id', 'desc')->paginate(20);
@@ -180,7 +182,6 @@ class AdminAuthController extends Controller
             ->with('success', 'User updated successfully');
     }
 
-
     public function destroy($id)
     {
         $user = User::findOrFail($id);
@@ -192,32 +193,59 @@ class AdminAuthController extends Controller
             ->with('success', 'User deleted successfully');
     }
 
-
     public function loginForm()
     {
         return view('admin-login.auth-login');
     }
 
+    // public function login(Request $request)
+    // {
+    //     $request->validate([
+    //         'email'    => 'required|email',
+    //         'password' => 'required',
+    //     ]);
 
+    //     //if (!Auth::attempt($request->only('email', 'password'))) {
+    //     if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+    //         return back()
+    //             ->withErrors(['email' => 'Invalid email or password'])
+    //             ->withInput();
+    //     }
+
+    //     $request->session()->regenerate();
+    //     return redirect()->route('dashboard')
+    //         ->with('success', 'Successfully logged in!');
+    // }
+
+   
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'login'    => 'required',
             'password' => 'required',
         ]);
 
-        //if (!Auth::attempt($request->only('email', 'password'))) {
-        if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
+        $login = $request->login;
+        $password = $request->password;
+
+        // Check email or mobile
+        $fieldType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
+
+        if (!Auth::guard('admin')->attempt([
+            $fieldType => $login,
+            'password' => $password
+        ])) {
             return back()
-                ->withErrors(['email' => 'Invalid email or password'])
+                ->withErrors(['login' => 'Invalid email/mobile or password'])
                 ->withInput();
         }
 
         $request->session()->regenerate();
+
         return redirect()->route('dashboard')
             ->with('success', 'Successfully logged in!');
     }
-
+   
     public function logout(Request $request)
     {
         try {
@@ -279,4 +307,6 @@ class AdminAuthController extends Controller
         return redirect()->route('login.form')
             ->with('success', 'Password reset successfully. Please login.');
     }
+
+
 }
