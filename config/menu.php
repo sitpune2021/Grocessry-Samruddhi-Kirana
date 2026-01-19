@@ -179,7 +179,6 @@ return [
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'WebSite Order', 'route' => 'userorder'],
                 ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
@@ -197,6 +196,7 @@ return [
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
                 ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
                 ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
+                ['title' => 'Web-Site Order', 'route' => 'userorder'],
             ],
         ],
 
