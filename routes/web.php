@@ -87,36 +87,30 @@ Route::middleware(['auth:admin'])->group(function ()
 
         // LIST
         Route::get('/profile', [AdminAuthController::class, 'index'])
-            ->name('user.profile')
-            ->middleware('permission:user.view');
-
+            ->name('user.profile');
+            
         // CREATE
         Route::get('/profile/create', [AdminAuthController::class, 'createUser'])
-            ->name('user.create')
-            ->middleware('permission:user.create');
+            ->name('user.create');
+            
 
         Route::post('/profile/store', [AdminAuthController::class, 'store'])
-            ->name('user.store')
-            ->middleware('permission:user.create');
+            ->name('user.store');
 
         // SHOW
         Route::get('/{id}', [AdminAuthController::class, 'show'])
-            ->name('user.show')
-            ->middleware('permission:user.view');
+            ->name('user.show');
 
         // EDIT / UPDATE
         Route::get('/{id}/edit', [AdminAuthController::class, 'editUser'])
-            ->name('user.edit')
-            ->middleware('permission:user.edit');
+            ->name('user.edit');
 
         Route::put('/{id}', [AdminAuthController::class, 'update'])
-            ->name('user.update')
-            ->middleware('permission:user.edit');
+            ->name('user.update');
 
         // DELETE
         Route::delete('/{id}', [AdminAuthController::class, 'destroy'])
-            ->name('user.destroy')
-            ->middleware('permission:user.delete');
+            ->name('user.destroy');
 
     });
 
@@ -132,6 +126,11 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
+   Route::get(
+    'get-brands-by-sub-category/{subCategory}',
+    [ProductController::class, 'getBrands']
+);
+    
 
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');

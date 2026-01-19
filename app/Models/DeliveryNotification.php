@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class DeliveryNotification extends Model
 {
-    
+
     protected $fillable = [
+        'delivery_agent_id',
         'user_id',
         'type',
         'title',
         'message',
-        'is_read',
+        'is_read'
     ];
 }

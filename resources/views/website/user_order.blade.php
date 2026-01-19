@@ -11,7 +11,7 @@
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row pb-0">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title"> User Order</h5>
+                        <h5 class="card-title"> Website User Order History</h5>
                     </div>
                 </div><br><br>
 
@@ -29,9 +29,11 @@
                             <tr>
                                 <th>Order #</th>
                                 <th>User</th>
+                                <th>Order Number</th>
+                                <th>Product Name</th>
                                 <th>Total</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <!-- <th>Action</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -39,11 +41,21 @@
                             <tr>
                                 <td>{{ $order->id }}</td>
                                 <td>{{ $order->user->first_name ?? 'N/A' }}</td>
+                                <td>{{ $order->order_number }}</td>
+                                <!-- PRODUCTS -->
+                                <td>
+                                    @foreach($order->items as $item)
+                                        <div>
+                                            {{ $item->product->name ?? 'N/A' }}
+                                            (Qty: {{ $item->quantity }})
+                                        </div>
+                                    @endforeach
+                                </td>
                                 <td>₹{{ $order->total_amount }}</td>
                                 <td>
                                     <span class="badge bg-warning">{{ $order->status }}</span>
                                 </td>
-                                <td>
+                                <!-- <td>
                                     @if($order->status == 'pending')
                                         <form action="{{ route('orderapprove', $order->id) }}" method="POST">
                                             @csrf
@@ -52,7 +64,7 @@
                                     @else
                                         ✔ Approved
                                     @endif
-                                </td>
+                                </td> -->
                             </tr>
                             @endforeach
                         </tbody>

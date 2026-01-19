@@ -17,7 +17,7 @@
                     <h5 class="card-title mb-0">Offers</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('offers.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                    <a href="{{ route('offers.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Add Offer
                     </a>
                 </div>
@@ -34,27 +34,79 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
-                            <th>Code</th>
-                            <th>Discount Type</th>
+                            <th>Titel</th>
+                            <th>Offer Type</th>
                             <th>Discount Value</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
+                            <th>Buy X Get Y</th>
                             <th>Minimum Amt</th>
-                            <th>Maximum Amt</th>
+                            <th>Validity</th>
+                            <!-- <th>End Date</th> -->
                             <th>Status</th>
                             @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>
                             @endif
                         </tr>
                     </thead>
+                    <tbody>
+                        @forelse ($offers as $off)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $off->title ?? '' }}</td>
+                            <td>{{ $off->offer_type ?? ' ' }}</td>
+                            <td>{{ $off->discount_value ?? '' }}</td>
+                            <td>
+                                {{ $off->buy_quantity }} ||
+                                {{ $off->get_quantity }}
+                            </td>
+                            <td>{{ $off->min_order_amount }}</td>
+                            <td>
+                                {{ optional($off->start_date)->format('d-m-Y') ?? '-' }}
+                                ||
+                                {{ optional($off->end_date)->format('d-m-Y') ?? '-' }}
+                            </td>
+                            <td>
+                                @if($off->status)
+                                <span class="badge bg-success">Active</span>
+                                @else
+                                <span class="badge bg-secondary">Inactive</span>
+                                @endif
+                            </td>
 
-                 
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if(hasPermission('offer.view'))
+                                <a href="{{ route('offers.show', $off->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @endif
+
+                                @if(hasPermission('offer.edit'))
+                                <a href="{{ route('offers.edit', $off->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+
+                                @if(hasPermission('offer.delete'))
+                                <form action="{{ route('offers.destroy', $off->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete offer?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
+                            @endif
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">No offer found</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+
                 </table>
             </div>
 
             <!-- Pagination -->
             <div class="px-3 py-2">
-                {{-- <x-pagination :from="$offers->firstItem()" :to="$offers->lastItem()" :total="$offers->total()" /> --}}
+                {{ $offers->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
 
         </div>

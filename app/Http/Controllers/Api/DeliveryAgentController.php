@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Models\DeliveryAgent;
 use App\Models\DriverVehicle;
+use Illuminate\Support\Facades\Log;
+use App\Models\Order;
 
 class DeliveryAgentController extends Controller
 {
@@ -136,6 +138,31 @@ class DeliveryAgentController extends Controller
                 'mobile' => $user->mobile,
                 'role' => $user->role->name,
             ]
+        ]);
+    }
+
+    public function getProfileImage(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Profile image path
+        if (!$user->profile_photo) {
+            return response()->json([
+                'status' => true,
+                'imageUrl' => null
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'imageUrl' => asset('storage/' . $user->profile_photo)
         ]);
     }
 
@@ -334,81 +361,121 @@ class DeliveryAgentController extends Controller
             'message' => 'Logged out successfully'
         ]);
     }
-    // ================= GO ONLINE =================
+
     public function goOnline(Request $request)
     {
-        $agent = $request->user(); // Authenticated user from token
+        $user = $request->user();
 
-        if (!$agent) {
+        if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthenticated. Please login.'
+                'message' => 'Unauthenticated'
             ], 401);
         }
 
-        // ✅ Dynamic role check (case-insensitive)
-        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+        // Role check
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
                 'status' => false,
-                'message' => 'Access denied. Only delivery agents can go online.'
+                'message' => 'Access denied'
             ], 403);
         }
 
-        // Check if account is active
-        if ($agent->status != 1) {
+        if ($user->status != 1) {
             return response()->json([
                 'status' => false,
                 'message' => 'Account inactive'
             ], 403);
         }
 
-        // Set online
-        $agent->update(['is_online' => 1]);
+        // ❌ Already online
+        if ($user->is_online == 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agent already online'
+            ], 400);
+        }
+
+        // ✅ Go online & start duty
+        $user->update([
+            'is_online'       => 1,
+            'duty_start_time' => now()
+        ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Agent is online',
-            'data' => [
-                'agent_id' => $agent->id,
-                // 'is_online' => $agent->is_online
-            ]
+            'dutyStartTime' => now()->toDateTimeString()
         ]);
     }
 
     public function goOffline(Request $request)
     {
-        $agent = $request->user();
+        $user = $request->user();
 
-        if (!$agent) {
+        if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthenticated. Please login.'
+                'message' => 'Unauthenticated'
             ], 401);
         }
 
-        // ✅ Dynamic role check (case-insensitive)
-        if (!$agent->role || strtolower($agent->role->name) !== 'delivery agent') {
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
                 'status' => false,
-                'message' => 'Access denied. Only delivery agents can go offline.'
+                'message' => 'Access denied'
             ], 403);
         }
 
-        // Set offline
-        $agent->update(['is_online' => 0]);
+        // ❌ Already offline
+        if ($user->is_online == 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agent already offline'
+            ], 400);
+        }
+
+        // 🛑 FALLBACK: no duty start time
+        if (!$user->duty_start_time) {
+            $user->update([
+                'is_online' => 0,
+                'duty_start_time' => null
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Agent is offline (no duty time recorded)',
+                'sessionDutyMinutes' => 0,
+                'totalDutyMinutes' => $user->total_duty_minutes ?? 0
+            ]);
+        }
+
+        // ✅ NORMAL FLOW
+        $dutyEndTime = now();
+
+        $sessionMinutes = $dutyEndTime->diffInMinutes(
+            \Carbon\Carbon::parse($user->duty_start_time)
+        );
+
+        $totalDutyMinutes = ($user->total_duty_minutes ?? 0) + $sessionMinutes;
+
+        $user->update([
+            'is_online' => 0,
+            'duty_start_time' => null,
+            'total_duty_minutes' => $totalDutyMinutes
+        ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Agent is offline',
-            'data' => [
-                'agent_id' => $agent->id,
-                // 'is_online' => $agent->is_online
-            ]
+            'dutyEndTime' => $dutyEndTime->toDateTimeString(),
+            'sessionDutyMinutes' => $sessionMinutes,
+            'totalDutyMinutes' => $totalDutyMinutes
         ]);
     }
 
 
-    /* ================= CURRENT ORDER ================= */
+
     public function currentOrder(Request $request)
     {
         $agent = $request->user();
@@ -573,7 +640,6 @@ class DeliveryAgentController extends Controller
         ]);
     }
 
-
     public function updateVehicle(Request $request)
     {
         $request->validate([
@@ -627,31 +693,317 @@ class DeliveryAgentController extends Controller
 
     public function loginHours(Request $request)
     {
-        $agent = DeliveryAgent::where('user_id', $request->user()->id)->first();
+        $user = $request->user();
 
-        if (!$agent) {
+        if (!$user->is_online || !$user->last_login_at) {
             return response()->json([
-                'status' => false,
-                'message' => 'Delivery agent not found'
-            ], 404);
+                'status' => true,
+                'totalHours' => 0
+            ]);
         }
 
-        $hours = Carbon::parse($agent->created_at)
-            ->diffInHours(Carbon::parse($agent->updated_at));
+        $hours = Carbon::parse($user->last_login_at)
+            ->diffInMinutes(now()) / 60;
 
         return response()->json([
             'status' => true,
-            'totalHours' => $hours
+            'totalHours' => round($hours, 2)
         ]);
     }
 
     public function onlineStatus(Request $request)
     {
-        $user = $request->user();
+        $isOnline = (bool) $request->user()->is_online;
 
         return response()->json([
             'status' => true,
-            'isOnline' => $user->is_online
+            'message' => $isOnline ? 'Agent is online' : 'Agent is offline',
+            // 'isOnline' => $isOnline
+        ]);
+    }
+
+    public function deliveryOtp(Request $request, $orderId, $type)
+    {
+        try {
+            $agent = $request->user();
+
+            // Only allow send or resend
+            if (!in_array($type, ['send', 'resend'])) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid OTP type'
+                ], 422);
+            }
+
+            $order = Order::where('id', $orderId)
+                ->where('delivery_agent_id', $agent->id)
+                ->firstOrFail();
+
+            $customer = User::findOrFail($order->user_id);
+
+            $otp = rand(1000, 9999);
+
+            // Store OTP in customer (users table)
+            $customer->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5),
+            ]);
+
+            $message = $type === 'send'
+                ? "Your delivery OTP is {$otp}. Please share with delivery agent."
+                : "Your delivery OTP is {$otp}. (Resent) Please share with delivery agent.";
+
+            // Send OTP to CUSTOMER
+            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $customer->mobile,
+                'message'  => $message,
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => "OTP {$type} successfully"
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error('Delivery OTP Error', [
+                'order_id' => $orderId,
+                'type'     => $type,
+                'error'    => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to process delivery OTP'
+            ], 500);
+        }
+    }
+    public function verifyDeliveryOtp(Request $request, $orderId)
+    {
+        try {
+            $request->validate([
+                'otp' => 'required|digits:4'
+            ]);
+
+            $agent = $request->user();
+
+            $order = Order::where('id', $orderId)
+                ->where('delivery_agent_id', $agent->id)
+                ->firstOrFail();
+
+            $customer = User::findOrFail($order->user_id);
+
+            if ($customer->otp !== $request->otp) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid OTP'
+                ], 422);
+            }
+
+            if (now()->gt($customer->otp_expires_at)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'OTP expired'
+                ], 422);
+            }
+
+            // ✅ Mark order delivered
+            $order->update([
+                'status' => 'delivered'
+            ]);
+
+            // ✅ Clear OTP from customer
+            $customer->update([
+                'otp' => null,
+                'otp_expires_at' => null
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order delivered successfully'
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error('Verify Delivery OTP Error', [
+                'order_id' => $orderId,
+                'error'    => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to verify delivery OTP'
+            ], 500);
+        }
+    }
+
+    public function getCurrentTask(Request $request)
+    {
+        $partner = $request->user();
+
+        // Optional: save partner live location
+        if ($request->latitude && $request->longitude) {
+            $partner->update([
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude
+            ]);
+        }
+
+        // Get current active order
+        $order = Order::with([
+            'customer:id,first_name,last_name,mobile',
+            'deliveryAddress'
+        ])
+            ->where('delivery_agent_id', $partner->id)
+            ->whereIn('status', [
+                'assigned',
+                'accepted',
+                'picked_up',
+                'out_for_delivery'
+            ])
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // ❌ No active task
+        if (!$order) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Not Yet Started',
+                'data' => null
+            ]);
+        }
+
+        // ✅ Active task found
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'orderId' => $order->id,
+                'status'  => ucfirst(str_replace('_', ' ', $order->status)),
+
+                // ✅ Partner live location
+                // 'partnerLocation' => [
+                //     'latitude'  => $partner->latitude,
+                //     'longitude' => $partner->longitude,
+                // ],
+
+                'customer' => [
+                    'name'   => $order->customer->first_name . ' ' . $order->customer->last_name,
+                    'mobile' => $order->customer->mobile
+                ],
+
+                // ✅ Delivery address with coordinates
+                'deliveryAddress' => [
+                    'address'   => $order->deliveryAddress->address ?? null,
+                    'area'      => $order->deliveryAddress->area ?? null,
+                    'city'      => $order->deliveryAddress->city ?? null,
+                    'pincode'   => $order->deliveryAddress->pincode ?? null,
+                    'latitude'  => $order->deliveryAddress->latitude ?? null,
+                    'longitude' => $order->deliveryAddress->longitude ?? null,
+                ]
+            ]
+        ]);
+    }
+    public function profileSummary(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $totalDutyTime = Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'delivered')
+            ->count() * 30;
+
+        $todayDutyTime = Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'delivered')
+            ->whereDate('delivered_at', today())
+            ->count() * 30;
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'delivery_agent_id' => $user->id,
+                'name'              => $user->first_name . ' ' . $user->last_name,
+                // 'imageUrl'          => $user->profile_photo
+                //     ? asset('storage/' . $user->profile_photo)
+                //     : null,
+                'totalDutyTime'     => $totalDutyTime,
+                'todayDutyTime'     => $todayDutyTime
+            ]
+        ]);
+    }
+
+    public function performanceGraph(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $range = $request->range ?? 'daily';
+
+        $query = Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'delivered')
+            ->whereNotNull('delivered_at');
+
+        if ($request->fromDate && $request->toDate) {
+            $query->whereBetween('delivered_at', [
+                $request->fromDate,
+                $request->toDate
+            ]);
+        }
+
+        if ($range === 'daily') {
+            $data = $query
+                ->select(
+                    DB::raw('DATE(delivered_at) as date'),
+                    DB::raw('COUNT(*) as totalOrders')
+                )
+                ->groupBy(DB::raw('DATE(delivered_at)'))
+                ->orderBy('date')
+                ->get();
+        } elseif ($range === 'weekly') {
+            $data = $query
+                ->select(
+                    DB::raw('YEARWEEK(delivered_at) as date'),
+                    DB::raw('COUNT(*) as totalOrders')
+                )
+                ->groupBy(DB::raw('YEARWEEK(delivered_at)'))
+                ->orderBy('date')
+                ->get();
+        } else {
+            $data = $query
+                ->select(
+                    DB::raw('DATE_FORMAT(delivered_at, "%Y-%m") as date'),
+                    DB::raw('COUNT(*) as totalOrders')
+                )
+                ->groupBy(DB::raw('DATE_FORMAT(delivered_at, "%Y-%m")'))
+                ->orderBy('date')
+                ->get();
+        }
+
+        $graph = $data->map(function ($row) {
+            return [
+                'date'        => $row->date,
+                'totalOrders' => (int) $row->totalOrders,
+                'totalHours'  => round($row->totalOrders * 0.5, 2)
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'delivery_agent_id' => $user->id,
+            'data' => $graph
         ]);
     }
 }

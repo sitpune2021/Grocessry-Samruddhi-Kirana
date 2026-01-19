@@ -15,9 +15,12 @@ class OrderItem extends Model
         'product_id',
         'quantity',
         'price',
-        'total'
+        'total',
+        'is_picked'
     ];
-
+    protected $casts = [
+        'is_picked' => 'boolean',
+    ];
     public function order()
     {
         return $this->belongsTo(Order::class);
