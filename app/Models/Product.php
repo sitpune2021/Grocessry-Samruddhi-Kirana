@@ -67,19 +67,23 @@ class Product extends Model
     {
         return $this->belongsTo(Tax::class);
     }
-    
+
     public function getProductImageUrlsAttribute()
     {
         if (!$this->product_images) {
             return [];
         }
 
-        $images = json_decode($this->product_images, true);
+        $images = is_array($this->product_images)
+            ? $this->product_images
+            : json_decode($this->product_images, true);
 
-        return collect($images)->map(function ($image) {
-            return asset('storage/products/' . $image);
-        })->values();
+        return collect($images)->map(
+            fn($image) =>
+            asset('storage/products/' . $image)
+        )->values();
     }
+
 
     public function stocks()
     {

@@ -11,12 +11,20 @@
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title">Raise Warehouse Stock Return</h5>
                 </div>
+                @php
+                $warehouseType = auth()->user()?->warehouse?->type;
+
+                @endphp
+
+                @if ($warehouseType === 'taluka' || $warehouseType === 'district')
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('stock-returns.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Raise Return
                     </a>
                 </div>
+                @endif
             </div>
+
 
             <!-- Search -->
             <x-datatable-search />
@@ -40,7 +48,7 @@
                     </thead>
                     <tbody>
                         @forelse($returns as $key => $return)
-                  
+
                         <tr>
                             <td>{{ $returns->firstItem() + $key }}</td>
 
@@ -94,7 +102,7 @@
                             <td>
                                 @php
                                 $userWarehouseId = auth()->user()->warehouse_id;
-                               @endphp
+                                @endphp
 
                                 @if($return->status === 'draft' &&
                                 $userWarehouseId == $return->to_warehouse_id)
@@ -102,7 +110,7 @@
                                     method="POST" class="d-inline">
                                     @csrf
                                     <button class="btn btn-warning btn-sm">
-                                       Approval
+                                        Approval
                                     </button>
                                 </form>
                                 @endif
@@ -119,7 +127,7 @@
 
                                 @if($return->status == 'dispatched' &&
                                 $userWarehouseId == $return->to_warehouse_id)
-                                 
+
                                 <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="btn btn-success btn-sm">
@@ -128,7 +136,13 @@
                                 </form>
                                 @endif
 
-
+                                @if($warehouseType === 'district' && $return->status == 'received')
+                                <div class="col-md-auto ms-auto">
+                                    <a href="{{ route('stock-returns.edit',$return->id) }}" class="btn btn-success">
+                                        Raise Return
+                                    </a>
+                                </div>
+                                @endif
                                 {{-- CLOSE --}}
                                 <!-- @if($return->status == 'received')
                                 <form method="POST" action="{{ route('stock-returns.close', $return->id) }}">

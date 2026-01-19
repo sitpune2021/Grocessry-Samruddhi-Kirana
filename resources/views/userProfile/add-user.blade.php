@@ -114,16 +114,16 @@
                                                             {{ $warehouse->name }}
 
                                                             @if ($warehouse->type === 'master')
-                                                            (M. {{ $warehouse->district->name ?? 'N/A' }})
+                                                            (Mas. {{ $warehouse->district->name ?? 'N/A' }})
 
                                                             @elseif ($warehouse->type === 'district')
-                                                            (D. {{ $warehouse->district->name ?? 'N/A' }})
+                                                            (Dis. {{ $warehouse->district->name ?? 'N/A' }})
 
                                                             @elseif ($warehouse->type === 'taluka')
-                                                            (T. {{ $warehouse->taluka->name ?? 'N/A' }})
+                                                            (Tal. {{ $warehouse->taluka->name ?? 'N/A' }})
 
                                                             @elseif ($warehouse->type === 'distribution_center')
-                                                            (S. {{ $warehouse->taluka->name ?? 'N/A' }})
+                                                            (Shp. {{ $warehouse->taluka->name ?? 'N/A' }})
                                                             @endif
 
                                                         </option>

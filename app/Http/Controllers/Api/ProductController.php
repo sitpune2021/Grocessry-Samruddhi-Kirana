@@ -7,14 +7,97 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Throwable;
 use App\Models\Offer;
+use App\Models\WarehouseStock;
 use App\Models\Role;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    // public function addToCart(Request $request)
+    // {
+    //     $user = $request->user();
+    //     if ($res = $this->checkCustomer($user)) return $res;
+
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'quantity'   => 'nullable|integer|min:1',
+    //     ]);
+
+    //     $qty = $request->quantity ?? 1;
+
+    //     $product = Product::findOrFail($request->product_id);
+
+    //     // 🔹 Get stock from warehouse_stock (REAL STOCK)
+    //     $availableStock = WarehouseStock::where('product_id', $product->id)
+    //         ->sum('quantity');
+
+    //     if ($availableStock <= 0) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Product out of stock'
+    //         ], 400);
+    //     }
+
+    //     // 🔹 Get or create cart
+    //     $cart = Cart::firstOrCreate(
+    //         ['user_id' => $user->id],
+    //         [
+    //             'subtotal' => 0,
+    //             'discount' => 0,
+    //             'total'    => 0
+    //         ]
+    //     );
+
+    //     // 🔹 Check existing cart item
+    //     $cartItem = CartItem::where('cart_id', $cart->id)
+    //         ->where('product_id', $product->id)
+    //         ->first();
+
+    //     $existingQty = $cartItem ? $cartItem->qty : 0;
+    //     $finalQty = $existingQty + $qty;
+
+    //     // ✅ FINAL & CORRECT STOCK CHECK
+    //     if ($finalQty > $availableStock) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Only ' . $availableStock . ' items available'
+    //         ], 400);
+    //     }
+
+    //     if ($cartItem) {
+    //         $cartItem->qty = $finalQty;
+    //         $cartItem->line_total = $finalQty * $cartItem->price;
+    //         $cartItem->save();
+    //     } else {
+    //         CartItem::create([
+    //             'cart_id'    => $cart->id,
+    //             'product_id' => $product->id,
+    //             'batch_id'   => null,
+    //             'qty'        => $qty,
+    //             'price'      => $product->retailer_price,
+    //             'line_total' => $qty * $product->retailer_price
+    //         ]);
+    //     }
+
+    //     // 🔹 Recalculate cart totals
+    //     $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+
+    //     $cart->update([
+    //         'subtotal' => $subtotal,
+    //         'discount' => 0,
+    //         'total'    => $subtotal
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Product added to cart successfully'
+    //     ]);
+    // }
     public function addToCart(Request $request)
     {
         $user = $request->user();
@@ -25,24 +108,97 @@ class ProductController extends Controller
             'quantity'   => 'nullable|integer|min:1',
         ]);
 
-        $cart = Cart::where('user_id', $user->id)
-            ->where('product_id', $request->product_id)
+        $qty = $request->quantity ?? 1;
+        $product = Product::with('tax')->findOrFail($request->product_id);
+
+        // 🔹 REAL STOCK
+        $availableStock = WarehouseStock::where('product_id', $product->id)
+            ->sum('quantity');
+
+        if ($availableStock <= 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product out of stock'
+            ], 400);
+        }
+
+        // 🔹 Get or create cart
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'subtotal'  => 0,
+                'tax_total' => 0,
+                'discount'  => 0,
+                'total'     => 0
+            ]
+        );
+
+        // 🔹 Existing cart item
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
             ->first();
 
-        if ($cart) {
-            $cart->quantity += $request->quantity ?? 1;
-            $cart->save();
+        $existingQty = $cartItem ? $cartItem->qty : 0;
+        $finalQty = $existingQty + $qty;
+
+        if ($finalQty > $availableStock) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only ' . $availableStock . ' items available'
+            ], 400);
+        }
+
+        // 🔹 TAX CALCULATION
+        $price = $product->retailer_price;
+
+        $cgstPercent = $product->tax?->cgst ?? 0;
+        $sgstPercent = $product->tax?->sgst ?? 0;
+
+        $cgstAmount = ($price * $cgstPercent / 100) * $finalQty;
+        $sgstAmount = ($price * $sgstPercent / 100) * $finalQty;
+        $taxTotal   = $cgstAmount + $sgstAmount;
+
+        $itemTotal = ($price * $finalQty) + $taxTotal;
+
+        if ($cartItem) {
+            $cartItem->update([
+                'qty'         => $finalQty,
+                'price'       => $price,
+                'cgst_amount' => $cgstAmount,
+                'sgst_amount' => $sgstAmount,
+                'tax_total'   => $taxTotal,
+                'item_total'  => $itemTotal
+            ]);
         } else {
-            Cart::create([
-                'user_id'    => $user->id,
-                'product_id' => $request->product_id,
-                'quantity'   => $request->quantity ?? 1,
+            CartItem::create([
+                'cart_id'     => $cart->id,
+                'product_id'  => $product->id,
+                'qty'         => $qty,
+                'price'       => $price,
+                'cgst_amount' => ($price * $cgstPercent / 100) * $qty,
+                'sgst_amount' => ($price * $sgstPercent / 100) * $qty,
+                'tax_total'   => (($price * $cgstPercent / 100) + ($price * $sgstPercent / 100)) * $qty,
+                'item_total'  => (($price * $qty) + ((($price * $cgstPercent / 100) + ($price * $sgstPercent / 100)) * $qty))
             ]);
         }
 
+        // 🔹 RECALCULATE CART TOTALS
+        $subtotal = CartItem::where('cart_id', $cart->id)
+            ->sum(DB::raw('price * qty'));
+
+        $taxTotal = CartItem::where('cart_id', $cart->id)
+            ->sum('tax_total');
+
+        $cart->update([
+            'subtotal'  => $subtotal,
+            'tax_total' => $taxTotal,
+            'discount'  => 0,
+            'total'     => $subtotal + $taxTotal
+        ]);
+
         return response()->json([
             'status' => true,
-            'message' => 'Product added to cart'
+            'message' => 'Product added to cart successfully'
         ]);
     }
 
@@ -51,15 +207,31 @@ class ProductController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $cartItems = Cart::with('product')
-            ->where('user_id', $user->id)
-            ->get();
+        $cart = Cart::with([
+            'items.product.tax'
+        ])->where('user_id', $user->id)->first();
 
         return response()->json([
             'status' => true,
-            'data' => $cartItems
+            'data'   => $cart
         ]);
     }
+
+
+    // public function viewCart(Request $request)
+    // {
+    //     $user = $request->user();
+    //     if ($res = $this->checkCustomer($user)) return $res;
+
+    //     $cartItems = Cart::with('product')
+    //         ->where('user_id', $user->id)
+    //         ->get();
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'data' => $cartItems
+    //     ]);
+    // }
 
     public function clearCart(Request $request)
     {
@@ -79,7 +251,6 @@ class ProductController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        // Validate ke user ne product choose keli aahe ki nahi
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
@@ -113,106 +284,169 @@ class ProductController extends Controller
         ]);
     }
 
-
     public function checkout(Request $request)
     {
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        $cartItems = Cart::with('product')
-            ->where('user_id', $user->id)
-            ->get();
+        DB::beginTransaction();
 
-        if ($cartItems->isEmpty()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Cart is empty'
-            ], 400);
-        }
+        try {
 
-        // Subtotal
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $price = $item->product->retailer_price ?? 0;
-            $subtotal += $price * $item->quantity;
-        }
+            // 🔹 Get cart
+            $cart = Cart::where('user_id', $user->id)->first();
 
-        $deliveryCharge = 50;
-        $couponDiscount = 0;
-        $offerId = null;
-        $couponCode = null;
-
-        // Coupon Apply
-        if ($request->coupon_code) {
-            $offer = Offer::where('code', $request->coupon_code)
-                ->where('status', 1)
-                ->whereDate('start_date', '<=', now())
-                ->whereDate('end_date', '>=', now())
-                ->first();
-
-            if (!$offer) {
+            if (!$cart) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid coupon'
+                    'message' => 'Cart is empty'
                 ], 400);
             }
 
-            if ($subtotal < $offer->min_amount) {
+            $cartItems = CartItem::with('product')
+                ->where('cart_id', $cart->id)
+                ->get();
+
+            if ($cartItems->isEmpty()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Minimum order amount not met'
+                    'message' => 'Cart is empty'
                 ], 400);
             }
 
-            $couponDiscount = $offer->discount_type === 'flat'
-                ? $offer->discount_value
-                : ($subtotal * $offer->discount_value) / 100;
+            // 🔹 Subtotal
+            $subtotal = 0;
+            foreach ($cartItems as $item) {
+                $subtotal += ($item->price * $item->qty);
+            }
 
-            $offerId = $offer->id;
-            $couponCode = $offer->code;
-        }
+            // 🔹 Delivery & coupon
+            $deliveryCharge = 50;
+            $couponDiscount = 0;
+            $offerId = null;
+            $couponCode = null;
 
-        $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
+            if ($request->coupon_code) {
 
-        // Create Order
-        $order = Order::create([
-            'user_id' => $user->id,
-            'order_number' => 'ORD-' . time(),
-            'subtotal' => $subtotal,
-            'delivery_charge' => $deliveryCharge,
-            'coupon_discount' => $couponDiscount,
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-            'offer_id' => $offerId,
-            'coupon_code' => $couponCode
-        ]);
+                $offer = Offer::where('code', $request->coupon_code)
+                    ->where('status', 1)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->first();
 
-        // Order Items
-        foreach ($cartItems as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => $item->product->retailer_price ?? 0,
-                'total' => ($item->product->retailer_price ?? 0) * $item->quantity
-            ]);
-        }
+                if (!$offer) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid coupon'
+                    ], 400);
+                }
 
-        // Clear Cart
-        Cart::where('user_id', $user->id)->delete();
+                if ($subtotal < $offer->min_amount) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Minimum order amount not met'
+                    ], 400);
+                }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Order placed successfully',
-            'data' => [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
+                $couponDiscount = $offer->discount_type === 'flat'
+                    ? $offer->discount_value
+                    : ($subtotal * $offer->discount_value) / 100;
+
+                $offerId = $offer->id;
+                $couponCode = $offer->code;
+            }
+
+            $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
+
+            // 🔹 STOCK CHECK (CRITICAL)
+            foreach ($cartItems as $item) {
+
+                $availableStock = (int) WarehouseStock::where('product_id', $item->product_id)
+                    ->sum('quantity');
+
+                if ($item->qty > $availableStock) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Insufficient stock for ' . $item->product->name
+                    ], 400);
+                }
+            }
+
+            // 🔹 Create Order
+            $order = Order::create([
+                'user_id' => $user->id,
+                'order_number' => 'ORD-' . time(),
                 'subtotal' => $subtotal,
                 'delivery_charge' => $deliveryCharge,
                 'coupon_discount' => $couponDiscount,
-                'total_amount' => $totalAmount
-            ]
-        ]);
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'offer_id' => $offerId,
+                'coupon_code' => $couponCode
+            ]);
+
+            // 🔹 Order Items + Warehouse stock deduct (FIFO)
+            foreach ($cartItems as $item) {
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->qty,
+                    'price' => $item->price,
+                    'total' => $item->qty * $item->price
+                ]);
+
+                // 🔥 Deduct stock FIFO
+                $remainingQty = $item->qty;
+
+                $stocks = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('quantity', '>', 0)
+                    ->orderBy('created_at')
+                    ->get();
+
+                foreach ($stocks as $stock) {
+                    if ($remainingQty <= 0) break;
+
+                    if ($stock->quantity >= $remainingQty) {
+                        $stock->quantity -= $remainingQty;
+                        $stock->save();
+                        $remainingQty = 0;
+                    } else {
+                        $remainingQty -= $stock->quantity;
+                        $stock->quantity = 0;
+                        $stock->save();
+                    }
+                }
+            }
+
+            // 🔹 Clear cart
+            CartItem::where('cart_id', $cart->id)->delete();
+            $cart->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order placed successfully',
+                'data' => [
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'subtotal' => $subtotal,
+                    'delivery_charge' => $deliveryCharge,
+                    'coupon_discount' => $couponDiscount,
+                    'total_amount' => $totalAmount
+                ]
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Checkout failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     protected function checkCustomer($user)
@@ -235,5 +469,152 @@ class ProductController extends Controller
         }
 
         return null; // ✅ allowed
+    }
+
+    public function returnProduct(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'order_item_id'     => 'required|exists:order_items,id',
+            'reason'            => 'required|string|max:191',
+            'return_type'       => 'required|in:refund,exchange',
+            'product_images'    => 'nullable|array',
+            'product_images.*'  => 'image|mimes:jpg,jpeg,png',
+        ]);
+
+        // Fetch order item
+        $orderItem = OrderItem::findOrFail($request->order_item_id);
+
+        // Ensure this order belongs to logged-in customer
+        if ($orderItem->order->user_id !== $user->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You cannot return this product'
+            ], 403);
+        }
+
+        /* ================= Upload Return Images ================= */
+        $imagePaths = [];
+
+        if ($request->hasFile('product_images')) {
+            foreach ($request->file('product_images') as $image) {
+
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+
+                $path = $image->storeAs(
+                    'customer_return_products',
+                    $filename,
+                    'public'
+                );
+
+                $imagePaths[] = $path;
+            }
+        }
+
+        /* ================= Insert Return Request ================= */
+        $returnId = DB::table('customer_order_returns')->insertGetId([
+            'order_id'        => $orderItem->order_id,
+            'order_item_id'  => $orderItem->id,
+            'product_id'     => $orderItem->product_id,
+            'customer_id'    => $user->id,
+            'quantity'       => $orderItem->quantity,
+            'reason'         => $request->reason,
+            'return_type'    => $request->return_type,   // refund | exchange
+            'status'         => 'requested',
+            'qc_status'      => 'pending',
+            'product_images' => !empty($imagePaths) ? json_encode($imagePaths) : null,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        $returnData = DB::table('customer_order_returns')
+            ->where('id', $returnId)
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Return request submitted successfully',
+            'data' => $returnData
+        ]);
+    }
+    public function pastOrders(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $perPage = $request->per_page ?? 10;
+
+        $orders = Order::with([
+            'orderItems.product:id,name,product_images',
+        ])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['delivered', 'cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return response()->json([
+            'status' => true,
+            'data' => $orders
+        ]);
+    }
+    public function newOrders(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $orders = Order::with([
+            'orderItems.product:id,name,product_images',
+            'deliveryAddress'
+        ])
+            ->where('user_id', $user->id)
+            ->whereNotIn('status', ['delivered', 'cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $orders
+        ]);
+    }
+    public function rateOrder(Request $request, $orderId)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'tags'   => 'nullable|array'
+        ]);
+
+        $order = Order::where('id', $orderId)
+            ->where('user_id', $user->id)
+            ->where('status', 'delivered')
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not delivered yet'
+            ], 400);
+        }
+
+        if ($order->customer_rating) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rating already submitted'
+            ], 400);
+        }
+
+        $order->update([
+            'customer_rating' => $request->rating,
+            'customer_rating_tags' => $request->tags
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Thank you for rating your order'
+        ]);
     }
 }

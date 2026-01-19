@@ -203,7 +203,7 @@
                 </div>
               </div> -->
               <!-- Total Revenue -->
-              <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6 total-revenue">
+              <!-- <div class="col-12 col-xxl-8 order-2 order-md-3 order-xxl-2 mb-6 total-revenue">
                 <div class="card">
                   <div class="row row-bordered g-0">
                     <div class="col-lg-8">
@@ -289,14 +289,14 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
               <!--/ Total Revenue -->
               <div class="col-12 col-md-8 col-lg-12 col-xxl-4 order-3 order-md-2 profile-report">
                 <div class="row">
                   <div class="col-6 mb-6 payments">
                     <div class="card h-100">
                       <div class="card-body">
-                        <div class="card-title align-items-start justify-content-between mb-4"> District Warehouse
+                        <div class="card-title align-items-start justify-content-between mb-4"> All Warehouse
                         </div>
                         <div class="warehouse-list">
                           <ul class="list-group">
@@ -308,7 +308,7 @@
                       </div>
                     </div>
                   </div>
-                  <div class="col-6 mb-6 transactions">
+                  <!-- <div class="col-6 mb-6 transactions">
                     <div class="card h-100">
                       <div class="card-body">
                         <div class="card-title align-items-start justify-content-between mb-4"> Taluka Warehouse
@@ -322,8 +322,8 @@
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="col-6 mb-6 transactions">
+                  </div> -->
+                  <!-- <div class="col-6 mb-6 transactions">
                     <div class="card h-100">
                       <div class="card-body">
                         <div class="card-title align-items-start justify-content-between mb-4"> Shop
@@ -337,7 +337,7 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>

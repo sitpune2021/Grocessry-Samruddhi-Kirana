@@ -5,34 +5,42 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Models\DeliveryNotification;
+
 class NotificationController extends Controller
 {
-    public function get_notifications(Request $request)
+    public function get_notifications()
     {
-        $query = $request->user()->notifications();
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
+        $notifications = DeliveryNotification::where(
+            'delivery_agent_id',
+            auth()->id()
+        )
+            ->latest()
+            ->paginate(10);
         return response()->json([
             'status' => true,
-            'data' => $query->latest()->paginate(10)
+            'logged_in_id' => auth()->id(),
+            'data' => DeliveryNotification::where(
+                'delivery_agent_id',
+                auth()->id()
+            )->get()
         ]);
     }
 
     public function markRead($id)
     {
-        auth()->user()->notifications()
-            ->where('id', $id)
-            ->update(['is_read' => true]);
+        DeliveryNotification::where('id', $id)
+            ->where('delivery_agent_id', auth()->id())
+            ->update(['is_read' => 1]);
 
         return response()->json(['status' => true]);
     }
 
     public function markAllRead()
     {
-        auth()->user()->notifications()->update(['is_read' => true]);
+        DeliveryNotification::where('delivery_agent_id', auth()->id())
+            ->update(['is_read' => 1]);
+
         return response()->json(['status' => true]);
     }
 
@@ -46,13 +54,14 @@ class NotificationController extends Controller
 
     public function updateSettings(Request $request)
     {
-        auth()->user()->notificationSettings()->update($request->only([
-            'new_order',
-            'updates',
-            'chat',
-            'promo',
-            'app_updates'
-        ]));
+        auth()->user()->notificationSettings()
+            ->update($request->only([
+                'new_order',
+                'updates',
+                'chat',
+                'promo',
+                'app_updates'
+            ]));
 
         return response()->json(['status' => true]);
     }
