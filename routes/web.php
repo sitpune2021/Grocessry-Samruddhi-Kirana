@@ -601,11 +601,18 @@ Route::middleware(['auth:admin'])->group(function () {
         )->name('download.csv');
 
         Route::delete('/warehouse-transfer/{id}', 
-    [WarehouseTransferController::class, 'deleteTransfer']
-)->name('warehouse.transfer.delete');
+            [WarehouseTransferController::class, 'deleteTransfer']
+        )->name('warehouse.transfer.delete');
 
 
     });
+
+    // report
+    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+        ->name('warehouse-stock.report');
+    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
+        ->name('stock-movement.report');
+
 
 
 /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
@@ -660,13 +667,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::put('{id}', [RetailerOfferController::class, 'update'])->name('update');
         Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
     });
-
-
-    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
-        ->name('warehouse-stock.report');
-    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
-        ->name('stock-movement.report');
-
 
     // Taxes
     Route::prefix('settings')->group(function () {
