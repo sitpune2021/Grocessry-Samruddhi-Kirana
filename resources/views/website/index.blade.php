@@ -377,7 +377,7 @@
         <div class="row">
             <div class="col-12">
 
-                <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
                     <div class="carousel-inner rounded-4 overflow-hidden">
 
@@ -413,15 +413,21 @@
                 <a href="{{ route('home', ['category_id' => $category->id]) }}"
                     class="category-card text-center">
 
+                    @php
+                        $image = $category->category_images[0] ?? null;
+                    @endphp
+
                     <div class="category-img">
-                        <img src="{{ asset($category->image ?? 'img/default.png') }}"
+                        <img src="{{ $image
+                            ? asset('storage/categories/'.$image)
+                            : asset('img/default.png') }}"
                             alt="{{ $category->name }}">
                     </div>
 
                     <p class="category-title">
                         {{ $category->name }}
                     </p>
-
+                   
                 </a>
             </div>
             @endforeach
@@ -471,6 +477,7 @@
                                     @endphp
 
                                     <div class="fruite-img">
+                                        <a href="{{ route('productdetails', $product->id) }}">
                                         @if($image)
                                         <img
                                             src="{{ asset('storage/products/'.$image) }}"
@@ -484,12 +491,19 @@
                                             alt="No Image"
                                             style="height: 200px; object-fit: cover;">
                                         @endif
+                                        </a>
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
                                         <h4>{{ $product->name }}</h4>
                                         <p>₹ {{ $product->mrp }}</p>
-                                        <a href="#" class="btn-add-sm"><i></i> Add to cart</a>
+                                        <form action="{{ route('add_cart') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <button class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                <i class="fa fa-shopping-bag me-2"></i> Add to cart
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -550,7 +564,13 @@
                                     <div class="p-4 border border-secondary border-top-0 rounded-bottom">
                                         <h4>{{ $product->name }}</h4>
                                         <p>₹ {{ $product->mrp }}</p>
-                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
+                                        <form action="{{ route('add_cart') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                            <button class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                <i class="fa fa-shopping-bag me-2"></i> Add to cart
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -597,6 +617,7 @@
                 @endphp
                 <div class="product-slide-item">
                     <div class="product-sm-card">
+                        <a href="{{ route('productdetails', $product->id) }}">                        
                         <div class="product-sm-img">
                             <img src="{{ $image 
                                     ? asset('storage/products/'.$image) 
@@ -607,8 +628,15 @@
                         </div>
                         <div class="product-sm-footer">
                             <span class="price">₹{{ $product->mrp }}</span>
-                            <button class="btn-add-sm">ADD</button>
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button class="btn border border-secondary rounded-pill px-3 text-primary">
+                                    <i class="fa fa-shopping-bag me-2"></i> Add
+                                </button>
+                            </form>
                         </div>
+                        </a>
                     </div>
                 </div>
                 @endforeach

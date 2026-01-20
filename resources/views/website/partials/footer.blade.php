@@ -95,8 +95,8 @@
 
             <!-- Right Side: Designed & Distributed By -->
             <div class="col-md-6 text-center text-md-end">
-                Designed By
-                <a href="#" class="text-light text-decoration-underline">Shekhar</a> |
+                <!-- Designed By
+                <a href="#" class="text-light text-decoration-underline">Shekhar</a> | -->
                 Distributed By
                 <a href="#" class="text-light text-decoration-underline">SIT SOLUTIONS PVT LTD</a>
             </div>

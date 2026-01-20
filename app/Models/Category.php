@@ -15,20 +15,24 @@ class Category extends Model
         'warehouse_id',
         'name',
         'slug',
-        'brand_id'
+        'category_images',
+    ];
+
+    protected $casts =[
+        'category_images' => 'array',
     ];
 
     public function products()
     {
         return $this->hasMany(Product::class);
     }
-    
+
     public function offer()
     {
         return $this->belongsTo(Offer::class);
     }
 
-     public function warehouseStocks()
+    public function warehouseStocks()
     {
         return $this->hasMany(WarehouseStock::class);
     }

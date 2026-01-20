@@ -64,8 +64,8 @@
 
                                                 <option value="">Select Offer Type</option>
 
-                                                <option value="flat"
-                                                    {{ old('offer_type', $offer->offer_type ?? '') == 'flat' ? 'selected' : '' }}>
+                                                <option value="flat_discount"
+                                                    {{ old('offer_type', $offer->offer_type ?? '') == 'flat_discount' ? 'selected' : '' }}>
                                                     Flat Discount
                                                 </option>
 
@@ -255,7 +255,7 @@
                             <input type="date"
                                 name="start_date"
                                 class="form-control"
-                                value="{{ old('start_date', optional($offer->start_date)->format('Y-m-d')) }}"
+                                value="{{ old('start_date', isset($offer) ? optional($offer->start_date)->format('Y-m-d') : '') }}"
                                 {{ $mode === 'view' ? 'readonly' : '' }}>
 
                             @error('start_date')
@@ -269,7 +269,7 @@
                             <input type="date"
                                 name="end_date"
                                 class="form-control"
-                                value="{{ old('end_date', optional($offer->end_date)->format('Y-m-d')) }}"
+                                value="{{ old('end_date', isset($offer) ? optional($offer->end_date)->format('Y-m-d') : '') }}"
                                 {{ $mode === 'view' ? 'readonly' : '' }}>
 
                             @error('end_date')

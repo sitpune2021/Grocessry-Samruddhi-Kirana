@@ -31,70 +31,53 @@ class OfferController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
+   public function store(Request $request)
+{
+    Log::info('Offer store request received', [
+        'request' => $request->except('_token'),
+        'user_id' => Auth::id(),
+        'ip'      => $request->ip(),
+    ]);
 
-        Log::info('Offer store request received', [
-            'title'        => $request->title,
-            'offer_type'   => $request->offer_type,
-            'start_date'   => $request->start_date,
-            'end_date'     => $request->end_date,
-            'status'       => $request->status,
-            'user_id'      => Auth::id(),
-            'ip'           => $request->ip(),
+    $validated = $request->validate([
+        'title'            => 'required|string|max:255',
+        'description'      => 'nullable|string',
+        'offer_type'       => 'required|in:flat_discount,percentage,buy_x_get_y',
+        'discount_value'   => 'nullable|numeric|min:0',
+        'max_discount'     => 'nullable|numeric|min:0',
+        'min_order_amount' => 'required|numeric|min:0',
+        'start_date'       => 'required|date',
+        'end_date'         => 'required|date|after_or_equal:start_date',
+        'status'           => 'required|boolean',
+
+        'buy_quantity'     => 'nullable|required_if:offer_type,buy_x_get_y|integer|min:1',
+        'get_quantity'     => 'nullable|required_if:offer_type,buy_x_get_y|integer|min:1',
+    ]);
+
+    try {
+
+        $offer = Offer::create($validated);
+
+        Log::info('Offer created successfully', [
+            'offer_id' => $offer->id,
         ]);
 
-        $validated = $request->validate([
-            'title'              => 'required|string|max:255',
-            'description'        => 'nullable|string',
-            'offer_type'         => 'required|in:flat,percentage,buy_x_get_y',
-            'discount_value'     => 'nullable|numeric|min:0',
-            'max_discount'       => 'nullable|numeric|min:0',
-            'min_order_amount'   => 'required|numeric|min:0',
-            'start_date'         => 'required|date',
-            'end_date'           => 'required|date|after_or_equal:start_date',
-            'status'             => 'required|boolean',
+        return redirect()
+            ->route('offers.index')
+            ->with('success', 'Offer created successfully');
 
-            // Buy X Get Y
-            'buy_quantity'       => 'required_if:offer_type,buy_x_get_y|integer|min:1',
-            'get_quantity'       => 'required_if:offer_type,buy_x_get_y|integer|min:1',
+    } catch (\Throwable $e) {
+
+        Log::error('Offer creation failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
         ]);
 
-        try {
-
-            Log::info('Offer validation passed', [
-                'validated_data' => $validated,
-            ]);
-
-
-            $offer = Offer::create($validated);
-
-            Log::info('Offer created successfully', [
-                'offer_id'   => $offer->id,
-                'offer_type' => $offer->offer_type,
-                'user_id'    => Auth::id(),
-            ]);
-
-            return redirect()
-                ->route('offers.index')
-                ->with('success', 'Offer created successfully');
-        } catch (\Throwable $e) {
-
-
-            Log::error('Offer creation failed', [
-                'message'   => $e->getMessage(),
-                'file'      => $e->getFile(),
-                'line'      => $e->getLine(),
-                'request'   => $request->except(['_token']),
-                'user_id'   => Auth::id(),
-                'ip'        => $request->ip(),
-            ]);
-
-            return back()
-                ->withInput()
-                ->with('error', 'Failed to create offer. Please try again.');
-        }
+        return back()
+            ->withInput()
+            ->with('error', 'Failed to create offer');
     }
+}
 
     public function show($id)
     {
@@ -120,33 +103,47 @@ public function update(Request $request, $id)
 {
     Log::info('Offer update request received', [
         'offer_id' => $id,
+        'user_id'  => Auth::id(),
     ]);
 
     try {
         $offer = Offer::findOrFail($id);
 
         $validated = $request->validate([
-            'title'              => 'required|string|max:255',
-            'description'        => 'nullable|string',
-            'offer_type'         => 'required|in:flat,percentage,buy_x_get_y',
-            'discount_value'     => 'nullable|numeric|min:0',
-            'max_discount'       => 'nullable|numeric|min:0',
-            'min_order_amount'   => 'required|numeric|min:0',
-            'start_date'         => 'required|date',
-            'end_date'           => 'required|date|after_or_equal:start_date',
-            'status'             => 'required|boolean',
+            'title'            => 'required|string|max:255',
+            'description'      => 'nullable|string',
 
-            // Buy X Get Y (only if selected)
-            'buy_quantity'       => 'required_if:offer_type,buy_x_get_y|integer|min:1',
-            'get_quantity'       => 'required_if:offer_type,buy_x_get_y|integer|min:1',
+          
+            'offer_type'       => 'required|in:flat_discount,percentage,buy_x_get_y',
+
+            'discount_value'   => 'nullable|numeric|min:0',
+            'max_discount'     => 'nullable|numeric|min:0',
+            'min_order_amount' => 'required|numeric|min:0',
+
+            'start_date'       => 'required|date',
+            'end_date'         => 'required|date|after_or_equal:start_date',
+            'status'           => 'required|boolean',
+
+            // Buy X Get Y (only when selected)
+            'buy_quantity'     => 'nullable|required_if:offer_type,buy_x_get_y|integer|min:1',
+            'get_quantity'     => 'nullable|required_if:offer_type,buy_x_get_y|integer|min:1',
+
+            // 'buy_product_id'   => 'nullable|required_if:offer_type,buy_x_get_y|exists:products,id',
+            // 'get_product_id'   => 'nullable|required_if:offer_type,buy_x_get_y|exists:products,id',
         ]);
+
+        // If NOT Buy X Get Y → clear BXGY fields
+        if ($validated['offer_type'] !== 'buy_x_get_y') {
+            $validated['buy_quantity']   = null;
+            $validated['get_quantity']   = null;
+            // $validated['buy_product_id'] = null;
+            // $validated['get_product_id'] = null;
+        }
 
         $offer->update($validated);
 
         Log::info('Offer updated successfully', [
             'offer_id' => $offer->id,
-             'user_id'  => Auth::id(),
-            
         ]);
 
         return redirect()
@@ -160,7 +157,6 @@ public function update(Request $request, $id)
             'message'  => $e->getMessage(),
             'file'     => $e->getFile(),
             'line'     => $e->getLine(),
-           
         ]);
 
         return back()
