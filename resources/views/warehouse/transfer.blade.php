@@ -241,7 +241,7 @@
 
                 if (enteredQty > availableStock) {
                     error = true;
-                    msg = `❌ ${productName} ke liye sirf ${availableStock} qty available hai`;
+                    msg = `❌ ${productName} for this product ${availableStock} qty available`;
                     return false; 
                 }
             });
