@@ -4,6 +4,47 @@
 
 @section('content')
 
+<style>
+    /* Product image hover effect */
+.product-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.product-main-img {
+    transition: transform 0.4s ease;
+}
+
+.product-image-wrapper:hover .product-main-img {
+    transform: scale(1.08);
+}
+
+.product-hover-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-hover-overlay span {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    border: 2px solid #fff;
+    padding: 8px 18px;
+    border-radius: 30px;
+}
+
+.product-image-wrapper:hover .product-hover-overlay {
+    opacity: 1;
+}
+
+</style>
 <!-- Page Header -->
 <div class="container-fluid page-header py-4 mb-5 bg-dark">
     <h1 class="text-center text-white display-6">Product Details</h1>
@@ -15,9 +56,12 @@
 
         <!-- Product Images -->
         <div class="col-lg-5">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm product-image-wrapper">
                 <img src="{{ asset('storage/products/'.$product->product_images[0]) }}"
-                    class="img-fluid rounded" alt="{{ $product->name }}">
+                    class="img-fluid product-main-img" alt="{{ $product->name }}">
+                <div class="product-hover-overlay">
+                    <span>View Product</span>
+                </div>
             </div>
         </div>
 
