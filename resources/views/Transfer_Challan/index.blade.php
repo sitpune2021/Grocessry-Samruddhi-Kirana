@@ -114,9 +114,13 @@
                                             {{ $item->status == 'pending' ? 'bg-warning' : 
                                             ($item->status == 'dispatched' ? 'bg-info' : 'bg-success') }}">
                                             {{ ucfirst($item->status ?? 'N/A') }}
-                                        </span>
+                                        </span>                                      
+                                    </td>
 
-                                        @if(
+                                    @if($canView)
+                                    <td class="text-center">
+                                        <!-- <x-action-buttons :view-url="route('transfer-challans.show', $item->id)" :edit-url="route('transfer-challans.edit', $item->id)" :delete-url="route('transfer-challans.destroy', $item->id)" /> -->
+                                         @if(
                                             $item->status == 'pending' &&
                                             auth()->user()->warehouse_id == $item->from_warehouse_id
                                         )
@@ -126,11 +130,6 @@
                                                 <button class="btn btn-sm btn-success">Dispatch</button>
                                             </form>
                                         @endif
-                                    </td>
-
-                                    @if($canView)
-                                    <td class="text-center">
-                                        <!-- <x-action-buttons :view-url="route('transfer-challans.show', $item->id)" :edit-url="route('transfer-challans.edit', $item->id)" :delete-url="route('transfer-challans.destroy', $item->id)" /> -->
 
                                         <a href="{{ route('transfer-challans.download.pdf', $item->id) }}"
                                             class="btn btn-sm btn-outline-danger mt-1">PDF</a>
