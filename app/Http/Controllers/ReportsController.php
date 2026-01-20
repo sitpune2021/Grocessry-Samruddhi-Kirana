@@ -16,23 +16,19 @@ use Illuminate\Support\Facades\Log;
 class ReportsController extends Controller
 {
 
-
+    
     public function warehouse_stock_report(Request $request)
     {
-        // Fetch filters from GET parameters
-        $type          = $request->query('type');          // in, out, transfer
-        $fromDate      = $request->query('from_date');     // YYYY-MM-DD
-        $toDate        = $request->query('to_date');       // YYYY-MM-DD
+        $fromDate      = $request->query('from_date');
+        $toDate        = $request->query('to_date');
         $fromWarehouse = $request->query('from_warehouse');
         $toWarehouse   = $request->query('to_warehouse');
         $download      = $request->query('download');
 
-        // Start query
         $query = DB::table('warehouse_transfers')
-            ->where('status', 1)
+        // ->where('status', 2) // ✅ APPROVED
             ->orderBy('id', 'desc');
 
-        // Date filter
         if ($fromDate && $toDate && $fromDate <= $toDate) {
             $query->whereBetween('created_at', [
                 $fromDate . ' 00:00:00',
@@ -40,32 +36,27 @@ class ReportsController extends Controller
             ]);
         }
 
-        // From Warehouse filter
         if ($fromWarehouse) {
             $query->where('approved_by_warehouse_id', $fromWarehouse);
         }
 
-        // To Warehouse filter
         if ($toWarehouse) {
             $query->where('requested_by_warehouse_id', $toWarehouse);
-        }
-
-        // Type filter (optional)
-        if ($type) {
-            $query->where('type', $type); // adjust column if needed
         }
 
         $transfers = $query->get();
         $warehouseStock = [];
 
         foreach ($transfers as $transfer) {
-            if ($transfer->quantity <= 0) continue;
 
-            // Warehouse names
-            $fromName = DB::table('warehouses')->where('id', $transfer->approved_by_warehouse_id)->value('name') ?? '-';
-            $toName   = DB::table('warehouses')->where('id', $transfer->requested_by_warehouse_id)->value('name') ?? '-';
+            $fromName = DB::table('warehouses')
+                ->where('id', $transfer->approved_by_warehouse_id)
+                ->value('name') ?? '-';
 
-            // Remaining Total Qty
+            $toName = DB::table('warehouses')
+                ->where('id', $transfer->requested_by_warehouse_id)
+                ->value('name') ?? '-';
+
             $remainingQty = DB::table('warehouse_stock')
                 ->where('warehouse_id', $transfer->requested_by_warehouse_id)
                 ->sum('quantity');
@@ -80,46 +71,15 @@ class ReportsController extends Controller
             ];
         }
 
-        // CSV Download
-        if ($download === 'csv') {
-            $filename = 'warehouse_stock_report_' . now()->format('Ymd_His') . '.csv';
-
-            return response()->stream(function () use ($warehouseStock) {
-                $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Warehouse From',
-                    'Warehouse To',
-                    'Transfer In',
-                    'Remaining Qty',
-                    'Created Date',
-                    'Updated Date'
-                ]);
-
-                foreach ($warehouseStock as $row) {
-                    fputcsv($file, [
-                        $row['warehouse_from'],
-                        $row['warehouse_name'],
-                        $row['transfer_in'],
-                        $row['quantity'],
-                        $row['created_at'],
-                        $row['updated_at'],
-                    ]);
-                }
-
-                fclose($file);
-            }, 200, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ]);
-        }
-
-        return view('reports.warehouse-transfers.warehouse-transfer', compact('warehouseStock'));
+        return view(
+            'reports.warehouse-transfers.warehouse-transfer',
+            compact('warehouseStock')
+        );
     }
-    
+
     public function stock_movement(Request $request)
     {
-        
+
         $warehouseId = $request->query('warehouse_id');
         $type        = $request->query('type');
         $fromDate    = $request->query('from_date');
