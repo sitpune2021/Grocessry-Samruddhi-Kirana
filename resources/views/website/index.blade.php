@@ -432,8 +432,6 @@
         </div>
     </div>
 
-
-
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
         <div class="container">

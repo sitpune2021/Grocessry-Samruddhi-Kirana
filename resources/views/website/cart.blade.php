@@ -44,9 +44,30 @@
                             </div>
 
                             <!-- Quantity -->
-                            <div class="col-4 col-md-2 text-md-center">
+                            <!-- <div class="col-4 col-md-2 text-md-center">
                                 <span class="badge  text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
+                            </div> -->
+
+                            <!-- Quantity -->
+                            <div class="col-4 col-md-2 text-md-center">
+                                <div class="qty-box d-inline-flex align-items-center gap-2"
+                                    data-id="{{ $item->id }}">
+
+                                    <button type="button" class="btn btn-sm btn-outline-secondary qty-minus">
+                                        -
+                                    </button>
+
+                                    <span class="badge bg-light text-dark px-3 py-2 qty-text">
+                                        {{ $item->qty }}
+                                    </span>
+
+                                    <button type="button" class="btn btn-sm btn-outline-secondary qty-plus">
+                                        +
+                                    </button>
+
+                                </div>
                             </div>
+
 
                             <!-- Remove -->
                             <div class="col-4 col-md-1 text-end">
@@ -65,7 +86,9 @@
 
                         <div class="d-flex justify-content-between">
                             <span class="text-muted">Item Total</span>
-                            <strong>₹ {{ $item->line_total }}</strong>
+                            <strong id="item-total-{{ $item->id }}">
+                                ₹ {{ $item->line_total }}
+                            </strong>
                         </div>
 
                     </div>
@@ -100,7 +123,9 @@
 
                         <div class="d-flex justify-content-between fw-bold fs-5">
                             <span>Total</span>
-                            <span>₹ {{ $cart ? number_format($cart->total,2) : '0.00' }}</span>
+                            <span id="cart-total">
+                                ₹ {{ $cart ? number_format($cart->total,2) : '0.00' }}
+                            </span>
                         </div>
 
                         <a href="{{ route('checkout') }}"
@@ -123,37 +148,38 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-$(document).on('click', '.qty-plus, .qty-minus', function () {
+    $(document).on('click', '.qty-plus, .qty-minus', function() {
 
-    let box = $(this).closest('.qty-box');
-    let itemId = box.data('id');
-    let qtyText = box.find('.qty-text');
-    let currentQty = parseInt(qtyText.text());
+        let box = $(this).closest('.qty-box');
+        let itemId = box.data('id');
+        let qtyText = box.find('.qty-text');
+        let currentQty = parseInt(qtyText.text());
 
-    let newQty = $(this).hasClass('qty-plus')
-        ? currentQty + 1
-        : currentQty - 1;
+        let newQty = $(this).hasClass('qty-plus') ?
+            currentQty + 1 :
+            currentQty - 1;
 
-    if (newQty < 1) return;
+        if (newQty < 1) return;
 
-    $.ajax({
-        url: "/cart/update/" + itemId,
-        type: "POST",
-        data: {
-            _token: "{{ csrf_token() }}",
-            _method: "PUT",
-            qty: newQty
-        },
-        success: function (res) {
-            if (res.success) {
-                qtyText.text(res.qty);
-                $('#item-total-' + itemId).text('₹ ' + res.line_total);
-                $('#cart-total').text('₹ ' + res.cart_total);
+        $.ajax({
+            url: "/cart/update/" + itemId,
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                _method: "PUT",
+                qty: newQty
+            },
+            success: function(res) {
+                if (res.success) {
+                    qtyText.text(res.qty);
+                    $('#item-total-' + itemId).text('₹ ' + res.line_total);
+                    $('#cart-total').text('₹ ' + res.cart_total);
+                }
             }
-        }
+        });
     });
-});
 </script>
+
 
 
 @endsection

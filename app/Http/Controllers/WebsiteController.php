@@ -280,7 +280,27 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
-    
+    public function update(Request $request, $id)
+    {
+        $item = CartItem::findOrFail($id);
+
+        $item->qty = $request->qty;
+        $item->line_total = $item->qty * $item->price;
+        $item->save();
+
+        $cart = $item->cart;
+        $cart->subtotal = $cart->items->sum('line_total');
+        $cart->total = $cart->subtotal;
+        $cart->save();
+
+        return response()->json([
+            'success' => true,
+            'qty' => $item->qty,
+            'line_total' => number_format($item->line_total, 2),
+            'cart_total' => number_format($cart->total, 2),
+        ]);
+    }
+
 
     public function productdetails($id)
     {
@@ -297,18 +317,14 @@ class WebsiteController extends Controller
     }
 
     public function categoryProducts($slug)
-{
-    $category = Category::where('slug', $slug)->firstOrFail();
+    {
+        $category = Category::where('slug', $slug)->firstOrFail();
 
-    $products = Product::where('category_id', $category->id)
-        ->whereNull('deleted_at')
-        ->latest()
-        ->paginate(12);
+        $products = Product::where('category_id', $category->id)
+            ->whereNull('deleted_at')
+            ->latest()
+            ->paginate(12);
 
-    return view('website.category-products', compact('category', 'products'));
-}
-
-
-
-
+        return view('website.category-products', compact('category', 'products'));
+    }
 }

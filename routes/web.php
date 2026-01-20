@@ -736,7 +736,9 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
- 
+ Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
+     ->name('cart.update');
+
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
