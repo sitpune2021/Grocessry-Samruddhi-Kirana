@@ -9,7 +9,6 @@
 <!-- Featurs Section End -->
 
 <style>
-    /* FORCE pagination to horizontal row */
     .pagination {
         justify-content: center !important;
         flex-wrap: wrap;
@@ -20,14 +19,16 @@
     }
 
     .pagination .page-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 1.2;
+        min-width: 30px;
+        height: 30px;
+        border-radius: 4px;
     }
 
-    /* /// */
 
-    /* Small product card (Blinkit style) */
+    /* Small product card () */
     .product-sm-card {
         border: 1px solid #eee;
         border-radius: 12px;
@@ -122,10 +123,6 @@
         overflow: hidden;
     }
 
-    .pagination {
-        justify-content: center !important;
-        flex-wrap: wrap;
-    }
 
     img {
         max-width: 100%;
@@ -230,33 +227,34 @@
     }
 
     .hero-banner {
-    height: 380px;
-    width: 100%;
-    position: relative;
-    overflow: hidden;        /* 🔴 KEY LINE */
-    border-radius: 16px;
-    background: #000;        /* gap येऊ नये म्हणून */
-}
+        height: 380px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        /* 🔴 KEY LINE */
+        border-radius: 16px;
+        background: #000;
 
-.hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;       /* 🔴 image crop होईल पण बाहेर जाणार नाही */
-    object-position: center;
-    display: block;
-}
+    }
 
-/* Overlay safe */
-.hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.55),
-        rgba(0, 0, 0, 0.1)
-    );
-    z-index: 1;
-}
+    .hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+
+        object-position: center;
+        display: block;
+    }
+
+    /* Overlay safe */
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right,
+                rgba(46, 43, 43, 0.26),
+                rgba(0, 0, 0, 0.1));
+        z-index: 1;
+    }
 
 
     .carousel-control-prev,
@@ -274,7 +272,7 @@
         background-size: 18px 18px;
     }
 
-    
+
     /* Mobile */
     @media (max-width: 768px) {
         .hero-title {
@@ -379,7 +377,7 @@
 
                 <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
-                    <div class="carousel-inner rounded-4 overflow-hidden">
+                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 75px;">
 
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
@@ -406,11 +404,12 @@
     </div>
 
     <div class="container py-4">
-        <div class="row g-4">
+        <div class="row g-3">
 
             @foreach($categoriestop as $category)
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="{{ route('home', ['category_id' => $category->id]) }}"
+            <div class="col-lg-2 col-md-3 col-sm-4 col-4">
+
+                <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
                     @php
@@ -418,8 +417,9 @@
                     @endphp
 
                     <div class="category-img">
-                        <img src="{{ $image
-                            ? asset('storage/categories/'.$image)
+                        <img
+                            src="{{ $category->image
+                            ? asset('storage/categories/'.$category->image)
                             : asset('img/default.png') }}"
                             alt="{{ $category->name }}">
                     </div>
@@ -429,11 +429,14 @@
                     </p>
                    
                 </a>
+
             </div>
             @endforeach
 
         </div>
     </div>
+
+
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
@@ -495,14 +498,13 @@
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
-                                        <h4>{{ $product->name }}</h4>
-                                        <p>₹ {{ $product->mrp }}</p>
+
                                         <form action="{{ route('add_cart') }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                            <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                <i class="fa fa-shopping-bag me-2"></i> Add to cart
-                                            </button>
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <button type="submit" class="btn-add-sm">Add to cart</button>
                                         </form>
                                     </div>
                                 </div>
@@ -561,15 +563,14 @@
                                         @endif
                                     </div>
 
-                                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                        <h4>{{ $product->name }}</h4>
-                                        <p>₹ {{ $product->mrp }}</p>
+                                    <div class="p-4 border border-top-0  ">
+
                                         <form action="{{ route('add_cart') }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                            <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                <i class="fa fa-shopping-bag me-2"></i> Add to cart
-                                            </button>
+                                            <h4>{{ $product->name }}</h4>
+                                            <p>₹ {{ $product->mrp }}</p>
+                                            <button type="submit" class="btn-add-sm">Add to cart</button>
                                         </form>
                                     </div>
                                 </div>
@@ -583,19 +584,13 @@
                             {{-- Pagination --}}
                             {{ $categoryProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
 
-                            {{-- Showing result text --}}
-                            <!-- <div class="mt-2 text-muted">
-                                    Showing {{ $categoryProducts->firstItem() }}
-                                    to {{ $categoryProducts->lastItem() }}
-                                    of {{ $categoryProducts->total() }} results
-                                </div> -->
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 
     <!-- slide product  -->
     <div class="container py-2">
@@ -627,13 +622,13 @@
                             {{ Str::limit($product->name, 35) }}
                         </div>
                         <div class="product-sm-footer">
-                            <span class="price">₹{{ $product->mrp }}</span>
+
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                                    <i class="fa fa-shopping-bag me-2"></i> Add
-                                </button>
+
+                                <p>₹ {{ $product->mrp }}</p>
+                                <button type="submit" class="btn-add-sm">Add to cart</button>
                             </form>
                         </div>
                         </a>
@@ -648,6 +643,55 @@
         @endforeach
 
     </div>
+
+    <div class="container py-2">
+
+        <div class="row p-3">
+            <div class="col text-start">
+                <h4 class="fw-bold text-dark">Latest Products</h4>
+            </div>
+        </div>
+
+        <div class="position-relative product-slider-wrapper">
+            <button class="slider-arrow left">&#10094;</button>
+
+            <div class="product-slider">
+                @foreach($latestPro as $product)
+                @php
+                $image = $product->product_images[0] ?? null;
+                @endphp
+
+                <div class="product-slide-item">
+                    <div class="product-sm-card">
+                        <div class="product-sm-img">
+                            <img src="{{ $image 
+                                ? asset('storage/products/'.$image) 
+                                : asset('website/img/no-image.png') }}">
+                        </div>
+
+                        <div class="product-sm-title">
+                            {{ Str::limit($product->name, 35) }}
+                        </div>
+
+                        <div class="product-sm-footer">
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                <p>₹ {{ $product->mrp }}</p>
+                                <button type="submit" class="btn-add-sm">Add to cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <button class="slider-arrow right">&#10095;</button>
+        </div>
+
+    </div>
+
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs">

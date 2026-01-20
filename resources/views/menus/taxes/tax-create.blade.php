@@ -89,7 +89,7 @@
                                                     <input type="number" step="0.01" name="igst" id="igst" class="form-control"
                                                         value="{{ old('igst', $tax->igst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5" required>
+                                                        placeholder="5" >
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="gst" class="form-label">GST (%)</label>
@@ -104,15 +104,15 @@
                                             <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
 
                                             <div class="mt-3">
+                                                <a href="{{ route('taxes.index') }}" class="btn btn-success">
+                                                    Back
+                                                </a>
+
                                                 @if($mode !== 'show')
                                                 <button type="submit" class="btn btn-success">
                                                     {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
                                                 </button>
                                                 @endif
-
-                                                <a href="{{ route('taxes.index') }}" class="btn btn-secondary">
-                                                    Back
-                                                </a>
                                             </div>
                                         </form>
                                     </div>

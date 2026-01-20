@@ -115,6 +115,18 @@
                                 </form>
                                 @endif
 
+                                {{-- 1️⃣ District sends for approval --}}
+                                @if($return->status === 'CREATED' &&
+                                $userWarehouseId == $return->from_warehouse_id)
+                                <form action="{{ route('stock-returns.send-for-approval', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-warning btn-sm">
+                                        Send for Approval
+                                    </button>
+                                </form>
+                                @endif
+
                                 @if($return->status == 'approved' &&
                                 $userWarehouseId == $return->from_warehouse_id)
                                 <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
@@ -124,6 +136,19 @@
                                     </button>
                                 </form>
                                 @endif
+
+                                {{-- 2️⃣ Master approves --}}
+                                @if($return->status === 'CREATED' &&
+                                $userWarehouseId == $return->to_warehouse_id)
+                                <form action="{{ route('stock-returns.approve', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm">
+                                        Approve
+                                    </button>
+                                </form>
+                                @endif
+
 
                                 @if($return->status == 'dispatched' &&
                                 $userWarehouseId == $return->to_warehouse_id)
@@ -136,12 +161,37 @@
                                 </form>
                                 @endif
 
+                                {{-- 3️⃣ District dispatches --}}
+                                @if($return->status === 'APPROVED' &&
+                                $userWarehouseId == $return->from_warehouse_id)
+                                <form action="{{ route('stock-returns.dispatch', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-primary btn-sm">
+                                        Dispatch Stock
+                                    </button>
+                                </form>
+                                @endif
+
+
                                 @if($warehouseType === 'district' && $return->status == 'received')
                                 <div class="col-md-auto ms-auto">
                                     <a href="{{ route('stock-returns.edit',$return->id) }}" class="btn btn-success">
-                                        Raise Return
+                                        Return to Main
                                     </a>
                                 </div>
+                                @endif
+
+                                {{-- 4️⃣ Master receives --}}
+                                @if($return->status === 'DISPATCHED' &&
+                                $userWarehouseId == $return->to_warehouse_id)
+                                <form action="{{ route('stock-returns.receive', $return->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-dark btn-sm">
+                                        Receive Stock
+                                    </button>
+                                </form>
                                 @endif
                                 {{-- CLOSE --}}
                                 <!-- @if($return->status == 'received')

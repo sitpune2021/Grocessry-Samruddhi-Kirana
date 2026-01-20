@@ -18,9 +18,14 @@ class Category extends Model
         'category_images',
     ];
 
-    protected $casts =[
+    protected $casts = [
         'category_images' => 'array',
     ];
+
+    public function getImageAttribute()
+    {
+        return $this->category_images[0] ?? null;
+    }
 
     public function products()
     {
