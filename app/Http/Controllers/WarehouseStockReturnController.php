@@ -280,7 +280,7 @@ class WarehouseStockReturnController extends Controller
 
         try {
 
-            $stockReturn = WarehouseStockReturn::with('items')->findOrFail($id);
+            $stockReturn = WarehouseStockReturn::with('WarehouseStockReturnItem')->findOrFail($id);
 
             Log::info('Old Stock Return Loaded', [
                 'from_warehouse' => $stockReturn->from_warehouse_id,
@@ -290,7 +290,7 @@ class WarehouseStockReturnController extends Controller
             /* ============================
         1️⃣ REVERSE OLD STOCK
         ============================ */
-            foreach ($stockReturn->items as $oldItem) {
+            foreach ($stockReturn->WarehouseStockReturnItem as $oldItem) {
 
                 Log::info('Reversing Old Stock', [
                     'product_id' => $oldItem->product_id,
@@ -329,7 +329,7 @@ class WarehouseStockReturnController extends Controller
             /* ============================
         3️⃣ DELETE OLD ITEMS
         ============================ */
-            $stockReturn->items()->delete();
+            $stockReturn->WarehouseStockReturnItem()->delete();
 
             Log::info('Old Stock Return Items Deleted', [
                 'stock_return_id' => $stockReturn->id
@@ -709,22 +709,43 @@ class WarehouseStockReturnController extends Controller
         }
     }
 
-    // public function close($id)
-    // {
-    //     try {
-    //         $stockReturn = WarehouseStockReturn::where('id', $id)
-    //             ->where('status', 'received')
-    //             ->firstOrFail();
+    public function sendForApproval1($id)
+    {
+        $return = WarehouseStockReturn::where('id', $id)
+            ->where('status', 'CREATED')
+            ->firstOrFail();
 
-    //         $stockReturn->update([
-    //             'status' => 'closed'
-    //         ]);
+        // District only
+        if (auth()->user()->warehouse_id !== $return->from_warehouse_id) {
+            abort(403);
+        }
 
-    //         Log::info('📦 Stock Return Closed', ['id' => $id]);
+        $return->update([
+            'status' => 'CREATED' // stays CREATED, logical step
+        ]);
 
-    //         return back()->with('success', 'Stock return closed successfully.');
-    //     } catch (\Exception $e) {
-    //         return back()->with('error', 'Unable to close stock return.');
-    //     }
-    // }
+        return back()->with('success', 'Sent for approval');
+    }
+    public function approve1($id)
+{
+    $return = WarehouseStockReturn::findOrFail($id);
+
+    // Master only
+    if (auth()->user()->warehouse_id !== $return->to_warehouse_id) {
+        abort(403);
+    }
+
+    if ($return->status !== 'CREATED') {
+        abort(400, 'Invalid status');
+    }
+
+    $return->update([
+        'status' => 'APPROVED',
+        'approved_at' => now(),
+        'approved_by' => auth()->id(),
+    ]);
+
+    return back()->with('success', 'Stock return approved');
+}
+
 }

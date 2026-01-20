@@ -739,6 +739,10 @@ Route::get('cart', [WebsiteController::class, 'cart'])
     ->name('cart')
     ->middleware('auth:web');
 
+Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
+    ->name('website.category-products');
+
+ 
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
@@ -764,6 +768,10 @@ Route::get('/orders', [CustomerOrderController::class, 'userorder'])
 
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
+
+
+
+
 
 
 /////////////////////////////////////////   SHEKHAR DEVELOP - WEBSITE END   ////////////////////////////////////////////////////////////
