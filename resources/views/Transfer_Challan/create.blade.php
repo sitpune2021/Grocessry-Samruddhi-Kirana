@@ -126,7 +126,7 @@
 
                                             @if(!empty($transferItems) && count($transferItems))
                                                 @foreach ($transferItems as $item)
-                                                    <tr>
+                                                    <tr data-transfer-id="{{ $item->id }}">
                                                         <td>
                                                             <input type="hidden" name="products[]" value="{{ $item->product_id }}">
                                                             <input type="text" class="form-control" 
@@ -142,9 +142,11 @@
                                                         </td>
 
                                                         <td>
-                                                            <span class="text-muted">Locked</span>
+                                                            <button type="button" class="btn btn-sm btn-danger remove-row">
+                                                                Remove
+                                                            </button>
                                                         </td>
-                                                        
+                                                  
                                                     </tr>
                                                 @endforeach
                                             @endif
@@ -166,7 +168,7 @@
                                         </a>
 
                                         @if ($mode === 'add')
-                                            <button class="btn btn-success">Save Transfer</button>
+                                            <button class="btn btn-success">Save Transfer Challan</button>
                                         @elseif ($mode === 'edit')
                                             <button class="btn btn-primary">Update Transfer</button>
                                         @endif
@@ -212,5 +214,42 @@
             }
         });
     </script>
+
+    <script>
+document.addEventListener('click', function (e) {
+
+    if (e.target.classList.contains('remove-row')) {
+
+        if (!confirm('Are you sure you want to remove this product?')) {
+            return;
+        }
+
+        let row = e.target.closest('tr');
+        let transferId = row.dataset.transferId;
+
+        fetch(`/warehouse-transfer/${transferId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                row.remove();   // UI se bhi remove
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+            alert('Something went wrong');
+            console.error(err);
+        });
+    }
+});
+</script>
+
+
 
 </body>

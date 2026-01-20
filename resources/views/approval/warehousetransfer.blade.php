@@ -31,11 +31,11 @@
 
                     <tr class="table-primary">
                         <td colspan="6">
-                            <strong>
+                            <!-- <strong>
                                 {{ $first->approvedByWarehouse->name }}
                                 →
                                 {{ $first->requestedByWarehouse->name }}
-                            </strong>
+                            </strong> -->
 
                             {{-- MASTER: Dispatch All --}}
                             @if($first->status == 0 && $first->approved_by_warehouse_id == $userWarehouseId)
@@ -53,7 +53,7 @@
                                     <input type="hidden" name="to_warehouse_id" value="{{ $first->requested_by_warehouse_id }}">
 
                                     <input type="hidden" name="transfer_group" value="{{ $groupKey }}">
-                                    <button class="btn btn-sm btn-success">transfer-challans</button>
+                                    <button class="btn btn-sm btn-success">All-Product-transfer-challans</button>
                                 </form>
                             @endif
 
@@ -99,10 +99,10 @@
                         <td>
                             {{-- MASTER: Single Dispatch --}}
                             @if($t->status == 0 && $t->approved_by_warehouse_id == $userWarehouseId)
-                                <form method="POST" action="{{ route('warehouse.transfer.dispatch.single', $t->id) }}" class="d-inline">
+                                <!-- <form method="POST" action="{{ route('warehouse.transfer.dispatch.single', $t->id) }}" class="d-inline">
                                     @csrf
                                     <button class="btn btn-sm btn-success">Dispatch</button>
-                                </form>
+                                </form> -->
 
                                 <form method="POST" action="{{ route('warehouse.transfer.reject', $t->id) }}" class="d-inline">
                                     @csrf

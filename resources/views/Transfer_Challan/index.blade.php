@@ -17,14 +17,14 @@
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title mb-0">Transfer Challans</h5>
                     </div>
-                    @if(hasPermission('transfer_challan.create'))
+                    <!-- @if(hasPermission('transfer_challan.create'))
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('transfer-challans.create') }}"
                             class="btn btn-success btn-sm d-flex align-items-center gap-1">
                             <i class="bx bx-plus"></i> Add Transfer Challan
                         </a>
                     </div>
-                    @endif
+                    @endif -->
                 </div>
 
                 <!-- Search -->

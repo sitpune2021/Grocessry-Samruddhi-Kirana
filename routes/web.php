@@ -249,7 +249,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-    /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+/////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
     Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
@@ -516,7 +516,6 @@ Route::middleware(['auth:admin'])->group(function () {
     )->name('warehouse.transfer.dispatch.bulk');
 
 
-
     // LOW STOCK ALERTS
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
         ->name('lowstock.index');
@@ -579,8 +578,37 @@ Route::middleware(['auth:admin'])->group(function () {
         );
     });
 
+    // transfer challan
+    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
 
-    /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
+
+        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
+        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
+
+        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
+        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
+        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
+        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
+        Route::get(
+            '/{transferChallan}/download-pdf',
+            [TransferChallanController::class, 'downloadPdf']
+        )->name('download.pdf');
+
+        Route::get(
+            '/{transferChallan}/download-csv',
+            [TransferChallanController::class, 'downloadCsv']
+        )->name('download.csv');
+
+        Route::delete('/warehouse-transfer/{id}', 
+    [WarehouseTransferController::class, 'deleteTransfer']
+)->name('warehouse.transfer.delete');
+
+
+    });
+
+
+/////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
 
     //coupons
@@ -640,29 +668,6 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('stock-movement.report');
 
 
-    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
-
-        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
-
-        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
-        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
-
-        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
-        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
-        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
-        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
-        Route::get(
-            '/{transferChallan}/download-pdf',
-            [TransferChallanController::class, 'downloadPdf']
-        )->name('download.pdf');
-
-        Route::get(
-            '/{transferChallan}/download-csv',
-            [TransferChallanController::class, 'downloadCsv']
-        )->name('download.csv');
-    });
-
-
     // Taxes
     Route::prefix('settings')->group(function () {
         Route::resource('taxes', TaxController::class);
@@ -679,7 +684,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-    /////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
+/////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
 
     // Admin contact list
