@@ -66,20 +66,19 @@ Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
     ->name('reset.password');
 
 
-Route::middleware(['auth:admin'])->group(function () 
-{
+Route::middleware(['auth:admin'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Product CRUD
     Route::resource('products', ProductController::class)
-    ->middleware([
-        'index' => 'permission:product.view',
-        'create' => 'permission:product.create',
-        'store' => 'permission:product.create',
-        'edit' => 'permission:product.edit',
-        'destroy' => 'permission:product.delete',
-    ]);
+        ->middleware([
+            'index' => 'permission:product.view',
+            'create' => 'permission:product.create',
+            'store' => 'permission:product.create',
+            'edit' => 'permission:product.edit',
+            'destroy' => 'permission:product.delete',
+        ]);
 
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
@@ -88,11 +87,11 @@ Route::middleware(['auth:admin'])->group(function ()
         // LIST
         Route::get('/profile', [AdminAuthController::class, 'index'])
             ->name('user.profile');
-            
+
         // CREATE
         Route::get('/profile/create', [AdminAuthController::class, 'createUser'])
             ->name('user.create');
-            
+
 
         Route::post('/profile/store', [AdminAuthController::class, 'store'])
             ->name('user.store');
@@ -111,7 +110,6 @@ Route::middleware(['auth:admin'])->group(function ()
         // DELETE
         Route::delete('/{id}', [AdminAuthController::class, 'destroy'])
             ->name('user.destroy');
-
     });
 
 
@@ -126,11 +124,11 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::resource('brands', BrandController::class);
-   Route::get(
-    'get-brands-by-sub-category/{subCategory}',
-    [ProductController::class, 'getBrands']
-);
-    
+    Route::get(
+        'get-brands-by-sub-category/{subCategory}',
+        [ProductController::class, 'getBrands']
+    );
+
 
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
@@ -239,7 +237,7 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::post(
         'stock-returns/{id}/send-for-approval',
         [WarehouseStockReturnController::class, 'sendForApproval']
-    )->name('stock-returns.send-for-approval');   
+    )->name('stock-returns.send-for-approval');
     Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
         ->name('stock-returns.dispatch');
     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
@@ -251,11 +249,10 @@ Route::middleware(['auth:admin'])->group(function ()
 
 
 
-/////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+    /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
-    Route::prefix('warehouse-transfer')->name('transfer.')->group(function ()
-    {
+    Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
         Route::get('/', [WarehouseTransferController::class, 'index'])->name('index');
         Route::get('/create', [WarehouseTransferController::class, 'create'])->name('create');
         Route::post('/store', [WarehouseTransferController::class, 'store'])->name('store');
@@ -300,7 +297,7 @@ Route::middleware(['auth:admin'])->group(function ()
     );
 
     Route::get('/ajax/transfer-qty', [WarehouseTransferController::class, 'getTransferQty'])
-    ->name('ajax.transfer.qty');
+        ->name('ajax.transfer.qty');
 
 
     // RETAILERS
@@ -481,29 +478,34 @@ Route::middleware(['auth:admin'])->group(function ()
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-    Route::post('/warehouse-transfer/{transfer}/dispatch', 
-    [ApprovalController::class, 'dispatch']
+    Route::post(
+        '/warehouse-transfer/{transfer}/dispatch',
+        [ApprovalController::class, 'dispatch']
     )->name('warehouse.transfer.dispatch');
 
-    Route::post('/warehouse-transfer/{transfer}/receive', 
+    Route::post(
+        '/warehouse-transfer/{transfer}/receive',
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
- 
+
     Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
-    ->name('warehouse.transfer.dispatch.bulk');
+        ->name('warehouse.transfer.dispatch.bulk');
 
     Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
-    ->name('warehouse.transfer.receive.bulk');
+        ->name('warehouse.transfer.receive.bulk');
 
-    Route::post('/warehouse-transfer/dispatch/{transfer}', 
+    Route::post(
+        '/warehouse-transfer/dispatch/{transfer}',
         [ApprovalController::class, 'singleDispatch']
     )->name('warehouse.transfer.dispatch.single');
 
-    Route::post('/warehouse-transfer/reject/{transfer}', 
+    Route::post(
+        '/warehouse-transfer/reject/{transfer}',
         [ApprovalController::class, 'reject']
     )->name('warehouse.transfer.reject');
 
-    Route::post('/warehouse-transfer/receive/{transfer}', 
+    Route::post(
+        '/warehouse-transfer/receive/{transfer}',
         [ApprovalController::class, 'singleReceive']
     )->name('warehouse.transfer.receive.single');
 
@@ -516,65 +518,65 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
 
-    
+
     // Still Comment this module
-        //  PURCHASE ORDER  
-        Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase.orders.create');
-        Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
+    //  PURCHASE ORDER  
+    Route::get('/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('purchase.orders.create');
+    Route::post('/purchase-orders/store', [PurchaseOrderController::class, 'store']);
 
-        // PURCHASE ORDER AJAX
+    // PURCHASE ORDER AJAX
+    Route::get(
+        '/po/subcategories/{category_id}',
+        [PurchaseOrderController::class, 'getSubCategories']
+    );
+
+    Route::get(
+        '/po/products/{sub_category_id}',
+        [PurchaseOrderController::class, 'getProducts']
+    );
+
+    Route::get(
+        '/po/all-products',
+        [PurchaseOrderController::class, 'getAllProducts']
+    );
+
+    Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
+
+    Route::get(
+        '/purchase-orders/{po}/invoice',
+        [PurchaseOrderController::class, 'invoice']
+    )
+        ->name('purchase.invoice');
+
+    Route::get(
+        '/purchase-orders',
+        [PurchaseOrderController::class, 'index']
+    )
+        ->name('purchase.orders.index');
+
+    // Purches Order Request
+    Route::prefix('warehouse-transfer-request')->group(function () {
+        Route::get('/', [WarehouseTransferRequestController::class, 'index'])
+            ->name('warehouse-transfer-request.index');
+
+        Route::get('/create', [WarehouseTransferRequestController::class, 'create'])
+            ->name('warehouse_transfer.create');
+        Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
+
+        Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
+        Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
+        Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
         Route::get(
-            '/po/subcategories/{category_id}',
-            [PurchaseOrderController::class, 'getSubCategories']
+            '/purchase-orders/{id}/items',
+            [WarehouseTransferRequestController::class, 'items']
         );
-
-        Route::get(
-            '/po/products/{sub_category_id}',
-            [PurchaseOrderController::class, 'getProducts']
-        );
-
-        Route::get(
-            '/po/all-products',
-            [PurchaseOrderController::class, 'getAllProducts']
-        );
-
-        Route::get('/po/product-available-qty/{product}', [PurchaseOrderController::class, 'getAvailableQty']);
-
-        Route::get(
-            '/purchase-orders/{po}/invoice',
-            [PurchaseOrderController::class, 'invoice']
-        )
-            ->name('purchase.invoice');
-
-        Route::get(
-            '/purchase-orders',
-            [PurchaseOrderController::class, 'index']
-        )
-            ->name('purchase.orders.index');
-
-        // Purches Order Request
-        Route::prefix('warehouse-transfer-request')->group(function () {
-            Route::get('/', [WarehouseTransferRequestController::class, 'index'])
-                ->name('warehouse-transfer-request.index');
-
-            Route::get('/create', [WarehouseTransferRequestController::class, 'create'])
-                ->name('warehouse_transfer.create');
-            Route::post('/store', [WarehouseTransferRequestController::class, 'store'])->name('warehouse-transfer-request.store');
-
-            Route::get('/incoming', [WarehouseTransferRequestController::class, 'incoming'])->name('warehouse-transfer-request.incoming');
-            Route::post('/approve/{id}', [WarehouseTransferRequestController::class, 'approve']);
-            Route::post('/reject/{id}', [WarehouseTransferRequestController::class, 'reject']);
-            Route::get(
-                '/purchase-orders/{id}/items',
-                [WarehouseTransferRequestController::class, 'items']
-            );
-        });
- 
-
-/////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+    });
 
 
-     //coupons
+    /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+
+
+    //coupons
     Route::prefix('coupons')->name('coupons.')->group(function () {
         Route::get('/', [CouponController::class, 'index'])->name('index');
         Route::get('/create', [CouponController::class, 'create'])->name('create');
@@ -670,7 +672,7 @@ Route::middleware(['auth:admin'])->group(function ()
 
 
 
-/////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
+    /////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
 
     // Admin contact list
@@ -701,7 +703,6 @@ Route::middleware(['auth:admin'])->group(function ()
 
         Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
     });
-
 });
 // end admin auth 
 
@@ -732,6 +733,10 @@ Route::get('cart', [WebsiteController::class, 'cart'])
     ->name('cart')
     ->middleware('auth:web');
 
+Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
+    ->name('website.category-products');
+
+ 
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
@@ -757,6 +762,10 @@ Route::get('/orders', [CustomerOrderController::class, 'userorder'])
 
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
+
+
+
+
 
 
 /////////////////////////////////////////   SHEKHAR DEVELOP - WEBSITE END   ////////////////////////////////////////////////////////////

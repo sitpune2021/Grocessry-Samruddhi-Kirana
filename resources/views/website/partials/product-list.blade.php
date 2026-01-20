@@ -1,15 +1,15 @@
 <div class="row g-4 justify-content-center">
     @forelse($products as $product)
-        <div class="col-md-6 col-lg-6 col-xl-4">
-            <div class="rounded position-relative fruite-item">
-                <div class="p-4 border border-secondary rounded-bottom">
-                    @php
-                        $images = $product->product_images; // Already array
-                        $image = $images[0] ?? null;
-                    @endphp
+    <div class="col-md-6 col-lg-6 col-xl-4">
+        <div class="rounded position-relative fruite-item">
+            <div class="p-4 border border-secondary rounded-bottom">
+                @php
+                $images = $product->product_images; // Already array
+                $image = $images[0] ?? null;
+                @endphp
 
-                    <div class="fruite-img">
-                        <a href="{{ route('productdetails', $product->id) }}">
+                <div class="fruite-img">
+                    <a href="{{ route('productdetails', $product->id) }}">
                         @if($image)
                         <img
                             src="{{ asset('storage/products/'.$image) }}"
@@ -23,60 +23,60 @@
                             alt="No Image"
                             style="height: 200px; object-fit: cover;">
                         @endif
-                        </a>
-                    </div>
-
-                    <h4>{{ $product->name }}</h4>
-                    <p class="text-dark fs-5 fw-bold mb-0">
-                        ₹ {{ $product->mrp }}
-                    </p>
-                    
-                    <form action="{{ route('add_cart') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-                        <button class="btn border border-secondary rounded-pill px-3 text-primary">
-                            <i class="fa fa-shopping-bag me-2"></i> Add to cart
-                        </button>
-                    </form>
-                                          
+                    </a>
                 </div>
+
+                <h4>{{ $product->name }}</h4>
+                <p class="text-dark fs-5 fw-bold mb-0">
+                    ₹ {{ $product->mrp }}
+                </p>
+
+                <form action="{{ route('add_cart') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <button class="btn border border-secondary rounded-pill px-3 text-primary">
+                        <i class="fa fa-shopping-bag me-2"></i> Add to cart
+                    </button>
+                </form>
+
             </div>
         </div>
+    </div>
     @empty
-        <p class="text-center">No products found</p>
+    <p class="text-center">No products found</p>
     @endforelse
 </div>
 
 
 
-    <style>
-        /* FORCE pagination to horizontal row */
-        .pagination {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between;
-            gap: 6px;
-        }
+<style>
+    /* FORCE pagination to horizontal row */
+    .pagination {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between;
+        gap: 6px;
+    }
 
-        .pagination .page-item {
-            display: inline-flex !important;
-        }
+    .pagination .page-item {
+        display: inline-flex !important;
+    }
 
-        .pagination .page-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+    .pagination .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
 
-    <div class="mt-4 d-flex flex-column align-items-end">
+<div class="mt-4 d-flex flex-column align-items-end">
 
     {{ $products->links() }}
 
-    <div class="mt-2 text-muted">
-        Showing {{ $products->firstItem() }} 
-        to {{ $products->lastItem() }} 
-        of {{ $products->total() }} results
-    </div>
+    <!-- <div class="mt-2 text-muted">
+        {{ $products->firstItem() }}
+        {{ $products->lastItem() }}
+        {{ $products->total() }}
+    </div> -->
 
 </div>

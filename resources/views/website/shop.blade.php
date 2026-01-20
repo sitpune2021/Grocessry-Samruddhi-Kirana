@@ -53,130 +53,42 @@
 
                     <div class="row g-4">
 
-                        <div class="col-lg-3">
-                            <div class="row g-4">
-                                <div class="col-lg-12">
-                                    <div class="mb-3">
+                        <!-- LEFT SIDEBAR -->
+                        <div class="col-lg-3 col-md-4">
+                            <div class="card shadow-sm p-3">
+                                <h4 class="mb-3">Price Range</h4>
 
-                                    </div>
-                                </div>
+                                <form id="priceForm">
+                                    <input type="number"
+                                        class="form-control mb-2"
+                                        id="minPrice"
+                                        placeholder="Min Price"
+                                        value="{{ request('min_price') }}">
 
-                                <!-- <div class="col-lg-12">
-                                        <div class="mb-3">
-                                            <h4 class="mb-2">Price</h4>
-                                            <form method="GET" action="{{ route('shop') }}">
-                                                <input type="hidden" name="category_id" value="{{ request('category_id') }}">
-                                                <input type="range"
-                                                    class="form-range w-100"
-                                                    name="price"
-                                                    min="0"
-                                                    max="500"
-                                                    value="{{ $maxPrice ?? 0 }}"
-                                                    onchange="this.form.submit()">
-                                                <output>{{ $maxPrice ?? 0 }}</output>
-                                            </form>
-                                        </div>
-                                    </div> -->
+                                    <input type="number"
+                                        class="form-control mb-3"
+                                        id="maxPrice"
+                                        placeholder="Max Price"
+                                        value="{{ request('max_price') }}">
 
-                                <div class="col-lg-12">
-                                    <div class="mb-3">
-                                        <h4 class="mb-2">Price Range</h4>
-                                        <form id="priceForm">
-                                            <input type="number" class="form-control mb-2"
-                                                id="minPrice" placeholder="Min Price" value="{{ request('min_price') }}">
-
-                                            <input type="number" class="form-control mb-2"
-                                                id="maxPrice" placeholder="Max Price" value="{{ request('max_price') }}">
-
-                                            <button type="button" class="btn btn-primary w-100" onclick="loadProducts(1)">
-                                                Apply Filter
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                <!-- <div class="col-lg-12">
-                                        <h4 class="mb-3">Featured products</h4>
-                                        <div class="d-flex align-items-center justify-content-start">
-                                            <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                                <img src="img/featur-1.jpg" class="img-fluid rounded" alt="">
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-2">Big Banana</h6>
-                                                <div class="d-flex mb-2">
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="d-flex mb-2">
-                                                    <h5 class="fw-bold me-2">2.99 $</h5>
-                                                    <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-start">
-                                            <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                                <img src="img/featur-2.jpg" class="img-fluid rounded" alt="">
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-2">Big Banana</h6>
-                                                <div class="d-flex mb-2">
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="d-flex mb-2">
-                                                    <h5 class="fw-bold me-2">2.99 $</h5>
-                                                    <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center justify-content-start">
-                                            <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                                <img src="img/featur-3.jpg" class="img-fluid rounded" alt="">
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-2">Big Banana</h6>
-                                                <div class="d-flex mb-2">
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star text-secondary"></i>
-                                                    <i class="fa fa-star"></i>
-                                                </div>
-                                                <div class="d-flex mb-2">
-                                                    <h5 class="fw-bold me-2">2.99 $</h5>
-                                                    <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-center my-4">
-                                            <a href="#" class="btn border border-secondary px-4 py-3 rounded-pill text-primary w-100">Vew More</a>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12">
-                                        <div class="position-relative">
-                                            <img src="img/banner-fruits.jpg" class="img-fluid w-100 rounded" alt="">
-                                            <div class="position-absolute" style="top: 50%; right: 10px; transform: translateY(-50%);">
-                                                <h3 class="text-secondary fw-bold">Fresh <br> Fruits <br> Banner</h3>
-                                            </div>
-                                        </div>
-                                    </div> -->
-
+                                    <button type="button"
+                                        class="btn btn-sm btn-primary w-100"
+                                        onclick="loadProducts(1)">
+                                        Apply Filter
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
-                        <div class="col-lg-9">
+                        <!-- RIGHT PRODUCTS -->
+                        <div class="col-lg-9 col-md-8">
                             <div id="product-container">
                                 @include('website.partials.product-list', ['products' => $products])
                             </div>
                         </div>
 
                     </div>
+
 
                 </div>
             </div>
