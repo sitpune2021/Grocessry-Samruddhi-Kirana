@@ -233,6 +233,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
+    
     Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
     Route::post(
         'stock-returns/{id}/send-for-approval',
@@ -242,10 +243,27 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('stock-returns.dispatch');
     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
         ->name('stock-returns.receive');
-    Route::post(
-        'stock-returns/{id}/close',
-        [WarehouseStockReturnController::class, 'close']
-    )->name('stock-returns.close');
+  
+
+        Route::get(
+    'stock-returns/{id}/return-to-master',
+    [WarehouseStockReturnController::class, 'returnToMaster']
+)->name('stock-returns.return-to-master');
+
+Route::post(
+    'stock-returns/store-district-to-master',
+    [WarehouseStockReturnController::class, 'storeDistrictToMaster']
+)->name('stock-returns.store-district-to-master');
+
+ Route::post(
+        'stock-returns/{id}/district-approval',
+        [WarehouseStockReturnController::class, 'approve1']
+    )->name('stock-returns.approve1');
+    Route::post('stock-returns/{id}/district-dispatch', [WarehouseStockReturnController::class, 'dispatch1'])
+        ->name('stock-returns.dispatch1');
+    Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
+        ->name('stock-returns.receive1');
+
 
 
 

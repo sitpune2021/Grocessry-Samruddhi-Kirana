@@ -31,7 +31,7 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <form
-                                            action="{{ route('stock-returns.update', $stockReturn->id) }}"
+                                            action="{{ route('stock-returns.store-district-to-master', $stockReturn->id) }}"
                                             method="POST"
                                             enctype="multipart/form-data">
 
@@ -220,7 +220,7 @@
                                             {{-- ================= FOOTER ================= --}}
                                             <div class="card-footer text-end">
                                                 <button type="submit" class="btn btn-primary">
-                                                    {{ $mode === 'edit' ? 'Update Return' : '' }}
+                                                    {{ $mode === 'edit' ? 'Return to Master' : '' }}
 
                                                 </button>
                                             </div>
