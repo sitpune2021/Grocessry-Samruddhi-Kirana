@@ -119,16 +119,17 @@ class ReportsController extends Controller
     
     public function stock_movement(Request $request)
     {
+        
         $warehouseId = $request->query('warehouse_id');
         $type        = $request->query('type');
         $fromDate    = $request->query('from_date');
         $toDate      = $request->query('to_date');
         $download    = $request->query('download');
 
-        // 🔹 ORDER BY created_at ASC for running balance
+        // ORDER BY created_at ASC for running balance
         $query = DB::table('stock_movements')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc');
+            ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc');
 
         if ($warehouseId) {
             $query->where('warehouse_id', $warehouseId);
@@ -147,30 +148,43 @@ class ReportsController extends Controller
 
         $movements = $query->get();
 
-        // 🔥 RUNNING BALANCE PER WAREHOUSE
+        // RUNNING BALANCE PER WAREHOUSE
         $runningBalance = [];
         $finalRows = [];
 
-        foreach ($movements as $row) {
+        foreach ($movements as $row) 
+        {
 
-            if (!isset($runningBalance[$row->warehouse_id])) {
-                $runningBalance[$row->warehouse_id] = 0;
+            $warehouseId = $row->warehouse_id;
+            $batchId     = $row->product_batch_id;
+
+            // warehouse initialize
+            if (!isset($runningBalance[$warehouseId])) {
+                $runningBalance[$warehouseId] = [];
             }
 
-            $runningBalance[$row->warehouse_id] += $row->quantity;
+            // batch initialize
+            if (!isset($runningBalance[$warehouseId][$batchId])) {
+                $runningBalance[$warehouseId][$batchId] = 0;
+            }
+
+            // quantity + / -
+            $runningBalance[$warehouseId][$batchId] += $row->quantity;
 
             $finalRows[] = [
-                'warehouse_id'   => $row->warehouse_id,
-                'type'           => $row->type,
-                'quantity'       => $row->quantity,
-                'remaining_qty'  => $runningBalance[$row->warehouse_id],
-                'created_at'     => $row->created_at,
-                'updated_at'     => $row->updated_at,
+                'warehouse_id'     => $warehouseId,
+                'product_batch_id' => $batchId,
+                'type'             => $row->type,
+                'quantity'         => $row->quantity,
+                'remaining_qty'    => $runningBalance[$warehouseId][$batchId], // ✅ FIX HERE
+                'created_at'       => $row->created_at,
+                'updated_at'       => $row->updated_at,
             ];
         }
 
-        // 🔽 CSV DOWNLOAD
-        if ($download === 'csv') {
+        // CSV DOWNLOAD
+        if ($download === 'csv') 
+        {
             $filename = 'stock_movements_' . now()->format('Ymd_His') . '.csv';
 
             return response()->stream(function () use ($finalRows) {
@@ -210,6 +224,7 @@ class ReportsController extends Controller
         return view('reports.stock-movements.stock-movement', [
             'movements' => $finalRows
         ]);
+
     }
 
  

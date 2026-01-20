@@ -59,7 +59,6 @@
                             <th>Type</th>
                             <th>Quantity</th>
                             <th>Remaining Total Qty</th>
-
                             <th>Created Date</th>
                             <th>Updated Date</th>
                         </tr>
@@ -82,7 +81,7 @@
                                 </td>
 
                                 <td class="fw-bold">
-                                    {{ $row['remaining_qty'] }}
+                                    {{ (int) $row['remaining_qty'] }}
                                 </td>
 
                                 <td>
