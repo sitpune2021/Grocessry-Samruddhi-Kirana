@@ -170,11 +170,28 @@
                 qty: newQty
             },
             success: function(res) {
+
                 if (res.success) {
+
+                    // Qty update
                     qtyText.text(res.qty);
+
+                    // Item total update
                     $('#item-total-' + itemId).text('₹ ' + res.line_total);
+
+                    // Cart total update
                     $('#cart-total').text('₹ ' + res.cart_total);
+
+                    // 🔥 Header cart count update
+                    if (res.cart_count > 0) {
+                        $('#cart-count').text(res.cart_count).show();
+                    } else {
+                        $('#cart-count').hide();
+                    }
                 }
+            },
+            error: function() {
+                alert('Something went wrong!');
             }
         });
     });

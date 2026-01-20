@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\AboutPage;
 use Illuminate\Http\Request;
 use App\Models\Banner;
 use App\Models\Product;
@@ -70,6 +71,14 @@ class WebsiteController extends Controller
             'categoryProducts',
             'latestPro'
         ));
+    }
+
+    public function about()
+    {
+        // single about page data
+        $about = AboutPage::first();
+
+        return view('website.aboutpage', compact('about'));
     }
 
     public function contact()
@@ -209,21 +218,6 @@ class WebsiteController extends Controller
         $product = Product::findOrFail($request->product_id);
         $qty = $request->qty ?? 1;
 
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['qty'] += $qty;
-        } else {
-            $cart[$product->id] = [
-                'name'  => $product->name,
-                'price' => $product->mrp,
-                'qty'   => $qty,
-                'image' => $product->product_images[0] ?? null,
-            ];
-        }
-
-
-
         $userId = Auth::id() ?? session()->getId();
 
         // Get or create cart
@@ -231,26 +225,26 @@ class WebsiteController extends Controller
             'user_id' => $userId,
         ]);
 
-        // Check if product already in cart
+        // Check if product already exists
         $item = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
 
         if ($item) {
-            $item->qty += 1;
+            $item->qty += $qty;
             $item->line_total = $item->qty * $item->price;
             $item->save();
         } else {
             CartItem::create([
                 'cart_id'    => $cart->id,
                 'product_id' => $product->id,
-                'qty'        => 1,
+                'qty'        => $qty,
                 'price'      => $product->mrp,
-                'line_total' => $product->mrp,
+                'line_total' => $product->mrp * $qty,
             ]);
         }
 
-        // Recalculate cart totals
+        // Recalculate totals
         $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
 
         $cart->update([
@@ -258,7 +252,8 @@ class WebsiteController extends Controller
             'total'    => $subtotal,
         ]);
 
-        return redirect()->route('cart')->with('success', 'Product added to cart');
+        return redirect()->route('cart')
+            ->with('success', 'Product added to cart');
     }
 
     public function cart()
@@ -280,26 +275,41 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
-    public function update(Request $request, $id)
-    {
-        $item = CartItem::findOrFail($id);
+   public function update(Request $request, $itemId)
+{
+    $request->validate([
+        'qty' => 'required|integer|min:1'
+    ]);
 
-        $item->qty = $request->qty;
-        $item->line_total = $item->qty * $item->price;
-        $item->save();
+    $userId = Auth::id() ?? session()->getId();
 
-        $cart = $item->cart;
-        $cart->subtotal = $cart->items->sum('line_total');
-        $cart->total = $cart->subtotal;
-        $cart->save();
+    $item = CartItem::where('id', $itemId)
+        ->whereHas('cart', function ($q) use ($userId) {
+            $q->where('user_id', $userId);
+        })
+        ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'qty' => $item->qty,
-            'line_total' => number_format($item->line_total, 2),
-            'cart_total' => number_format($cart->total, 2),
-        ]);
-    }
+    $item->qty = $request->qty;
+    $item->line_total = $item->qty * $item->price;
+    $item->save();
+
+    $cart = $item->cart;
+
+    $cart->subtotal = $cart->items()->sum('line_total');
+    $cart->total = $cart->subtotal;
+    $cart->save();
+
+    return response()->json([
+        'success'     => true,
+        'qty'         => $item->qty,
+        'line_total'  => number_format($item->line_total, 2),
+        'cart_total'  => number_format($cart->total, 2),
+        'cart_count'  => $cart->items()->sum('qty'),
+    ]);
+}
+
+
+
 
 
     public function productdetails($id)

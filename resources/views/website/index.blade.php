@@ -155,11 +155,11 @@
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        background: #000;
+        background: #b0a5a5ff;
         color: #fff;
         border: none;
-        width: 42px;
-        height: 42px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         font-size: 22px;
         cursor: pointer;
@@ -191,40 +191,93 @@
 
 
     /* categery model  */
-    .category-card {
-        display: block;
-        text-decoration: none;
-        color: #000;
+
+
+    /* CATEGORY CARD */
+
+
+    /* HOVER */
+    .category-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
     }
 
+    /* IMAGE WRAPPER */
     .category-img {
-        background: #eef5ff;
-        border-radius: 16px;
-        padding: 14px;
-        height: 120px;
+        width: 80%;
+        aspect-ratio: 1 / 1;
+        margin: 0 auto;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #f8f9fa;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: 0.3s;
     }
 
+    /* IMAGE FULL FIT */
     .category-img img {
-        max-width: 100%;
-        max-height: 90px;
-        object-fit: contain;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* 🔥 FULL FIT */
+        border-radius: 50%;
     }
 
-    .category-title {
-        margin-top: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 1.3;
-    }
 
     .category-card:hover .category-img {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        transform: scale(1.05);
     }
+
+    /* TITLE */
+    .category-title {
+        margin-top: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.2;
+        color: #333;
+    }
+
+    .category-row {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .category-col {
+        width: 10%;
+        /* 🔥 10 in one row */
+        padding: 8px;
+    }
+
+    /* RESPONSIVE FIX */
+    @media (max-width: 1200px) {
+        .category-col {
+            width: 20%;
+        }
+
+        /* 5 per row */
+    }
+
+    @media (max-width: 768px) {
+        .category-col {
+            width: 25%;
+        }
+
+        /* 4 per row */
+    }
+
+    @media (max-width: 576px) {
+        .category-col {
+            width: 33.33%;
+        }
+
+        /* 3 per row */
+    }
+
+
+
+
 
     .hero-banner {
         height: 380px;
@@ -347,6 +400,25 @@
         position: relative;
     }
 
+    .product-sm-card {
+        position: relative;
+    }
+
+    /* OFFER BADGE */
+    .badge-off {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: linear-gradient(135deg, #4193ffbb, rgba(43, 156, 255, 1));
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 12px;
+        z-index: 5;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
     /* Mobile full width */
     @media (max-width: 768px) {
         form .col-md-4 {
@@ -360,6 +432,8 @@
             justify-content: flex-end;
         }
     }
+
+    /* categry box  */
 </style>
 
 <body>
@@ -371,13 +445,13 @@
 
     <!-- Hero Start -->
 
-    <div class="container my-5">
+    <div class="container my-3">
         <div class="row">
             <div class="col-12">
 
                 <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
-                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 75px;">
+                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 25px;">
 
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
@@ -391,11 +465,11 @@
                         @endforeach
                     </div>
                     <!-- Controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                    <button class="carousel-control-prev mt-5" type="button" data-bs-target="#carouselId" data-bs-slide="prev ">
                         <span class="carousel-control-prev-icon"></span>
                     </button>
 
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                    <button class="carousel-control-next mt-5" type="button" data-bs-target="#carouselId" data-bs-slide="next">
                         <span class="carousel-control-next-icon"></span>
                     </button>
                 </div>
@@ -404,30 +478,23 @@
     </div>
 
     <div class="container py-4">
-        <div class="row g-3">
+        <div class="row g-3 category-row">
 
             @foreach($categoriestop as $category)
-            <div class="col-lg-2 col-md-3 col-sm-4 col-4">
+            <div class="category-col">
 
                 <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
-                    @php
-                        $image = $category->category_images[0] ?? null;
-                    @endphp
-
                     <div class="category-img">
-                        <img
-                            src="{{ $category->image
-                            ? asset('storage/categories/'.$category->image)
-                            : asset('img/default.png') }}"
+                        <img src="{{ $category->image
+                        ? asset('storage/categories/'.$category->image)
+                        : asset('img/default.png') }}"
                             alt="{{ $category->name }}">
                     </div>
 
-                    <p class="category-title">
-                        {{ $category->name }}
-                    </p>
-                   
+                    <p class="category-title">{{ $category->name }}</p>
+
                 </a>
 
             </div>
@@ -435,6 +502,8 @@
 
         </div>
     </div>
+
+
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
@@ -472,6 +541,7 @@
                             @foreach($allProducts as $product)
                             <div class="col-md-6 col-lg-3">
                                 <div class="rounded position-relative fruite-item">
+                                    <div class="badge-off">40% OFF</div>
                                     @php
                                     $images = $product->product_images;
                                     $image = $images[0] ?? null;
@@ -479,19 +549,19 @@
 
                                     <div class="fruite-img">
                                         <a href="{{ route('productdetails', $product->id) }}">
-                                        @if($image)
-                                        <img
-                                            src="{{ asset('storage/products/'.$image) }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="{{ $product->name }}"
-                                            style="height: 200px; object-fit: cover;">
-                                        @else
-                                        <img
-                                            src="{{ asset('website/img/no-image.png') }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="No Image"
-                                            style="height: 200px; object-fit: cover;">
-                                        @endif
+                                            @if($image)
+                                            <img
+                                                src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="{{ $product->name }}"
+                                                style="height: 200px; object-fit: cover;">
+                                            @else
+                                            <img
+                                                src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="No Image"
+                                                style="height: 200px; object-fit: cover;">
+                                            @endif
                                         </a>
                                     </div>
 
@@ -540,12 +610,14 @@
                             @forelse($categoryProducts as $product)
                             <div class="col-md-2 col-lg-2">
                                 <div class="rounded position-relative fruite-item">
+                                    <div class="badge-off">40% OFF</div>
                                     @php
                                     $images = $product->product_images; // Already array
                                     $image = $images[0] ?? null;
                                     @endphp
 
                                     <div class="fruite-img">
+                                        <a href="{{ route('productdetails', $product->id) }}"></a>
                                         @if($image)
                                         <img
                                             src="{{ asset('storage/products/'.$image) }}"
@@ -559,6 +631,7 @@
                                             alt="No Image"
                                             style="height: 200px; object-fit: cover;">
                                         @endif
+                                        </a>
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
@@ -610,25 +683,26 @@
                 @endphp
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <a href="{{ route('productdetails', $product->id) }}">                        
-                        <div class="product-sm-img">
-                            <img src="{{ $image 
+                        <div class="badge-off">40% OFF</div>
+                        <a href="{{ route('productdetails', $product->id) }}">
+                            <div class="product-sm-img">
+                                <img src="{{ $image 
                                     ? asset('storage/products/'.$image) 
                                     : asset('website/img/no-image.png') }}">
-                        </div>
-                        <div class="product-sm-title">
-                            {{ Str::limit($product->name, 35) }}
-                        </div>
-                        <div class="product-sm-footer">
+                            </div>
+                            <div class="product-sm-title">
+                                {{ Str::limit($product->name, 35) }}
+                            </div>
+                            <div class="product-sm-footer">
 
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <form action="{{ route('add_cart') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <p>₹ {{ $product->mrp }}</p>
-                                <button type="submit" class="btn-add-sm">Add to cart</button>
-                            </form>
-                        </div>
+                                    <p>₹ {{ $product->mrp }}</p>
+                                    <button type="submit" class="btn-add-sm">Add to cart</button>
+                                </form>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -661,26 +735,29 @@
 
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <div class="product-sm-img">
-                            <img src="{{ $image 
+                        <div class="badge-off">40% OFF</div>
+                        <a href="{{ route('productdetails', $product->id) }}">
+                            <div class="product-sm-img">
+                                <img src="{{ $image 
                                 ? asset('storage/products/'.$image) 
                                 : asset('website/img/no-image.png') }}">
-                        </div>
+                            </div>
 
-                        <div class="product-sm-title">
-                            {{ Str::limit($product->name, 35) }}
-                        </div>
+                            <div class="product-sm-title">
+                                {{ Str::limit($product->name, 35) }}
+                            </div>
 
-                        <div class="product-sm-footer">
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <div class="product-sm-footer">
+                                <form action="{{ route('add_cart') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <p>₹ {{ $product->mrp }}</p>
-                                <button type="submit" class="btn-add-sm">Add to cart</button>
-                            </form>
-                        </div>
+                                    <p>₹ {{ $product->mrp }}</p>
+                                    <button type="submit" class="btn-add-sm">Add to cart</button>
+                                </form>
+                            </div>
                     </div>
+                    </a>
                 </div>
                 @endforeach
             </div>

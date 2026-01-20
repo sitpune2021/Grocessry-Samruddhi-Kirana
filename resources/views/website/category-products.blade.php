@@ -96,33 +96,35 @@
         @foreach($products as $product)
 
         <div class="product-card">
+            <a href="{{ route('productdetails', $product->id) }}">
 
-            {{-- Optional badge --}}
-            <div class="badge-off">40% OFF</div>
+                {{-- Optional badge --}}
+                <div class="badge-off">40% OFF</div>
 
-            @php
-            $image = $product->product_images[0] ?? null;
-            @endphp
+                @php
+                $image = $product->product_images[0] ?? null;
+                @endphp
 
-            <img
-                src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
-                alt="{{ $product->name }}">
+                <img
+                    src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
+                    alt="{{ $product->name }}">
 
-            <h6>{{ Str::limit($product->name, 40) }}</h6>
+                <h6>{{ Str::limit($product->name, 40) }}</h6>
 
-            <p class="qty">1 pc</p>
+                <p class="qty">1 pc</p>
 
-            <div class="price-row">
-                <span class="price">₹ {{ $product->mrp }}</span>
+                <div class="price-row">
+                    <span class="price">₹ {{ $product->mrp }}</span>
 
-                <form action="{{ route('add_cart') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <button type="submit" class="btn-add">ADD</button>
-                </form>
-            </div>
+                    <form action="{{ route('add_cart') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <button type="submit" class="btn-add">ADD</button>
+                    </form>
+                </div>
 
         </div>
+        </a>
 
         @endforeach
 
