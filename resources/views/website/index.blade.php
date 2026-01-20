@@ -251,7 +251,7 @@
         position: absolute;
         inset: 0;
         background: linear-gradient(to right,
-                rgba(0, 0, 0, 0.55),
+                rgba(46, 43, 43, 0.26),
                 rgba(0, 0, 0, 0.1));
         z-index: 1;
     }
@@ -404,15 +404,19 @@
     </div>
 
     <div class="container py-4">
-        <div class="row g-4">
+        <div class="row g-3">
 
             @foreach($categoriestop as $category)
-            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                <a href="{{ route('home', ['category_id' => $category->id]) }}"
+            <div class="col-lg-2 col-md-3 col-sm-4 col-4">
+
+                <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
                     <div class="category-img">
-                        <img src="{{ asset($category->image ?? 'img/default.png') }}"
+                        <img
+                            src="{{ $category->image
+                            ? asset('storage/categories/'.$category->image)
+                            : asset('img/default.png') }}"
                             alt="{{ $category->name }}">
                     </div>
 
@@ -421,11 +425,14 @@
                     </p>
 
                 </a>
+
             </div>
             @endforeach
 
         </div>
     </div>
+
+
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">

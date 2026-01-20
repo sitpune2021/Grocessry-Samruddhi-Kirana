@@ -39,10 +39,9 @@ class WebsiteController extends Controller
             ->take(12)                // 12 products
             ->get();
 
-        $categoriestop = Category::orderBy('name')->orderBy('name')
+        $categoriestop = Category::orderBy('id', 'DESC')
             ->take(12)
             ->get();
-
 
         // category id
         $categoryId = $request->category_id;
@@ -208,22 +207,22 @@ class WebsiteController extends Controller
         ]);
 
         $product = Product::findOrFail($request->product_id);
-         $qty = $request->qty ?? 1;
+        $qty = $request->qty ?? 1;
 
-    $cart = session()->get('cart', []);
+        $cart = session()->get('cart', []);
 
-    if (isset($cart[$product->id])) {
-        $cart[$product->id]['qty'] += $qty;
-    } else {
-        $cart[$product->id] = [
-            'name'  => $product->name,
-            'price' => $product->mrp,
-            'qty'   => $qty,
-            'image' => $product->product_images[0] ?? null,
-        ];
-    }
+        if (isset($cart[$product->id])) {
+            $cart[$product->id]['qty'] += $qty;
+        } else {
+            $cart[$product->id] = [
+                'name'  => $product->name,
+                'price' => $product->mrp,
+                'qty'   => $qty,
+                'image' => $product->product_images[0] ?? null,
+            ];
+        }
 
-    
+
 
         $userId = Auth::id() ?? session()->getId();
 
@@ -281,6 +280,8 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
+    
+
     public function productdetails($id)
     {
         $product = Product::findOrFail($id);
@@ -294,4 +295,20 @@ class WebsiteController extends Controller
 
         return view('website.shop_detail', compact('product', 'relatedProducts'));
     }
+
+    public function categoryProducts($slug)
+{
+    $category = Category::where('slug', $slug)->firstOrFail();
+
+    $products = Product::where('category_id', $category->id)
+        ->whereNull('deleted_at')
+        ->latest()
+        ->paginate(12);
+
+    return view('website.category-products', compact('category', 'products'));
+}
+
+
+
+
 }

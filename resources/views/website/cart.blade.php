@@ -120,4 +120,40 @@
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).on('click', '.qty-plus, .qty-minus', function () {
+
+    let box = $(this).closest('.qty-box');
+    let itemId = box.data('id');
+    let qtyText = box.find('.qty-text');
+    let currentQty = parseInt(qtyText.text());
+
+    let newQty = $(this).hasClass('qty-plus')
+        ? currentQty + 1
+        : currentQty - 1;
+
+    if (newQty < 1) return;
+
+    $.ajax({
+        url: "/cart/update/" + itemId,
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            _method: "PUT",
+            qty: newQty
+        },
+        success: function (res) {
+            if (res.success) {
+                qtyText.text(res.qty);
+                $('#item-total-' + itemId).text('₹ ' + res.line_total);
+                $('#cart-total').text('₹ ' + res.cart_total);
+            }
+        }
+    });
+});
+</script>
+
+
 @endsection
