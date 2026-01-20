@@ -264,33 +264,32 @@ class TransferChallanController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-   public function deleteTransfer($id)
-{
-    $transfer = WarehouseTransfer::find($id);
+    public function deleteTransfer($id)
+    {
+        $transfer = WarehouseTransfer::find($id);
 
-    if (!$transfer) {
+        if (!$transfer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not found'
+            ], 404);
+        }
+
+        // Sirf pending (status = 0) allow
+        if ($transfer->status != 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending requests can be removed'
+            ], 400);
+        }
+
+        $transfer->delete();   // ✅ Only this table
+
         return response()->json([
-            'success' => false,
-            'message' => 'Record not found'
-        ], 404);
+            'success' => true,
+            'message' => 'Product removed successfully'
+        ]);
     }
-
-    // Sirf pending (status = 0) allow
-    if ($transfer->status != 0) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Only pending requests can be removed'
-        ], 400);
-    }
-
-    $transfer->delete();   // ✅ Only this table
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Product removed successfully'
-    ]);
-}
 
     
-
 }

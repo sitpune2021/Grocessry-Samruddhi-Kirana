@@ -216,7 +216,7 @@
     </script>
 
     <script>
-document.addEventListener('click', function (e) {
+    document.addEventListener('click', function (e) {
 
     if (e.target.classList.contains('remove-row')) {
 
@@ -247,9 +247,8 @@ document.addEventListener('click', function (e) {
             console.error(err);
         });
     }
-});
-</script>
-
+    });
+    </script>
 
 
 </body>
