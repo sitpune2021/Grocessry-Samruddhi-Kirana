@@ -15,4 +15,12 @@ class SupplierChallanItem extends Model
         'received_qty',
         'rate'
     ];
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+    public function challan()
+    {
+        return $this->belongsTo(SupplierChallan::class, 'supplier_challan_id');
+    }
 }

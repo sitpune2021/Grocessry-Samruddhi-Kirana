@@ -169,7 +169,10 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('/stock/{id}/delete', 'destroyStock')
             ->name('stock.delete');
     });
-
+    Route::get(
+        '/get-supplier-challan/{id}',
+        [stockWarehouseController::class, 'getSupplierChallan']
+    );
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
@@ -612,6 +615,13 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::prefix('supplier_challan')->name('supplier_challan.')->group(function () {
         Route::get('/', [SupplierChallenController::class, 'index'])->name('index');
         Route::get('/create', [SupplierChallenController::class, 'create'])->name('create');
+        Route::post('/store', [SupplierChallenController::class, 'store'])->name('store');
+        Route::get('/{id}', [SupplierChallenController::class, 'show'])
+            ->name('show');
+        Route::get('/{id}/edit', [SupplierChallenController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SupplierChallenController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SupplierChallenController::class, 'destroy'])
+            ->name('destroy');
     });
 
 
@@ -742,7 +752,7 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
- 
+
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
