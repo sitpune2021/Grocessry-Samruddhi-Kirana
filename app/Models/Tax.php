@@ -11,12 +11,14 @@ class Tax extends Model
         'cgst',
         'sgst',
         'igst',
+        'gst',
         'is_active',
     ];
     protected $casts = [
         'cgst' => 'float',
         'sgst' => 'float',
         'igst' => 'float',
+        'gst'   => 'float',
         'is_active' => 'boolean',
     ];
 
