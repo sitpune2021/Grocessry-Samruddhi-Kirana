@@ -8,12 +8,14 @@ use App\Models\TransferChallan;
 use App\Models\Warehouse;
 use App\Models\TransferChallanItem;
 use App\Models\Product;
+use App\Models\WarehouseTransfer;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\PDF;
 
 class TransferChallanController extends Controller
 {
+    
     public function index(Request $request)
     {
         $query = TransferChallan::with(['fromWarehouse', 'toWarehouse']);
@@ -29,19 +31,47 @@ class TransferChallanController extends Controller
         return view('Transfer_Challan.index', compact('challans', 'warehouses'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $warehouses = Warehouse::all();
         $products = Product::all();
 
-        return view('Transfer_Challan.create', ['mode' => 'add', 'warehouses' => $warehouses, 'products' => $products]);
+        $transferItems = [];
+
+        if ($request->filled('transfer_group')) {
+            [$from, $to] = explode('_', $request->transfer_group);
+
+            $transferItems = WarehouseTransfer::with('product')
+                ->where('approved_by_warehouse_id', $from)
+                ->where('requested_by_warehouse_id', $to)
+                ->where('status', 0)
+                ->get();
+        }
+
+        return view('Transfer_Challan.create', [
+            'mode' => 'add',
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'transferItems' => $transferItems,
+            'fromWarehouse' => $request->from_warehouse_id,
+            'toWarehouse' => $request->to_warehouse_id,
+        ]);
+    }
+
+    private function generateChallanNumber()
+    {
+        $last = TransferChallan::latest('id')->first();
+
+        $nextId = $last ? $last->id + 1 : 1;
+
+        return 'TC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 
     public function store(Request $request)
     {
         // Validate inputs
         $request->validate([
-            'challan_no' => 'required|unique:transfer_challans,challan_no',
+            //'challan_no' => 'required|unique:transfer_challans,challan_no',
             'from_warehouse_id' => 'required|exists:warehouses,id',
             'to_warehouse_id' => 'required|exists:warehouses,id|different:from_warehouse_id',
             'transfer_date' => 'required|date',
@@ -50,8 +80,8 @@ class TransferChallanController extends Controller
             'quantities' => 'required|array|min:1',
             'quantities.*' => 'required|numeric|min:1',
         ], [
-            'challan_no.required' => 'Challan number is required.',
-            'challan_no.unique' => 'This Challan number is already taken.',
+            // 'challan_no.required' => 'Challan number is required.',
+            // 'challan_no.unique' => 'This Challan number is already taken.',
             'from_warehouse_id.required' => 'Please select a From Warehouse.',
             'to_warehouse_id.required' => 'Please select a To Warehouse.',
             'to_warehouse_id.different' => 'From and To Warehouse cannot be the same.',
@@ -64,7 +94,8 @@ class TransferChallanController extends Controller
 
         try {
             $challan = TransferChallan::create([
-                'challan_no' => $request->challan_no,
+                //'challan_no' => $request->challan_no,
+                'challan_no' => $this->generateChallanNumber(),
                 'from_warehouse_id' => $request->from_warehouse_id,
                 'to_warehouse_id' => $request->to_warehouse_id,
                 'transfer_date' => $request->transfer_date,
@@ -73,11 +104,23 @@ class TransferChallanController extends Controller
             ]);
 
             foreach ($request->products as $index => $productId) {
+                
+                // 1. Save challan item
                 TransferChallanItem::create([
                     'transfer_challan_id' => $challan->id,
                     'product_id' => $productId,
                     'quantity' => $request->quantities[$index],
                 ]);
+
+                // 2. Link challan_id to warehouse_transfers (ONLY request rows)
+                WarehouseTransfer::where('approved_by_warehouse_id', $request->from_warehouse_id)
+                    ->where('requested_by_warehouse_id', $request->to_warehouse_id)
+                    ->where('product_id', $productId)
+                    ->where('status', 0)   // only requested stock
+                    ->update([
+                        'challan_id' => $challan->id,
+                        'status' => 0       // dispatched
+                    ]);
             }
 
             DB::commit();
@@ -220,4 +263,6 @@ class TransferChallanController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+    
+
 }

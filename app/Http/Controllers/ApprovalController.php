@@ -13,62 +13,11 @@ use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product;
+use App\Models\TransferChallan;
 
 
 class ApprovalController extends Controller
 {
-
-  
-    // public function index()
-    // {
-    //     $userWarehouseId = auth()->user()->warehouse_id;
-
-    //     $transfers = WarehouseTransfer::with([
-    //         'approvedByWarehouse',
-    //         'requestedByWarehouse',
-    //         'product'
-    //     ])
-    //     ->where(function ($q) use ($userWarehouseId) {
-    //         $q->where('approved_by_warehouse_id', $userWarehouseId)   // Master
-    //         ->orWhere('requested_by_warehouse_id', $userWarehouseId); // District
-    //     })
-    //     ->where('status', 0)
-    //     ->latest()
-    //     ->paginate(10);
-
-    //     return view('approval.warehousetransfer', compact('transfers'));
-    // }
-
-    
-    // public function index()
-    // {
-    //     $userWarehouseId = auth()->user()->warehouse_id;
-
-    //     $transfers = WarehouseTransfer::with([
-    //         'approvedByWarehouse',
-    //         'requestedByWarehouse',
-    //         'product'
-    //     ])
-    //     ->where(function ($q) use ($userWarehouseId) {
-
-    //         // Master ko sirf Pending dikhe
-    //         $q->where(function ($q2) use ($userWarehouseId) {
-    //             $q2->where('approved_by_warehouse_id', $userWarehouseId)
-    //             ->where('status', 0);
-    //         });
-
-    //         // District ko sirf Dispatched dikhe
-    //         $q->orWhere(function ($q2) use ($userWarehouseId) {
-    //             $q2->where('requested_by_warehouse_id', $userWarehouseId)
-    //             ->where('status', 1);
-    //         });
-
-    //     })
-    //     ->latest()
-    //     ->paginate(10);
-
-    //     return view('approval.warehousetransfer', compact('transfers'));
-    // }
    
     public function index()
     {
@@ -84,7 +33,8 @@ class ApprovalController extends Controller
             // MASTER: Pending requests
             $q->where(function ($q2) use ($userWarehouseId) {
                 $q2->where('approved_by_warehouse_id', $userWarehouseId)
-                ->where('status', 0);
+                ->where('status', 0)
+                ->whereNull('challan_id');
             });
 
             // DISTRICT: Dispatched stock
@@ -95,10 +45,15 @@ class ApprovalController extends Controller
 
         })
         ->orderBy('created_at')
+        // ->get()
+        // ->groupBy(function ($item) {
+        //     return $item->approved_by_warehouse_id . '_' . $item->requested_by_warehouse_id;
+        // });
         ->get()
         ->groupBy(function ($item) {
             return $item->approved_by_warehouse_id . '_' . $item->requested_by_warehouse_id;
-        });
+        }) ?? collect();
+
 
         return view('approval.warehousetransfer', compact('transfers'));
     }
@@ -163,15 +118,21 @@ class ApprovalController extends Controller
         $transfers = WarehouseTransfer::with([
             'approvedByWarehouse',
             'requestedByWarehouse',
-            'product'
+            'product',
+            'challanItem'
         ])
         ->where('requested_by_warehouse_id', $userWarehouseId)
         ->where('status', 1) // Only Dispatched
         ->orderBy('created_at')
+        // ->get()
+        // ->groupBy(function ($item) {
+        //     return $item->approved_by_warehouse_id . '_' . $item->requested_by_warehouse_id;
+        // });
         ->get()
-        ->groupBy(function ($item) {
-            return $item->approved_by_warehouse_id . '_' . $item->requested_by_warehouse_id;
-        });
+->groupBy(function ($item) {
+    return $item->approved_by_warehouse_id . '_' . $item->requested_by_warehouse_id;
+}) ?? collect();
+
 
         return view('district.warehouse_receive', compact('transfers'));
     }
@@ -185,7 +146,13 @@ class ApprovalController extends Controller
                 ->lockForUpdate()
                 ->get();
 
-            foreach ($transfers as $transfer) {
+            foreach ($transfers as $transfer) 
+            {
+               $qty = $transfer->challan
+                ->items
+                ->where('product_id', $transfer->product_id)
+                ->first()
+                ->quantity ?? $transfer->quantity;
 
                 $destWarehouseId = $transfer->requested_by_warehouse_id;
                 $product = Product::findOrFail($transfer->product_id);
@@ -197,7 +164,7 @@ class ApprovalController extends Controller
                 ]);
 
                 $destStock->category_id = $product->category_id;
-                $destStock->quantity   = ($destStock->quantity ?? 0) + $transfer->quantity;
+                $destStock->quantity   = ($destStock->quantity ?? 0) + $qty;
                 $destStock->save();
 
                 /* DEST BATCH */
@@ -212,41 +179,118 @@ class ApprovalController extends Controller
                 $destBatch->category_id  = $product->category_id;
                 $destBatch->mfg_date     = $sourceBatch->mfg_date;
                 $destBatch->expiry_date = $sourceBatch->expiry_date;
-                $destBatch->quantity    = ($destBatch->quantity ?? 0) + $transfer->quantity;
+                $destBatch->quantity = ($destBatch->quantity ?? 0) + $qty;
+                //$destBatch->quantity    = ($destBatch->quantity ?? 0) + $transfer->quantity;
                 $destBatch->save();
 
                 /* STOCK MOVEMENT */
                 StockMovement::create([
                     'product_batch_id' => $destBatch->id,
                     'type'             => 'transfer',
-                    'quantity'         => $transfer->quantity,
+                    'quantity' => $qty,
                     'warehouse_id'     => $destWarehouseId,
                 ]);
 
                 /* FINAL STATUS */
                 $transfer->update(['status' => 2]);
+
+                 /* FINAL STATUS (CHALLAN) */
+                $challanId = $transfers->first()->challan_id ?? null;
+
+                if ($challanId) {
+                    TransferChallan::where('id', $challanId)
+                        ->update(['status' => 'received']);
+                }
             }
         });
 
         return back()->with('success', 'All stock received successfully');
+    } 
+
+    public function reject(WarehouseTransfer $transfer)
+    {
+        if ($transfer->status != 0) {
+            return back()->with('error', 'Only pending transfers can be rejected');
+        }
+
+        DB::transaction(function () use ($transfer) {
+            $transfer->status = 3; // REJECTED
+            $transfer->save();
+        });
+
+        return back()->with('success', 'Transfer rejected successfully');
     }
 
-//  public function reject(WarehouseTransfer $transfer)
-//     {
-//         if ($transfer->status != 0) {
-//             return back()->with('error', 'Only pending transfers can be rejected');
-//         }
+    public function dispatchChallan(Request $request)
+    {
+        DB::transaction(function () use ($request) {
 
-//         DB::transaction(function () use ($transfer) {
-//             $transfer->status = 2; // rejected
-//             // $transfer->rejected_at = now(); // optional
-//             $transfer->save();
-//         });
+            $challan = TransferChallan::with('items')->findOrFail($request->challan_id);
 
-//         return back()->with('success', 'Transfer rejected successfully');
-//     }
+            foreach ($challan->items as $item) {
 
-  
+                $transfer = WarehouseTransfer::where('product_id', $item->product_id)
+                    ->where('approved_by_warehouse_id', $challan->from_warehouse_id)
+                    ->where('requested_by_warehouse_id', $challan->to_warehouse_id)
+                    ->where('status', 0)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$transfer) {
+                    continue;
+                }
+
+                $dispatchQty = $item->quantity;   // ✅ CHALLAN QTY
+                $warehouseId = $challan->from_warehouse_id;
+
+                /* 1️⃣ WAREHOUSE STOCK */
+                $stock = WarehouseStock::where('warehouse_id', $warehouseId)
+                    ->where('product_id', $transfer->product_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$stock || $stock->quantity < $dispatchQty) {
+                    throw new \Exception("Insufficient stock");
+                }
+
+                $stock->decrement('quantity', $dispatchQty);
+
+                /* 2️⃣ PRODUCT BATCH */
+                $batch = ProductBatch::where('id', $transfer->batch_id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$batch || $batch->quantity < $dispatchQty) {
+                    throw new \Exception("Insufficient batch stock");
+                }
+
+                $batch->decrement('quantity', $dispatchQty);
+
+                /* 3️⃣ STOCK MOVEMENT */
+                StockMovement::create([
+                    'product_batch_id' => $batch->id,
+                    'type' => 'dispatch',
+                    'quantity' => -$dispatchQty,
+                    'warehouse_id' => $warehouseId,
+                ]);
+
+                /* 4️⃣ UPDATE TRANSFER */
+                //$transfer->quantity = $dispatchQty;   // optional but good
+                $transfer->status = 1;
+                $transfer->save();
+            }
+
+            $challan->update(['status' => 'dispatched']);
+        });
+
+        return back()->with('success', 'Challan dispatched successfully');
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
     public function singleDispatch(WarehouseTransfer $transfer)
     {
         if ($transfer->status != 0) {
@@ -294,20 +338,6 @@ class ApprovalController extends Controller
         });
 
         return back()->with('success', 'Product dispatched successfully');
-    }
-
-    public function reject(WarehouseTransfer $transfer)
-    {
-        if ($transfer->status != 0) {
-            return back()->with('error', 'Only pending transfers can be rejected');
-        }
-
-        DB::transaction(function () use ($transfer) {
-            $transfer->status = 3; // REJECTED
-            $transfer->save();
-        });
-
-        return back()->with('success', 'Transfer rejected successfully');
     }
 
     public function singleReceive(WarehouseTransfer $transfer)
@@ -547,5 +577,6 @@ class ApprovalController extends Controller
 
         return back()->with('success', 'Stock received successfully');
     }
+
 
 }

@@ -127,7 +127,7 @@ class WarehouseTransferController extends Controller
                 $batch = ProductBatch::findOrFail($item['batch_id']);
                 if ($item['quantity'] > $batch->quantity) {
                     throw new \Exception(
-                        "{$batch->product->name} only {$batch->quantity} qty available "
+                        "{$batch->product->name} only {$batch->quantity} qty available"
                     );
                 }
 

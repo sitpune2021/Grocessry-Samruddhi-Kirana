@@ -489,11 +489,13 @@ Route::middleware(['auth:admin'])->group(function ()
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
  
-    Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
-    ->name('warehouse.transfer.dispatch.bulk');
+    // Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
+    // ->name('warehouse.transfer.dispatch.bulk');
 
-    Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
-    ->name('warehouse.transfer.receive.bulk');
+    Route::post('/warehouse-transfer/receive-bulk', 
+        [ApprovalController::class, 'bulkReceive']
+    )->name('warehouse.transfer.receive.bulk');
+
 
     Route::post('/warehouse-transfer/dispatch/{transfer}', 
         [ApprovalController::class, 'singleDispatch']
@@ -506,6 +508,11 @@ Route::middleware(['auth:admin'])->group(function ()
     Route::post('/warehouse-transfer/receive/{transfer}', 
         [ApprovalController::class, 'singleReceive']
     )->name('warehouse.transfer.receive.single');
+
+    Route::post('/transfer-challan/dispatch', 
+        [ApprovalController::class, 'dispatchChallan']
+    )->name('warehouse.transfer.dispatch.bulk');
+
 
 
     // LOW STOCK ALERTS
