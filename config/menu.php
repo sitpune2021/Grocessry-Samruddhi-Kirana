@@ -100,7 +100,7 @@ return [
         [
             'type'  => 'dropdown',
             'key'   => 'OrderMenu',
-            'title' => 'Approval / Recieve',
+            'title' => 'Approve / Recieve',
             'icon'  => 'bx bx-package',
             'children' => [
                 [

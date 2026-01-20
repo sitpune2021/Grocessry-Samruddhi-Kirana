@@ -375,7 +375,7 @@
         <div class="row">
             <div class="col-12">
 
-                <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
                     <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 75px;">
 
@@ -412,6 +412,10 @@
                 <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
+                    @php
+                        $image = $category->category_images[0] ?? null;
+                    @endphp
+
                     <div class="category-img">
                         <img
                             src="{{ $category->image
@@ -423,7 +427,7 @@
                     <p class="category-title">
                         {{ $category->name }}
                     </p>
-
+                   
                 </a>
 
             </div>
@@ -474,6 +478,7 @@
                                     @endphp
 
                                     <div class="fruite-img">
+                                        <a href="{{ route('productdetails', $product->id) }}">
                                         @if($image)
                                         <img
                                             src="{{ asset('storage/products/'.$image) }}"
@@ -487,6 +492,7 @@
                                             alt="No Image"
                                             style="height: 200px; object-fit: cover;">
                                         @endif
+                                        </a>
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
@@ -604,6 +610,7 @@
                 @endphp
                 <div class="product-slide-item">
                     <div class="product-sm-card">
+                        <a href="{{ route('productdetails', $product->id) }}">                        
                         <div class="product-sm-img">
                             <img src="{{ $image 
                                     ? asset('storage/products/'.$image) 
@@ -622,6 +629,7 @@
                                 <button type="submit" class="btn-add-sm">Add to cart</button>
                             </form>
                         </div>
+                        </a>
                     </div>
                 </div>
                 @endforeach
