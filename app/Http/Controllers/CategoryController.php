@@ -53,12 +53,29 @@ class CategoryController extends Controller
             $validated = $request->validate([
                 'name'     => 'required|string|max:255|unique:categories,name',
                 'slug'     => 'required|string|max:255',
+                'category_images'   => 'nullable|array',
+                'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
+
+             if ($request->hasFile('category_images')) {
+
+                $imageNames = [];
+
+                foreach ($request->file('category_images') as $image) {
+                    $name = time() . '_' . $image->getClientOriginalName();
+                    $image->storeAs('categories', $name, 'public');
+                    $imageNames[] = $name;
+                }
+
+                // Save as ARRAY (Laravel will JSON encode)
+                $validated['category_images'] = $imageNames;
+            }
 
             // Create category
             $category = Category::create([
                 'name'     => $validated['name'],
                 'slug'     => $validated['slug'],
+                'category_images' => $imageNames,
 
             ]);
 
@@ -66,6 +83,7 @@ class CategoryController extends Controller
                 'category_id' => $category->id,
                 'name'        => $category->name,
                 'slug'        => $category->slug,
+                'category_images' => $imageNames,
 
 
             ]);
@@ -136,7 +154,7 @@ class CategoryController extends Controller
 
         Log::info('Category Edit Request Received', ['id' => $id]);
 
-        $category = Category::select('id', 'name')->findOrFail($id);
+        $category = Category::findOrFail($id);
 
         $mode = 'edit';
 
@@ -146,63 +164,82 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    
     public function update(Request $request, $id)
     {
         Log::info('Category Update Request Received', [
-            'id'      => $id,
-            'request' => $request->all(),
+        'id' => $id,
+        'request' => $request->all(),
+    ]);
 
+    try {
+
+        $category = Category::find($id);
+
+        if (!$category) {
+            Log::warning('Category Not Found', ['id' => $id]);
+
+            return redirect()
+                ->route('menus.category.index')
+                ->with('error', 'Category not found');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,' . $id,
+            'slug' => 'required|string|max:255',
+            'category_images' => 'nullable|array',
+            'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        try {
+        $imageNames = $category->category_images ?? [];
 
-            $category = Category::where('id', $id)
-                ->first();
+        if ($request->hasFile('category_images')) {
 
-            if (!$category) {
-                Log::warning('Category Not Found or Unauthorized', [
-                    'id' => $id,
-                ]);
-
-                return redirect()->route('menus.category.index')
-                    ->with('error', 'Category not found or access denied');
+            foreach ($request->file('category_images') as $image) {
+                $name = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->storeAs('categories', $name, 'public');
+                $imageNames[] = $name;
             }
-
-            $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:categories,name,',
-                'slug' => 'required|string|max:255',
-            ]);
-
-            $category->update($validated);
-
-            Log::info('Category Updated Successfully', [
-                'category_id'  => $category->id,
-                'name'         => $category->name,
-
-            ]);
-
-            return redirect()->route('category.index')
-                ->with('success', 'Category updated successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-
-            Log::warning('Category Update Validation Failed', [
-                'errors' => $e->errors(),
-            ]);
-
-            throw $e;
-        } catch (\Throwable $e) {
-
-            Log::error('Category Update Error', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-            ]);
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Something went wrong. Please try again.');
         }
+
+       
+        $category->update([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'category_images' => $imageNames,
+        ]);
+
+        Log::info('Category Updated Successfully', [
+            'category_id' => $category->id,
+            'images' => $imageNames,
+        ]);
+
+        return redirect()
+            ->route('menus.category.index')
+            ->with('success', 'Category updated successfully');
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+
+        Log::warning('Category Update Validation Failed', [
+            'errors' => $e->errors(),
+        ]);
+
+        throw $e;
+
+    } catch (\Throwable $e) {
+
+        Log::error('Category Update Error', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ]);
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with('error', 'Something went wrong. Please try again.');
     }
+}
 
 
 

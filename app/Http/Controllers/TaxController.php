@@ -14,7 +14,7 @@ class TaxController extends Controller
      */
     public function index()
     {
-        $taxes = Tax::orderBy('id', 'desc')->paginate(10);
+        $taxes = Tax::orderBy('id', 'desc')->paginate(20);
         return view('menus.taxes.tax-index', compact('taxes'));
     }
 
@@ -39,7 +39,8 @@ class TaxController extends Controller
                 'name'      => 'required|string|max:100|unique:taxes,name',
                 'cgst'      => 'required|numeric|min:0|max:100',
                 'sgst'      => 'required|numeric|min:0|max:100',
-                'igst'      => 'required|numeric|min:0|max:100',
+                'igst'      => 'nullable|numeric|min:0|max:100',
+                'gst'       => 'required|numeric|min:0|max:100',
                 'is_active' => 'required|in:0,1',
             ]);
 
@@ -51,6 +52,7 @@ class TaxController extends Controller
                 'cgst'      => $request->cgst,
                 'sgst'      => $request->sgst,
                 'igst'      => $request->igst,
+                'gst'      => $request->gst,
                 'is_active' => $request->is_active,
             ]);
 
@@ -127,7 +129,9 @@ class TaxController extends Controller
                 'name'      => 'required|string|max:100|unique:taxes,name,' . $id,
                 'cgst'      => 'required|numeric|min:0|max:100',
                 'sgst'      => 'required|numeric|min:0|max:100',
-                'igst'      => 'required|numeric|min:0|max:100',
+                'igst'      => 'nullble|numeric|min:0|max:100',
+                'gst'      => 'required|numeric|min:0|max:100',
+
                 'is_active' => 'required|in:0,1',
             ]);
 
@@ -142,6 +146,7 @@ class TaxController extends Controller
                 'cgst'      => $request->cgst,
                 'sgst'      => $request->sgst,
                 'igst'      => $request->igst,
+                'gst'      => $request->gst,
                 'is_active' => $request->is_active,
             ]);
 

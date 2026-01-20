@@ -84,10 +84,17 @@
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="2.5" required>
                                                 </div>
-                                                <div class="col-md-4">
-                                                    <label for="igst" class="form-label">GST (%)</label>
+                                                 <div class="col-md-4">
+                                                    <label for="igst" class="form-label">IGST</label>
                                                     <input type="number" step="0.01" name="igst" id="igst" class="form-control"
                                                         value="{{ old('igst', $tax->igst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="5" >
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="gst" class="form-label">GST (%)</label>
+                                                    <input type="number" step="0.01" name="gst" id="gst" class="form-control"
+                                                        value="{{ old('gst', $tax->gst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="5" required>
                                                 </div>
@@ -97,15 +104,15 @@
                                             <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
 
                                             <div class="mt-3">
+                                                <a href="{{ route('taxes.index') }}" class="btn btn-success">
+                                                    Back
+                                                </a>
+
                                                 @if($mode !== 'show')
                                                 <button type="submit" class="btn btn-success">
                                                     {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
                                                 </button>
                                                 @endif
-
-                                                <a href="{{ route('taxes.index') }}" class="btn btn-secondary">
-                                                    Back
-                                                </a>
                                             </div>
                                         </form>
                                     </div>
@@ -129,14 +136,14 @@
 
         const cgstInput = document.getElementById('cgst');
         const sgstInput = document.getElementById('sgst');
-        const igstInput = document.getElementById('igst');
+        const gstInput = document.getElementById('gst');
 
         function calculateGST() {
             let cgst = parseFloat(cgstInput.value) || 0;
             let sgst = parseFloat(sgstInput.value) || 0;
 
             let gst = cgst + sgst;
-            igstInput.value = gst.toFixed(2);
+            gstInput.value = gst.toFixed(2);
         }
 
         cgstInput.addEventListener('input', calculateGST);

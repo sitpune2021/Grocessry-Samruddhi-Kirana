@@ -41,7 +41,7 @@
                                     <div class="card-body">
                                         <form
                                             action="{{ isset($category) ? route('category.update', $category->id) : route('category.store') }}"
-                                            method="POST">
+                                            method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @if (isset($category))
                                             @method('PUT')
@@ -77,7 +77,35 @@
                                                     @enderror
                                                 </div>
 
+                                                {{-- Images --}}
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Category Images <span class="text-danger">*</span></label>
 
+                                                    @if ($mode !== 'view')
+                                                    <input type="file" name="category_images[]" multiple
+                                                        class="form-control @error('category_images') is-invalid @enderror">
+                                                    @endif
+
+                                                    @error('category_images')
+                                                    <span class="text-danger">{{ $message }}</span>
+                                                    @enderror
+
+                                                    @if (!empty($category->category_images))
+                                                    @php
+                                                    $images = $category->category_images; // Already array
+                                                    $image = $images[0] ?? null;
+                                                    @endphp
+
+                                                    @if ($image)
+                                                    <img src="{{ asset('storage/categories/' . $image) }}" alt="Category Image"
+                                                        width="60" height="60" class="rounded border">
+                                                    @else
+                                                    <span class="text-muted">No Image</span>
+                                                    @endif
+                                                    @else
+                                                    <span class="text-muted">No Image</span>
+                                                    @endif
+                                                </div>
 
                                             </div>
 

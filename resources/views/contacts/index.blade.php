@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="text-muted mt-2">
-                        Showing {{ $contacts->firstItem() }} to {{ $contacts->lastItem() }} of {{ $contacts->total() }} results
+                          {{ $contacts->firstItem() }}{{ $contacts->lastItem() }}  {{ $contacts->total() }}
                     </div>
                 </div>
 
