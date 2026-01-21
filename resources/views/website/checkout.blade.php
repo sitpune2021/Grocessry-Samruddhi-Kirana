@@ -28,7 +28,7 @@
                                 <label class="form-label">First Name *</label>
                                 <input type="text" name="first_name"
                                     class="form-control @error('first_name') is-invalid @enderror"
-                                    value="{{ old('first_name', $address->first_name ?? '') }}">
+                                    value="{{ old('first_name', $address->first_name ?? '') }}" required>
                                 @error('first_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -38,7 +38,7 @@
                                 <label class="form-label">Last Name *</label>
                                 <input type="text" name="last_name"
                                     class="form-control @error('last_name') is-invalid @enderror"
-                                    value="{{ old('last_name', $address->last_name ?? '') }}">
+                                    value="{{ old('last_name', $address->last_name ?? '') }}" required>
                                 @error('last_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -49,7 +49,7 @@
                             <label class="form-label">Address *</label>
                             <input type="text" id="address" name="address"
                                 class="form-control @error('address') is-invalid @enderror"
-                                value="{{ old('address', $address->address ?? '') }}">
+                                value="{{ old('address', $address->address ?? '') }}" required>
                             @error('address')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -60,14 +60,14 @@
                                 <label class="form-label">City *</label>
                                 <input type="text" id="city" name="city"
                                     class="form-control @error('city') is-invalid @enderror"
-                                    value="{{ old('city', $address->city ?? '') }}">
+                                    value="{{ old('city', $address->city ?? '') }}" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Country *</label>
                                 <input type="text" id="country" name="country"
                                     class="form-control @error('country') is-invalid @enderror"
-                                    value="{{ old('country', $address->country ?? '') }}">
+                                    value="{{ old('country', $address->country ?? '') }}" required>
                             </div>
                         </div>
 
@@ -76,14 +76,14 @@
                                 <label class="form-label">Postcode *</label>
                                 <input type="text" name="postcode"
                                     class="form-control @error('postcode') is-invalid @enderror"
-                                    value="{{ old('postcode', $address->postcode ?? '') }}">
+                                    value="{{ old('postcode', $address->postcode ?? '') }}" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Mobile *</label>
                                 <input type="text" name="phone"
                                     class="form-control @error('phone') is-invalid @enderror"
-                                    value="{{ old('phone', $address->phone ?? '') }}">
+                                    value="{{ old('phone', $address->phone ?? '') }}" required>
                             </div>
                         </div>
 
@@ -91,7 +91,7 @@
                             <label class="form-label">Email *</label>
                             <input type="email" name="email"
                                 class="form-control @error('email') is-invalid @enderror"
-                                value="{{ old('email', $address->email ?? '') }}">
+                                value="{{ old('email', $address->email ?? '') }}" required>
                         </div>
 
                         <!-- Current Location -->

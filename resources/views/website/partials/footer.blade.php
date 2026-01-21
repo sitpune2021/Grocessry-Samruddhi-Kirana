@@ -59,11 +59,11 @@
                         <h4 class="text-dark mb-3">Account</h4>
                         <ul class="list-unstyled">
                             <li><a class="text-dark d-block mb-2" href="#">My Account</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Shopping Cart</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Order History</a></li>
-                            <li><a class="text-dark d-block" href="#">International Orders</a></li>
+                            <!-- <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li> -->
+                            <li><a class="text-dark d-block mb-2" href="{{ route('cart') }}">Shopping Cart</a></li>
+                            <!-- <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li> -->
+                            <li><a class="text-dark d-block mb-2" href="{{ route('my_orders') }}">Order History</a></li>
+                            <!-- <li><a class="text-dark d-block" href="#">International Orders</a></li> -->
                         </ul>
                     </div>
                 </div>

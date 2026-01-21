@@ -249,7 +249,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-/////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+    /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
     Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
@@ -487,11 +487,12 @@ Route::middleware(['auth:admin'])->group(function () {
         '/warehouse-transfer/{transfer}/receive',
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
- 
+
     // Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
     // ->name('warehouse.transfer.dispatch.bulk');
 
-    Route::post('/warehouse-transfer/receive-bulk', 
+    Route::post(
+        '/warehouse-transfer/receive-bulk',
         [ApprovalController::class, 'bulkReceive']
     )->name('warehouse.transfer.receive.bulk');
 
@@ -511,7 +512,8 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'singleReceive']
     )->name('warehouse.transfer.receive.single');
 
-    Route::post('/transfer-challan/dispatch', 
+    Route::post(
+        '/transfer-challan/dispatch',
         [ApprovalController::class, 'dispatchChallan']
     )->name('warehouse.transfer.dispatch.bulk');
 
@@ -600,11 +602,10 @@ Route::middleware(['auth:admin'])->group(function () {
             [TransferChallanController::class, 'downloadCsv']
         )->name('download.csv');
 
-        Route::delete('/warehouse-transfer/{id}', 
+        Route::delete(
+            '/warehouse-transfer/{id}',
             [WarehouseTransferController::class, 'deleteTransfer']
         )->name('warehouse.transfer.delete');
-
-
     });
 
     // report
@@ -615,7 +616,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-/////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+    /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
 
     //coupons
@@ -684,7 +685,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-/////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
+    /////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
 
     // Admin contact list
@@ -703,7 +704,7 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('admin.aboutus.store');
     });
 
-    
+
 
     // Banners admin route
     Route::prefix('banners')->group(function () {
@@ -755,15 +756,17 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
-    Route::post('/cart/update-qty', [WebsiteController::class, 'updateQty'])
-     ->name('cart.updateQty');
+Route::post('/cart/update-qty', [WebsiteController::class, 'updateQty'])
+    ->name('cart.updateQty');
 
- Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
-     ->name('cart.update');
+Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
+    ->name('cart.update');
 
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
+
+
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')
@@ -787,6 +790,12 @@ Route::get('/orders', [CustomerOrderController::class, 'userorder'])
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/my-orders', [WebsiteController::class, 'myOrders'])->name('my_orders');
+
+    Route::get('/account/addresses', [WebsiteController::class, 'addresses'])
+        ->name('account.addresses');
+});
 
 
 

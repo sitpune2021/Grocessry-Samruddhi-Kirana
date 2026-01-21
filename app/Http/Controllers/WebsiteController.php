@@ -11,6 +11,8 @@ use App\Models\Category;
 use App\Models\ContactDetail;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\UserAddress;
 use Illuminate\Support\Facades\Auth;
 
 class WebsiteController extends Controller
@@ -72,6 +74,24 @@ class WebsiteController extends Controller
             'latestPro'
         ));
     }
+
+    public function myOrders(Request $request)
+    {
+        $userId = Auth::id();
+
+        $tab = $request->get('tab', 'orders'); // default orders
+
+        $orders = Order::with('items.product')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $addresses = UserAddress::where('user_id', $userId)->get();
+
+        return view('website.my_orders', compact('orders', 'addresses', 'tab'));
+    }
+
+
 
     public function about()
     {
@@ -267,6 +287,7 @@ class WebsiteController extends Controller
         return view('website.cart', compact('cart'));
     }
 
+
     public function removeItem($id)
     {
         $item = CartItem::findOrFail($id);
@@ -275,38 +296,38 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
-   public function update(Request $request, $itemId)
-{
-    $request->validate([
-        'qty' => 'required|integer|min:1'
-    ]);
+    public function update(Request $request, $itemId)
+    {
+        $request->validate([
+            'qty' => 'required|integer|min:1'
+        ]);
 
-    $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id() ?? session()->getId();
 
-    $item = CartItem::where('id', $itemId)
-        ->whereHas('cart', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        })
-        ->firstOrFail();
+        $item = CartItem::where('id', $itemId)
+            ->whereHas('cart', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->firstOrFail();
 
-    $item->qty = $request->qty;
-    $item->line_total = $item->qty * $item->price;
-    $item->save();
+        $item->qty = $request->qty;
+        $item->line_total = $item->qty * $item->price;
+        $item->save();
 
-    $cart = $item->cart;
+        $cart = $item->cart;
 
-    $cart->subtotal = $cart->items()->sum('line_total');
-    $cart->total = $cart->subtotal;
-    $cart->save();
+        $cart->subtotal = $cart->items()->sum('line_total');
+        $cart->total = $cart->subtotal;
+        $cart->save();
 
-    return response()->json([
-        'success'     => true,
-        'qty'         => $item->qty,
-        'line_total'  => number_format($item->line_total, 2),
-        'cart_total'  => number_format($cart->total, 2),
-        'cart_count'  => $cart->items()->sum('qty'),
-    ]);
-}
+        return response()->json([
+            'success'     => true,
+            'qty'         => $item->qty,
+            'line_total'  => number_format($item->line_total, 2),
+            'cart_total'  => number_format($cart->total, 2),
+            'cart_count'  => $cart->items()->sum('qty'),
+        ]);
+    }
 
 
 

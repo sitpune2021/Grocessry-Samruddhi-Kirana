@@ -104,7 +104,7 @@
 
             <!-- PRICE DETAILS -->
             <div class="col-lg-4">
-                <div class="card shadow-sm sticky-top" style="top:90px;">
+                <div class="card shadow-sm sticky-top "  id="price-details "style="top:90px;">
                     <div class="card-body">
 
                         <h6 class="fw-bold text-uppercase text-muted mb-3">Price Details</h6>
@@ -135,13 +135,14 @@
                         </a>
 
                         <button id="playVoiceBtn" class="btn btn-danger mt-2 d-none">
-                            🔊 ऑर्डर बंद आहेत
+                            🔊 Check Out
                         </button>
 
                         <p id="order-msg" class="text-danger small mt-2 d-none text-center">
                             ऑनलाइन ऑर्डर बंद आहेत.<br>
                             ऑर्डर उद्या सकाळी <strong>6:00 AM</strong> पासून सुरू होतील.
                         </p>
+
 
 
 
@@ -219,38 +220,41 @@
         if (!checkoutBtn || !voiceBtn || !orderMsg) return;
 
         const now = new Date();
-        const h = now.getHours();
-        const m = now.getMinutes();
+        const hour = now.getHours(); // 0–23
 
-        // ⏰ Cutoff = 11:20 AM
-        const isBeforeCutoff =
-            h < 11 || (h === 11 && m < 20);
+        /*
+            OPEN  : 06:00 – 18:59
+            CLOSED: 19:00 – 05:59
+        */
 
-        if (isBeforeCutoff) {
-            // ✅ Before 11:20
+        const isOpenTime = hour >= 6 && hour < 19;
+
+        if (isOpenTime) {
+            // 🟢 OPEN
             checkoutBtn.classList.remove("d-none");
             voiceBtn.classList.add("d-none");
             orderMsg.classList.add("d-none");
         } else {
-            // ❌ After 11:20
+            // 🔴 CLOSED
             checkoutBtn.classList.add("d-none");
             voiceBtn.classList.remove("d-none");
             orderMsg.classList.remove("d-none");
         }
 
-        // 🔊 Voice ONLY on click (browser safe)
+        // 🔊 Voice on click
         voiceBtn.addEventListener("click", function() {
 
-            if (!window.speechSynthesis) {
+            if (!('speechSynthesis' in window)) {
                 alert("Voice not supported in this browser");
                 return;
             }
 
             const msg = new SpeechSynthesisUtterance(
-                "कृपया लक्ष द्या. अकरा वाजून वीस मिनिटांनंतर ऑनलाइन ऑर्डर बंद असतात. कृपया उद्या पुन्हा प्रयत्न करा."
+                "कृपया लक्ष द्या. सध्या ऑनलाइन ऑर्डर बंद आहेत. ऑर्डर उद्या सकाळी सहा वाजता सुरू होतील."
             );
 
-            msg.lang = "mr-IN"; // Marathi
+            // Hindi voice works everywhere (Marathi fallback)
+            msg.lang = "hi-IN";
             msg.rate = 0.9;
             msg.pitch = 1;
             msg.volume = 1;
@@ -260,6 +264,7 @@
         });
     });
 </script>
+
 
 
 
