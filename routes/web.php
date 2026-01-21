@@ -733,7 +733,6 @@ Route::get('about-page', [WebsiteController::class, 'about'])->name('about');
 
 
 
-
 // webiste shop page
 Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
 Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
@@ -765,7 +764,6 @@ Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
-
 
 
 Route::get('/checkout', [CheckoutController::class, 'index'])

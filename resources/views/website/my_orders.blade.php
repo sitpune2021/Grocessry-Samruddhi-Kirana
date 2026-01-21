@@ -3,6 +3,7 @@
 @section('title', 'My Orders')
 
 @section('content')
+
 <style>
     .table td,
     .table th {
@@ -13,6 +14,7 @@
         font-size: 13px;
     }
 </style>
+
 <div class="container py-3" style="margin-top:160px;">
     <div class="row g-3">
 
@@ -41,12 +43,13 @@
                         </a>
                     </li>
 
-                    <li class="dropdown-item py-2">
+                    <!-- <li class="dropdown-item py-2">
                         <i class="bi bi-gift me-2"></i> E-Gift Cards
                     </li>
                     <li class="dropdown-item py-2">
                         <i class="bi bi-shield-lock me-2"></i> Account Privacy
-                    </li>
+                    </li> -->
+                    
                     <li>
                         <form method="POST" action="{{ route('websitelogout') }}">
                             @csrf

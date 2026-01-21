@@ -68,7 +68,6 @@
                                 </div>
                             </div>
 
-
                             <!-- Remove -->
                             <div class="col-4 col-md-1 text-end">
                                 <form action="{{ route('remove_cart_item', $item->id) }}" method="POST">
@@ -111,7 +110,7 @@
 
                         <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal</span>
-                            <span>₹ {{ $cart ? number_format($cart->subtotal,2) : '0.00' }}</span>
+                            <span id="cart-subtotal">₹ {{ $cart ? number_format($cart->subtotal,2) : '0.00' }}</span>
                         </div>
 
                         <div class="d-flex justify-content-between mb-2">
@@ -139,9 +138,7 @@
                         </button>
 
                         <p id="order-msg" class="text-danger small mt-2 d-none text-center">
-
                             Online orders are currently closed.<br>
-
                             Orders will resume tomorrow at <strong>6:00 AM</strong>.
                         </p>
                         <p class="text-success small mt-3 mb-0">
@@ -192,6 +189,9 @@
 
                     // Cart total update
                     $('#cart-total').text('₹ ' + res.cart_total);
+
+                    // 🔥 Subtotal live update
+                    $('#cart-subtotal').text('₹ ' + res.subtotal);
 
                     // 🔥 Header cart count update
                     if (res.cart_count > 0) {
@@ -247,12 +247,16 @@
                 return;
             }
 
+            // const msg = new SpeechSynthesisUtterance(
+            //     "कृपया लक्ष द्या. सध्या ऑनलाइन ऑर्डर बंद आहेत. ऑर्डर उद्या सकाळी सहा वाजता सुरू होतील."
+            // );
             const msg = new SpeechSynthesisUtterance(
-                "कृपया लक्ष द्या. सध्या ऑनलाइन ऑर्डर बंद आहेत. ऑर्डर उद्या सकाळी सहा वाजता सुरू होतील."
+                "Attention. Online orders are currently closed. Orders will resume tomorrow at six A.M."
             );
 
             // Hindi voice works everywhere (Marathi fallback)
-            msg.lang = "hi-IN";
+            //msg.lang = "hi-IN";
+            msg.lang = "en-IN";
             msg.rate = 0.9;
             msg.pitch = 1;
             msg.volume = 1;
@@ -262,9 +266,6 @@
         });
     });
 </script>
-
-
-
 
 
 @endsection
