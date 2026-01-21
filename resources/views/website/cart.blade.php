@@ -104,7 +104,7 @@
 
             <!-- PRICE DETAILS -->
             <div class="col-lg-4">
-                <div class="card shadow-sm sticky-top "  id="price-details "style="top:90px;">
+                <div class="card shadow-sm sticky-top " id="price-details " style="top:90px;">
                     <div class="card-body">
 
                         <h6 class="fw-bold text-uppercase text-muted mb-3">Price Details</h6>
@@ -135,17 +135,15 @@
                         </a>
 
                         <button id="playVoiceBtn" class="btn btn-danger mt-2 d-none">
-                            🔊 Check Out
+                            Check Out
                         </button>
 
                         <p id="order-msg" class="text-danger small mt-2 d-none text-center">
-                            ऑनलाइन ऑर्डर बंद आहेत.<br>
-                            ऑर्डर उद्या सकाळी <strong>6:00 AM</strong> पासून सुरू होतील.
+
+                            Online orders are currently closed.<br>
+
+                            Orders will resume tomorrow at <strong>6:00 AM</strong>.
                         </p>
-
-
-
-
                         <p class="text-success small mt-3 mb-0">
                             You will save more on this order
                         </p>

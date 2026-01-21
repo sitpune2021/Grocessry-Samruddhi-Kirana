@@ -75,7 +75,7 @@
             </div>
             <!-- Alert Message -->
             <div class="alert text-center m-0 py-1" id="order-alert" style="font-size: 12px;">
-                Online orders are <span id="order-status"></span> (6 AM - 7 PM)
+                Online orders <span id="order-status"></span>  
             </div>
         </div>
     </div>
@@ -198,12 +198,12 @@
             // ✅ OPEN
             alertDiv.classList.add('alert-success');
             alertDiv.classList.remove('alert-danger');
-            statusSpan.textContent = 'सुरू';
+            statusSpan.textContent = 'Start';
         } else {
             // ❌ CLOSED
             alertDiv.classList.add('alert-danger');
             alertDiv.classList.remove('alert-success');
-            statusSpan.textContent = 'बंद';
+            statusSpan.textContent = 'Closed';
         }
     });
 </script>
