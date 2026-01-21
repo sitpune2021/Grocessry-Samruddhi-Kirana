@@ -129,9 +129,21 @@
                         </div>
 
                         <a href="{{ route('checkout') }}"
+                            id="place-order-btn"
                             class="btn btn-warning w-100 mt-4 fw-semibold text-uppercase">
-                            Place Order
+                            Check Out
                         </a>
+
+                        <button id="playVoiceBtn" class="btn btn-danger mt-2 d-none">
+                            🔊 ऑर्डर बंद आहेत
+                        </button>
+
+                        <p id="order-msg" class="text-danger small mt-2 d-none text-center">
+                            ऑनलाइन ऑर्डर बंद आहेत.<br>
+                            ऑर्डर उद्या सकाळी <strong>6:00 AM</strong> पासून सुरू होतील.
+                        </p>
+
+
 
                         <p class="text-success small mt-3 mb-0">
                             You will save more on this order
@@ -196,6 +208,59 @@
         });
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const checkoutBtn = document.getElementById("place-order-btn");
+        const voiceBtn = document.getElementById("playVoiceBtn");
+        const orderMsg = document.getElementById("order-msg");
+
+        if (!checkoutBtn || !voiceBtn || !orderMsg) return;
+
+        const now = new Date();
+        const h = now.getHours();
+        const m = now.getMinutes();
+
+        // ⏰ Cutoff = 11:20 AM
+        const isBeforeCutoff =
+            h < 11 || (h === 11 && m < 20);
+
+        if (isBeforeCutoff) {
+            // ✅ Before 11:20
+            checkoutBtn.classList.remove("d-none");
+            voiceBtn.classList.add("d-none");
+            orderMsg.classList.add("d-none");
+        } else {
+            // ❌ After 11:20
+            checkoutBtn.classList.add("d-none");
+            voiceBtn.classList.remove("d-none");
+            orderMsg.classList.remove("d-none");
+        }
+
+        // 🔊 Voice ONLY on click (browser safe)
+        voiceBtn.addEventListener("click", function() {
+
+            if (!window.speechSynthesis) {
+                alert("Voice not supported in this browser");
+                return;
+            }
+
+            const msg = new SpeechSynthesisUtterance(
+                "कृपया लक्ष द्या. अकरा वाजून वीस मिनिटांनंतर ऑनलाइन ऑर्डर बंद असतात. कृपया उद्या पुन्हा प्रयत्न करा."
+            );
+
+            msg.lang = "mr-IN"; // Marathi
+            msg.rate = 0.9;
+            msg.pitch = 1;
+            msg.volume = 1;
+
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
+        });
+    });
+</script>
+
 
 
 

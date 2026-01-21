@@ -404,19 +404,16 @@
         position: relative;
     }
 
-    /* OFFER BADGE */
+    /* DISCOUNT BADGE (OPTIONAL) */
     .badge-off {
         position: absolute;
         top: 8px;
         left: 8px;
-        background: linear-gradient(135deg, #4193ffbb, rgba(43, 156, 255, 1));
+        background: #2563eb;
         color: #fff;
         font-size: 11px;
-        font-weight: 600;
-        padding: 4px 8px;
-        border-radius: 12px;
-        z-index: 5;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        padding: 4px 6px;
+        border-radius: 4px;
     }
 
     /* Mobile full width */

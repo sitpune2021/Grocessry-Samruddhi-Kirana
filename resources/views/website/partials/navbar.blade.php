@@ -43,6 +43,18 @@
     </div>
 </div>
 <!-- Modal Search End -->
+ <style>
+.blink-alert {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+</style>
+
 
 
 <!-- Navbar start -->
@@ -139,19 +151,26 @@
 
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
     const now = new Date();
-    const hour = now.getHours(); // 0-23
+    const hour = now.getHours(); // 0 - 23
+
     const alertDiv = document.getElementById('order-alert');
     const statusSpan = document.getElementById('order-status');
 
     if (hour >= 6 && hour < 19) {
-        // Day time: open
-        alertDiv.className = 'alert alert-success text-center m-0 py-1';
-        statusSpan.textContent = 'OPEN';
+        // ✅ OPEN
+        alertDiv.classList.add('alert-success');
+        alertDiv.classList.remove('alert-danger');
+        statusSpan.textContent = 'सुरू';
     } else {
-        // Night time: closed
-        alertDiv.className = 'alert alert-danger text-center m-0 py-1';
-        statusSpan.textContent = 'CLOSED';
+        // ❌ CLOSED
+        alertDiv.classList.add('alert-danger');
+        alertDiv.classList.remove('alert-success');
+        statusSpan.textContent = 'बंद';
     }
+});
 </script>
+
 <!-- Navbar End -->

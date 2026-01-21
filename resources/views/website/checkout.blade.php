@@ -153,7 +153,7 @@
             </div>
 
         </div>
-    </form>
+
 </div>
 
 <!-- Location Script -->
