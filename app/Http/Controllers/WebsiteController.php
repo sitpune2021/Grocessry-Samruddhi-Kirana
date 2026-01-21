@@ -210,10 +210,13 @@ class WebsiteController extends Controller
             ]);
         }
 
-        // Recalculate totals
+        //  Recalculate totals
         $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+        $cartQty  = CartItem::where('cart_id', $cart->id)->sum('qty');
 
+        //  Update cart properly
         $cart->update([
+            'quantity' => $cartQty,
             'subtotal' => $subtotal,
             'total'    => $subtotal,
         ]);

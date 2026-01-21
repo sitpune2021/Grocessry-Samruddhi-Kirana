@@ -511,6 +511,86 @@
     }
     </style>
 
+    <style>
+        
+        /* Product Slider Base */
+.product-slider {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 5px;
+}
+
+.product-slide-item {
+    flex: 0 0 180px;
+}
+
+/* Card */
+.product-sm-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Image */
+.product-sm-img img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+}
+
+/* Title */
+.product-sm-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 6px 0;
+    height: 40px;
+    overflow: hidden;
+}
+
+/* Footer */
+.product-sm-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Arrows */
+.slider-arrow {
+    position: absolute;
+    top: 40%;
+    background: #fff;
+    border: none;
+    font-size: 20px;
+    padding: 5px 10px;
+    z-index: 10;
+}
+
+/* 🔥 MOBILE FIX */
+@media (max-width: 576px) {
+    .product-slide-item {
+        flex: 0 0 140px;   /* Smaller cards */
+    }
+
+    .product-sm-img img {
+        height: 110px;
+    }
+
+    .product-sm-title {
+        font-size: 13px;
+        height: 36px;
+    }
+
+    .btn-add-sm {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+}
+
+    </style>
+
 </head>
 
         <body>
