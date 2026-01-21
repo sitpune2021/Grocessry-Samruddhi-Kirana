@@ -53,7 +53,7 @@ use App\Http\Controllers\DistrictToTalukaApprovalController;
 use App\Http\Controllers\TalukashopTransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
-
+use App\Http\Controllers\PosOrderController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
 
@@ -80,6 +80,21 @@ Route::middleware(['auth:admin'])->group(function () {
             'destroy' => 'permission:product.delete',
         ]);
 
+
+    Route::prefix('pos')->middleware('auth')->group(function () {
+
+        Route::get('/create', [PosOrderController::class, 'create'])
+            ->name('pos.create');
+
+        Route::post('/store', [PosOrderController::class, 'store'])
+            ->name('pos.store');
+
+        Route::get('/invoice/{order}', [PosOrderController::class, 'invoice'])
+            ->name('pos.invoice');
+
+        Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
+        Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
+    });
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
@@ -736,7 +751,7 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
- 
+
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
