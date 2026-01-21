@@ -127,7 +127,7 @@ class WarehouseTransferController extends Controller
                 $batch = ProductBatch::findOrFail($item['batch_id']);
                 if ($item['quantity'] > $batch->quantity) {
                     throw new \Exception(
-                        "{$batch->product->name} only {$batch->quantity} qty available "
+                        "{$batch->product->name} only {$batch->quantity} qty available"
                     );
                 }
 
@@ -279,13 +279,41 @@ class WarehouseTransferController extends Controller
             ->with('success', 'Transfer updated successfully');
     }
  
+    // public function destroy($id)
+    // {
+    //     $batch = ProductBatch::findOrFail($id);
+    //     $batch->delete(); // soft delete
+    //     return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
+    // }
+ 
+    
     public function destroy($id)
     {
-        $batch = ProductBatch::findOrFail($id);
-        $batch->delete(); // soft delete
-        return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
+        $transfer = WarehouseTransfer::find($id);
+
+        if (!$transfer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transfer record not found'
+            ], 404);
+        }
+
+        // Sirf pending delete ho
+        if ($transfer->status != 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending requests can be removed'
+            ], 400);
+        }
+
+        $transfer->delete();   // ✅ Only warehouse_transfers
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product removed successfully'
+        ]);
     }
- 
+
     public function show($id)
     {
         $transfer = WarehouseTransfer::with([

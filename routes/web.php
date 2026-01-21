@@ -249,7 +249,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-    /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+/////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
     Route::prefix('warehouse-transfer')->name('transfer.')->group(function () {
@@ -487,12 +487,14 @@ Route::middleware(['auth:admin'])->group(function () {
         '/warehouse-transfer/{transfer}/receive',
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
+ 
+    // Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
+    // ->name('warehouse.transfer.dispatch.bulk');
 
-    Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
-        ->name('warehouse.transfer.dispatch.bulk');
+    Route::post('/warehouse-transfer/receive-bulk', 
+        [ApprovalController::class, 'bulkReceive']
+    )->name('warehouse.transfer.receive.bulk');
 
-    Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
-        ->name('warehouse.transfer.receive.bulk');
 
     Route::post(
         '/warehouse-transfer/dispatch/{transfer}',
@@ -508,6 +510,10 @@ Route::middleware(['auth:admin'])->group(function () {
         '/warehouse-transfer/receive/{transfer}',
         [ApprovalController::class, 'singleReceive']
     )->name('warehouse.transfer.receive.single');
+
+    Route::post('/transfer-challan/dispatch', 
+        [ApprovalController::class, 'dispatchChallan']
+    )->name('warehouse.transfer.dispatch.bulk');
 
 
     // LOW STOCK ALERTS
@@ -572,8 +578,44 @@ Route::middleware(['auth:admin'])->group(function () {
         );
     });
 
+    // transfer challan
+    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
 
-    /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
+        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
+
+        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
+        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
+
+        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
+        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
+        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
+        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
+        Route::get(
+            '/{transferChallan}/download-pdf',
+            [TransferChallanController::class, 'downloadPdf']
+        )->name('download.pdf');
+
+        Route::get(
+            '/{transferChallan}/download-csv',
+            [TransferChallanController::class, 'downloadCsv']
+        )->name('download.csv');
+
+        Route::delete('/warehouse-transfer/{id}', 
+            [WarehouseTransferController::class, 'deleteTransfer']
+        )->name('warehouse.transfer.delete');
+
+
+    });
+
+    // report
+    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+        ->name('warehouse-stock.report');
+    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
+        ->name('stock-movement.report');
+
+
+
+/////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
 
     //coupons
@@ -626,36 +668,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
     });
 
-
-    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
-        ->name('warehouse-stock.report');
-    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
-        ->name('stock-movement.report');
-
-
-    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
-
-        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
-
-        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
-        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
-
-        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
-        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
-        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
-        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
-        Route::get(
-            '/{transferChallan}/download-pdf',
-            [TransferChallanController::class, 'downloadPdf']
-        )->name('download.pdf');
-
-        Route::get(
-            '/{transferChallan}/download-csv',
-            [TransferChallanController::class, 'downloadCsv']
-        )->name('download.csv');
-    });
-
-
     // Taxes
     Route::prefix('settings')->group(function () {
         Route::resource('taxes', TaxController::class);
@@ -672,7 +684,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-    /////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
+/////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
 
     // Admin contact list
