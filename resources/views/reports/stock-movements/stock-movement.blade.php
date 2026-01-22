@@ -28,6 +28,8 @@
                         <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>IN</option>
                         <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>OUT</option>
                         <option value="transfer" {{ request('type') == 'transfer' ? 'selected' : '' }}>TRANSFER</option>
+                        <option value="dispatch" {{ request('type') == 'dispatch' ? 'selected' : '' }}>DISPATCH</option>
+                        <option value="return" {{ request('type') == 'return' ? 'selected' : '' }}>RETURN</option>
                     </select>
                 </div>
 
