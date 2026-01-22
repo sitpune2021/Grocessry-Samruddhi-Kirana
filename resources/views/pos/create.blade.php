@@ -187,17 +187,15 @@
         tbody.innerHTML = '';
 
         let subtotal = 0;
-        let gstTotal = 0;
+        // let gstTotal = 0;
         let discountTotal = 0;
 
         Object.values(cart).forEach(item => {
             const line = item.qty * item.price;
             const mrpLine = item.qty * item.mrp;
             const discount = Math.max(0, mrpLine - line);
-            const gst = (line * item.gst_percent) / 100;
 
             subtotal += line;
-            gstTotal += gst;
             discountTotal += discount;
 
             tbody.innerHTML += `
@@ -220,11 +218,11 @@
             </td>
         </tr>`;
         });
-
+        
         document.getElementById('subtotal').innerText = subtotal.toFixed(2);
-        document.getElementById('gst').innerText = gstTotal.toFixed(2);
         document.getElementById('discount-total').innerText = discountTotal.toFixed(2);
-        document.getElementById('grand-total').innerText = (subtotal + gstTotal).toFixed(2);
+        document.getElementById('grand-total').innerText = subtotal.toFixed(2);
+        document.getElementById('gst').innerText = 'Included';
 
         document.getElementById('items_input').value =
             JSON.stringify(Object.values(cart).map(i => ({
@@ -258,13 +256,13 @@
 
 
     function fetchProducts(query) {
-        
+
         if (isBarcodeScan) return;
         fetch(`/pos/search-products?q=${encodeURIComponent(query)}`)
             .then(res => res.json())
             .then(data => {
 
-            suggestions.innerHTML = '';
+                suggestions.innerHTML = '';
                 if (!Array.isArray(data) || !data.length) {
                     hideSuggestions();
                     return;

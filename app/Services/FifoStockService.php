@@ -54,7 +54,6 @@ class FifoStockService
         if ($remaining > 0) {
             throw new \Exception('Insufficient stock');
         }
-
         return $consumed;
     }
 }

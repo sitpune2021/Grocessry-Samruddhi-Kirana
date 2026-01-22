@@ -22,27 +22,9 @@ class PosOrderController extends Controller
     }
 
 
-    // public function getProducts($sub_category_id)
-    // {
-    //     $user = Auth::user();
-
-    //     $products = Product::where('sub_category_id', $sub_category_id)
-    //         ->when($user->role_id != 1, fn($q) => $q->where('warehouse_id', $user->warehouse_id))
-    //         ->select(
-    //             'id',
-    //             'name',
-    //             'mrp',
-    //             'final_price',
-    //             'gst_percentage'
-    //         )
-    //         ->orderBy('name')
-    //         ->get();
-
-    //     return response()->json($products);
-    // }
-
     public function store(Request $request)
     {
+
         $request->validate([
             'items' => 'required',
             'payment_method' => 'required|in:cash,upi,card',
@@ -56,6 +38,10 @@ class PosOrderController extends Controller
         }
         $discount = (float) $request->discount;
         $user = Auth::user();
+
+        if (!$user->warehouse_id) {
+            abort(400, 'User warehouse not assigned');
+        }
 
         $orderData = [
             'order_number' => 'POS-' . now()->timestamp,
@@ -72,8 +58,9 @@ class PosOrderController extends Controller
         foreach ($items as $item) {
 
             $product = Product::where('id', $item['product_id'])
-                ->where('warehouse_id', $user->warehouse_id)
+                ->whereNull('deleted_at')
                 ->firstOrFail();
+
 
             $orderData['items'][] = [
                 'product_id'  => $product->id,
