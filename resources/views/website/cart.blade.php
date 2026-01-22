@@ -220,10 +220,7 @@
         const now = new Date();
         const hour = now.getHours(); // 0–23
 
-        /*
-            OPEN  : 06:00 – 18:59
-            CLOSED: 19:00 – 05:59
-        */
+
 
         const isOpenTime = hour >= 6 && hour < 19;
 
