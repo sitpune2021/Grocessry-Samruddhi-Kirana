@@ -44,6 +44,11 @@ class WarehouseTransfer extends Model
                     ->withTrashed(); // IMPORTANT
     }
 
+    public function challan()
+    {
+        return $this->belongsTo(TransferChallan::class, 'challan_id');
+    }
+
 
 }
 

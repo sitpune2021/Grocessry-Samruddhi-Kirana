@@ -233,7 +233,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
-    
+
     Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
     Route::post(
         'stock-returns/{id}/send-for-approval',
@@ -243,19 +243,19 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('stock-returns.dispatch');
     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
         ->name('stock-returns.receive');
-  
 
-        Route::get(
-    'stock-returns/{id}/return-to-master',
-    [WarehouseStockReturnController::class, 'returnToMaster']
-)->name('stock-returns.return-to-master');
 
-Route::post(
-    'stock-returns/store-district-to-master',
-    [WarehouseStockReturnController::class, 'storeDistrictToMaster']
-)->name('stock-returns.store-district-to-master');
+    Route::get(
+        'stock-returns/{id}/return-to-master',
+        [WarehouseStockReturnController::class, 'returnToMaster']
+    )->name('stock-returns.return-to-master');
 
- Route::post(
+    Route::put(
+        'stock-returns/store-district-to-master',
+        [WarehouseStockReturnController::class, 'update']
+    )->name('stock-returns.store-district-to-master');
+
+    Route::post(
         'stock-returns/{id}/district-approval',
         [WarehouseStockReturnController::class, 'approve1']
     )->name('stock-returns.approve1');
@@ -263,6 +263,31 @@ Route::post(
         ->name('stock-returns.dispatch1');
     Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
         ->name('stock-returns.receive1');
+
+    // Taluka approves a stock return from Distribution Center
+    Route::post('stock-returns/{id}/dc-approve', [WarehouseStockReturnController::class, 'dcApprove'])
+        ->name('stock-returns.dc-approve');
+
+    // Distribution Center dispatches the stock to Taluka
+    Route::post('stock-returns/{id}/dc-dispatch', [WarehouseStockReturnController::class, 'dcDispatch'])
+        ->name('stock-returns.dc-dispatch');
+
+    // Taluka receives the stock from Distribution Center
+    Route::post('stock-returns/{id}/dc-receive', [WarehouseStockReturnController::class, 'dcReceive'])
+        ->name('stock-returns.dc-receive');
+
+    // show edit form
+    Route::get(
+        'stock-returns/{id}/return-to-district',
+        [WarehouseStockReturnController::class, 'returnToDistrict']
+    )->name('stock-returns.return-to-district');
+
+    // submit new return
+    Route::post(
+        'stock-returns/{id}/store-taluka-to-district',
+        [WarehouseStockReturnController::class, 'storeTalukaToDistrict']
+    )->name('stock-returns.store-taluka-to-district');
+
 
 
 
@@ -506,11 +531,14 @@ Route::post(
         [ApprovalController::class, 'receive']
     )->name('warehouse.transfer.receive');
 
-    Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
-        ->name('warehouse.transfer.dispatch.bulk');
+    // Route::post('/warehouse-transfer/dispatch-bulk', [ApprovalController::class, 'bulkDispatch'])
+    // ->name('warehouse.transfer.dispatch.bulk');
 
-    Route::post('/warehouse-transfer/receive-bulk', [ApprovalController::class, 'bulkReceive'])
-        ->name('warehouse.transfer.receive.bulk');
+    Route::post(
+        '/warehouse-transfer/receive-bulk',
+        [ApprovalController::class, 'bulkReceive']
+    )->name('warehouse.transfer.receive.bulk');
+
 
     Route::post(
         '/warehouse-transfer/dispatch/{transfer}',
@@ -526,6 +554,11 @@ Route::post(
         '/warehouse-transfer/receive/{transfer}',
         [ApprovalController::class, 'singleReceive']
     )->name('warehouse.transfer.receive.single');
+
+    Route::post(
+        '/transfer-challan/dispatch',
+        [ApprovalController::class, 'dispatchChallan']
+    )->name('warehouse.transfer.dispatch.bulk');
 
 
     // LOW STOCK ALERTS
@@ -590,6 +623,41 @@ Route::post(
         );
     });
 
+    // transfer challan
+    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
+
+        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
+
+        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
+        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
+
+        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
+        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
+        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
+        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
+        Route::get(
+            '/{transferChallan}/download-pdf',
+            [TransferChallanController::class, 'downloadPdf']
+        )->name('download.pdf');
+
+        Route::get(
+            '/{transferChallan}/download-csv',
+            [TransferChallanController::class, 'downloadCsv']
+        )->name('download.csv');
+
+        Route::delete(
+            '/warehouse-transfer/{id}',
+            [WarehouseTransferController::class, 'deleteTransfer']
+        )->name('warehouse.transfer.delete');
+    });
+
+    // report
+    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
+        ->name('warehouse-stock.report');
+    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
+        ->name('stock-movement.report');
+
+
 
     /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
@@ -643,36 +711,6 @@ Route::post(
         Route::put('{id}', [RetailerOfferController::class, 'update'])->name('update');
         Route::delete('{id}', [RetailerOfferController::class, 'destroy'])->name('destroy');
     });
-
-
-    Route::get('warehouse-stock/report', [ReportsController::class, 'warehouse_stock_report'])
-        ->name('warehouse-stock.report');
-    Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
-        ->name('stock-movement.report');
-
-
-    Route::group(['prefix' => 'transfer-challans', 'as' => 'transfer-challans.'], function () {
-
-        Route::get('/', [TransferChallanController::class, 'index'])->name('index');
-
-        Route::get('/create', [TransferChallanController::class, 'create'])->name('create');
-        Route::post('/', [TransferChallanController::class, 'store'])->name('store');
-
-        Route::get('/{transferChallan}', [TransferChallanController::class, 'show'])->name('show');
-        Route::get('/{transferChallan}/edit', [TransferChallanController::class, 'edit'])->name('edit');
-        Route::put('/{transferChallan}', [TransferChallanController::class, 'update'])->name('update');
-        Route::delete('/{transferChallan}', [TransferChallanController::class, 'destroy'])->name('destroy');
-        Route::get(
-            '/{transferChallan}/download-pdf',
-            [TransferChallanController::class, 'downloadPdf']
-        )->name('download.pdf');
-
-        Route::get(
-            '/{transferChallan}/download-csv',
-            [TransferChallanController::class, 'downloadCsv']
-        )->name('download.csv');
-    });
-
 
     // Taxes
     Route::prefix('settings')->group(function () {
@@ -754,7 +792,7 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
- 
+
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');

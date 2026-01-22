@@ -16,7 +16,7 @@
 
                 @endphp
 
-                @if ($warehouseType === 'taluka' || $warehouseType === 'district')
+                @if ($warehouseType === 'taluka' || $warehouseType === 'district' ||$warehouseType === 'distribution_center')
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('stock-returns.create') }}" class="btn btn-success">
                         <i class="bx bx-plus"></i> Raise Return
@@ -24,7 +24,6 @@
                 </div>
                 @endif
             </div>
-
 
             <!-- Search -->
             <x-datatable-search />
@@ -105,21 +104,21 @@
                                 $userWarehouseType = auth()->user()->warehouse->type;
                                 @endphp
 
-                            <td>
 
-                                {{-- TALUKA → DISTRICT FLOW --}}
+                                {{-- Taluka approves the return --}}
                                 @if($return->status === 'draft'
-                                && $userWarehouseType === 'district'
+                                && $userWarehouseType === 'taluka'
                                 && $userWarehouseId === $return->to_warehouse_id)
-
-                                <form action="{{ route('stock-returns.send-for-approval', $return->id) }}" method="POST">
+                                <form action="{{ route('stock-returns.dc-approve', $return->id) }}" method="POST">
                                     @csrf
-                                    <button class="btn btn-warning btn-sm">Approve</button>
+                                    <button class="btn btn-success btn-sm">Approve</button>
                                 </form>
                                 @endif
 
+                                {{-- TALUKA → DISTRICT FLOW --}}
+                                {{-- Distribution center dispach to taluka the return --}}
                                 @if($return->status === 'approved'
-                                && $userWarehouseType === 'taluka'
+                                && $userWarehouseType === 'distribution_center'
                                 && $userWarehouseId === $return->from_warehouse_id)
 
                                 <form action="{{ route('stock-returns.dispatch', $return->id) }}" method="POST">
@@ -127,9 +126,9 @@
                                     <button class="btn btn-primary btn-sm">Dispatch</button>
                                 </form>
                                 @endif
-
+                                {{-- taluka receive stock from DC --}}
                                 @if($return->status === 'dispatched'
-                                && $userWarehouseType === 'district'
+                                && $userWarehouseType === 'taluka'
                                 && $userWarehouseId === $return->to_warehouse_id)
 
                                 <form action="{{ route('stock-returns.receive', $return->id) }}" method="POST">
@@ -138,6 +137,16 @@
                                 </form>
                                 @endif
 
+                                {{-- DISTRICT → MASTER FLOW --}}
+                                @if($return->status === 'received'
+                                && $userWarehouseType === 'taluka'
+                                && $userWarehouseId === $return->to_warehouse_id)
+
+                                <a href="{{ route('stock-returns.return-to-master', $return->id) }}"
+                                    class="btn btn-success btn-sm">
+                                    Return to District
+                                </a>
+                                @endif
 
                                 {{-- DISTRICT → MASTER FLOW --}}
                                 @if($return->status === 'received'
@@ -176,7 +185,6 @@
                                 </form>
                                 @endif
 
-                            </td>
 
                             </td>
                         </tr>
