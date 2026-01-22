@@ -31,7 +31,9 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <form
-                                            action="{{ route('stock-returns.update', $stockReturn->id) }}"
+                                            action="{{ $mode === 'edit'
+            ? route('stock-returns.update', $stockReturn->id)
+            : route('stock-returns.store-district-to-master') }}"
                                             method="POST"
                                             enctype="multipart/form-data">
 
@@ -40,194 +42,135 @@
                                             @method('PUT')
                                             @endif
 
-                                            <div class="card-body">
-
-                                                {{-- ================= WAREHOUSES ================= --}}
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label>From Warehouse</label>
-                                                        <input type="text"
-                                                            class="form-control"
-                                                            value="{{ $user->warehouse->name ?? '' }}"
-                                                            readonly>
-
-                                                        <input type="hidden" name="from_warehouse_id"
-                                                            value="{{ $user->warehouse_id }}">
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label>To Warehouse <span class="text-danger">*</span></label>
-                                                        <select name="to_warehouse_id" class="form-control" required>
-                                                            <option value="">Select Warehouse</option>
-                                                            @foreach($warehouses as $warehouse)
-                                                            <option value="{{ $warehouse->id }}"
-                                                                {{ ($mode === 'edit' && $stockReturn->to_warehouse_id == $warehouse->id) ? 'selected' : '' }}>
-                                                                {{ $warehouse->name }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
+                                            {{-- ================= WAREHOUSES ================= --}}
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label>From Warehouse</label>
+                                                    <input type="text" class="form-control" value="{{ $user->warehouse->name ?? '' }}" readonly>
+                                                    <input type="hidden" name="from_warehouse_id" value="{{ $user->warehouse_id }}">
                                                 </div>
 
-                                                {{-- ================= REASON ================= --}}
-                                                <div class="row mt-3">
-                                                    <div class="col-md-6">
-                                                        <label>Return Reason <span class="text-danger">*</span></label>
-                                                        <select name="return_reason" class="form-control" required>
-                                                            <option value="">Select Reason</option>
-                                                            @foreach([
-                                                            'damaged' => 'Damaged Stock',
-                                                            'excess_stock' => 'Excess Stock',
-                                                            'wrong_item' => 'Wrong Item',
-                                                            'near_expiry' => 'Near Expiry',
-                                                            'quality_issue' => 'Quality Issue'
-                                                            ] as $key => $label)
-                                                            <option value="{{ $key }}"
-                                                                {{ ($mode === 'edit' && $stockReturn->return_reason == $key) ? 'selected' : '' }}>
-                                                                {{ $label }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
+                                                <div class="col-md-6">
+                                                    <label>To Warehouse <span class="text-danger">*</span></label>
+                                                    <select name="to_warehouse_id" class="form-control" required>
+                                                        <option value="">Select Warehouse</option>
+                                                        @foreach($warehouses as $warehouse)
+                                                        <option value="{{ $warehouse->id }}"
+                                                            {{ ($mode === 'edit' && $stockReturn->to_warehouse_id == $warehouse->id) ? 'selected' : '' }}>
+                                                            {{ $warehouse->name }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
 
-                                                    <div class="col-md-6">
-                                                        <label>Remarks</label>
-                                                        <textarea name="remarks"
-                                                            class="form-control"
-                                                            rows="2"
-                                                            placeholder="Remarks">{{ old('remarks', $mode === 'edit' ? $stockReturn->remarks : '') }}</textarea>
-                                                    </div>
-
+                                            {{-- ================= REASON & REMARKS ================= --}}
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <label>Return Reason <span class="text-danger">*</span></label>
+                                                    <select name="return_reason" class="form-control" required>
+                                                        <option value="">Select Reason</option>
+                                                        @foreach([
+                                                        'damaged' => 'Damaged Stock',
+                                                        'excess_stock' => 'Excess Stock',
+                                                        'wrong_item' => 'Wrong Item',
+                                                        'near_expiry' => 'Near Expiry',
+                                                        'quality_issue' => 'Quality Issue'
+                                                        ] as $key => $label)
+                                                        <option value="{{ $key }}"
+                                                            {{ ($mode === 'edit' && $stockReturn->return_reason == $key) ? 'selected' : '' }}>
+                                                            {{ $label }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
 
-                                                {{-- ================= PRODUCTS ================= --}}
-                                                <hr>
-                                                <h5>Return Products</h5>
+                                                <div class="col-md-6">
+                                                    <label>Remarks</label>
+                                                    <textarea name="remarks" class="form-control" rows="2" placeholder="Remarks">{{ old('remarks', $mode === 'edit' ? $stockReturn->remarks : '') }}</textarea>
+                                                </div>
+                                            </div>
 
-                                                <table class="table table-bordered" id="productTable">
-                                                    <thead>
-                                                        <tr>
-                                                            <th width="22%">Product</th>
-                                                            <th width="18%">Condition Image</th>
-                                                            <th width="18%">Batch No</th>
-                                                            <th width="12%">Available</th>
-                                                            <th width="12%">Return Qty</th>
-                                                            <th width="8%">Action</th>
-                                                        </tr>
-                                                    </thead>
+                                            {{-- ================= PRODUCTS ================= --}}
+                                            <hr>
+                                            <h5>Return Products</h5>
 
-                                                    <tbody>
+                                            <table class="table table-bordered" id="productTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="22%">Product</th>
+                                                        <th width="18%">Condition Image</th>
+                                                        <th width="18%">Batch No</th>
+                                                        <th width="12%">Available</th>
+                                                        <th width="12%">Return Qty</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @php
+                                                    $items = $mode === 'edit'
+                                                    ? $stockReturn->WarehouseStockReturnItem->toArray()
+                                                    : [];
+                                                    if(empty($items)) {
+                                                    $items[] = ['product_id'=>'','batch_id'=>'','return_qty'=>''];
+                                                    }
+                                                    @endphp
 
-                                                        @php
-                                                        $items = $mode === 'edit' ? $stockReturn->WarehouseStockReturnItem : [null];
-
-
-                                                        @endphp
-
-                                                        @foreach($items as $index => $item)
-                                                        <tr>
-                                                            {{-- PRODUCT --}}
-                                                            <td>
-                                                                <select name="items[{{ $index }}][product_id]"
-                                                                    class="form-control product-select" required>
-
-                                                                    <option value="">Select Product</option>
-
-                                                                    @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
-                                                                    <option value="{{ $productId }}"
-                                                                        {{ ($mode === 'edit' && $item && $item->product_id == $productId) ? 'selected' : '' }}
-                                                                        data-batches='@json(
+                                                    @foreach($items as $index => $item)
+                                                    <tr>
+                                                        <td>
+                                                            <select name="items[{{ $index }}][product_id]" class="form-control product-select" required>
+                                                                <option value="">Select Product</option>
+                                                                @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
+                                                                <option value="{{ $productId }}"
+                                                                    {{ ($mode === 'edit' && $item && $item['product_id'] == $productId) ? 'selected' : '' }}
+                                                                    data-batches='@json(
                                         $batches->map(fn($batch) => [
                                             "batch_id" => $batch->id,
                                             "batch_no" => $batch->batch_no,
                                             "stock" => $batch->quantity
                                         ])
                                     )'>
-                                                                        {{ $batches->first()->product->name }}
-                                                                    </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </td>
+                                                                    {{ $batches->first()->product->name }}
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
 
-                                                            {{-- IMAGE --}}
-                                                            <td class="text-center">
-                                                                <input type="file"
-                                                                    name="items[{{ $index }}][product_image]"
-                                                                    class="form-control"
-                                                                    accept="image/*">
+                                                        <td class="text-center">
+                                                            <input type="file" name="items[{{ $index }}][product_image]" class="form-control" accept="image/*">
+                                                            @if($mode === 'edit' && $item && !empty($item['product_image']))
+                                                            <img src="{{ asset('storage/'.$item['product_image']) }}" class="img-thumbnail mt-1" width="70">
+                                                            @endif
+                                                        </td>
 
-                                                                @if($mode === 'edit' && $item && $item->product_image)
-                                                                <img src="{{ asset('storage/'.$item->product_image) }}"
-                                                                    class="img-thumbnail mt-1"
-                                                                    width="70">
+                                                        <td>
+                                                            <select name="items[{{ $index }}][batch_id]" class="form-control batch-select" required>
+                                                                <option value="">Select Batch</option>
+                                                                @if($mode === 'edit' && $item && !empty($item['batch_id']))
+                                                                <option value="{{ $item['batch_id'] }}" selected>{{ $item['batch_no'] ?? '' }}</option>
                                                                 @endif
-                                                            </td>
+                                                            </select>
+                                                        </td>
 
-                                                            {{-- BATCH --}}
-                                                            <td>
-                                                                <select name="items[{{ $index }}][batch_id]"
-                                                                    class="form-control batch-select"
-                                                                    required>
+                                                        <td>
+                                                            <input type="text" class="form-control available-stock" value="{{ $item['stock'] ?? '' }}" readonly>
+                                                        </td>
 
-                                                                    <option value="">Select Batch</option>
+                                                        <td>
+                                                            <input type="number" name="items[{{ $index }}][return_qty]" class="form-control return-qty" min="1" value="{{ $item['return_qty'] ?? '' }}" required>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
 
-                                                                    @if($mode === 'edit' && $item && $item->batch)
-                                                                    <option value="{{ $item->batch_id }}" selected>
-                                                                        {{ $item->batch->batch_no }}
-                                                                    </option>
-                                                                    @endif
-
-                                                                </select>
-
-
-                                                            </td>
-
-                                                            {{-- AVAILABLE --}}
-                                                            <td>
-                                                                <input type="text"
-                                                                    class="form-control available-stock"
-                                                                    value="{{ ($mode === 'edit' && $item && $item->batch) ? $item->batch->quantity : '' }}"
-                                                                    readonly>
-                                                            </td>
-
-
-                                                            {{-- RETURN QTY --}}
-                                                            <td>
-                                                                <input type="number"
-                                                                    name="items[{{ $index }}][return_qty]"
-                                                                    class="form-control return-qty"
-                                                                    min="1"
-                                                                    value="{{ $mode === 'edit' && $item ? $item->return_qty : '' }}"
-                                                                    required>
-                                                            </td>
-
-                                                            {{-- ACTION --}}
-                                                            <!-- <td class="text-center">
-                                                                <button type="button" class="btn btn-danger removeRow">X</button>
-                                                            </td> -->
-                                                        </tr>
-                                                        @endforeach
-
-                                                    </tbody>
-                                                </table>
-
-                                                <!-- <button type="button" id="addRow" class="btn btn-secondary">
-                                                    + Add Product
-                                                </button> -->
-
-                                            </div>
-
-                                            {{-- ================= FOOTER ================= --}}
                                             <div class="card-footer text-end">
-                                                <button type="submit" class="btn btn-primary">
-                                                    {{ $mode === 'edit' ? 'Update Return' : '' }}
-
-                                                </button>
+                                                <button type="submit" class="btn btn-primary">{{ $mode === 'edit' ? 'Update Return' : 'Send Return' }}</button>
                                             </div>
 
                                         </form>
-
                                     </div>
+
 
                                 </div>
 

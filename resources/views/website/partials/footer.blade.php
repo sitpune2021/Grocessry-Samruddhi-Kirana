@@ -38,8 +38,13 @@
                     <div class="footer-item">
                         <h4 class="text-dark mb-3">Shop Info</h4>
                         <ul class="list-unstyled">
-                            <li><a class="text-dark d-block mb-2" href="#">About Us</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Contact Us</a></li>
+                            <li><a class="text-dark d-block mb-2" href="{{ route('about') }}">About Us</a></li>
+                            <li>
+                                <a class="text-dark d-block mb-2" href="{{ route('contact') }}">
+                                    Contact Us
+                                </a>
+                            </li>
+
                             <li><a class="text-dark d-block mb-2" href="#">Privacy Policy</a></li>
                             <li><a class="text-dark d-block mb-2" href="#">Terms & Condition</a></li>
                             <li><a class="text-dark d-block mb-2" href="#">Return Policy</a></li>
@@ -54,11 +59,11 @@
                         <h4 class="text-dark mb-3">Account</h4>
                         <ul class="list-unstyled">
                             <li><a class="text-dark d-block mb-2" href="#">My Account</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Shopping Cart</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Order History</a></li>
-                            <li><a class="text-dark d-block" href="#">International Orders</a></li>
+                            <!-- <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li> -->
+                            <li><a class="text-dark d-block mb-2" href="{{ route('cart') }}">Shopping Cart</a></li>
+                            <!-- <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li> -->
+                            <li><a class="text-dark d-block mb-2" href="{{ route('my_orders') }}">Order History</a></li>
+                            <!-- <li><a class="text-dark d-block" href="#">International Orders</a></li> -->
                         </ul>
                     </div>
                 </div>
@@ -67,14 +72,31 @@
                 <div class="col-lg-3 col-md-6 col-12">
                     <div class="footer-item">
                         <h4 class="text-dark mb-3">Contact</h4>
-                        <p class="mb-2">📍 1429 Netus Rd, NY 48247</p>
-                        <p class="mb-2">📧 Example@gmail.com</p>
-                        <p class="mb-2">📞 +0123 4567 8910</p>
+
+                        <p class="mb-2 d-flex align-items-start gap-2">
+                            <i class="fa fa-map-marker-alt text-success mt-1"></i>
+                            <span>1429 Netus Rd, NY 48247</span>
+                        </p>
+
+                        <p class="mb-2 d-flex align-items-start gap-2">
+                            <i class="fa fa-envelope text-success mt-1"></i>
+                            <span>example@gmail.com</span>
+                        </p>
+
+                        <p class="mb-2 d-flex align-items-start gap-2">
+                            <i class="fa fa-phone-alt text-success mt-1"></i>
+                            <span>+0123 4567 8910</span>
+                        </p>
+
                         <p class="mb-2 fw-semibold">Payment Accepted</p>
+
                         <img src="{{ asset('website/img/payment.png') }}"
-                            class="img-fluid" style="max-width:200px" alt="Payments">
+                            class="img-fluid"
+                            style="max-width:200px"
+                            alt="Payments">
                     </div>
                 </div>
+
 
             </div>
         </div>
@@ -91,14 +113,6 @@
                     <i class="fas fa-copyright me-1"></i>
                     <a href="#" class="text-light text-decoration-none">SIT SOLUTIONS PVT LTD</a>, All rights reserved.
                 </span>
-            </div>
-
-            <!-- Right Side: Designed & Distributed By -->
-            <div class="col-md-6 text-center text-md-end">
-                <!-- Designed By
-                <a href="#" class="text-light text-decoration-underline">Shekhar</a> | -->
-                Distributed By
-                <a href="#" class="text-light text-decoration-underline">SIT SOLUTIONS PVT LTD</a>
             </div>
         </div>
     </div>
