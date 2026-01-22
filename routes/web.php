@@ -290,8 +290,6 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
 
-
-
     /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 
     // WAREHOUSE TRANSFER
@@ -747,6 +745,8 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('admin.aboutus.store');
     });
 
+
+
     // Banners admin route
     Route::prefix('banners')->group(function () {
         Route::get('/', [BannerController::class, 'index'])->name('banners.index');
@@ -770,6 +770,10 @@ Route::get('/', [WebsiteController::class, 'index'])->name('home');
 Route::get('contact-details', [WebsiteController::class, 'contact'])->name('contact');
 Route::post('contact-details', [WebsiteController::class, 'storeContact'])->name('contact.store');
 
+Route::get('about-page', [WebsiteController::class, 'about'])->name('about');
+
+
+
 // webiste shop page
 Route::get('shop-list', [WebsiteController::class, 'shop'])->name('shop');
 Route::get('/shop/filter', [WebsiteController::class, 'shopFilter'])
@@ -792,10 +796,16 @@ Route::get('cart', [WebsiteController::class, 'cart'])
 Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
     ->name('website.category-products');
 
+Route::post('/cart/update-qty', [WebsiteController::class, 'updateQty'])
+    ->name('cart.updateQty');
+
+Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
+    ->name('cart.update');
 
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
+
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')
@@ -819,6 +829,12 @@ Route::get('/orders', [CustomerOrderController::class, 'userorder'])
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/my-orders', [WebsiteController::class, 'myOrders'])->name('my_orders');
+
+    Route::get('/account/addresses', [WebsiteController::class, 'addresses'])
+        ->name('account.addresses');
+});
 
 
 

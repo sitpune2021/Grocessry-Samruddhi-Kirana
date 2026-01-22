@@ -1,6 +1,6 @@
 @include('layouts.header')
 
-                           
+
 <body>
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -24,16 +24,16 @@
                         <!-- Form card -->
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
-                            
+
                                 <div class="card-body">
 
-                                        <h3>About us</h3>
-                                        
+                                    <h3>About us</h3>
+
                                     <form action="{{ route('admin.aboutus.store') }}" method="POST">
                                         @csrf
 
                                         <textarea name="content" id="editor" rows="10">
-                                            {{ $about->content ?? '' }}
+                                        {{ $about->content ?? '' }}
                                         </textarea><br>
 
                                         <button type="submit" class="btn btn-success">Save</button>

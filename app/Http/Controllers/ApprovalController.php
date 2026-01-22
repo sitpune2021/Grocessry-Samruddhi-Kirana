@@ -221,9 +221,82 @@ class ApprovalController extends Controller
         return back()->with('success', 'Transfer rejected successfully');
     }
 
+    // OLD BUT Proper working without show insuffient stock error massage
+    // public function dispatchChallan(Request $request)
+    // {
+    //     DB::transaction(function () use ($request) {
+
+    //         $challan = TransferChallan::with('items')->findOrFail($request->challan_id);
+
+    //         foreach ($challan->items as $item) {
+
+    //             $transfer = WarehouseTransfer::where('product_id', $item->product_id)
+    //                 ->where('approved_by_warehouse_id', $challan->from_warehouse_id)
+    //                 ->where('requested_by_warehouse_id', $challan->to_warehouse_id)
+    //                 ->where('status', 0)
+    //                 ->lockForUpdate()
+    //                 ->first();
+
+    //             if (!$transfer) {
+    //                 continue;
+    //             }
+
+    //             $dispatchQty = $item->quantity;   // ✅ CHALLAN QTY
+    //             $warehouseId = $challan->from_warehouse_id;
+
+    //             /* 1️⃣ WAREHOUSE STOCK */
+    //             $stock = WarehouseStock::where('warehouse_id', $warehouseId)
+    //                 ->where('product_id', $transfer->product_id)
+    //                 ->lockForUpdate()
+    //                 ->first();
+
+    //             if (!$stock || $stock->quantity < $dispatchQty) {
+    //                 throw new \Exception("Insufficient stock");
+    //             }
+
+    //             $stock->decrement('quantity', $dispatchQty);
+
+    //             /* 2️⃣ PRODUCT BATCH */
+    //             $batch = ProductBatch::where('id', $transfer->batch_id)
+    //                 ->where('warehouse_id', $warehouseId)
+    //                 ->lockForUpdate()
+    //                 ->first();
+
+    //             if (!$batch || $batch->quantity < $dispatchQty) {
+    //                 throw new \Exception("Insufficient batch stock");
+    //             }
+
+    //             $batch->decrement('quantity', $dispatchQty);
+
+    //             /* 3️⃣ STOCK MOVEMENT */
+    //             StockMovement::create([
+    //                 'product_batch_id' => $batch->id,
+    //                 'type' => 'dispatch',
+    //                 'quantity' => -$dispatchQty,
+    //                 'warehouse_id' => $warehouseId,
+    //             ]);
+
+    //             /* 4️⃣ UPDATE TRANSFER */
+    //             //$transfer->quantity = $dispatchQty;   // optional but good
+    //             $transfer->status = 1;
+    //             $transfer->save();
+    //         }
+
+    //         $challan->update(['status' => 'dispatched']);
+    //     });
+
+    //     return back()->with('success', 'Challan dispatched successfully');
+    // }
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
     public function dispatchChallan(Request $request)
     {
-        DB::transaction(function () use ($request) {
+        try {
+
+            DB::beginTransaction();
 
             $challan = TransferChallan::with('items')->findOrFail($request->challan_id);
 
@@ -240,56 +313,61 @@ class ApprovalController extends Controller
                     continue;
                 }
 
-                $dispatchQty = $item->quantity;   // ✅ CHALLAN QTY
+                $dispatchQty = $item->quantity;
                 $warehouseId = $challan->from_warehouse_id;
 
-                /* 1️⃣ WAREHOUSE STOCK */
+                // 1️⃣ CHECK WAREHOUSE STOCK
                 $stock = WarehouseStock::where('warehouse_id', $warehouseId)
                     ->where('product_id', $transfer->product_id)
                     ->lockForUpdate()
                     ->first();
 
                 if (!$stock || $stock->quantity < $dispatchQty) {
-                    throw new \Exception("Insufficient stock");
+                    DB::rollBack();
+                    return back()->with('error', 'Insufficient stock in warehouse');
                 }
 
-                $stock->decrement('quantity', $dispatchQty);
-
-                /* 2️⃣ PRODUCT BATCH */
+                // 2️⃣ CHECK BATCH STOCK
                 $batch = ProductBatch::where('id', $transfer->batch_id)
                     ->where('warehouse_id', $warehouseId)
                     ->lockForUpdate()
                     ->first();
 
                 if (!$batch || $batch->quantity < $dispatchQty) {
-                    throw new \Exception("Insufficient batch stock");
+                    DB::rollBack();
+                    return back()->with('error', 'Insufficient stock in batch');
                 }
 
+                // 3️⃣ DECREMENT STOCK
+                $stock->decrement('quantity', $dispatchQty);
                 $batch->decrement('quantity', $dispatchQty);
 
-                /* 3️⃣ STOCK MOVEMENT */
+                // 4️⃣ STOCK MOVEMENT
                 StockMovement::create([
                     'product_batch_id' => $batch->id,
-                    'type' => 'dispatch',
-                    'quantity' => -$dispatchQty,
-                    'warehouse_id' => $warehouseId,
+                    'type'             => 'dispatch',
+                    'quantity'         => -$dispatchQty,
+                    'warehouse_id'     => $warehouseId,
                 ]);
 
-                /* 4️⃣ UPDATE TRANSFER */
-                //$transfer->quantity = $dispatchQty;   // optional but good
+                // 5️⃣ UPDATE TRANSFER
                 $transfer->status = 1;
                 $transfer->save();
             }
 
             $challan->update(['status' => 'dispatched']);
-        });
 
-        return back()->with('success', 'Challan dispatched successfully');
+            DB::commit();
+
+            return back()->with('success', 'Challan dispatched successfully');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return back()->with('error', 'Something went wrong while dispatching');
+        }
     }
-
-
-///////////////////////////////////////////////////////////////////////////////////
-
 
     public function singleDispatch(WarehouseTransfer $transfer)
     {
