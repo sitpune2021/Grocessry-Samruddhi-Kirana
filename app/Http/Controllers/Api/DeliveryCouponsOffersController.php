@@ -19,12 +19,13 @@ class DeliveryCouponsOffersController extends Controller
             ->select(
                 'id',
                 'title',
-                'code',
                 'description',
-                'discount_type',
+                'offer_type',
                 'discount_value',
-                'min_amount',
-                'terms_condition'
+                'max_discount',
+                'min_order_amount',
+                'start_date',
+                'end_date'
             )
             ->get();
 
@@ -33,7 +34,8 @@ class DeliveryCouponsOffersController extends Controller
             'data'   => $offers
         ], 200);
     }
-    public function applyCoupon(Request $request)
+
+    public function applyOffer(Request $request)
     {
         $user = $request->user();
         if (!$user) {
@@ -50,7 +52,7 @@ class DeliveryCouponsOffersController extends Controller
 
         $today = Carbon::today()->toDateString();
 
-        $offer = Offer::where('code', $request->coupon_code)
+        $offer = Offer::where('title', $request->coupon_code)
             ->where('status', 1)
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
@@ -63,7 +65,7 @@ class DeliveryCouponsOffersController extends Controller
             ], 400);
         }
 
-        if ($request->order_amount < $offer->min_amount) {
+        if ($request->order_amount < $offer->min_order_amount) {
             return response()->json([
                 'status' => false,
                 'message' => 'Minimum order amount not met'
@@ -71,28 +73,36 @@ class DeliveryCouponsOffersController extends Controller
         }
 
         // 💸 Discount calculation
-        if ($offer->discount_type === 'flat') {
+        if (in_array($offer->offer_type, ['flat', 'flat_discount'])) {
             $discount = $offer->discount_value;
-        } else { // percentage
+        } else {
             $discount = ($request->order_amount * $offer->discount_value) / 100;
+
+            if (!empty($offer->max_discount)) {
+                $discount = min($discount, $offer->max_discount);
+            }
         }
+
+        $discount = min($discount, $request->order_amount);
+
 
         return response()->json([
             'status' => true,
             'message' => 'Coupon applied successfully',
             'data' => [
-                'coupon_id'   => $offer->id,
-                'coupon_code' => $offer->code,
-                'discount'    => round($discount, 2),
+                'offer_id'     => $offer->id,
+                'offer_title'  => $offer->title,
+                'discount'     => round($discount, 2),
                 'final_amount' => max($request->order_amount - $discount, 0)
             ]
         ], 200);
     }
-    public function removeCoupon()
+
+    public function removeOffer()
     {
         return response()->json([
             'status' => true,
-            'message' => 'Coupon removed successfully'
+            'message' => 'offer removed successfully'
         ], 200);
     }
 }

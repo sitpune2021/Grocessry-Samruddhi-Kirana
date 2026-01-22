@@ -45,6 +45,7 @@ use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\DistrictToDistrictTransferController;
+use App\Http\Controllers\SupplierChallenController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
@@ -183,7 +184,10 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('/stock/{id}/delete', 'destroyStock')
             ->name('stock.delete');
     });
-
+    Route::get(
+        '/get-supplier-challan/{id}',
+        [stockWarehouseController::class, 'getSupplierChallan']
+    );
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
@@ -705,6 +709,18 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('destroy');
         Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
         Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
+    });
+
+    Route::prefix('supplier_challan')->name('supplier_challan.')->group(function () {
+        Route::get('/', [SupplierChallenController::class, 'index'])->name('index');
+        Route::get('/create', [SupplierChallenController::class, 'create'])->name('create');
+        Route::post('/store', [SupplierChallenController::class, 'store'])->name('store');
+        Route::get('/{id}', [SupplierChallenController::class, 'show'])
+            ->name('show');
+        Route::get('/{id}/edit', [SupplierChallenController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SupplierChallenController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SupplierChallenController::class, 'destroy'])
+            ->name('destroy');
     });
 
 

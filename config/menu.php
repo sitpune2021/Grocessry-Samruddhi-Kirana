@@ -35,6 +35,8 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
+
             ],
         ],
 
