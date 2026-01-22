@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 class WebsiteController extends Controller
 {
 
+
     public function index(Request $request)
     {
         // banners
@@ -91,8 +92,6 @@ class WebsiteController extends Controller
         return view('website.my_orders', compact('orders', 'addresses', 'tab'));
     }
 
-
-
     public function about()
     {
         // single about page data
@@ -122,59 +121,6 @@ class WebsiteController extends Controller
 
         return back()->with('success', 'Thank you! Your message has been sent.');
     }
-
-    // public function shop(Request $request)
-    // {
-    //     $categoryId = $request->category_id;
-    //     $maxPrice   = $request->price;
-
-    //     // categories for sidebar
-    //     $categories = Category::orderBy('name')->get();
-
-    //     // products query
-    //     $productsQuery = Product::whereNull('deleted_at');
-
-    //     // category filter
-    //     if ($categoryId) {
-    //         $productsQuery->where('category_id', $categoryId);
-    //     }
-
-    //     // price filter (MRP based)
-    //     if ($maxPrice) {
-    //         $productsQuery->where('mrp', '<=', $maxPrice);
-    //     }
-
-    //     // pagination 12 (3 per row x 4 rows)
-    //     $products = $productsQuery
-    //         ->latest()
-    //         ->paginate(12)
-    //         ->withQueryString();
-
-    //     return view('website.shop', compact(
-    //         'products',
-    //         'categories',
-    //         'categoryId',
-    //         'maxPrice'
-    //     ));
-    // }
-
-    // public function shopFilter(Request $request)
-    // {
-    //     $categoryId = $request->category_id;
-    //     $page       = $request->page ?? 1;
-
-    //     $query = Product::whereNull('deleted_at');
-
-    //     if ($categoryId && $categoryId !== 'all') {
-    //         $query->where('category_id', $categoryId);
-    //     }
-
-    //     $products = $query
-    //         ->latest()
-    //         ->paginate(12, ['*'], 'page', $page);
-
-    //     return view('website.partials.product-list', compact('products'))->render();
-    // }  
 
     public function shop(Request $request)
     {
@@ -264,10 +210,13 @@ class WebsiteController extends Controller
             ]);
         }
 
-        // Recalculate totals
+        //  Recalculate totals
         $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+        $cartQty  = CartItem::where('cart_id', $cart->id)->sum('qty');
 
+        //  Update cart properly
         $cart->update([
+            'quantity' => $cartQty,
             'subtotal' => $subtotal,
             'total'    => $subtotal,
         ]);
@@ -287,11 +236,21 @@ class WebsiteController extends Controller
         return view('website.cart', compact('cart'));
     }
 
-
     public function removeItem($id)
     {
         $item = CartItem::findOrFail($id);
+
+        $cart = Cart::where('id', $item->cart_id)->first();
+
         $item->delete();
+
+        // Recalculate totals
+        $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+
+        $cart->update([
+            'subtotal' => $subtotal,
+            'total'    => $subtotal,
+        ]);
 
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
@@ -325,13 +284,10 @@ class WebsiteController extends Controller
             'qty'         => $item->qty,
             'line_total'  => number_format($item->line_total, 2),
             'cart_total'  => number_format($cart->total, 2),
+            'subtotal'    => number_format($cart->subtotal, 2),
             'cart_count'  => $cart->items()->sum('qty'),
         ]);
     }
-
-
-
-
 
     public function productdetails($id)
     {
@@ -358,4 +314,6 @@ class WebsiteController extends Controller
 
         return view('website.category-products', compact('category', 'products'));
     }
+
+
 }

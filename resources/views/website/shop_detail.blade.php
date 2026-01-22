@@ -182,13 +182,13 @@
 
                     <form action="{{ route('add_cart') }}" method="POST" class="add-to-cart-form d-flex align-items-center gap-3 flex-wrap">
                         @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <div class="qty-box d-inline-flex align-items-center gap-2">
+                        <!-- <div class="qty-box d-inline-flex align-items-center gap-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary qty-minus">-</button>
                             <input type="number" name="qty" value="1" min="1" class="form-control text-center qty-input" style="width:60px">
                             <button type="button" class="btn btn-sm btn-outline-secondary qty-plus">+</button>
-                        </div>
+                        </div> -->
 
                         <button class="btn btn-primary rounded-pill px-4">
                             <i class="fa fa-shopping-bag me-2"></i>Add to Cart
@@ -199,8 +199,11 @@
             </div>
             @endforeach
         </div>
+
     </div>
+
 </div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
