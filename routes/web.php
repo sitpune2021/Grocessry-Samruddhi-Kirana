@@ -45,6 +45,7 @@ use App\Http\Controllers\WarehouseTransferRequestController;
 use App\Http\Controllers\TransferChallanController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\DistrictToDistrictTransferController;
+use App\Http\Controllers\SupplierChallenController;
 
 // Website Route
 use App\Http\Controllers\BannerController;
@@ -53,7 +54,7 @@ use App\Http\Controllers\DistrictToTalukaApprovalController;
 use App\Http\Controllers\TalukashopTransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
-
+use App\Http\Controllers\PosOrderController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
 
@@ -80,6 +81,21 @@ Route::middleware(['auth:admin'])->group(function () {
             'destroy' => 'permission:product.delete',
         ]);
 
+
+    Route::prefix('pos')->middleware('auth')->group(function () {
+
+        Route::get('/create', [PosOrderController::class, 'create'])
+            ->name('pos.create');
+
+        Route::post('/store', [PosOrderController::class, 'store'])
+            ->name('pos.store');
+
+        Route::get('/invoice/{order}', [PosOrderController::class, 'invoice'])
+            ->name('pos.invoice');
+
+        Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
+        Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
+    });
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
@@ -168,7 +184,10 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::delete('/stock/{id}/delete', 'destroyStock')
             ->name('stock.delete');
     });
-
+    Route::get(
+        '/get-supplier-challan/{id}',
+        [stockWarehouseController::class, 'getSupplierChallan']
+    );
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
@@ -233,6 +252,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::resource('/stock-returns', WarehouseStockReturnController::class);
+
     Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
     Route::post(
         'stock-returns/{id}/send-for-approval',
@@ -242,10 +262,50 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('stock-returns.dispatch');
     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
         ->name('stock-returns.receive');
+
+
+    Route::get(
+        'stock-returns/{id}/return-to-master',
+        [WarehouseStockReturnController::class, 'returnToMaster']
+    )->name('stock-returns.return-to-master');
+
+    Route::put(
+        'stock-returns/store-district-to-master',
+        [WarehouseStockReturnController::class, 'update']
+    )->name('stock-returns.store-district-to-master');
+
     Route::post(
-        'stock-returns/{id}/close',
-        [WarehouseStockReturnController::class, 'close']
-    )->name('stock-returns.close');
+        'stock-returns/{id}/district-approval',
+        [WarehouseStockReturnController::class, 'approve1']
+    )->name('stock-returns.approve1');
+    Route::post('stock-returns/{id}/district-dispatch', [WarehouseStockReturnController::class, 'dispatch1'])
+        ->name('stock-returns.dispatch1');
+    Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
+        ->name('stock-returns.receive1');
+
+    // Taluka approves a stock return from Distribution Center
+    Route::post('stock-returns/{id}/dc-approve', [WarehouseStockReturnController::class, 'dcApprove'])
+        ->name('stock-returns.dc-approve');
+
+    // Distribution Center dispatches the stock to Taluka
+    Route::post('stock-returns/{id}/dc-dispatch', [WarehouseStockReturnController::class, 'dcDispatch'])
+        ->name('stock-returns.dc-dispatch');
+
+    // Taluka receives the stock from Distribution Center
+    Route::post('stock-returns/{id}/dc-receive', [WarehouseStockReturnController::class, 'dcReceive'])
+        ->name('stock-returns.dc-receive');
+
+    // show edit form
+    Route::get(
+        'stock-returns/{id}/return-to-district',
+        [WarehouseStockReturnController::class, 'returnToDistrict']
+    )->name('stock-returns.return-to-district');
+
+    // submit new return
+    Route::post(
+        'stock-returns/{id}/store-taluka-to-district',
+        [WarehouseStockReturnController::class, 'storeTalukaToDistrict']
+    )->name('stock-returns.store-taluka-to-district');
 
 
 
@@ -649,6 +709,18 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('destroy');
         Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
         Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
+    });
+
+    Route::prefix('supplier_challan')->name('supplier_challan.')->group(function () {
+        Route::get('/', [SupplierChallenController::class, 'index'])->name('index');
+        Route::get('/create', [SupplierChallenController::class, 'create'])->name('create');
+        Route::post('/store', [SupplierChallenController::class, 'store'])->name('store');
+        Route::get('/{id}', [SupplierChallenController::class, 'show'])
+            ->name('show');
+        Route::get('/{id}/edit', [SupplierChallenController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SupplierChallenController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SupplierChallenController::class, 'destroy'])
+            ->name('destroy');
     });
 
 

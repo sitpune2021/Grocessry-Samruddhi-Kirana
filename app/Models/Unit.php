@@ -21,4 +21,8 @@ class Unit extends Model
     {
         return $this->hasMany(ProductBatch::class);
     }
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
