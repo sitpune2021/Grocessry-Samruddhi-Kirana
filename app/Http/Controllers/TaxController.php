@@ -32,10 +32,7 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-
-            // ✅ Validation
-            $request->validate([
+    $request->validate([
                 'name'      => 'required|string|max:100|unique:taxes,name',
                 'cgst'      => 'required|numeric|min:0|max:100',
                 'sgst'      => 'required|numeric|min:0|max:100',
@@ -43,10 +40,10 @@ class TaxController extends Controller
                 'gst'       => 'required|numeric|min:0|max:100',
                 'is_active' => 'required|in:0,1',
             ]);
+        try {
 
             DB::beginTransaction();
 
-            // ✅ Create Tax
             $tax = Tax::create([
                 'name'      => $request->name,
                 'cgst'      => $request->cgst,
@@ -58,7 +55,6 @@ class TaxController extends Controller
 
             DB::commit();
 
-            // ✅ Success Log
             Log::info('Tax created successfully', [
                 'tax_id' => $tax->id,
                 'name'   => $tax->name,
@@ -70,19 +66,17 @@ class TaxController extends Controller
                 ->with('success', 'Tax added successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
 
-            // ❌ Validation Error Log
             Log::warning('Tax validation failed', [
                 'errors' => $e->errors(),
                 'input'  => $request->all(),
             ]);
 
-            throw $e; // Laravel will auto-redirect with errors
+            throw $e; 
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
-            // ❌ Exception Log
             Log::error('Error while creating tax', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
@@ -129,7 +123,7 @@ class TaxController extends Controller
                 'name'      => 'required|string|max:100|unique:taxes,name,' . $id,
                 'cgst'      => 'required|numeric|min:0|max:100',
                 'sgst'      => 'required|numeric|min:0|max:100',
-                'igst'      => 'nullble|numeric|min:0|max:100',
+                'igst'      => 'nullable|numeric|min:0|max:100',
                 'gst'      => 'required|numeric|min:0|max:100',
 
                 'is_active' => 'required|in:0,1',
@@ -137,10 +131,8 @@ class TaxController extends Controller
 
             DB::beginTransaction();
 
-            // 🔹 Find Tax
             $tax = Tax::findOrFail($id);
 
-            // 🔹 Update Data
             $tax->update([
                 'name'      => $request->name,
                 'cgst'      => $request->cgst,
@@ -152,7 +144,6 @@ class TaxController extends Controller
 
             DB::commit();
 
-            // ✅ Success Log
             Log::info('Tax updated successfully', [
                 'tax_id'  => $tax->id,
                 'user_id' => auth()->id(),

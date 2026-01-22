@@ -52,9 +52,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
 });
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
+    Route::post('/cart/decrement', [ProductController::class, 'decrementCart']);
+    Route::delete('/cart/remove', [ProductController::class, 'removeFromCart']);
+    Route::get('/cart', [ProductController::class, 'viewCart']);
+});
+Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [DeliveryCouponsOffersController::class, 'getOffers']);
-    Route::post('/apply-coupon', [DeliveryCouponsOffersController::class, 'applyCoupon']);
-    Route::post('/remove-coupon', [DeliveryCouponsOffersController::class, 'removeCoupon']);
+    Route::post('/apply-offer', [DeliveryCouponsOffersController::class, 'applyOffer']);
+    Route::post('/remove-offer', [DeliveryCouponsOffersController::class, 'removeOffer']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -121,7 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
     Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
     Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
-     Route::get('/partner/deliveries/summary',[DeliveryOrderController::class, 'deliverySummary']);
+    Route::get('/partner/deliveries/summary', [DeliveryOrderController::class, 'deliverySummary']);
 
     // 🔹 PARTNER STATUS
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
@@ -139,8 +145,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
     Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
     Route::put('/delivery_boy/profile/{type}', [DeliveryAgentController::class, 'updateProfileField']);
-    Route::get('/partner/profile/summary',[DeliveryAgentController::class, 'profileSummary']);
-    Route::get('/partner/performance/graph',[DeliveryAgentController::class, 'performanceGraph']);
+    Route::get('/partner/profile/summary', [DeliveryAgentController::class, 'profileSummary']);
+    Route::get('/partner/performance/graph', [DeliveryAgentController::class, 'performanceGraph']);
 });
 
 // Route::middleware('auth:sanctum')->group(function () {

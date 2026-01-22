@@ -88,26 +88,20 @@
                                                             Sub Category <span class="text-danger">*</span>
                                                         </label>
 
-                                                        <select name="sub_category_id" id="sub_category_id"
+                                                        <select name="sub_category_id"
+                                                            id="sub_category_id"
                                                             class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">Select Sub Category</option>
 
                                                             @if ($mode !== 'add')
                                                             @foreach ($subCategories as $sub)
-                                                            <option value="{{ $sub->id }}">
-                                                                {{ old('sub_category_id', $product->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}
+                                                            <option value="{{ $sub->id }}"
+                                                                {{ old('sub_category_id', $product->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
                                                                 {{ $sub->name }}
                                                             </option>
                                                             @endforeach
                                                             @endif
-
-                                                            {{-- @foreach ($subCategories as $sub)
-                                                            <option value="{{ $sub->id }}"
-                                                            {{ old('sub_category_id', $product->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
-                                                            {{ $sub->name }}
-                                                            </option>
-                                                            @endforeach --}}
 
                                                         </select>
 
@@ -185,7 +179,49 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Prices --}}
+                                                {{-- Unit --}}
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            Unit <span class="text-danger">*</span>
+                                                        </label>
+                                                        <select name="unit_id"
+                                                            class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Unit</option>
+                                                            @foreach($units as $unit)
+                                                            <option value="{{ $unit->id }}"
+                                                                {{ old('unit_id', $product->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
+                                                                {{ $unit->name }} ({{ strtoupper($unit->short_name) }})
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('unit_id')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                {{-- Unit Value --}}
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">
+                                                            Quantity <span class="text-danger">*</span>
+                                                        </label>
+                                                        <input type="number"
+                                                            step="0.01"
+                                                            name="unit_value"
+                                                            class="form-control"
+                                                            placeholder="e.g. 500, 1, 12"
+                                                            value="{{ old('unit_value', $product->unit_value ?? '') }}"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                        @error('unit_value')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+
+                                                {{-- base Prices --}}
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
@@ -200,35 +236,8 @@
                                                         @enderror
                                                     </div>
                                                 </div>
-                                                {{-- Discount Type --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Discount type</label>
-                                                    <select name="discount_type" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="percentage"
-                                                            {{ old('discount_type', $offer->discount_type ?? '') == 'percentage' ? 'selected' : '' }}>
-                                                            Percentage (%)
-                                                        </option>
-                                                        <option value="flat"
-                                                            {{ old('discount_type', $offer->discount_type ?? '') == 'flat' ? 'selected' : '' }}>
-                                                            Flat Amount
-                                                        </option>
-                                                    </select>
-                                                    @error('discount_type')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                {{-- Discount Value --}}
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Discount Value</label>
-                                                    <input type="number" step="0.01" name="discount_value"
-                                                        class="form-control" placeholder="Enter discount value"
-                                                        value="{{ old('discount_value', $product->discount_value ?? '') }}"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('discount_value')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+
+                                                {{-- selling Prices --}}
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
@@ -244,6 +253,7 @@
                                                     </div>
                                                 </div>
 
+                                                {{-- mrp --}}
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
@@ -270,7 +280,8 @@
                                                         @if($mode === 'view')
                                                         <input type="text"
                                                             class="form-control"
-                                                            value="{{ $product->tax->name ?? '' }} ({{ $product->tax->igst ?? 0 }}%)"
+                                                            {{-- value="{{ $product->tax->name ?? '' }} ({{ $product->tax->gst ?? 0 }}%)" --}}
+                                                            value="{{ $product->tax->gst ?? 0 }}%"
                                                             readonly>
                                                         @else
                                                         <select name="tax_id" class="form-control" required>
@@ -279,7 +290,7 @@
                                                             @foreach($taxes as $tax)
                                                             <option value="{{ $tax->id }}"
                                                                 {{ old('tax_id', $product->tax_id ?? '') == $tax->id ? 'selected' : '' }}>
-                                                                {{ $tax->name }} ({{ $tax->igst }}%)
+                                                                {{ $tax->name }} ({{ $tax->gst }}%)
                                                             </option>
                                                             @endforeach
                                                         </select>
@@ -289,6 +300,32 @@
                                                         @enderror
                                                     </div>
                                                 </div>
+
+                                                <hr>
+                                                <div class="row mb-2">
+
+                                                    {{-- GST Amount --}}
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold">GST Amount</label>
+                                                        <input type="text"
+                                                            id="gst_amount"
+                                                            class="form-control"
+                                                            value="{{ old('gst_amount', number_format($product->gst_amount ?? 0, 2)) }}"
+                                                            readonly>
+                                                    </div>
+
+                                                    {{-- Final Net Price --}}
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold text-success">Final Net Price</label>
+                                                        <input type="text"
+                                                            id="final_price"
+                                                            class="form-control fw-bold"
+                                                            value="{{ old('final_price', number_format($product->final_price ?? 0, 2)) }}"
+                                                            readonly>
+                                                    </div>
+
+                                                </div>
+
 
 
                                                 {{-- Images --}}
@@ -395,59 +432,101 @@
 </script>
 
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
 
-    /* ===============================
-       LOAD SUB-CATEGORIES BY CATEGORY
-       =============================== */
-    $('#category_id').on('change', function () {
-        let categoryId = $(this).val();
-        let subCategorySelect = $('#sub_category_id');
-        let brandSelect = $('#brand_id');
+        /* ===============================
+           LOAD SUB-CATEGORIES BY CATEGORY
+           =============================== */
+        $('#category_id').on('change', function() {
+            let categoryId = $(this).val();
+            let subCategorySelect = $('#sub_category_id');
+            let brandSelect = $('#brand_id');
 
-        subCategorySelect.html('<option value="">Loading...</option>');
-        brandSelect.html('<option value="">Select Brand</option>');
-
-        if (!categoryId) {
-            subCategorySelect.html('<option value="">Select Sub Category</option>');
-            return;
-        }
-
-        $.get("{{ url('get-sub-categories') }}/" + categoryId, function (data) {
-            let options = '<option value="">Select Sub Category</option>';
-            data.forEach(item => {
-                options += `<option value="${item.id}">${item.name}</option>`;
-            });
-            subCategorySelect.html(options);
-        });
-    });
-
-
-    /* ===============================
-       LOAD BRANDS BY SUB-CATEGORY
-       =============================== */
-    $('#sub_category_id').on('change', function () {
-        let subCategoryId = $(this).val();
-        let brandSelect = $('#brand_id');
-
-        brandSelect.html('<option value="">Loading...</option>');
-
-        if (!subCategoryId) {
+            subCategorySelect.html('<option value="">Loading...</option>');
             brandSelect.html('<option value="">Select Brand</option>');
+
+            if (!categoryId) {
+                subCategorySelect.html('<option value="">Select Sub Category</option>');
+                return;
+            }
+
+            $.get("{{ url('get-sub-categories') }}/" + categoryId, function(data) {
+                let options = '<option value="">Select Sub Category</option>';
+                data.forEach(item => {
+                    options += `<option value="${item.id}">${item.name}</option>`;
+                });
+                subCategorySelect.html(options);
+            });
+        });
+
+
+        /* ===============================
+           LOAD BRANDS BY SUB-CATEGORY
+           =============================== */
+        $('#sub_category_id').on('change', function() {
+            let subCategoryId = $(this).val();
+            let brandSelect = $('#brand_id');
+
+            brandSelect.html('<option value="">Loading...</option>');
+
+            if (!subCategoryId) {
+                brandSelect.html('<option value="">Select Brand</option>');
+                return;
+            }
+
+            $.get("{{ url('get-brands-by-sub-category') }}/" + subCategoryId, function(data) {
+                let options = '<option value="">Select Brand</option>';
+                data.forEach(item => {
+                    options += `<option value="${item.id}">${item.name}</option>`;
+                });
+                brandSelect.html(options);
+            });
+        });
+
+    });
+</script>
+<script>
+    function calculateFinalPrice() {
+        const basePrice = parseFloat(document.querySelector('[name="base_price"]').value) || 0;
+        const sellingPrice = parseFloat(document.querySelector('[name="retailer_price"]').value) || 0;
+        const mrp = parseFloat(document.querySelector('[name="mrp"]').value) || 0;
+
+        const taxSelect = document.querySelector('[name="tax_id"]');
+        const gstPercent = taxSelect ?
+            parseFloat(
+                taxSelect.options[taxSelect.selectedIndex]?.text
+                .match(/(\d+(\.\d+)?)/)?.[0] || 0
+            ) :
+            0;
+
+        // ❌ Validation rules
+        if (sellingPrice < basePrice) {
+            document.getElementById('gst_amount').value = '';
+            document.getElementById('final_price').value = '';
             return;
         }
 
-        $.get("{{ url('get-brands-by-sub-category') }}/" + subCategoryId, function (data) {
-            let options = '<option value="">Select Brand</option>';
-            data.forEach(item => {
-                options += `<option value="${item.id}">${item.name}</option>`;
-            });
-            brandSelect.html(options);
-        });
-    });
+        if (sellingPrice > mrp) {
+            document.getElementById('gst_amount').value = '';
+            document.getElementById('final_price').value = '';
+            return;
+        }
 
-});
+        // ✅ GST calculation (on selling price)
+        const gstAmount = (sellingPrice * gstPercent) / 100;
+        const finalPrice = sellingPrice + gstAmount;
+
+        // ✅ Show values
+        document.getElementById('gst_amount').value = gstAmount.toFixed(2);
+        document.getElementById('final_price').value = finalPrice.toFixed(2);
+    }
+
+    // 🔄 Trigger calculation
+    document.querySelectorAll(
+        '[name="base_price"], [name="retailer_price"], [name="mrp"], [name="tax_id"]'
+    ).forEach(el => el.addEventListener('change', calculateFinalPrice));
 </script>
+
 
 <!-- 
 <script>

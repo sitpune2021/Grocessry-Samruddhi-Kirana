@@ -78,7 +78,7 @@
                                     'stock' => 'Stock',
                                     'batches' => 'Batches',
                                     'warehouse_transfer_request' => 'Warehouse Transfer Request',
-                                    'disribution_center' => 'Distribution Center / Shop',
+                                    // 'disribution_center' => 'Distribution Center / Shop',
                                     'delivery_agent' => 'Delivery Agent',
                                     'vehical_assignment' => 'Vehical Assignment',
                                     'offers' => 'Offers',

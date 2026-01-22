@@ -2,365 +2,8 @@
 
 @section('title', 'Home')
 
-
 @section('content')
 
-
-<!-- Featurs Section End -->
-
-<style>
-    .pagination {
-        justify-content: center !important;
-        flex-wrap: wrap;
-    }
-
-    .pagination .page-item {
-        display: inline-flex !important;
-    }
-
-    .pagination .page-link {
-        padding: 4px 8px;
-        font-size: 12px;
-        line-height: 1.2;
-        min-width: 30px;
-        height: 30px;
-        border-radius: 4px;
-    }
-
-
-    /* Small product card () */
-    .product-sm-card {
-        border: 1px solid #eee;
-        border-radius: 12px;
-        padding: 10px;
-        background: #fff;
-        height: 100%;
-        transition: box-shadow 0.2s ease;
-    }
-
-    .product-sm-card:hover {
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    }
-
-    .product-sm-img {
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .product-sm-img img {
-        max-height: 100%;
-        max-width: 100%;
-        object-fit: contain;
-    }
-
-    .product-sm-title {
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 1.2;
-        margin: 8px 0 4px;
-    }
-
-    .product-sm-weight {
-        font-size: 12px;
-        color: #777;
-    }
-
-    .product-sm-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 8px;
-    }
-
-    .product-sm-price {
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .btn-add-sm {
-        border: 1px solid #28a745;
-        color: #28a745;
-        background: #fff;
-        padding: 3px 14px;
-        font-size: 13px;
-        border-radius: 8px;
-    }
-
-    .btn-add-sm:hover {
-        background: #28a745;
-        color: #fff;
-    }
-
-    .counter:hover {
-        transform: translateY(-5px);
-        transition: all 0.3s ease;
-    }
-
-    .hover-shadow {
-        transition: all 0.3s ease;
-    }
-
-    .service-item {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .service-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    html,
-    body {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    .carousel,
-    .carousel-inner,
-    .carousel-item {
-        overflow: hidden;
-    }
-
-
-    img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .product-slider {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        padding-bottom: 10px;
-    }
-
-    /* hide scrollbar */
-    .product-slider::-webkit-scrollbar {
-        display: none;
-    }
-
-    .product-slider {
-        scrollbar-width: none;
-    }
-
-    /* 6 cards per row */
-    .product-slide-item {
-        flex: 0 0 calc(100% / 6 - 10px);
-    }
-
-    .slider-arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #000;
-        color: #fff;
-        border: none;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        font-size: 22px;
-        cursor: pointer;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.85;
-    }
-
-    .slider-arrow.left {
-        left: -20px;
-    }
-
-    .slider-arrow.right {
-        right: -20px;
-    }
-
-    .slider-arrow:hover {
-        opacity: 1;
-    }
-
-    /* hide arrows on mobile */
-    @media (max-width: 768px) {
-        .slider-arrow {
-            display: none;
-        }
-    }
-
-
-    /* categery model  */
-    .category-card {
-        display: block;
-        text-decoration: none;
-        color: #000;
-    }
-
-    .category-img {
-        background: #eef5ff;
-        border-radius: 16px;
-        padding: 14px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: 0.3s;
-    }
-
-    .category-img img {
-        max-width: 100%;
-        max-height: 90px;
-        object-fit: contain;
-    }
-
-    .category-title {
-        margin-top: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 1.3;
-    }
-
-    .category-card:hover .category-img {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    }
-
-    .hero-banner {
-        height: 380px;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-        /* 🔴 KEY LINE */
-        border-radius: 16px;
-        background: #000;
-
-    }
-
-    .hero-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-
-        object-position: center;
-        display: block;
-    }
-
-    /* Overlay safe */
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right,
-                rgba(46, 43, 43, 0.26),
-                rgba(0, 0, 0, 0.1));
-        z-index: 1;
-    }
-
-
-    .carousel-control-prev,
-    .carousel-control-next {
-        top: 50%;
-        transform: translateY(-50%);
-        width: 50px;
-        height: 50px;
-        background: rgba(0, 0, 0, 0.45);
-        border-radius: 50%;
-    }
-
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-size: 18px 18px;
-    }
-
-
-    /* Mobile */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 22px;
-            margin-top: 20px;
-        }
-
-        .hero-btn {
-            margin-bottom: 20px;
-        }
-    }
-
-    /* ===== BETTER TAB SEARCH UI ===== */
-
-    .nav-pills {
-        gap: 10px;
-    }
-
-    /* TAB BUTTON */
-    .nav-pills .nav-link,
-    .nav-pills a {
-        background: #f5f5f5 !important;
-        border-radius: 20px !important;
-        padding: 8px 18px !important;
-        transition: all 0.25s ease;
-        border: 1px solid #e0e0e0;
-    }
-
-    /* TAB TEXT */
-    .nav-pills span {
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    /* ACTIVE TAB */
-    .nav-pills .active {
-        background: #28a745 !important;
-        border-color: #28a745 !important;
-    }
-
-    .nav-pills .active span {
-        color: #fff !important;
-    }
-
-    /* ===== CATEGORY SEARCH DROPDOWN ===== */
-
-    form .form-select {
-        height: 44px;
-        border-radius: 10px;
-        border: 1px solid #dcdcdc;
-        font-size: 14px;
-        font-weight: 600;
-        padding-left: 14px;
-        background-color: #fff;
-        cursor: pointer;
-        transition: all 0.25s ease;
-    }
-
-    /* Hover */
-    form .form-select:hover {
-        border-color: #28a745;
-    }
-
-    /* Focus */
-    form .form-select:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.15rem rgba(40, 167, 69, 0.25);
-    }
-
-    /* Optional container look */
-    form .col-md-4 {
-        position: relative;
-    }
-
-    /* Mobile full width */
-    @media (max-width: 768px) {
-        form .col-md-4 {
-            width: 100%;
-        }
-    }
-
-    /* ALIGN RIGHT NICELY */
-    @media (min-width: 992px) {
-        .nav-pills {
-            justify-content: flex-end;
-        }
-    }
-</style>
 
 <body>
 
@@ -371,13 +14,13 @@
 
     <!-- Hero Start -->
 
-    <div class="container my-5">
+    <div class="container my-3">
         <div class="row">
             <div class="col-12">
 
                 <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
-                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 75px;">
+                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 25px;">
 
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
@@ -391,11 +34,11 @@
                         @endforeach
                     </div>
                     <!-- Controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                    <button class="carousel-control-prev mt-5" type="button" data-bs-target="#carouselId" data-bs-slide="prev ">
                         <span class="carousel-control-prev-icon"></span>
                     </button>
 
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                    <button class="carousel-control-next mt-5" type="button" data-bs-target="#carouselId" data-bs-slide="next">
                         <span class="carousel-control-next-icon"></span>
                     </button>
                 </div>
@@ -404,30 +47,23 @@
     </div>
 
     <div class="container py-4">
-        <div class="row g-3">
+        <div class="row g-3 category-row">
 
             @foreach($categoriestop as $category)
-            <div class="col-lg-2 col-md-3 col-sm-4 col-4">
+            <div class="category-col">
 
                 <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
-                    @php
-                        $image = $category->category_images[0] ?? null;
-                    @endphp
-
                     <div class="category-img">
-                        <img
-                            src="{{ $category->image
-                            ? asset('storage/categories/'.$category->image)
-                            : asset('img/default.png') }}"
+                        <img src="{{ $category->image
+                        ? asset('storage/categories/'.$category->image)
+                        : asset('img/default.png') }}"
                             alt="{{ $category->name }}">
                     </div>
 
-                    <p class="category-title">
-                        {{ $category->name }}
-                    </p>
-                   
+                    <p class="category-title">{{ $category->name }}</p>
+
                 </a>
 
             </div>
@@ -435,8 +71,6 @@
 
         </div>
     </div>
-
-
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
@@ -474,6 +108,7 @@
                             @foreach($allProducts as $product)
                             <div class="col-md-6 col-lg-3">
                                 <div class="rounded position-relative fruite-item">
+                                    <div class="badge-off">40% OFF</div>
                                     @php
                                     $images = $product->product_images;
                                     $image = $images[0] ?? null;
@@ -481,19 +116,19 @@
 
                                     <div class="fruite-img">
                                         <a href="{{ route('productdetails', $product->id) }}">
-                                        @if($image)
-                                        <img
-                                            src="{{ asset('storage/products/'.$image) }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="{{ $product->name }}"
-                                            style="height: 200px; object-fit: cover;">
-                                        @else
-                                        <img
-                                            src="{{ asset('website/img/no-image.png') }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="No Image"
-                                            style="height: 200px; object-fit: cover;">
-                                        @endif
+                                            @if($image)
+                                            <img
+                                                src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="{{ $product->name }}"
+                                                style="height: 200px; object-fit: cover;">
+                                            @else
+                                            <img
+                                                src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="No Image"
+                                                style="height: 200px; object-fit: cover;">
+                                            @endif
                                         </a>
                                     </div>
 
@@ -542,12 +177,14 @@
                             @forelse($categoryProducts as $product)
                             <div class="col-md-2 col-lg-2">
                                 <div class="rounded position-relative fruite-item">
+                                    <div class="badge-off">40% OFF</div>
                                     @php
                                     $images = $product->product_images; // Already array
                                     $image = $images[0] ?? null;
                                     @endphp
 
                                     <div class="fruite-img">
+                                        <a href="{{ route('productdetails', $product->id) }}"></a>
                                         @if($image)
                                         <img
                                             src="{{ asset('storage/products/'.$image) }}"
@@ -561,6 +198,7 @@
                                             alt="No Image"
                                             style="height: 200px; object-fit: cover;">
                                         @endif
+                                        </a>
                                     </div>
 
                                     <div class="p-4 border border-top-0  ">
@@ -612,25 +250,26 @@
                 @endphp
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <a href="{{ route('productdetails', $product->id) }}">                        
-                        <div class="product-sm-img">
-                            <img src="{{ $image 
+                        <div class="badge-off">40% OFF</div>
+                        <a href="{{ route('productdetails', $product->id) }}">
+                            <div class="product-sm-img">
+                                <img src="{{ $image 
                                     ? asset('storage/products/'.$image) 
                                     : asset('website/img/no-image.png') }}">
-                        </div>
-                        <div class="product-sm-title">
-                            {{ Str::limit($product->name, 35) }}
-                        </div>
-                        <div class="product-sm-footer">
+                            </div>
+                            <div class="product-sm-title">
+                                {{ Str::limit($product->name, 35) }}
+                            </div>
+                            <div class="product-sm-footer">
 
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <form action="{{ route('add_cart') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <p>₹ {{ $product->mrp }}</p>
-                                <button type="submit" class="btn-add-sm">Add to cart</button>
-                            </form>
-                        </div>
+                                    <p>₹ {{ $product->mrp }}</p>
+                                    <button type="submit" class="btn-add-sm">Add to cart</button>
+                                </form>
+                            </div>
                         </a>
                     </div>
                 </div>
@@ -663,26 +302,29 @@
 
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <div class="product-sm-img">
-                            <img src="{{ $image 
+                        <div class="badge-off">40% OFF</div>
+                        <a href="{{ route('productdetails', $product->id) }}">
+                            <div class="product-sm-img">
+                                <img src="{{ $image 
                                 ? asset('storage/products/'.$image) 
                                 : asset('website/img/no-image.png') }}">
-                        </div>
+                            </div>
 
-                        <div class="product-sm-title">
-                            {{ Str::limit($product->name, 35) }}
-                        </div>
+                            <div class="product-sm-title">
+                                {{ Str::limit($product->name, 35) }}
+                            </div>
 
-                        <div class="product-sm-footer">
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <div class="product-sm-footer">
+                                <form action="{{ route('add_cart') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <p>₹ {{ $product->mrp }}</p>
-                                <button type="submit" class="btn-add-sm">Add to cart</button>
-                            </form>
-                        </div>
+                                    <p>₹ {{ $product->mrp }}</p>
+                                    <button type="submit" class="btn-add-sm">Add to cart</button>
+                                </form>
+                            </div>
                     </div>
+                    </a>
                 </div>
                 @endforeach
             </div>
@@ -691,7 +333,6 @@
         </div>
 
     </div>
-
 
     <!-- Featurs Section Start -->
     <div class="container-fluid featurs">
@@ -785,9 +426,6 @@
 
     });
 </script>
-
-
-
 
 
 @endsection

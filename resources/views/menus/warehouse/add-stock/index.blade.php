@@ -32,8 +32,6 @@
 
             <!-- Search + Warehouse Filter -->
 
-
-
             <x-datatable-search />
 
         <div class=" justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-4">
@@ -58,18 +56,16 @@
 
         </div>
 
-
-
         <!-- Table -->
         <div class="table-responsive mt-5 p-3">
             <table id="stock" class="table table-bordered table-striped align-middle">
+                
                 <thead>
                     <tr class="bg-light">
                         <th>Sr No</th>
                         <th>Warehouse</th>
                         <th>Category</th>
                         <th>Product Name</th>
-                        <th>Supplier Name</th>
                         <th>Quantity</th>
                         @if($canView || $canEdit || $canDelete)
                         <th>Actions</th>
@@ -89,7 +85,7 @@
 
                         {{-- Product --}}
                         <td>{{ $stock->product->name ?? '-' }}</td>
-                        <td>{{ $stock->supplier->supplier_name ?? '-' }}</td>
+                        
                         {{-- Quantity --}}
                         <td>
                             {{ $stock->quantity }}

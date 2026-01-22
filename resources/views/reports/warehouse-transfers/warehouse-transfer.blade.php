@@ -59,10 +59,10 @@
                     <thead class="table-light">
                         <tr>
                             <th>Sr. No</th>
-                            <th>Warehouse Approved</th>
                             <th>Warehouse Request</th>
+                            <th>Warehouse Approved</th>                   
                             <th>Transfer In</th>
-                            <th>Remaining Total Qty</th>
+                            <!-- <th>Remaining Total Qty</th> -->
                             <th>Created Date</th>
                             <th>Updated Date</th>
                         </tr>
@@ -71,11 +71,10 @@
                         @forelse($warehouseStock as $index => $ws)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $ws['warehouse_from'] }}</td>
                                 <td>{{ $ws['warehouse_name'] }}</td>
-
+                                <td>{{ $ws['warehouse_from'] }}</td>                               
                                 <td>{{ $ws['transfer_in'] }}</td>
-                                <td class="fw-bold">{{ $ws['quantity'] }}</td>
+                                <!-- <td class="fw-bold">{{ $ws['quantity'] }}</td> -->
                                 <td>{{ \Carbon\Carbon::parse($ws['created_at'])->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($ws['updated_at'])->format('d-m-Y') }}</td>
                             </tr>

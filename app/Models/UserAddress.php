@@ -20,5 +20,6 @@ class UserAddress extends Model
         'email',
         'latitude',
         'longitude',
+        'type',
     ];
 }
