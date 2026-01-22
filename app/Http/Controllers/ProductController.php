@@ -11,6 +11,7 @@ use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\SubCategory;
 use App\Models\Tax;
+use App\Models\Unit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -60,8 +61,9 @@ class ProductController extends Controller
             $subCategories = collect();
             $brands = collect();
             $taxes = Tax::where('is_active', 1)->get();
+            $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes'));
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes','units'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -81,6 +83,7 @@ class ProductController extends Controller
         ]);
 
         try {
+
             $validated = $request->validate([
                 'category_id'     => 'required|exists:categories,id',
                 'brand_id'        => 'required|exists:brands,id',
@@ -94,59 +97,43 @@ class ProductController extends Controller
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
 
+                'unit_id'       => 'required|exists:units,id',
+                'unit_value' => 'required|numeric|min:0.01',
+
+
                 'base_price'      => 'required|numeric|min:1',
                 'retailer_price'  => 'required|numeric|min:1',
                 'mrp'             => 'required|numeric|min:1',
-                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
 
-                'discount_type'   => 'nullable|in:flat,percentage',
-                'discount_value'  => 'nullable|numeric|min:0',
+                'tax_id'          => 'required|exists:taxes,id',
 
                 'product_images'   => 'nullable|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-                'tax_id' => 'required|exists:taxes,id',
-
             ], [
                 'name.unique' => 'This product name already exists!',
             ]);
 
-            if (!empty($validated['discount_type'])) {
-
-                if (
-                    $validated['discount_type'] === 'percentage'
-                    && $validated['discount_value'] > 100
-                ) {
-                    return back()->withInput()
-                        ->with('error', 'Discount percentage cannot exceed 100');
-                }
-
-                if (
-                    $validated['discount_type'] === 'flat'
-                    && $validated['discount_value'] > $validated['mrp']
-                ) {
-                    return back()->withInput()
-                        ->with('error', 'Flat discount cannot exceed MRP');
-                }
-            } else {
-                $validated['discount_value'] = 0;
+            if ($request->retailer_price < $request->base_price) {
+                return back()->withInput()
+                    ->with('error', 'Selling price cannot be less than Base Price');
             }
 
-            // if ($request->hasFile('product_images')) {
+            if ($request->retailer_price > $request->mrp) {
+                return back()->withInput()
+                    ->with('error', 'Selling price cannot be greater than MRP');
+            }
 
-            //     $imageNames = [];
+            $tax = Tax::findOrFail($request->tax_id);
+            $gstPercent = $tax->gst ?? 0;
 
-            //     foreach ($request->file('product_images') as $image) {
-            //         $name = time() . '_' . $image->getClientOriginalName();
-            //         $image->storeAs('products', $name, 'public');
-            //         $imageNames[] = $name;
-            //     }
+            $gstAmount  = ($request->retailer_price * $gstPercent) / 100;
+            $finalPrice = $request->retailer_price + $gstAmount;
 
-            //     $validated['product_images'] = json_encode($imageNames);
-            // }
-
+            $validated['gst_percentage'] = $gstPercent;
+            $validated['gst_amount']     = round($gstAmount, 2);
+            $validated['final_price']    = round($finalPrice, 2);
 
             if ($request->hasFile('product_images')) {
-
                 $imageNames = [];
 
                 foreach ($request->file('product_images') as $image) {
@@ -155,10 +142,8 @@ class ProductController extends Controller
                     $imageNames[] = $name;
                 }
 
-                // Save as ARRAY (Laravel will JSON encode)
-                $validated['product_images'] = $imageNames;
+                $validated['product_images'] = $imageNames; // JSON cast
             }
-
 
             $product = Product::create($validated);
 
@@ -207,8 +192,9 @@ class ProductController extends Controller
                 ->get();
 
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
+             $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories','units'));
         } catch (\Throwable $e) {
             Log::error('Product View Error', ['message' => $e->getMessage()]);
             return redirect()->route('product.index')
@@ -240,8 +226,9 @@ class ProductController extends Controller
                 ->get();
             $taxes = Tax::where('is_active', 1)->get();
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
+            $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes','units'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -256,90 +243,112 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
-    {
-        Log::info('Product Update Request', [
-            'id' => $id,
-            'request' => $request->all(),
+   public function update(Request $request, $id)
+{
+    Log::info('Product Update Request', [
+        'id' => $id,
+        'request' => $request->all(),
+    ]);
+
+    try {
+        $product = Product::find($id);
+
+        if (!$product) {
+            Log::warning('Product Not Found for Update', ['id' => $id]);
+            return redirect()->route('product.index')
+                ->with('error', 'Product not found');
+        }
+
+        $validated = $request->validate([
+            'category_id'     => 'required|exists:categories,id',
+            'brand_id'        => 'required|exists:brands,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'name')->ignore($product->id),
+            ],
+
+            'sku'        => 'nullable|string|max:255',
+            'description'=> 'nullable|string',
+
+            'unit_id'    => 'required|exists:units,id',
+            'unit_value' => 'required|numeric|min:0.01',
+
+            'base_price'     => 'required|numeric|min:1',
+            'retailer_price' => 'required|numeric|min:1',
+            'mrp'            => 'required|numeric|min:1',
+
+            'tax_id' => 'required|exists:taxes,id',
+
+            'product_images'   => 'nullable|array',
+            'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'name.unique' => 'This product name already exists!',
         ]);
 
-        try {
-            $product = Product::find($id);
-
-            if (!$product) {
-                Log::warning('Product Not Found for Update', ['id' => $id]);
-                return redirect()->route('product.index')
-                    ->with('error', 'Product not found');
-            }
-
-            $validated = $request->validate([
-                'category_id'     => 'required|exists:categories,id',
-                'brand_id'        => 'required',
-                'name'            => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('products', 'name')->ignore($product->id),
-                ],
-                'sku'             => 'nullable|string|max:255',
-                // 'effective_date'  => 'required|date',
-                // 'expiry_date'     => 'required|date|after_or_equal:effective_date',
-                'description'     => 'nullable|string',
-                'base_price'      => 'required|numeric|min:1',
-                'retailer_price'  => 'required|numeric|min:1',
-                'mrp'             => 'required|numeric|min:1',
-                // 'gst_percentage'  => 'required|numeric|min:0|max:100',
-                // 'stock'           => 'required|integer',
-                'product_images'   => 'nullable|array',
-                'tax_id' => 'required|exists:taxes,id',
-                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            ], [
-                'name.unique' => 'This product name already exists!',
-            ]);
-            if ($request->hasFile('product_images')) {
-
-                $imageNames = [];
-
-                foreach ($request->file('product_images') as $image) {
-
-                    $originalName = $image->getClientOriginalName();
-                    $fileName = time() . '_' . uniqid() . '_' . $originalName;
-
-                    $image->storeAs('products', $fileName, 'public');
-
-                    $imageNames[] = $fileName;
-                }
-
-                // store as JSON in DB
-                $validated['product_images'] = json_encode($imageNames);
-            }
-
-            $product->update($validated);
-
-            Log::info('Product Updated Successfully', [
-                'product_id' => $product->id
-            ]);
-
-            return redirect()->route('product.index')
-                ->with('success', 'Product updated successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-
-            Log::warning('Product Update Validation Failed', [
-                'errors' => $e->errors()
-            ]);
-
-            throw $e;
-        } catch (\Throwable $e) {
-
-            Log::error('Product Update Error', [
-                'message' => $e->getMessage()
-            ]);
-
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Something went wrong while updating product');
+        if ($request->retailer_price < $request->base_price) {
+            return back()->withInput()
+                ->with('error', 'Selling price cannot be less than Base Price');
         }
+
+        if ($request->retailer_price > $request->mrp) {
+            return back()->withInput()
+                ->with('error', 'Selling price cannot be greater than MRP');
+        }
+
+        $tax = Tax::findOrFail($request->tax_id);
+        $gstPercent = $tax->gst ?? 0;
+
+        $gstAmount  = ($request->retailer_price * $gstPercent) / 100;
+        $finalPrice = $request->retailer_price + $gstAmount;
+
+        $validated['gst_percentage'] = $gstPercent;
+        $validated['gst_amount']     = round($gstAmount, 2);
+        $validated['final_price']    = round($finalPrice, 2);
+
+        if ($request->hasFile('product_images')) {
+            $imageNames = [];
+
+            foreach ($request->file('product_images') as $image) {
+                $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
+                $image->storeAs('products', $fileName, 'public');
+                $imageNames[] = $fileName;
+            }
+
+            $validated['product_images'] = $imageNames;
+        }
+
+        $product->update($validated);
+
+        Log::info('Product Updated Successfully', [
+            'product_id' => $product->id
+        ]);
+
+        return redirect()->route('product.index')
+            ->with('success', 'Product updated successfully');
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+
+        Log::warning('Product Update Validation Failed', [
+            'errors' => $e->errors()
+        ]);
+        throw $e;
+
+    } catch (\Throwable $e) {
+
+        Log::error('Product Update Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Something went wrong while updating product');
     }
+}
 
     /**
      * Remove the specified resource from storage.

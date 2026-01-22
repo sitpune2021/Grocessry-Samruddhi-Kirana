@@ -26,9 +26,11 @@ class Product extends Model
         'gst_percentage',
         'stock',
         'product_images',
-        'discount_type',
-        'discount_value',
+        'gst_amount',
+        'final_price',
         'warehouse_id',
+        'unit_id',
+        'unit_value',
     ];
 
     protected $casts = [
@@ -84,6 +86,11 @@ class Product extends Model
         )->values();
     }
 
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
 
     public function stocks()
     {
