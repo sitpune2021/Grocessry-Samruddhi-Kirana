@@ -42,8 +42,8 @@
                             <th>Product Name</th>
 
                             <th>Base Price</th>
-                            <th>Selling Price</th>
-                            <th>MRP</th>
+                             <th>MRP</th>
+                            <th>Net Price</th>
                             <th>GST (%)</th>
                             <!-- <th>Stock</th> -->
                             @if($canView || $canEdit || $canDelete)
@@ -81,9 +81,9 @@
                             <td>{{ $product->name }}</td>
 
                             <td>₹ {{ number_format($product->base_price, 2) }}</td>
-                            <td>₹ {{ number_format($product->retailer_price, 2) }}</td>
                             <td>₹{{ number_format($product->mrp, 2) }}</td>
-                            <td>{{ $product?->tax?->igst ?? '-' }}</td>
+                            <td>₹ {{ number_format($product->final_price, 2) }}</td>
+                            <td>{{ $product?->tax?->gst ?? '-' }}</td>
                             <!-- <td>{{ $product->stock ?? '-' }}</td> -->
                             {{-- Actions --}}
                             @if($canView || $canEdit || $canDelete)

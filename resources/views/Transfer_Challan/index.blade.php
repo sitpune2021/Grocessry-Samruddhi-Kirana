@@ -5,26 +5,42 @@
 
         <div class="card shadow-sm p-2">
             <div class="card-datatable text-nowrap">
+
                 @php
                     $canView = hasPermission('transfer_challan.view');
                     $canEdit = hasPermission('transfer_challan.edit');
                     $canDelete = hasPermission('transfer_challan.delete');
-                    @endphp
+                @endphp
 
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                     <div class="col-md-auto me-auto">
                         <h5 class="card-title mb-0">Transfer Challans</h5>
                     </div>
-                    @if(hasPermission('transfer_challan.create'))
+                    <!-- @if(hasPermission('transfer_challan.create'))
                     <div class="col-md-auto ms-auto">
                         <a href="{{ route('transfer-challans.create') }}"
                             class="btn btn-success btn-sm d-flex align-items-center gap-1">
                             <i class="bx bx-plus"></i> Add Transfer Challan
                         </a>
                     </div>
-                    @endif
+                    @endif -->
                 </div>
+
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
 
                 <!-- Search -->
                 <div class="px-3 pt-2">
@@ -57,6 +73,7 @@
                 <!-- Table -->
                 <div class="table-responsive mt-3">
                     <table id="batchTable" class="table table-bordered table-striped mb-0">
+                        
                         <thead class="table-light">
                             <tr>
                                 <th class="text-center" style="width:80px;">Sr No</th>
@@ -64,7 +81,7 @@
                                 <th>From Warehouse</th>
                                 <th>To Warehouse</th>
                                 <th>Transfer Date</th>
-                                {{-- <th>Status</th> --}}
+                               <th>Status</th> 
                                 @if($canView)
                                 <th class="text-center" style="width:150px;">Actions</th>
                                 @endif
@@ -75,7 +92,7 @@
                             @forelse ($challans as $index => $item)
                                 <tr>
                                     <td class="text-center fw-semibold">
-                                        {{ $challans->firstItem() + $index }}
+                                        {{ $index + 1 }}
                                     </td>
 
                                     <td>{{ $item->challan_no }}</td>
@@ -87,22 +104,56 @@
                                     <td>{{ \Carbon\Carbon::parse($item->transfer_date)->format('d-m-Y') }}</td>
 
                                     {{-- <td>
-                                <span class="badge 
-                                    {{ $item->status == 'pending' ? 'bg-warning' : 
-                                       ($item->status == 'dispatched' ? 'bg-info' : 'bg-success') }}">
-                                    {{ ucfirst($item->status) }}
-                                </span>
-                            </td> --}}
+                                        <span class="badge 
+                                            {{ $item->status == 'pending' ? 'bg-warning' : 
+                                            ($item->status == 'dispatched' ? 'bg-info' : 'bg-success') }}">
+                                            {{ ucfirst($item->status) }}
+                                        </span>
+                                    </td> --}}
+                                    <!-- <td>
+                                        @if(
+                                            $item->status == 'pending' &&
+                                            auth()->user()->warehouse_id == $item->from_warehouse_id
+                                        )
+                                            <form method="POST" action="{{ route('warehouse.transfer.dispatch.bulk') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="challan_id" value="{{ $item->id }}">
+                                                <button class="btn btn-sm btn-success">
+                                                    Dispatch
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </td> -->
+                                    <td>
+                                        <span class="badge 
+                                            {{ $item->status == 'pending' ? 'bg-warning' : 
+                                            ($item->status == 'dispatched' ? 'bg-info' : 'bg-success') }}">
+                                            {{ ucfirst($item->status ?? 'N/A') }}
+                                        </span>                                      
+                                    </td>
+
                                     @if($canView)
                                     <td class="text-center">
-                                        <x-action-buttons :view-url="route('transfer-challans.show', $item->id)" :edit-url="route('transfer-challans.edit', $item->id)" :delete-url="route('transfer-challans.destroy', $item->id)" />
+                                        <!-- <x-action-buttons :view-url="route('transfer-challans.show', $item->id)" :edit-url="route('transfer-challans.edit', $item->id)" :delete-url="route('transfer-challans.destroy', $item->id)" /> -->
+                                         @if(
+                                            $item->status == 'pending' &&
+                                            auth()->user()->warehouse_id == $item->from_warehouse_id
+                                        )
+                                            <form method="POST" action="{{ route('warehouse.transfer.dispatch.bulk') }}" class="d-inline ms-2">
+                                                @csrf
+                                                <input type="hidden" name="challan_id" value="{{ $item->id }}">
+                                                <button class="btn btn-sm btn-success">Dispatch</button>
+                                            </form>
+                                        @endif
+
                                         <a href="{{ route('transfer-challans.download.pdf', $item->id) }}"
                                             class="btn btn-sm btn-outline-danger mt-1">PDF</a>
 
                                         <a href="{{ route('transfer-challans.download.csv', $item->id) }}"
                                             class="btn btn-sm btn-outline-success mt-1">CSV</a>
+                                            
                                     </td>
-                                    @endif
+                                    @endif                                  
                                 </tr>
                             @empty
                                 <tr>
@@ -112,6 +163,7 @@
                                 </tr>
                             @endforelse
                         </tbody>
+                        
                     </table>
                 </div>
 

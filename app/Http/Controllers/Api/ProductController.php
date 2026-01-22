@@ -14,90 +14,12 @@ use Throwable;
 use App\Models\Offer;
 use App\Models\WarehouseStock;
 use App\Models\Role;
+use App\Models\UserAddress;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
-    // public function addToCart(Request $request)
-    // {
-    //     $user = $request->user();
-    //     if ($res = $this->checkCustomer($user)) return $res;
 
-    //     $request->validate([
-    //         'product_id' => 'required|exists:products,id',
-    //         'quantity'   => 'nullable|integer|min:1',
-    //     ]);
-
-    //     $qty = $request->quantity ?? 1;
-
-    //     $product = Product::findOrFail($request->product_id);
-
-    //     // 🔹 Get stock from warehouse_stock (REAL STOCK)
-    //     $availableStock = WarehouseStock::where('product_id', $product->id)
-    //         ->sum('quantity');
-
-    //     if ($availableStock <= 0) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Product out of stock'
-    //         ], 400);
-    //     }
-
-    //     // 🔹 Get or create cart
-    //     $cart = Cart::firstOrCreate(
-    //         ['user_id' => $user->id],
-    //         [
-    //             'subtotal' => 0,
-    //             'discount' => 0,
-    //             'total'    => 0
-    //         ]
-    //     );
-
-    //     // 🔹 Check existing cart item
-    //     $cartItem = CartItem::where('cart_id', $cart->id)
-    //         ->where('product_id', $product->id)
-    //         ->first();
-
-    //     $existingQty = $cartItem ? $cartItem->qty : 0;
-    //     $finalQty = $existingQty + $qty;
-
-    //     // ✅ FINAL & CORRECT STOCK CHECK
-    //     if ($finalQty > $availableStock) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Only ' . $availableStock . ' items available'
-    //         ], 400);
-    //     }
-
-    //     if ($cartItem) {
-    //         $cartItem->qty = $finalQty;
-    //         $cartItem->line_total = $finalQty * $cartItem->price;
-    //         $cartItem->save();
-    //     } else {
-    //         CartItem::create([
-    //             'cart_id'    => $cart->id,
-    //             'product_id' => $product->id,
-    //             'batch_id'   => null,
-    //             'qty'        => $qty,
-    //             'price'      => $product->retailer_price,
-    //             'line_total' => $qty * $product->retailer_price
-    //         ]);
-    //     }
-
-    //     // 🔹 Recalculate cart totals
-    //     $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
-
-    //     $cart->update([
-    //         'subtotal' => $subtotal,
-    //         'discount' => 0,
-    //         'total'    => $subtotal
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Product added to cart successfully'
-    //     ]);
-    // }
     public function addToCart(Request $request)
     {
         $user = $request->user();
@@ -217,22 +139,6 @@ class ProductController extends Controller
         ]);
     }
 
-
-    // public function viewCart(Request $request)
-    // {
-    //     $user = $request->user();
-    //     if ($res = $this->checkCustomer($user)) return $res;
-
-    //     $cartItems = Cart::with('product')
-    //         ->where('user_id', $user->id)
-    //         ->get();
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'data' => $cartItems
-    //     ]);
-    // }
-
     public function clearCart(Request $request)
     {
         $user = $request->user();
@@ -289,6 +195,31 @@ class ProductController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
+        // 🔐 Validate address
+        $request->validate([
+            'address_id' => 'required|exists:user_addresses,id'
+        ]);
+
+        // 🔎 Fetch address (must belong to user)
+        $address = UserAddress::where('id', $request->address_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$address) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid address'
+            ], 400);
+        }
+
+        // 🚫 Example rule: Work address not allowed after 8 PM
+        if ($address->type == 2 && now()->hour >= 20) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Work address delivery not available after 8 PM'
+            ], 400);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -326,9 +257,10 @@ class ProductController extends Controller
             $offerId = null;
             $couponCode = null;
 
-            if ($request->coupon_code) {
+            // 🔹 APPLY OFFER
+            if ($request->filled('coupon_code')) {
 
-                $offer = Offer::where('code', $request->coupon_code)
+                $offer = Offer::where('title', $request->coupon_code)
                     ->where('status', 1)
                     ->whereDate('start_date', '<=', now())
                     ->whereDate('end_date', '>=', now())
@@ -341,24 +273,35 @@ class ProductController extends Controller
                     ], 400);
                 }
 
-                if ($subtotal < $offer->min_amount) {
+                if ($subtotal < $offer->min_order_amount) {
                     return response()->json([
                         'status' => false,
                         'message' => 'Minimum order amount not met'
                     ], 400);
                 }
 
-                $couponDiscount = $offer->discount_type === 'flat'
-                    ? $offer->discount_value
-                    : ($subtotal * $offer->discount_value) / 100;
+                // 💸 Discount calculation
+                if (in_array($offer->offer_type, ['flat', 'flat_discount'])) {
+                    $couponDiscount = $offer->discount_value;
+                } else {
+                    $couponDiscount = ($subtotal * $offer->discount_value) / 100;
+
+                    if (!empty($offer->max_discount)) {
+                        $couponDiscount = min($couponDiscount, $offer->max_discount);
+                    }
+                }
+
+                // 🛑 Discount cannot exceed subtotal
+                $couponDiscount = min($couponDiscount, $subtotal);
 
                 $offerId = $offer->id;
-                $couponCode = $offer->code;
+                $couponCode = $offer->title;
             }
 
+            // 🔹 Total
             $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
 
-            // 🔹 STOCK CHECK (CRITICAL)
+            // 🔹 STOCK CHECK
             foreach ($cartItems as $item) {
 
                 $availableStock = (int) WarehouseStock::where('product_id', $item->product_id)
@@ -374,18 +317,20 @@ class ProductController extends Controller
 
             // 🔹 Create Order
             $order = Order::create([
-                'user_id' => $user->id,
-                'order_number' => 'ORD-' . time(),
-                'subtotal' => $subtotal,
+                'user_id'       => $user->id,
+                'order_number'  => 'ORD-' . time(),
+                'subtotal'      => $subtotal,
                 'delivery_charge' => $deliveryCharge,
                 'coupon_discount' => $couponDiscount,
-                'total_amount' => $totalAmount,
-                'status' => 'pending',
-                'offer_id' => $offerId,
-                'coupon_code' => $couponCode
+                'total_amount'  => $totalAmount,
+                'status'        => 'pending',
+                'offer_id'      => $offerId,
+                'coupon_code'   => $couponCode,
+                'address_id'    => $address->id,
+                'address_type'  => $address->type
             ]);
 
-            // 🔹 Order Items + Warehouse stock deduct (FIFO)
+            // 🔹 Order Items + FIFO stock deduction
             foreach ($cartItems as $item) {
 
                 OrderItem::create([
@@ -396,7 +341,6 @@ class ProductController extends Controller
                     'total' => $item->qty * $item->price
                 ]);
 
-                // 🔥 Deduct stock FIFO
                 $remainingQty = $item->qty;
 
                 $stocks = WarehouseStock::where('product_id', $item->product_id)
@@ -434,7 +378,8 @@ class ProductController extends Controller
                     'subtotal' => $subtotal,
                     'delivery_charge' => $deliveryCharge,
                     'coupon_discount' => $couponDiscount,
-                    'total_amount' => $totalAmount
+                    'total_amount' => $totalAmount,
+                    'address_type' => $address->type
                 ]
             ]);
         } catch (\Exception $e) {
@@ -448,6 +393,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+
 
     protected function checkCustomer($user)
     {
@@ -615,6 +562,156 @@ class ProductController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Thank you for rating your order'
+        ]);
+    }
+    public function incrementCart(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::with('tax')->findOrFail($request->product_id);
+
+        // 🔹 Stock check
+        $availableStock = WarehouseStock::where('product_id', $product->id)->sum('quantity');
+
+        if ($availableStock <= 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product out of stock'
+            ], 400);
+        }
+
+        $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        $newQty = ($cartItem?->qty ?? 0) + 1;
+
+        if ($newQty > $availableStock) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only ' . $availableStock . ' items available'
+            ], 400);
+        }
+
+        // 🔹 Price & tax
+        $price = $product->retailer_price;
+        $cgst = $product->tax?->cgst ?? 0;
+        $sgst = $product->tax?->sgst ?? 0;
+
+        $cgstAmount = ($price * $cgst / 100) * $newQty;
+        $sgstAmount = ($price * $sgst / 100) * $newQty;
+        $taxTotal   = $cgstAmount + $sgstAmount;
+        $itemTotal = ($price * $newQty) + $taxTotal;
+
+        CartItem::updateOrCreate(
+            [
+                'cart_id' => $cart->id,
+                'product_id' => $product->id
+            ],
+            [
+                'qty' => $newQty,
+                'price' => $price,
+                'cgst_amount' => $cgstAmount,
+                'sgst_amount' => $sgstAmount,
+                'tax_total' => $taxTotal,
+                'item_total' => $itemTotal
+            ]
+        );
+
+        $this->recalculateCart($cart->id);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product quantity increased',
+            'qty' => $newQty
+        ]);
+    }
+    public function decrementCart(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if (!$cart) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart empty'
+            ], 404);
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Product not in cart'
+            ], 404);
+        }
+
+        if ($cartItem->qty > 1) {
+            $cartItem->qty -= 1;
+            $cartItem->save();
+        } else {
+            $cartItem->delete();
+        }
+
+        $this->recalculateCart($cart->id);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product quantity decreased',
+            'remaining_qty' => $cartItem->qty ?? 0
+        ]);
+    }
+    public function removeFromCart(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        CartItem::where('cart_id', $cart?->id)
+            ->where('product_id', $request->product_id)
+            ->delete();
+
+        $this->recalculateCart($cart->id);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Product removed from cart'
+        ]);
+    }
+    private function recalculateCart($cartId)
+    {
+        $subtotal = CartItem::where('cart_id', $cartId)
+            ->sum(DB::raw('price * qty'));
+
+        $taxTotal = CartItem::where('cart_id', $cartId)
+            ->sum('tax_total');
+
+        Cart::where('id', $cartId)->update([
+            'subtotal' => $subtotal,
+            'tax_total' => $taxTotal,
+            'discount' => 0,
+            'total' => $subtotal + $taxTotal
         ]);
     }
 }

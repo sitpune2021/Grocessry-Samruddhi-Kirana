@@ -58,40 +58,55 @@ class AddressController extends Controller
     {
         $user = $request->user();
 
-        // 🔐 Customer role check
+        // 🔐 Customer check
         if ($res = $this->checkCustomer($user)) return $res;
 
-        // ✅ Validation (NO Validator facade)
+        // 🔢 Max 5 addresses per user
+        $count = UserAddress::where('user_id', $user->id)->count();
+        if ($count >= 5) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can add maximum 5 addresses only'
+            ], 400);
+        }
+
+        // ✅ Validation
         $request->validate([
-            'name' => 'required|string',
-            'mobile' => 'required|digits:10',
-            'address_line' => 'required|string',
-            'landmark'     => 'nullable|string', // ✅ ADD
-            'city' => 'required|string',
-            'state' => 'required|string',
-            'pincode' => 'required|digits:6'
+            'name'          => 'required|string',
+            'mobile'        => 'required|digits:10',
+            'address_line'  => 'required|string',
+            'landmark'      => 'nullable|string',
+            'city'          => 'required|string',
+            'state'         => 'required|string',
+            'pincode'       => 'required|digits:6',
+            'type'          => 'required|in:1,2,3', // ✅ 1=Home,2=Work,3=Other
+            'latitude'      => 'nullable|numeric',
+            'longitude'     => 'nullable|numeric',
+            'is_default'    => 'nullable|in:0,1'
         ]);
 
-        // ⭐ Handle default address
+        // ⭐ Default address handling
         if ($request->is_default == 1) {
             UserAddress::where('user_id', $user->id)
                 ->update(['is_default' => 0]);
         }
 
+        // 🏠 Create address
         $address = UserAddress::create([
-            'user_id'   => $user->id,
+            'user_id'    => $user->id,
             'first_name' => $request->name,
-            'phone'     => $request->mobile,
-            'address'   => $request->address_line,
-            'city'      => $request->city,
-            'country'   => $request->state,
-            'landmark'     => $request->landmark,
-            'postcode'  => $request->pincode,
-            'email'     => $user->email,
-            'latitude'  => $request->latitude,
-            'longitude' => $request->longitude,
+            'phone'      => $request->mobile,
+            'address'    => $request->address_line,
+            'landmark'   => $request->landmark,
+            'city'       => $request->city,
+            'country'    => $request->state,
+            'postcode'   => $request->pincode,
+            'email'      => $user->email,
+            'latitude'   => $request->latitude,
+            'longitude'  => $request->longitude,
+            'type'       => (int) $request->type, // ✅ saved correctly
+            'is_default' => $request->is_default ?? 0
         ]);
-
 
         return response()->json([
             'status' => true,

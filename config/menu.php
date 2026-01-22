@@ -35,6 +35,8 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
+
             ],
         ],
 
@@ -45,26 +47,31 @@ return [
             'title' => 'Product Management',
             'icon'  => 'bx bx-store',
             'children' => [
-                ['title' => 'Brand', 'route' => 'brands.index'],
                 ['title' => 'Category', 'route' => 'category.index'],
                 ['title' => 'Sub Category', 'route' => 'sub-category.index'],
+                ['title' => 'Brand', 'route' => 'brands.index'],
                 ['title' => 'Unit', 'route' => 'units.index'],
                 ['title' => 'Products', 'route' => 'product.index'],
             ],
         ],
 
-
         /* ================= Warehouse Management ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'warehouseMenu',
+        // [
+        //     'type'  => 'dropdown',
+        //     'key'   => 'warehouseMenu',
+        //     'title' => 'Warehouse / Distribution Center',
+        //     'icon'  => 'bx bx-store',
+        //     'children' => [
+        //         ['title' => 'Warehouse', 'route' => 'warehouse.index'],
+        //     ],
+        // ],
+         [
+            'type'  => 'single',
             'title' => 'Warehouse / Distribution Center',
             'icon'  => 'bx bx-store',
-            'children' => [
-                ['title' => 'Warehouse', 'route' => 'warehouse.index'],
-                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
-            ],
+            'route'   => 'warehouse.index',
         ],
+
 
 
         /* ================= Inventory Management ================= */
@@ -74,6 +81,7 @@ return [
             'title' => 'Inventory Management',
             'icon'  => 'bx bx-package',
             'children' => [
+                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
                 //['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
@@ -158,6 +166,13 @@ return [
         //         ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
         //     ],
         // ],
+
+         [
+            'type'  => 'single',
+            'title' => 'POS System',
+            'icon'  => 'bx bx-package',
+            'route'   => 'pos.create',
+        ],
 
         /* ================= Offer / Scheme Management ================= */
         [

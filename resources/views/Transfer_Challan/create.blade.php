@@ -45,7 +45,7 @@
                                     <div class="row g-3">
 
                                         {{-- Challan No --}}
-                                        <div class="col-md-4">
+                                        <!-- <div class="col-md-4">
                                             <label class="form-label">Challan No <span
                                                     class="text-danger">*</span></label>
                                             <input type="text" name="challan_no" class="form-control"
@@ -55,7 +55,7 @@
                                             @error('challan_no')
                                                 <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
-                                        </div>
+                                        </div> -->
 
                                         {{-- Transfer Date --}}
                                         <div class="col-md-4">
@@ -73,12 +73,10 @@
                                         <div class="col-md-6">
                                             <label class="form-label">From Warehouse <span
                                                     class="text-danger">*</span></label>
-                                            <select name="from_warehouse_id" class="form-select"
-                                                {{ $readonly ? 'disabled' : '' }}>
-                                                <option value="">Select Warehouse</option>
+                                            <select name="from_warehouse_id" class="form-select" readonly>
                                                 @foreach ($warehouses as $warehouse)
                                                     <option value="{{ $warehouse->id }}"
-                                                        {{ old('from_warehouse_id', $transferChallan->from_warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                        {{ $fromWarehouse == $warehouse->id ? 'selected' : '' }}>
                                                         {{ $warehouse->name }}
                                                     </option>
                                                 @endforeach
@@ -92,16 +90,15 @@
                                         <div class="col-md-6">
                                             <label class="form-label">To Warehouse <span
                                                     class="text-danger">*</span></label>
-                                            <select name="to_warehouse_id" class="form-select"
-                                                {{ $readonly ? 'disabled' : '' }}>
-                                                <option value="">Select Warehouse</option>
+                                            <select name="to_warehouse_id" class="form-select" readonly>
                                                 @foreach ($warehouses as $warehouse)
                                                     <option value="{{ $warehouse->id }}"
-                                                        {{ old('to_warehouse_id', $transferChallan->to_warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
+                                                        {{ $toWarehouse == $warehouse->id ? 'selected' : '' }}>
                                                         {{ $warehouse->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
+
                                             @error('to_warehouse_id')
                                                 <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
@@ -126,42 +123,43 @@
                                         </thead>
 
                                         <tbody id="itemsTable">
-                                            @if (!empty($transferChallanItems))
-                                                @foreach ($transferChallanItems as $item)
-                                                    <tr>
+
+                                            @if(!empty($transferItems) && count($transferItems))
+                                                @foreach ($transferItems as $item)
+                                                    <tr data-transfer-id="{{ $item->id }}">
                                                         <td>
-                                                            <select name="products[]" class="form-select"
-                                                                {{ $readonly ? 'disabled' : '' }}>
-                                                                @foreach ($products as $product)
-                                                                    <option value="{{ $product->id }}"
-                                                                        {{ $item->product_id == $product->id ? 'selected' : '' }}>
-                                                                        {{ $product->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
+                                                            <input type="hidden" name="products[]" value="{{ $item->product_id }}">
+                                                            <input type="text" class="form-control" 
+                                                                value="{{ $item->product->name }}" readonly>
                                                         </td>
+
                                                         <td>
-                                                            <input type="number" name="quantities[]"
-                                                                class="form-control" value="{{ $item->quantity }}"
-                                                                step="0.01" {{ $readonly ? 'readonly' : '' }}>
+                                                            <input type="number" name="quantities[]" 
+                                                                class="form-control"
+                                                                value="{{ $item->quantity }}"
+                                                                min="1"
+                                                                max="{{ $item->quantity }}">
                                                         </td>
-                                                        @if ($mode !== 'view')
-                                                            <td>
-                                                                <button type="button"
-                                                                    class="btn btn-danger btn-sm removeRow">Remove</button>
-                                                            </td>
-                                                        @endif
+
+                                                        <td>
+                                                            <button type="button" class="btn btn-sm btn-danger remove-row">
+                                                                Remove
+                                                            </button>
+                                                        </td>
+                                                  
                                                     </tr>
                                                 @endforeach
                                             @endif
+
                                         </tbody>
+
                                     </table>
 
-                                    @if ($mode !== 'view')
+                                    <!-- @if ($mode !== 'view')
                                         <button type="button" id="addRow" class="btn btn-outline-primary btn-sm">
                                             + Add Item
                                         </button>
-                                    @endif
+                                    @endif -->
 
                                     {{-- Buttons --}}
                                     <div class="mt-4 d-flex justify-content-end gap-2">
@@ -170,13 +168,14 @@
                                         </a>
 
                                         @if ($mode === 'add')
-                                            <button class="btn btn-success">Save Transfer</button>
+                                            <button class="btn btn-success">Save Transfer Challan</button>
                                         @elseif ($mode === 'edit')
                                             <button class="btn btn-primary">Update Transfer</button>
                                         @endif
                                     </div>
 
                                 </form>
+
                             </div>
                         </div>
 
@@ -215,5 +214,41 @@
             }
         });
     </script>
+
+    <script>
+    document.addEventListener('click', function (e) {
+
+    if (e.target.classList.contains('remove-row')) {
+
+        if (!confirm('Are you sure you want to remove this product?')) {
+            return;
+        }
+
+        let row = e.target.closest('tr');
+        let transferId = row.dataset.transferId;
+
+        fetch(`/warehouse-transfer/${transferId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                row.remove();   // UI se bhi remove
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => {
+            alert('Something went wrong');
+            console.error(err);
+        });
+    }
+    });
+    </script>
+
 
 </body>

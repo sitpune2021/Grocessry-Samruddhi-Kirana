@@ -16,7 +16,9 @@ class Order extends Model
         'delivery_charge',
         'discount',
         'total_amount',
+        'warehouse_id',
         'status',
+        'payment_method',
         'delivery_agent_id',
         'pickup_proof',
         'coupon_code',
@@ -57,5 +59,10 @@ class Order extends Model
     public function deliveryAddress()
     {
         return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
     }
 }
