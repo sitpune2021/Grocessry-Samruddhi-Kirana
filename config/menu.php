@@ -27,19 +27,6 @@ return [
             ],
         ],
 
-        /* ================= Supplier Management ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'suppplierMenu',
-            'title' => 'Supplier Management',
-            'icon'  => 'bx bx-package',
-            'children' => [
-                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
-                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
-
-            ],
-        ],
-
         /* ================= Product Management ================= */
         [
             'type'  => 'dropdown',
@@ -72,7 +59,18 @@ return [
             'route'   => 'warehouse.index',
         ],
 
+        /* ================= Supplier Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'suppplierMenu',
+            'title' => 'Supplier Management',
+            'icon'  => 'bx bx-package',
+            'children' => [
+                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
 
+            ],
+        ],
 
         /* ================= Inventory Management ================= */
         [
@@ -81,7 +79,7 @@ return [
             'title' => 'Inventory Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
+                ['title' => 'Stock Management', 'route' => 'index.addStock.warehouse'],
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
                 //['title' => 'Near Expiry Sell', 'route' => 'sale.create'],

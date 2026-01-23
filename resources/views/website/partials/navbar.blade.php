@@ -65,15 +65,23 @@
 </style>
 
 <style>
-.blink {
-    animation: blinkEffect 1s infinite;
-}
+    .blink {
+        animation: blinkEffect 1s infinite;
+    }
 
-@keyframes blinkEffect {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1; }
-}
+    @keyframes blinkEffect {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
 </style>
 
 
@@ -83,39 +91,39 @@
     <div class="container topbar bg-primary d-none d-lg-block">
         <div class="d-flex justify-content-between">
             <div class="top-info ps-2">
-                <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#" class="text-white">123 Street, New York</a></small>
-                <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">Email@Example.com</a></small>
+                <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a class="text-white">123 Street, New York</a></small>
+                <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a class="text-white">Email@Example.com</a></small>
             </div>
-            
+
             <!-- Alert Message -->
-            <div class="alert text-center m-0 py-1 blink" id="order-alert" 
+            <div class="alert text-center m-0 py-1 blink" id="order-alert"
                 style="font-size: 13px; font-weight: bold; cursor:pointer;"
                 data-bs-toggle="modal" data-bs-target="#orderPopup">
-                Online orders <span id="order-status"></span> | 
+                Online orders <span id="order-status"></span> |
                 <span id="timer-text"></span>
             </div>
         </div>
     </div>
 
     <style>
-    .user-btn {
-        color: #333;
-        text-decoration: none;
-    }
+        .user-btn {
+            color: #333;
+            text-decoration: none;
+        }
 
-    .user-dropdown {
-        min-width: 200px;
-        border-radius: 10px;
-    }
+        .user-dropdown {
+            min-width: 200px;
+            border-radius: 10px;
+        }
 
-    .user-dropdown .dropdown-item {
-        padding: 10px 15px;
-        font-size: 15px;
-    }
+        .user-dropdown .dropdown-item {
+            padding: 10px 15px;
+            font-size: 15px;
+        }
 
-    .user-dropdown i {
-        width: 20px;
-    }
+        .user-dropdown i {
+            width: 20px;
+        }
     </style>
 
     <div class="container px-0">
@@ -169,7 +177,7 @@
                         <span id="cart-count"
                             class="position-absolute bg-secondary rounded-circle d-flex align-items-center 
                             justify-content-center text-dark px-1"
-                                                style="top:-5px; left:15px; height:20px; min-width:20px;
+                            style="top:-5px; left:15px; height:20px; min-width:20px;
                             {{ $cartCount > 0 ? '' : 'display:none;' }}">
                             {{ $cartCount }}
                         </span>
@@ -178,10 +186,10 @@
                     <!-- User Account -->
                     @auth
                     <div class="dropdown">
-                        <a href="#" 
-                        class="my-auto dropdown-toggle d-flex align-items-center user-btn"
-                        data-bs-toggle="dropdown" 
-                        aria-expanded="false">
+                        <a href="#"
+                            class="my-auto dropdown-toggle d-flex align-items-center user-btn"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
 
                             <i class="fas fa-user-circle fs-3"></i>
 
@@ -195,27 +203,29 @@
 
                             <li>
                                 <a href="{{ route('my_orders', ['tab' => 'profile']) }}"
-                                class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-id-card me-2 text-primary"></i> 
+                                    class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>
                                     My Profile
                                 </a>
                             </li>
 
                             <li>
                                 <a href="{{ route('my_orders') }}"
-                                class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-box me-2 text-success"></i> 
+                                    class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-box me-2 text-success"></i>
                                     My Orders
                                 </a>
                             </li>
 
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
 
                             <li>
                                 <form method="POST" action="{{ route('websitelogout') }}">
                                     @csrf
                                     <button class="dropdown-item d-flex align-items-center text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i> 
+                                        <i class="fas fa-sign-out-alt me-2"></i>
                                         Logout
                                     </button>
                                 </form>
@@ -240,68 +250,68 @@
 
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    const alertDiv = document.getElementById('order-alert');
-    const statusSpan = document.getElementById('order-status');
-    const timerText = document.getElementById('timer-text');
+        const alertDiv = document.getElementById('order-alert');
+        const statusSpan = document.getElementById('order-status');
+        const timerText = document.getElementById('timer-text');
 
-    const popupStatus = document.getElementById('popup-status');
-    const popupTimer = document.getElementById('popup-timer');
+        const popupStatus = document.getElementById('popup-status');
+        const popupTimer = document.getElementById('popup-timer');
 
-    function updateStatus() {
+        function updateStatus() {
 
-        const now = new Date();
-        const hour = now.getHours();
-        const minute = now.getMinutes();
-        const second = now.getSeconds();
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const second = now.getSeconds();
 
-        const openTime = 6;   // 6 AM
-        const closeTime = 19; // 7 PM
+            const openTime = 6; // 6 AM
+            const closeTime = 19; // 7 PM
 
-        let targetTime;
-        let status;
+            let targetTime;
+            let status;
 
-        if (hour >= openTime && hour < closeTime) {
-            // OPEN
-            status = "are OPEN 🟢";
-            alertDiv.classList.add('alert-success');
-            alertDiv.classList.remove('alert-danger');
+            if (hour >= openTime && hour < closeTime) {
+                // OPEN
+                status = "are OPEN 🟢";
+                alertDiv.classList.add('alert-success');
+                alertDiv.classList.remove('alert-danger');
 
-            targetTime = new Date();
-            targetTime.setHours(closeTime, 0, 0);
+                targetTime = new Date();
+                targetTime.setHours(closeTime, 0, 0);
 
-        } else {
-            // CLOSED
-            status = "are CLOSED 🔴";
-            alertDiv.classList.add('alert-danger');
-            alertDiv.classList.remove('alert-success');
+            } else {
+                // CLOSED
+                status = "are CLOSED 🔴";
+                alertDiv.classList.add('alert-danger');
+                alertDiv.classList.remove('alert-success');
 
-            targetTime = new Date();
-            if (hour >= closeTime) {
-                targetTime.setDate(targetTime.getDate() + 1);
+                targetTime = new Date();
+                if (hour >= closeTime) {
+                    targetTime.setDate(targetTime.getDate() + 1);
+                }
+                targetTime.setHours(openTime, 0, 0);
             }
-            targetTime.setHours(openTime, 0, 0);
+
+            const diff = targetTime - now;
+
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+
+            const timeLeft = `For ${h}h ${m}m ${s}s`;
+
+            statusSpan.textContent = status;
+            timerText.textContent = timeLeft;
+
+            popupStatus.textContent = "Online orders " + status;
+            popupTimer.textContent = timeLeft;
         }
 
-        const diff = targetTime - now;
-
-        const h = Math.floor(diff / (1000 * 60 * 60));
-        const m = Math.floor((diff / (1000 * 60)) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-
-        const timeLeft = `For ${h}h ${m}m ${s}s`;
-
-        statusSpan.textContent = status;
-        timerText.textContent = timeLeft;
-
-        popupStatus.textContent = "Online orders " + status;
-        popupTimer.textContent = timeLeft;
-    }
-
-    updateStatus();
-    setInterval(updateStatus, 1000);
-});
+        updateStatus();
+        setInterval(updateStatus, 1000);
+    });
 </script>
 
 

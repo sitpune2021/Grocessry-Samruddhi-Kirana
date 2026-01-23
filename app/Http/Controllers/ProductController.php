@@ -19,9 +19,8 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+   
+    
     public function index()
     {
         Log::info('Product Index Page Loaded');
@@ -44,11 +43,6 @@ class ProductController extends Controller
         }
     }
 
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         try {
@@ -75,7 +69,6 @@ class ProductController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
         Log::info('Product Store Request', [
@@ -84,44 +77,42 @@ class ProductController extends Controller
 
         try {
 
-            $validated = $request->validate([
-                'category_id'     => 'required|exists:categories,id',
-                'brand_id'        => 'required|exists:brands,id',
-                'name'            => [
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('products', 'name'),
-                ],
-                'sku'             => 'nullable|string|max:255',
-                'sub_category_id' => 'required|exists:sub_categories,id',
-                'description'     => 'nullable|string',
+                $validated = $request->validate([
+                    'category_id'     => 'required|exists:categories,id',
+                    'brand_id'        => 'required|exists:brands,id',
 
-                'unit_id'       => 'required|exists:units,id',
-                'unit_value' => 'required|numeric|min:0.01',
+                    'name'            => 'required|string|max:255',
+
+                    'sku'             => 'nullable|string|max:255|unique:products,sku',
+
+                    'sub_category_id' => 'required|exists:sub_categories,id',
+                    'description'     => 'nullable|string',
+
+                    'unit_id'         => 'required|exists:units,id',
+                    'unit_value'      => 'required|numeric|min:0.01',
+
+                    'base_price'      => 'required|numeric|min:1',
+
+                    // ✅ FULL VALIDATION HERE
+                    'retailer_price'  => 'required|numeric|min:1|gte:base_price|lte:mrp',
+
+                    'mrp'             => 'required|numeric|min:1',
+
+                    'tax_id'          => 'required|exists:taxes,id',
+
+                    'product_images'   => 'nullable|array',
+                    'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+
+                ], [
+                    'retailer_price.gte' => 'Selling price cannot be less than Base Price',
+                    'retailer_price.lte' => 'Selling price cannot be greater than MRP',
+                ]);
 
 
-                'base_price'      => 'required|numeric|min:1',
-                'retailer_price'  => 'required|numeric|min:1',
-                'mrp'             => 'required|numeric|min:1',
-
-                'tax_id'          => 'required|exists:taxes,id',
-
-                'product_images'   => 'nullable|array',
-                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            ], [
-                'name.unique' => 'This product name already exists!',
-            ]);
-
-            if ($request->retailer_price < $request->base_price) {
-                return back()->withInput()
-                    ->with('error', 'Selling price cannot be less than Base Price');
-            }
-
-            if ($request->retailer_price > $request->mrp) {
-                return back()->withInput()
-                    ->with('error', 'Selling price cannot be greater than MRP');
-            }
+                if ($request->retailer_price > $request->mrp) {
+                    return back()->withInput()
+                        ->with('error', 'Selling price cannot be greater than MRP');
+                }
 
             $tax = Tax::findOrFail($request->tax_id);
             $gstPercent = $tax->gst ?? 0;
@@ -171,7 +162,6 @@ class ProductController extends Controller
         }
     }
 
-
     public function show($id)
     {
         try {
@@ -202,9 +192,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         try {
@@ -240,119 +227,113 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-   public function update(Request $request, $id)
-{
-    Log::info('Product Update Request', [
-        'id' => $id,
-        'request' => $request->all(),
-    ]);
-
-    try {
-        $product = Product::find($id);
-
-        if (!$product) {
-            Log::warning('Product Not Found for Update', ['id' => $id]);
-            return redirect()->route('product.index')
-                ->with('error', 'Product not found');
-        }
-
-        $validated = $request->validate([
-            'category_id'     => 'required|exists:categories,id',
-            'brand_id'        => 'required|exists:brands,id',
-            'sub_category_id' => 'required|exists:sub_categories,id',
-
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('products', 'name')->ignore($product->id),
-            ],
-
-            'sku'        => 'nullable|string|max:255',
-            'description'=> 'nullable|string',
-
-            'unit_id'    => 'required|exists:units,id',
-            'unit_value' => 'required|numeric|min:0.01',
-
-            'base_price'     => 'required|numeric|min:1',
-            'retailer_price' => 'required|numeric|min:1',
-            'mrp'            => 'required|numeric|min:1',
-
-            'tax_id' => 'required|exists:taxes,id',
-
-            'product_images'   => 'nullable|array',
-            'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-        ], [
-            'name.unique' => 'This product name already exists!',
+    public function update(Request $request, $id)
+    {
+        Log::info('Product Update Request', [
+            'id' => $id,
+            'request' => $request->all(),
         ]);
 
-        if ($request->retailer_price < $request->base_price) {
-            return back()->withInput()
-                ->with('error', 'Selling price cannot be less than Base Price');
-        }
+        try {
+            $product = Product::find($id);
 
-        if ($request->retailer_price > $request->mrp) {
-            return back()->withInput()
-                ->with('error', 'Selling price cannot be greater than MRP');
-        }
-
-        $tax = Tax::findOrFail($request->tax_id);
-        $gstPercent = $tax->gst ?? 0;
-
-        $gstAmount  = ($request->retailer_price * $gstPercent) / 100;
-        $finalPrice = $request->retailer_price + $gstAmount;
-
-        $validated['gst_percentage'] = $gstPercent;
-        $validated['gst_amount']     = round($gstAmount, 2);
-        $validated['final_price']    = round($finalPrice, 2);
-
-        if ($request->hasFile('product_images')) {
-            $imageNames = [];
-
-            foreach ($request->file('product_images') as $image) {
-                $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
-                $image->storeAs('products', $fileName, 'public');
-                $imageNames[] = $fileName;
+            if (!$product) {
+                Log::warning('Product Not Found for Update', ['id' => $id]);
+                return redirect()->route('product.index')
+                    ->with('error', 'Product not found');
             }
 
-            $validated['product_images'] = $imageNames;
+            $validated = $request->validate([
+                'category_id'     => 'required|exists:categories,id',
+                'brand_id'        => 'required|exists:brands,id',
+                'sub_category_id' => 'required|exists:sub_categories,id',
+
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('products', 'name')->ignore($product->id),
+                ],
+
+                'sku'        => 'nullable|string|max:255',
+                'description'=> 'nullable|string',
+
+                'unit_id'    => 'required|exists:units,id',
+                'unit_value' => 'required|numeric|min:0.01',
+
+                'base_price'     => 'required|numeric|min:1',
+                'retailer_price' => 'required|numeric|min:1',
+                'mrp'            => 'required|numeric|min:1',
+
+                'tax_id' => 'required|exists:taxes,id',
+
+                'product_images'   => 'nullable|array',
+                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ], [
+                'name.unique' => 'This product name already exists!',
+            ]);
+
+            if ($request->retailer_price < $request->base_price) {
+                return back()->withInput()
+                    ->with('error', 'Selling price cannot be less than Base Price');
+            }
+
+            if ($request->retailer_price > $request->mrp) {
+                return back()->withInput()
+                    ->with('error', 'Selling price cannot be greater than MRP');
+            }
+
+            $tax = Tax::findOrFail($request->tax_id);
+            $gstPercent = $tax->gst ?? 0;
+
+            $gstAmount  = ($request->retailer_price * $gstPercent) / 100;
+            $finalPrice = $request->retailer_price + $gstAmount;
+
+            $validated['gst_percentage'] = $gstPercent;
+            $validated['gst_amount']     = round($gstAmount, 2);
+            $validated['final_price']    = round($finalPrice, 2);
+
+            if ($request->hasFile('product_images')) {
+                $imageNames = [];
+
+                foreach ($request->file('product_images') as $image) {
+                    $fileName = time() . '_' . uniqid() . '_' . $image->getClientOriginalName();
+                    $image->storeAs('products', $fileName, 'public');
+                    $imageNames[] = $fileName;
+                }
+
+                $validated['product_images'] = $imageNames;
+            }
+
+            $product->update($validated);
+
+            Log::info('Product Updated Successfully', [
+                'product_id' => $product->id
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('success', 'Product updated successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            Log::warning('Product Update Validation Failed', [
+                'errors' => $e->errors()
+            ]);
+            throw $e;
+
+        } catch (\Throwable $e) {
+
+            Log::error('Product Update Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Something went wrong while updating product');
         }
-
-        $product->update($validated);
-
-        Log::info('Product Updated Successfully', [
-            'product_id' => $product->id
-        ]);
-
-        return redirect()->route('product.index')
-            ->with('success', 'Product updated successfully');
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-
-        Log::warning('Product Update Validation Failed', [
-            'errors' => $e->errors()
-        ]);
-        throw $e;
-
-    } catch (\Throwable $e) {
-
-        Log::error('Product Update Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
-
-        return redirect()->back()
-            ->withInput()
-            ->with('error', 'Something went wrong while updating product');
     }
-}
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         Log::info('Product Delete Request', [
@@ -414,4 +395,6 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
     }
+
+
 }

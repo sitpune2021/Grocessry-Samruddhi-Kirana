@@ -314,6 +314,4 @@ class WebsiteController extends Controller
 
         return view('website.category-products', compact('category', 'products'));
     }
-
-
 }
