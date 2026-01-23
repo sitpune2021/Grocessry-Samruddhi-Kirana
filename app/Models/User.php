@@ -40,6 +40,9 @@ class User extends Authenticatable
         'otp',
         'otp_expires_at',
         'is_online',
+        'duty_start_time',
+        'duty_paused_at',
+        'total_duty_minutes'
     ];
 
     /**
@@ -51,16 +54,18 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-
+    protected $casts = [
+        'duty_start_time' => 'datetime',
+        'duty_paused_at' => 'datetime',
+        'is_online' => 'boolean',
+    ];
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
 
-    protected $casts = [
-        'permissions' => 'array', // IMPORTANT
-    ];
+ 
 
 
     public function warehouse()
@@ -104,10 +109,10 @@ class User extends Authenticatable
         return in_array($permission, $permissions);
     }
 
-    public function addresses()
-    {
-        return $this->hasMany(Address::class);
-    }
+    // public function addresses()
+    // {
+    //     return $this->hasMany(Address::class);
+    // }
     // public function notifications()
     // {
     //     return $this->hasMany(DeliveryNotification::class, 'delivery_agent_id');

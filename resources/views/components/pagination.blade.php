@@ -3,7 +3,7 @@
     <!-- Info -->
     <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
         <div class="dt-info" aria-live="polite" role="status">
-             {{ $from }}  {{ $to }} {{ $total }}
+            {{ $from }} {{ $to }} {{ $total }}
         </div>
     </div>
 

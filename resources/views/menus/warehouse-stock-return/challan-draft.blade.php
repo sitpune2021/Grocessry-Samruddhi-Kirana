@@ -77,7 +77,13 @@
                 <td>{{ $item->product->name ?? '-' }}</td>
                 <td>{{ $item->batch_no ?? '-' }}</td>
                 <td class="text-center">{{ $item->return_qty }}</td>
-                <td class="text-center">{{ $item->received_qty }}</td>
+                <td class="text-center">
+                    @if($return->status === 'received')
+                    {{ $item->received_qty }}
+                    @else
+                    -
+                    @endif
+                </td>
                 <td class="text-center">{{ $item->damaged_qty }}</td>
             </tr>
             @endforeach
@@ -101,9 +107,21 @@
 
     <table>
         <tr>
-            <td class="center">Prepared By</td>
-            <td class="center">Approved By</td>
-            <td class="center">Received By</td>
+            <td class="center">
+                <strong>Prepared By</strong><br>
+
+                {{ $return->creator?->first_name ?? '' }} {{ $return->creator?->last_name ?? ''}}
+            </td>
+
+            <td class="center">
+                <strong>Approved By</strong><br>
+                {{ $return->approvedBy->first_name ?? '' }} {{ $return->approvedBy->last_name ?? ''}}
+            </td>
+
+            <td class="center">
+                <strong>Received By</strong><br>
+                {{ $return->receivedBy->first_name ?? ''}} {{ $return->receivedBy->first_name ?? '' }}
+            </td>
         </tr>
     </table>
 

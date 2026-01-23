@@ -45,19 +45,41 @@
 
                                 {{-- LEFT : PRODUCTS --}}
                                 <div class="col-12 col-md-12">
+                                    <div class="row g-3 mb-3">
 
-                                    {{-- BARCODE --}}
-                                    <div class="mb-3 ">
-                                        <input type="text"
-                                            id="barcode"
-                                            autofocus
-                                            class="form-control form-control-lg"
-                                            placeholder="Scan barcode / type product name">
+                                        {{-- CUSTOMER SEARCH --}}
+                                        <div class="col-12 col-md-4 position-relative">
+                                            <label class="form-label fw-bold">Customer</label>
 
-                                        <div id="suggestions"
-                                            class="list-group  w-100 shadow"
-                                            style="z-index:999; display:none; max-height:280px; overflow-y:auto;">
+                                            <input type="text"
+                                                id="customerSearch"
+                                                class="form-control form-control-lg"
+                                                placeholder="Search customer by name or mobile">
+
+                                            <input type="hidden" name="customer_id" id="customer_id">
+
+                                            <div id="customerSuggestions"
+                                                class="list-group position-absolute w-100 shadow"
+                                                style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
+                                            </div>
                                         </div>
+
+                                        {{-- PRODUCT / BARCODE SEARCH --}}
+                                        <div class="col-12 col-md-8 position-relative">
+                                            <label class="form-label fw-bold">Product</label>
+
+                                            <input type="text"
+                                                id="barcode"
+                                                autofocus
+                                                class="form-control form-control-lg"
+                                                placeholder="Scan barcode / type product name">
+
+                                            <div id="suggestions"
+                                                class="list-group position-absolute w-100 shadow"
+                                                style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
+                                            </div>
+                                        </div>
+
                                     </div>
 
 
@@ -218,7 +240,7 @@
             </td>
         </tr>`;
         });
-        
+
         document.getElementById('subtotal').innerText = subtotal.toFixed(2);
         document.getElementById('discount-total').innerText = discountTotal.toFixed(2);
         document.getElementById('grand-total').innerText = subtotal.toFixed(2);
@@ -327,6 +349,67 @@
                 }
             });
     });
+
+    /* ---------- Customer Search ------- */
+
+    let customerTimer = null;
+
+    const customerInput = document.getElementById('customerSearch');
+    const customerSuggestions = document.getElementById('customerSuggestions');
+
+    customerInput.addEventListener('input', function() {
+        const q = this.value.trim();
+        clearTimeout(customerTimer);
+
+        if (q.length < 2) {
+            hideCustomerSuggestions();
+            return;
+        }
+
+        customerTimer = setTimeout(() => {
+            fetchCustomers(q);
+        }, 300);
+    });
+
+    function fetchCustomers(query) {
+        fetch(`/pos/search-customers?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                customerSuggestions.innerHTML = '';
+
+                if (!Array.isArray(data) || !data.length) {
+                    hideCustomerSuggestions();
+                    return;
+                }
+
+                data.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action';
+
+                    btn.innerHTML = `
+                    <strong>${c.name}</strong><br>
+                    <small class="text-muted">${c.mobile}</small>
+                `;
+
+                    btn.onclick = () => selectCustomer(c);
+                    customerSuggestions.appendChild(btn);
+                });
+
+                customerSuggestions.style.display = 'block';
+            });
+    }
+
+    function selectCustomer(customer) {
+        customerInput.value = `${customer.name} (${customer.mobile})`;
+        document.getElementById('customer_id').value = customer.id;
+        hideCustomerSuggestions();
+    }
+
+    function hideCustomerSuggestions() {
+        customerSuggestions.style.display = 'none';
+        customerSuggestions.innerHTML = '';
+    }
 
 
     /* ---------------- SUBMIT ---------------- */

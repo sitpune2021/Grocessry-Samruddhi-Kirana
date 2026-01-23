@@ -13,6 +13,32 @@
     .card-body {
         font-size: 13px;
     }
+
+    .address-card {
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+
+    .address-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .profile-card {
+        background: #fff;
+        transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .avatar-placeholder {
+        width: 90px;
+        height: 90px;
+        background: #f1f1f1;
+    }
 </style>
 
 <div class="container py-3" style="margin-top:160px;">
@@ -20,7 +46,9 @@
 
         <!-- LEFT SIDEBAR (SMALL) -->
         <div class="col-lg-3 col-md-4">
-            <div class="card border-0 shadow-sm rounded-3">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+
+                <!-- MENU -->
                 <ul class="list-group list-group-flush small">
                     <li>
                         <a href="{{ route('my_orders', ['tab' => 'orders']) }}"
@@ -43,13 +71,6 @@
                         </a>
                     </li>
 
-                    <!-- <li class="dropdown-item py-2">
-                        <i class="bi bi-gift me-2"></i> E-Gift Cards
-                    </li>
-                    <li class="dropdown-item py-2">
-                        <i class="bi bi-shield-lock me-2"></i> Account Privacy
-                    </li> -->
-                    
                     <li>
                         <form method="POST" action="{{ route('websitelogout') }}">
                             @csrf
@@ -59,8 +80,17 @@
                         </form>
                     </li>
                 </ul>
+
+                <!-- STATIC IMAGE -->
+                <div class="p-3 text-center border-top bg-light">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVCTafSjCVi4fd95H6c-G0IpO6B4t5ZpmHTA&s}"
+                        alt="Sidebar Banner"
+                        class="img-fluid rounded-3">
+                </div>
+
             </div>
         </div>
+
 
         <!-- RIGHT CONTENT -->
         <div class="col-lg-9 col-md-8">
@@ -157,29 +187,42 @@
 
                     @if($addresses->count())
                     @foreach($addresses as $address)
-                    <div class="border rounded-3 p-3 mb-3">
+                    <div class="address-card border rounded-4 p-3 p-md-4 mb-3 shadow-sm">
 
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-semibold fs-5">
+                        <!-- Name + Default Badge -->
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2">
+                            <h6 class="fw-semibold mb-1 mb-md-0">
                                 {{ $address->first_name }} {{ $address->last_name }}
-                            </span>
+                            </h6>
 
                             @if($address->is_default)
-                            <span class="badge bg-success px-2">Default</span>
+                            <span class="badge bg-success px-3 py-1 mt-1 mt-md-0">
+                                Default
+                            </span>
                             @endif
                         </div>
 
-                        <p class="mb-1 fs-6 text-muted">
+                        <!-- Address -->
+                        <p class="mb-2 text-muted">
+                            <i class="bi bi-geo-alt me-1"></i>
                             {{ $address->address }},
                             {{ $address->city }} - {{ $address->postcode }},
                             {{ $address->country }}
                         </p>
 
-                        <p class="mb-0 fs-6">
-                            📞 {{ $address->phone }} &nbsp; | &nbsp; ✉ {{ $address->email }}
-                        </p>
+                        <!-- Contact -->
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <span>
+                                <i class="bi bi-telephone me-1"></i> {{ $address->phone }}
+                            </span>
+                            <span class="d-none d-md-inline">|</span>
+                            <span>
+                                <i class="bi bi-envelope me-1"></i> {{ $address->email }}
+                            </span>
+                        </div>
 
                     </div>
+
 
                     @endforeach
                     @else
@@ -192,11 +235,47 @@
                     @if($tab == 'profile')
                     <h6 class="fw-bold text-primary mb-3">My Profile</h6>
 
-                    <div class="border rounded-3 p-3">
-                        <p><strong>Name:</strong> {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</p>
-                        <p><strong>Email:</strong> {{ Auth::user()->email }}</p>
-                        <p><strong>Mobile:</strong> {{ Auth::user()->phone }}</p>
+                    <div class="profile-card border rounded-4 p-3 p-md-4 shadow-sm">
+
+                        <!-- Profile Image & Name -->
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            @if(Auth::user()->profile_photo)
+                            <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}"
+                                class="rounded-circle border"
+                                width="90"
+                                height="90"
+                                style="object-fit: cover;">
+                            @else
+                            <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-person fs-1 text-muted"></i>
+                            </div>
+                            @endif
+
+                            <div>
+                                <h5 class="mb-1 fw-semibold">
+                                    {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                                </h5>
+                                <span class="text-muted small">User Profile</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- User Details -->
+                        <div class="row g-2 small">
+                            <div class="col-12 col-md-6">
+                                <strong>Email:</strong><br>
+                                <span class="text-muted">{{ Auth::user()->email }}</span>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <strong>Mobile:</strong><br>
+                                <span class="text-muted">{{ Auth::user()->mobile }}</span>
+                            </div>
+                        </div>
+
                     </div>
+
                     @endif
 
 
