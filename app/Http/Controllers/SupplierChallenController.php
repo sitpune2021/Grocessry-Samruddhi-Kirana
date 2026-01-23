@@ -76,7 +76,11 @@ class SupplierChallenController extends Controller
             'supplier_id' => 'required',
             'challan_no' => 'required',
             'challan_date' => 'required|date',
+
             'items' => 'required|array|min:1',
+
+            'items.*.category_id' => 'required',
+            'items.*.sub_category_id' => 'required',
             'items.*.product_id' => 'required',
             'items.*.received_qty' => 'required|numeric|min:1',
         ]);
