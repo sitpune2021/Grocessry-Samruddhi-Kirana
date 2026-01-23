@@ -104,10 +104,10 @@ class User extends Authenticatable
         return in_array($permission, $permissions);
     }
 
-    public function addresses()
-    {
-        return $this->hasMany(Address::class);
-    }
+    // public function addresses()
+    // {
+    //     return $this->hasMany(Address::class);
+    // }
     // public function notifications()
     // {
     //     return $this->hasMany(DeliveryNotification::class, 'delivery_agent_id');

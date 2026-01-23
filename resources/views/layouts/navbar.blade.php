@@ -143,35 +143,52 @@
                 <div class="modal-body">
                     <div class="row g-3">
 
+                    <div class="col-md-12 " style="text-align:center;">
+                        @if(Auth::check())
+                            <img
+                                src="{{ Auth::user()->profile_photo
+                                    ? asset('storage/' . Auth::user()->profile_photo)
+                                    : asset('admin/assets/img/avatars/1.png') }}"
+                                class="rounded-circle align-items center"
+                                width="40"
+                                height="40"
+                                alt="User Avatar"
+                                style="width: 200px;height: 200px; object-fit: cover;"
+                            >
+                        @else
+                            <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">
+                        @endif
+                    </div>
+
                         <div class="col-md-6">
                             <label>First Name <span class="text-danger">*</span></label>
                             <input type="text" name="first_name" class="form-control"
                                 value="{{ Auth::user()->first_name ?? '' }}">
                         </div>
 
-                                        <div class="col-md-6">
-                                            <label>First Name</label>
-                                            <input type="text" name="first_name" class="form-control"
-                                                value="{{ Auth::user()->first_name ?? '' }}">
-                                        </div>
+                        <!-- <div class="col-md-6">
+                            <label>First Name</label>
+                            <input type="text" name="first_name" class="form-control"
+                                value="{{ Auth::user()->first_name ?? '' }}">
+                        </div> -->
 
-                                        <div class="col-md-6">
-                                            <label>Last Name</label>
-                                            <input type="text" name="last_name" class="form-control"
-                                                value="{{ Auth::user()->last_name ?? '' }}">
-                                        </div>
+                        <div class="col-md-6">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name" class="form-control"
+                                value="{{ Auth::user()->last_name ?? '' }}">
+                        </div>
 
-                                        <div class="col-md-6">
-                                            <label>Email</label>
-                                            <input type="email" class="form-control"
-                                                value="{{ Auth::user()->email ?? '' }}" disabled>
-                                        </div>
+                        <div class="col-md-6">
+                            <label>Email</label>
+                            <input type="email" class="form-control"
+                                value="{{ Auth::user()->email ?? '' }}" disabled>
+                        </div>
 
-                                        <div class="col-md-6">
-                                            <label>Mobile</label>
-                                            <input type="text" name="mobile" class="form-control"
-                                                value="{{ Auth::user()->mobile ?? '' }}">
-                                        </div>
+                        <div class="col-md-6">
+                            <label>Mobile</label>
+                            <input type="text" name="mobile" class="form-control"
+                                value="{{ Auth::user()->mobile ?? '' }}">
+                        </div>
 
 
                         <div class="col-md-6">

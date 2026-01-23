@@ -74,6 +74,7 @@
                                     'unit' => 'Unit',
                                     'product' => 'Product',
                                     'supplier' => 'Supplier',
+                                    'supplier_challan' => 'Supplier Challan',
                                     'warehouse' => 'Warehouse',
                                     'stock' => 'Stock',
                                     'batches' => 'Batches',

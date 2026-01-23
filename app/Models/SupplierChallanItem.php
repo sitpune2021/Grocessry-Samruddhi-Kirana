@@ -8,13 +8,14 @@ class SupplierChallanItem extends Model
 {
     protected $fillable = [
         'supplier_challan_id',
-        'ordered_qty',
+        'category_id',
+        'sub_category_id',
         'product_id',
         'ordered_qty',
-        'challan_date',
         'received_qty',
-        'rate'
+        'rate',
     ];
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
