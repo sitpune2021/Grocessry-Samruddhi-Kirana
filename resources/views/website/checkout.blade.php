@@ -74,14 +74,16 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Postcode *</label>
-                                <input type="text" name="postcode"
+                                <input type="text" name="postcode" maxlength="6"
+                                    pattern="[0-9]{6}"
                                     class="form-control @error('postcode') is-invalid @enderror"
                                     value="{{ old('postcode', $address->postcode ?? '') }}" required>
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Mobile *</label>
-                                <input type="text" name="phone"
+                                <input type="text" name="phone" maxlength="10"
+                                    pattern="[0-9]{10}"
                                     class="form-control @error('phone') is-invalid @enderror"
                                     value="{{ old('phone', $address->phone ?? '') }}" required>
                             </div>

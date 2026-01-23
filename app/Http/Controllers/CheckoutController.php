@@ -28,7 +28,6 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address'));
     }
 
-
     public function placeOrder(Request $request)
     {
         try {
@@ -47,24 +46,36 @@ class CheckoutController extends Controller
             ]);
 
             UserAddress::updateOrCreate(
-                ['user_id' => auth()->id()],
-                $request->only([
-                    'first_name','last_name','address','city',
-                    'country','postcode','phone','email'
-                ])
-            );
+            [
+                'user_id' => auth()->id(),
+                'type' => 1
+            ],
+            [
+                'first_name' => $request->first_name,
+                'last_name'  => $request->last_name,
+                'address'    => $request->address,
+                'city'       => $request->city,
+                'country'    => $request->country,
+                'postcode'   => $request->postcode,
+                'phone'      => $request->phone,
+                'email'      => $request->email,
+                'type'       => 1
+            ]
+        );
 
-            $cart = Cart::where('user_id', auth()->id())
-                        ->with('items')
-                        ->first();
 
-            if (!$cart || $cart->items->isEmpty()) {
-                Log::warning('Cart empty for user', ['user_id' => auth()->id()]);
-                return back()->with('error','Cart empty');
-            }
+             $cart = Cart::where('user_id', auth()->id())
+                    ->with('items')
+                    ->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart')
+                   ->with('error', 'Your cart is empty');
+        }
 
             $order = Order::create([
                 'user_id' => auth()->id(),
+                'warehouse_id' => 0,
                 'order_number' => 'ORD-' . now()->timestamp,
                 'subtotal' => $cart->subtotal,
                 'total_amount' => $cart->total,
@@ -88,7 +99,10 @@ class CheckoutController extends Controller
 
             Log::info('Order placed successfully', ['order_id' => $order->id]);
 
-            return redirect('/')->with('success','Order placed successfully!');
+            //return redirect('/')->with('success','Order placed successfully!');
+            return redirect()->route('my_orders')
+       ->with('success', 'Order placed successfully!');
+
 
         } catch (\Exception $e) {
 

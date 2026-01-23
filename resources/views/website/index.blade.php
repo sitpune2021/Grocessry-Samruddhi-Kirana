@@ -1,11 +1,10 @@
 @extends('website.layout')
 
+
 @section('title', 'Home')
 
 @section('content')
-<style>
 
-</style>
 
 <body>
 
@@ -72,6 +71,11 @@
             </div>
             @endforeach
 
+        </div>
+        <div class="slider-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-green active"></span>
+            <span class="dot dot-blue"></span>
         </div>
     </div>
 
@@ -293,8 +297,9 @@
 
         <div class="row p-2">
             <div class="col text-start">
-                <h3 class="fw-bold text-dark">{{ $category->name }}</h3>
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">{{ $category->name }}</h3>
             </div>
+
         </div>
 
         <div class="position-relative product-slider-wrapper">
@@ -349,10 +354,16 @@
 
                     </div>
                 </div>
+
                 @endforeach
             </div>
-
+            <div class="slider-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-green active"></span>
+                <span class="dot dot-blue"></span>
+            </div>
             <button class="slider-arrow right">&#10095;</button>
+            <div class="slider-dots text-center mt-3"></div>
         </div>
 
         @endif
@@ -362,7 +373,7 @@
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
-                <h3 class="fw-bold text-dark">Latest Products</h3>
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">Latest Products</h3>
             </div>
         </div>
 
@@ -420,8 +431,11 @@
                 </div>
                 @endforeach
             </div>
-
-
+            <div class="slider-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-green active"></span>
+                <span class="dot dot-blue"></span>
+            </div>
             <button class="slider-arrow right">&#10095;</button>
         </div>
 
@@ -430,7 +444,7 @@
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
-                <h3 class="fw-bold text-dark">Top Brands</h3>
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">Top Brands</h3>
             </div>
         </div>
         <div class="brand-slider p-3" id="brandSlider">
@@ -446,65 +460,65 @@
     </div>
 
     <!-- Featurs Section Start -->
- <div class="container featurs py-5">
-    <div class="container">
-        <div class="row g-3">
+    <div class="container featurs py-5">
+        <div class="container">
+            <div class="row g-3">
 
-            <!-- Feature 1 -->
-            <div class="col-6 col-md-3">
-                <div class="featurs-item">
-                    <div class="featurs-icon">
-                        <i class="fas fa-car-side"></i>
-                    </div>
-                    <div class="featurs-content">
-                        <h5>Free Shipping</h5>
-                        <p>Free on orders over $300</p>
+                <!-- Feature 1 -->
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-car-side"></i>
+                        </div>
+                        <div class="featurs-content">
+                            <h5>Free Shipping</h5>
+                            <p>Free on orders over $300</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Feature 2 -->
-            <div class="col-6 col-md-3">
-                <div class="featurs-item">
-                    <div class="featurs-icon">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <div class="featurs-content">
-                        <h5>Secure Payment</h5>
-                        <p>100% secure payment</p>
+                <!-- Feature 2 -->
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="featurs-content">
+                            <h5>Secure Payment</h5>
+                            <p>100% secure payment</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Feature 3 -->
-            <div class="col-6 col-md-3">
-                <div class="featurs-item">
-                    <div class="featurs-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <div class="featurs-content">
-                        <h5>30 Day Return</h5>
-                        <p>30-day money guarantee</p>
+                <!-- Feature 3 -->
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="featurs-content">
+                            <h5>30 Day Return</h5>
+                            <p>30-day money guarantee</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Feature 4 -->
-            <div class="col-6 col-md-3">
-                <div class="featurs-item">
-                    <div class="featurs-icon">
-                        <i class="fas fa-phone-alt"></i>
-                    </div>
-                    <div class="featurs-content">
-                        <h5>24/7 Support</h5>
-                        <p>Fast support anytime</p>
+                <!-- Feature 4 -->
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="featurs-content">
+                            <h5>24/7 Support</h5>
+                            <p>Fast support anytime</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+            </div>
         </div>
     </div>
-</div>
 
 
 </body>
