@@ -10,14 +10,16 @@ return new class extends Migration
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
         $tables = DB::select("
-            SELECT table_name 
-            FROM information_schema.tables 
+            SELECT TABLE_NAME AS table_name
+            FROM information_schema.tables
             WHERE table_schema = DATABASE()
+            AND table_type = 'BASE TABLE'
         ");
 
         foreach ($tables as $table) {
             DB::statement("ALTER TABLE `{$table->table_name}` ENGINE=InnoDB");
         }
+
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }

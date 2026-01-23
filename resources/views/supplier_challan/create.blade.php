@@ -35,7 +35,16 @@
                                     @if (isset($challan) && $mode === 'edit')
                                         @method('PUT')
                                     @endif
-
+                                    
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
 
                                     <div class="row">
                                         {{-- Master Warehouse (Auto – Only Master Admin) --}}
@@ -207,7 +216,7 @@
                                         </a>
 
                                         @if ($mode !== 'view')
-                                            <button type="submit" class="btn btn-success">
+                                            <button type="submit" class="btn btn-success" id="saveChallanBtn" disabled>
                                                 {{ isset($challan) ? 'Update Challan' : 'Save Challan' }}
                                             </button>
                                         @endif
@@ -227,41 +236,116 @@
 {{-- JS --}}
 <script>
     let rowIndex = 1;
+    const saveBtn = document.getElementById('saveChallanBtn');
+    const tbody = document.getElementById('itemsBody');
 
-    document.getElementById('addRow').addEventListener('click', () => {
-        const row = document.querySelector('#itemsBody tr').cloneNode(true);
-        row.querySelectorAll('select, input').forEach(el => el.value = '');
+    // CHECK TABLE VALIDITY
+    function validateTable() {
+        let hasValidRow = false;
+        let hasEmptyRow = false;
+
+        tbody.querySelectorAll('tr').forEach(row => {
+            const category = row.querySelector('.category')?.value;
+            const subCategory = row.querySelector('.sub_category')?.value;
+            const product = row.querySelector('.product')?.value;
+            const qty = row.querySelector('input[name*="[received_qty]"]')?.value;
+
+            if (!category && !subCategory && !product && !qty) {
+                hasEmptyRow = true;
+            } else if (category && subCategory && product && qty > 0) {
+                hasValidRow = true;
+            } else {
+                hasEmptyRow = true;
+            }
+        });
+
+        // Enable only if valid
+        saveBtn.disabled = !(hasValidRow && !hasEmptyRow);
+    }
+
+    // ADD ROW
+    document.getElementById('addRow').addEventListener('click', function () {
+        const firstRow = tbody.querySelector('tr');
+        const row = firstRow.cloneNode(true);
+
         row.querySelectorAll('select, input').forEach(el => {
+            el.value = '';
             el.name = el.name.replace(/\[\d+\]/, `[${rowIndex}]`);
         });
-        document.getElementById('itemsBody').appendChild(row);
+
+        tbody.appendChild(row);
         rowIndex++;
+        validateTable();
     });
 
-    document.addEventListener('change', function(e) {
+    // REMOVE ROW
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('removeRow')) {
+            if (tbody.rows.length > 1) {
+                e.target.closest('tr').remove();
+                validateTable();
+            } else {
+                alert('At least one product is required');
+            }
+        }
+    });
 
+    // CATEGORY → SUB CATEGORY
+    document.addEventListener('change', function (e) {
         if (e.target.classList.contains('category')) {
+            const row = e.target.closest('tr');
+            const sub = row.querySelector('.sub_category');
+            const prod = row.querySelector('.product');
+
+            sub.innerHTML = '<option value="">Select</option>';
+            prod.innerHTML = '<option value="">Select</option>';
+
+            if (!e.target.value) {
+                validateTable();
+                return;
+            }
+
             fetch(`/get-sub-categories/${e.target.value}`)
                 .then(res => res.json())
                 .then(data => {
-                    const sub = e.target.closest('tr').querySelector('.sub_category');
-                    sub.innerHTML = '<option value="">Select</option>';
-                    data.forEach(s => sub.innerHTML += `<option value="${s.id}">${s.name}</option>`);
-                });
+                    data.forEach(s => {
+                        sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                    });
+                })
+                .finally(validateTable);
         }
+    });
 
+    // SUB CATEGORY → PRODUCT
+    document.addEventListener('change', function (e) {
         if (e.target.classList.contains('sub_category')) {
+            const row = e.target.closest('tr');
+            const prod = row.querySelector('.product');
+
+            prod.innerHTML = '<option value="">Select</option>';
+
+            if (!e.target.value) {
+                validateTable();
+                return;
+            }
+
             fetch(`/get-products-by-sub-category/${e.target.value}`)
                 .then(res => res.json())
                 .then(data => {
-                    const prod = e.target.closest('tr').querySelector('.product');
-                    prod.innerHTML = '<option value="">Select</option>';
-                    data.forEach(p => prod.innerHTML += `<option value="${p.id}">${p.name}</option>`);
-                });
-        }
-
-        if (e.target.classList.contains('removeRow')) {
-            e.target.closest('tr').remove();
+                    data.forEach(p => {
+                        prod.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                    });
+                })
+                .finally(validateTable);
         }
     });
+
+    // QTY / PRODUCT CHANGE
+    document.addEventListener('input', function () {
+        validateTable();
+    });
+
+    // Initial check
+    validateTable();
 </script>
+
