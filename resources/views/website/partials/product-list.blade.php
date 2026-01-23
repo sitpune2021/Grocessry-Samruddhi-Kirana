@@ -1,6 +1,6 @@
 <div class="row g-4 justify-content-center">
     @forelse($products as $product)
-    <div class="col-md-6 col-lg-6 col-xl-4">
+    <div class="col-6 col-md-4 col-lg-3 col-xl-3">
         <div class="rounded position-relative fruite-item">
             <div class="p-4 border border-secondary rounded-bottom">
                 @php
@@ -15,7 +15,7 @@
                             src="{{ asset('storage/products/'.$image) }}"
                             class="img-fluid w-100 rounded-top"
                             alt="{{ $product->name }}"
-                            style="height: 200px; object-fit: cover;">
+                            style="height: 160px; object-fit: cover;">
                         @else
                         <img
                             src="{{ asset('website/img/no-image.png') }}"
@@ -34,6 +34,14 @@
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
 
+                        {{-- DISCOUNT --}}
+                        @if($product->mrp > $product->final_price)
+                        @php
+                        $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                        @endphp
+
+                        <div class="offer-badge">{{ $discount }}% OFF</div>
+                        @endif
                         <h6 class="product-title">
                             {{ Str::limit(Str::title($product->name), 40) }}
                         </h6>
@@ -82,6 +90,29 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    .fruite-item .p-4 {
+        padding: 12px !important;
+    }
+
+    .product-title {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .product-unit {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .price-new {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .price-old {
+        font-size: 12px;
     }
 </style>
 

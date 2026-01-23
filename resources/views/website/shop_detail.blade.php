@@ -86,7 +86,114 @@
         font-size: 13px;
         padding: 6px 10px;
     }
+
+    .offer-badge {
+        background: #253bdf;
+        color: #fff;
+        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+
+
+    .qty-box button {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+    }
+
+    .qty-input {
+        height: 32px;
+        font-size: 14px;
+    }
+
+    /* simi pro */
+
+    .related-card img {
+        height: 120px;
+        object-fit: contain;
+    }
+
+    .related-card h6 {
+        font-size: 13px;
+        line-height: 1.2;
+    }
+
+    .related-card .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
 </style>
+
+<style>
+    .product-card {
+        border: 1px solid #eee;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: 0.3s;
+        background: #fff;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .discount-ribbon {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: #2563eb;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .delivery-time {
+        font-size: 12px;
+        color: #444;
+        margin-top: 6px;
+    }
+
+    .product-img {
+        height: 150px;
+        object-fit: contain;
+        padding: 10px;
+    }
+
+    .price {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .mrp {
+        font-size: 13px;
+        color: #888;
+        text-decoration: line-through;
+    }
+
+    .add-btn {
+        border: 1px solid #22c55e;
+        color: #22c55e;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 4px 14px;
+        background: #fff;
+    }
+
+    .add-btn:hover {
+        background: #22c55e;
+        color: #fff;
+    }
+</style>
+
 
 <!-- Page Header -->
 <div class="container-fluid page-header py-4 mb-5 bg-dark">
@@ -109,11 +216,32 @@
         <div class="col-lg-7">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h3 class="fw-bold">{{ $product->name }}</h3>
+
+                    <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
                     <p class="text-muted mb-2">Category: {{ $product->category->name ?? 'N/A' }}</p>
 
-                    <h4 class="text-primary mb-3">₹{{ $product->mrp }}</h4>
+                    <div class="mb-2">
+                        <span class="fs-4 fw-bold text-success">
+                            ₹{{ number_format($product->final_price, 0) }}
+                        </span>
 
+                        @if($product->mrp > $product->final_price)
+                        <span class="text-muted text-decoration-line-through ms-2">
+                            ₹{{ number_format($product->mrp, 0) }}
+                        </span>
+                        @endif
+                    </div>
+                    {{-- DISCOUNT --}}
+                    @if($product->mrp > $product->final_price)
+                    @php
+                    $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                    @endphp
+                    <div class="offer-badge">{{ $discount }}% OFF</div>
+                    @endif
+                    <div class="product-unit">
+                        {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                        {{ Str::title(optional($product->unit)->name) }}
+                    </div>
                     <form action="{{ route('add_cart') }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -164,33 +292,62 @@
 
         <div class="row g-4">
             @foreach($relatedProducts as $related)
-            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+
                 <div class="card h-100 shadow-sm position-relative related-card">
+
                     <a href="{{ route('productdetails', $related->id) }}">
+
+                        {{-- Category Badge --}}
                         <span class="badge bg-primary position-absolute top-0 end-0 m-2">
                             {{ $related->category->name ?? 'Category' }}
                         </span>
 
+                        {{-- Product Image --}}
                         <img src="{{ asset('storage/products/'.$related->product_images[0]) }}"
-                            class="card-img-top" alt="{{ $related->name }}">
+                            class="card-img-top"
+                            alt="{{ $related->name }}">
 
                         <div class="card-body d-flex flex-column">
-                            <h6 class="fw-bold">{{ $related->name }}</h6>
-                            <p class="text-primary fw-bold mb-3">₹{{ $related->mrp }}</p>
+
+                            <h6 class="fw-bold mb-1">{{ $related->name }}</h6>
+
+                            {{-- PRICE + DISCOUNT --}}
+                            <div class="d-flex align-items-center gap-2">
+
+                                {{-- Final Price --}}
+                                <span class="fw-bold text-primary">
+                                    ₹{{ $related->final_price ?? $related->mrp }}
+                                </span>
+
+                                {{-- MRP + Discount --}}
+                                @if($related->mrp > ($related->final_price ?? $related->mrp))
+                                @php
+                                $discount = round((($related->mrp - $related->final_price) / $related->mrp) * 100);
+                                @endphp
+
+                                <small class="text-muted text-decoration-line-through">
+                                    ₹{{ $related->mrp }}
+                                </small>
+
+                                <span class="badge bg-danger">
+                                    {{ $discount }}% OFF
+                                </span>
+                                @endif
+
+                            </div>
+
                         </div>
                     </a>
 
-                    <form action="{{ route('add_cart') }}" method="POST" class="add-to-cart-form d-flex align-items-center gap-3 flex-wrap">
+                    {{-- ADD TO CART --}}
+                    <form action="{{ route('add_cart') }}"
+                        method="POST"
+                        class="add-to-cart-form px-2 pb-3">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <!-- <div class="qty-box d-inline-flex align-items-center gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-minus">-</button>
-                            <input type="number" name="qty" value="1" min="1" class="form-control text-center qty-input" style="width:60px">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-plus">+</button>
-                        </div> -->
-
-                        <button class="btn btn-primary rounded-pill px-4">
+                        <button class="btn btn-primary w-100 rounded-pill">
                             <i class="fa fa-shopping-bag me-2"></i>Add to Cart
                         </button>
                     </form>
@@ -199,7 +356,6 @@
             </div>
             @endforeach
         </div>
-
     </div>
 
 </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AboutPage;
 use Illuminate\Http\Request;
 use App\Models\Banner;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ContactDetail;
@@ -39,13 +40,12 @@ class WebsiteController extends Controller
 
         //letest product
         $latestPro = Product::whereNull('deleted_at')
-            ->orderBy('id', 'DESC')   // latest first (id किंवा created_at)
-            ->take(12)                // 12 products
-            ->get();
-
-        $categoriestop = Category::orderBy('id', 'DESC')
+            ->orderBy('id', 'DESC')
             ->take(12)
             ->get();
+        $brands = Brand::where('status', 1)->get();
+
+        $categoriestop = Category::orderBy('id', 'DESC')->get();
 
         // category id
         $categoryId = $request->category_id;
@@ -72,7 +72,8 @@ class WebsiteController extends Controller
             'allProducts',
             'categoriestop',
             'categoryProducts',
-            'latestPro'
+            'latestPro',
+            'brands'
         ));
     }
 
@@ -191,6 +192,9 @@ class WebsiteController extends Controller
             'user_id' => $userId,
         ]);
 
+        // Use FINAL PRICE always
+        $price = $product->final_price;
+
         // Check if product already exists
         $item = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
@@ -198,23 +202,24 @@ class WebsiteController extends Controller
 
         if ($item) {
             $item->qty += $qty;
-            $item->line_total = $item->qty * $item->price;
+            $item->price = $price; // 🔥 ensure updated price
+            $item->line_total = $item->qty * $price;
             $item->save();
         } else {
             CartItem::create([
                 'cart_id'    => $cart->id,
                 'product_id' => $product->id,
                 'qty'        => $qty,
-                'price'      => $product->mrp,
-                'line_total' => $product->mrp * $qty,
+                'price'      => $price,              // ✅ final_price
+                'line_total' => $price * $qty,        // ✅ final_price * qty
             ]);
         }
 
-        //  Recalculate totals
+        // Recalculate totals
         $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
         $cartQty  = CartItem::where('cart_id', $cart->id)->sum('qty');
 
-        //  Update cart properly
+        // Update cart
         $cart->update([
             'quantity' => $cartQty,
             'subtotal' => $subtotal,
@@ -224,6 +229,7 @@ class WebsiteController extends Controller
         return redirect()->route('cart')
             ->with('success', 'Product added to cart');
     }
+
 
     public function cart()
     {

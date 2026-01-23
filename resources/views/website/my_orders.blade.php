@@ -240,7 +240,7 @@
                         <!-- Profile Image & Name -->
                         <div class="d-flex align-items-center gap-3 mb-3">
                             @if(Auth::user()->profile_photo)
-                            <img src="{{ asset('storage/profile_photos/' . Auth::user()->profile_photo) }}"
+                            <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}"
                                 class="rounded-circle border"
                                 width="90"
                                 height="90"
