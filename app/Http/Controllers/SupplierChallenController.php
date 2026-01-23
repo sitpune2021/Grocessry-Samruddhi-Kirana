@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 class SupplierChallenController extends Controller
 {
 
+
     public function index()
     {
         $challans = SupplierChallan::with([
@@ -34,7 +35,7 @@ class SupplierChallenController extends Controller
 
     private function generateChallanNo()
     {
-        $lastId = \App\Models\SupplierChallan::max('id') + 1;
+        $lastId = SupplierChallan::max('id') + 1;
         return 'SCH-' . str_pad($lastId, 5, '0', STR_PAD_LEFT);
     }
 
@@ -104,9 +105,11 @@ class SupplierChallenController extends Controller
 
                 SupplierChallanItem::create([
                     'supplier_challan_id' => $challan->id,
-                    'product_id' => $item['product_id'],
-                    'ordered_qty' => $item['received_qty'],
-                    'received_qty' => $item['received_qty'],
+                    'category_id'        => $item['category_id'],
+                    'sub_category_id'    => $item['sub_category_id'],
+                    'product_id'         => $item['product_id'],
+                    'ordered_qty'        => $item['received_qty'],
+                    'received_qty'       => $item['received_qty'],
                 ]);
 
                 Log::info('Supplier Challan item added', [
@@ -142,7 +145,6 @@ class SupplierChallenController extends Controller
             return back()->with('error', 'Something went wrong while saving challan');
         }
     }
-
 
     public function show(string $id)
     {
@@ -182,8 +184,6 @@ class SupplierChallenController extends Controller
             'purchaseOrders' => PurchaseOrder::all()
         ]);
     }
-
-
 
     public function update(Request $request, string $id)
     {
@@ -324,4 +324,6 @@ class SupplierChallenController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+
 }
