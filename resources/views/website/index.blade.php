@@ -48,8 +48,13 @@
     </div>
     <!-- category main -->
     <div class="container py-4">
-        <div class="category-slider">
+        <div class="col-lg-4 mb-4" style="margin:auto; text-align:center;">
+            <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">
+                Popular Categories
+            </h3>
+        </div>
 
+        <div class="category-slider">
             @foreach($categoriestop as $category)
             <div class="category-col">
                 <a href="{{ route('website.category-products', $category->slug) }}"
@@ -69,7 +74,6 @@
 
         </div>
     </div>
-
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
@@ -178,7 +182,7 @@
 
                         <div class="mt-4 d-flex flex-column align-items-end">
                             {{-- Pagination --}}
-                            {{ $allProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
+                            {{ $allProducts->onEachSide(0)->links() }}
                         </div>
 
                     </div>
@@ -272,13 +276,9 @@
                             <p class="text-center">No products found</p>
                             @endforelse
                         </div>
-
-
                         <div class="mt-4 d-flex flex-column align-items-end">
                             {{-- Pagination --}}
-                            {{ $categoryProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
-
-
+                            {{ $categoryProducts->onEachSide(0)->links() }}
                         </div>
                     </div>
                 </div>
@@ -287,11 +287,11 @@
     </div>
 
     <!-- slide product  -->
-    <div class="container py-2">
+    <div class="container p-0 ">
         @foreach($cate as $category)
         @if($category->products->count())
 
-        <div class="row p-3">
+        <div class="row p-2">
             <div class="col text-start">
                 <h3 class="fw-bold text-dark">{{ $category->name }}</h3>
             </div>
@@ -360,7 +360,7 @@
     </div>
 
     <div class="container py-2">
-        <div class="row p-3">
+        <div class="row p-2">
             <div class="col text-start">
                 <h3 class="fw-bold text-dark">Latest Products</h3>
             </div>
@@ -428,7 +428,7 @@
     </div>
 
     <div class="container py-2">
-        <div class="row p-3">
+        <div class="row p-2">
             <div class="col text-start">
                 <h3 class="fw-bold text-dark">Top Brands</h3>
             </div>
@@ -446,63 +446,66 @@
     </div>
 
     <!-- Featurs Section Start -->
-    <div class="container-fluid featurs">
-        <div class="container py-4 p">
-            <div class="row g-4">
-                <!-- Feature 1 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-car-side fa-2x text-white"></i>
-                        </div>
-                        <div class="featurs-content text-center">
-                            <h5>Free Shipping</h5>
-                            <p class="mb-0">Free on order over $300</p>
-                        </div>
-                    </div>
-                </div>
+ <div class="container featurs py-5">
+    <div class="container">
+        <div class="row g-3">
 
-                <!-- Feature 2 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-user-shield fa-2x text-white"></i>
-                        </div>
-                        <div class="featurs-content text-center">
-                            <h5>Security Payment</h5>
-                            <p class="mb-0">100% security payment</p>
-                        </div>
+            <!-- Feature 1 -->
+            <div class="col-6 col-md-3">
+                <div class="featurs-item">
+                    <div class="featurs-icon">
+                        <i class="fas fa-car-side"></i>
                     </div>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-exchange-alt fa-2x text-white"></i>
-                        </div>
-                        <div class="featurs-content text-center">
-                            <h5>30 Day Return</h5>
-                            <p class="mb-0">30 day money guarantee</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fa fa-phone-alt fa-2x text-white"></i>
-                        </div>
-                        <div class="featurs-content text-center">
-                            <h5>24/7 Support</h5>
-                            <p class="mb-0">Support every time fast</p>
-                        </div>
+                    <div class="featurs-content">
+                        <h5>Free Shipping</h5>
+                        <p>Free on orders over $300</p>
                     </div>
                 </div>
             </div>
+
+            <!-- Feature 2 -->
+            <div class="col-6 col-md-3">
+                <div class="featurs-item">
+                    <div class="featurs-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="featurs-content">
+                        <h5>Secure Payment</h5>
+                        <p>100% secure payment</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-6 col-md-3">
+                <div class="featurs-item">
+                    <div class="featurs-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="featurs-content">
+                        <h5>30 Day Return</h5>
+                        <p>30-day money guarantee</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-6 col-md-3">
+                <div class="featurs-item">
+                    <div class="featurs-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="featurs-content">
+                        <h5>24/7 Support</h5>
+                        <p>Fast support anytime</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
+</div>
+
 
 </body>
 <script>

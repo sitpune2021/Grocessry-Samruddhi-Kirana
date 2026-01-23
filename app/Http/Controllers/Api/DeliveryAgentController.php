@@ -1009,61 +1009,165 @@ class DeliveryAgentController extends Controller
     public function startDuty(Request $request)
     {
         $agent = $request->user();
+        $now = now();
 
-        $request->validate([
-            'status' => 'required|in:online'
-        ]);
+        // FIX invalid state automatically
+        if ($agent->is_online == 1 && !$agent->duty_start_time) {
+            $agent->update([
+                'is_online' => 0
+            ]);
+        }
 
-        // already online check
-        if ($agent->is_online) {
+        // Already active
+        if ($agent->is_online == 1 && $agent->duty_start_time) {
             return response()->json([
                 'status' => false,
                 'message' => 'Already online'
             ], 422);
         }
 
-        $startedAt = now();
-
+        // Start / Resume duty
         $agent->update([
             'is_online' => 1,
-            'duty_started_at' => $startedAt,
+            'duty_start_time' => $now,
+            'duty_paused_at' => null
         ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Duty started',
-            'todayDutyTime' => 0,
-            'startedAt' => $startedAt
+            'todayDutyTime' => $agent->total_duty_minutes,
+            'startedAt' => $now
         ]);
     }
+
     public function pauseDuty(Request $request)
     {
         $agent = $request->user();
 
-        if (!$agent->is_online || !$agent->duty_started_at) {
+        if ($agent->is_online != 1 || !$agent->duty_start_time) {
             return response()->json([
                 'status' => false,
-                'message' => 'Duty not started'
+                'message' => 'Duty not active'
             ], 422);
         }
 
         $pausedAt = now();
 
-        // calculate duty time in minutes
-        $todayDutyTime = $pausedAt->diffInMinutes($agent->duty_started_at);
+        $minutes = $pausedAt->diffInMinutes(
+            \Carbon\Carbon::parse($agent->duty_start_time)
+        );
 
         $agent->update([
             'is_online' => 0,
-            'today_duty_minutes' => $agent->today_duty_minutes + $todayDutyTime,
-            'duty_started_at' => null,
+            'duty_start_time' => null,
             'duty_paused_at' => $pausedAt,
+            'total_duty_minutes' => $agent->total_duty_minutes + $minutes
         ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Duty paused',
-            'todayDutyTime' => $agent->today_duty_minutes,
+            'todayDutyTime' => $agent->total_duty_minutes,
             'pausedAt' => $pausedAt
+        ]);
+    }
+    public function resumeDuty(Request $request)
+    {
+        $agent = $request->user();
+
+        // ❌ Cannot resume if already online
+        if ($agent->is_online == 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Duty already active'
+            ], 422);
+        }
+
+        // ❌ Cannot resume if never started
+        if (!$agent->duty_paused_at) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Duty not paused'
+            ], 422);
+        }
+
+        $resumedAt = now();
+
+        $agent->update([
+            'is_online' => 1,
+            'duty_start_time' => $resumedAt,
+            'duty_paused_at' => null
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Duty resumed',
+            'todayDutyTime' => $agent->total_duty_minutes,
+            'resumedAt' => $resumedAt
+        ]);
+    }
+    public function stopDuty(Request $request)
+    {
+        $agent = $request->user();
+
+        // If already offline
+        if ($agent->is_online == 0 && !$agent->duty_start_time) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Already offline'
+            ], 422);
+        }
+
+        $endedAt = now();
+        $totalMinutes = $agent->total_duty_minutes;
+
+        // If duty currently active, calculate session time
+        if ($agent->is_online == 1 && $agent->duty_start_time) {
+            $sessionMinutes = $endedAt->diffInMinutes(
+                \Carbon\Carbon::parse($agent->duty_start_time)
+            );
+            $totalMinutes += $sessionMinutes;
+        }
+
+        // Stop duty completely
+        $agent->update([
+            'is_online' => 0,
+            'duty_start_time' => null,
+            'duty_paused_at' => null,
+            'total_duty_minutes' => $totalMinutes
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Duty stopped',
+            'todayDutyTime' => $totalMinutes,
+            'endedAt' => $endedAt
+        ]);
+    }
+    public function partnerSummary(Request $request)
+    {
+        $agent = $request->user();
+
+        // Calculate live duty time if online
+        $todayDutyTime = $agent->total_duty_minutes;
+
+        if ($agent->is_online == 1 && $agent->duty_start_time) {
+            $todayDutyTime += now()->diffInMinutes(
+                \Carbon\Carbon::parse($agent->duty_start_time)
+            );
+        }
+
+        return response()->json([
+            'status' => true,
+            'isOnline' => (bool) $agent->is_online,
+            'todayDutyTime' => $todayDutyTime,
+            'stats' => [
+                // placeholders (extend later)
+                'totalOrdersToday' => 0,
+                'deliveredOrders' => 0,
+                'earningsToday' => 0
+            ]
         ]);
     }
 }

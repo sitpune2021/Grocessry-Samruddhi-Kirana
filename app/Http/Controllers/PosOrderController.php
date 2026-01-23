@@ -29,6 +29,7 @@ class PosOrderController extends Controller
             'items' => 'required',
             'payment_method' => 'required|in:cash,upi,card',
             'discount' => 'nullable|numeric|min:0',
+             'customer_id' => 'nullable|exists:users,id',
         ]);
 
         $items = json_decode($request->items, true);
@@ -37,6 +38,8 @@ class PosOrderController extends Controller
             return back()->withErrors(['items' => 'Cart is empty']);
         }
         $discount = (float) $request->discount;
+        $customerId = $request->customer_id;
+
         $user = Auth::user();
 
         if (!$user->warehouse_id) {
@@ -48,6 +51,7 @@ class PosOrderController extends Controller
             'channel'      => 'pos',
             'order_type'   => 'walkin',
             'warehouse_id' => $user->warehouse_id,
+            'user_id'      => $customerId,
             'items'        => [],
             'discount'     => $discount,
             'payment'      => [
@@ -77,54 +81,6 @@ class PosOrderController extends Controller
             ->route('pos.invoice', $order->id)
             ->with('success', 'Order completed successfully');
     }
-    // public function searchProducts(Request $request)
-    // {
-    //     $request->validate([
-    //         'q' => 'required|string|min:1',
-    //     ]);
-
-    //     $user = Auth::user();
-
-    //     $products = DB::table('products')
-    //         ->leftJoin('units', 'units.id', '=', 'products.unit_id')
-    //         ->whereNull('products.deleted_at')
-
-    //         ->where(function ($q) use ($request) {
-    //             $q->where('products.name', 'like', "%{$request->q}%")
-    //               ->orWhere('products.sku', 'like', "%{$request->q}%");
-    //                           //   ->orWhere('products.barcode', 'like', "%{$request->q}%");
-
-    //         })
-
-    //         ->whereExists(function ($q) use ($user) {
-    //             $q->select(DB::raw(1))
-    //               ->from('product_batches')
-    //               ->whereColumn('product_batches.product_id', 'products.id')
-    //               ->where('product_batches.warehouse_id', $user->warehouse_id)
-    //               ->where('product_batches.quantity', '>', 0)
-    //               ->where(function ($exp) {
-    //                   $exp->whereNull('product_batches.expiry_date')
-    //                       ->orWhere('product_batches.expiry_date', '>=', now());
-    //               });
-    //         })
-
-    //         ->select(
-    //             'products.id',
-    //             'products.name',
-    //             'products.mrp',
-    //             'products.final_price',
-    //             'products.gst_percentage',
-    //             'products.unit_value',
-    //             'units.short_name as unit'
-    //         )
-    //         ->orderBy('products.name')
-    //         ->limit(20)
-    //         ->get();
-    // dd($products);
-
-    //     return response()->json($products);
-    // }
-
     public function searchProducts(Request $request)
     {
         $request->validate([
@@ -228,6 +184,38 @@ class PosOrderController extends Controller
 
         return response()->json($product);
     }
+
+    public function searchCustomers(Request $request)
+{
+    $request->validate([
+        'q' => 'required|string|min:1',
+    ]);
+
+    $cashier = Auth::user();
+
+    $customers = DB::table('users as u')
+        ->join('roles as r', 'r.id', '=', 'u.role_id')   // 👈 dynamic roles
+        ->where('r.name', 'customer')                    // 👈 customer role
+        ->whereNotNull('u.warehouse_id')                 // 👈 ignore NULL
+        ->where('u.warehouse_id', $cashier->warehouse_id)
+        ->whereNull('u.deleted_at')
+        ->where(function ($q) use ($request) {
+            $q->where('u.first_name', 'like', "%{$request->q}%")
+              ->orWhere('u.last_name', 'like', "%{$request->q}%")
+              ->orWhere('u.mobile', 'like', "%{$request->q}%");
+        })
+        ->select(
+            'u.id',
+            DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"),
+            'u.mobile'
+        )
+        ->orderBy('u.first_name')
+        ->limit(10)
+        ->get();
+
+    return response()->json($customers);
+}
+
 
 
     public function invoice(Order $order)
