@@ -56,7 +56,7 @@ return [
         //         ['title' => 'Warehouse', 'route' => 'warehouse.index'],
         //     ],
         // ],
-         [
+        [
             'type'  => 'single',
             'title' => 'Warehouse / Distribution',
             'icon'  => 'bx bx-store',
@@ -69,7 +69,7 @@ return [
             'key'   => 'suppplierMenu',
             'title' => 'Supplier Management',
             'icon'  => 'bx bx-package',
-            'roles' => [1, 2], // ✅ allowed roles
+            'roles' => [1, 2], // allowed roles
             'children' => [
                 ['title' => 'Supplier Details', 'route' => 'supplier.index'],
                 ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
@@ -149,7 +149,7 @@ return [
             'key'   => 'shopMenu',
             'title' => 'Delivery Agent',
             'icon'  => 'bx bx-store',
-            'exclude_roles' => [3],
+            'exclude_roles' => [3, 4],
             'children' => [
                 // ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
                 ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
@@ -199,9 +199,8 @@ return [
             'key'   => 'CustomerMenu',
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
-            'exclude_roles' => [3, 4],
             'children' => [
-                ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
+                ['title' => 'Customer Order', 'route' => 'customer-orders.index', 'exclude_roles' => [3, 4],],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
         ],
@@ -218,7 +217,7 @@ return [
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
                 ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
                 ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
-                ['title' => 'Web-Site Order', 'route' => 'userorder'],
+                ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],
 
@@ -260,7 +259,7 @@ return [
             'key'   => 'wesiteMenu',
             'title' => 'Website Management',
             'icon'  => 'bx bx-store',
-            'exclude_roles' => [2, 3, 4],
+            'roles' => [1],
             'children' => [
                 ['title' => 'Banner Management', 'route' => 'banners.index'],
                 ['title' => 'User Contact Details', 'route' => 'admin.contacts'],
