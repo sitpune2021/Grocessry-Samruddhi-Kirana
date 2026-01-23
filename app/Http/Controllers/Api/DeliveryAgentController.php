@@ -1006,4 +1006,64 @@ class DeliveryAgentController extends Controller
             'data' => $graph
         ]);
     }
+    public function startDuty(Request $request)
+    {
+        $agent = $request->user();
+
+        $request->validate([
+            'status' => 'required|in:online'
+        ]);
+
+        // already online check
+        if ($agent->is_online) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Already online'
+            ], 422);
+        }
+
+        $startedAt = now();
+
+        $agent->update([
+            'is_online' => 1,
+            'duty_started_at' => $startedAt,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Duty started',
+            'todayDutyTime' => 0,
+            'startedAt' => $startedAt
+        ]);
+    }
+    public function pauseDuty(Request $request)
+    {
+        $agent = $request->user();
+
+        if (!$agent->is_online || !$agent->duty_started_at) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Duty not started'
+            ], 422);
+        }
+
+        $pausedAt = now();
+
+        // calculate duty time in minutes
+        $todayDutyTime = $pausedAt->diffInMinutes($agent->duty_started_at);
+
+        $agent->update([
+            'is_online' => 0,
+            'today_duty_minutes' => $agent->today_duty_minutes + $todayDutyTime,
+            'duty_started_at' => null,
+            'duty_paused_at' => $pausedAt,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Duty paused',
+            'todayDutyTime' => $agent->today_duty_minutes,
+            'pausedAt' => $pausedAt
+        ]);
+    }
 }

@@ -16,6 +16,7 @@ use App\Models\SubCategory;
 use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\SupplierChallan;
 
 
 class stockWarehouseController extends Controller
@@ -24,7 +25,7 @@ class stockWarehouseController extends Controller
     {
         $user = Auth::user();
 
-    
+
         $query = WarehouseStock::with([
             'warehouse:id,name,type,parent_id',
             'category:id,name',
@@ -32,15 +33,12 @@ class stockWarehouseController extends Controller
             'supplier:id,supplier_name',
         ])->orderBy('id', 'desc');
 
-      
-        if ($user->role_id == 1) {
-             if ($request->filled('warehouse_id')) {
-        $query->where('warehouse_id', $request->warehouse_id);
-    }
-        }
 
-   
-        elseif ($user->warehouse->type === 'master') {
+        if ($user->role_id == 1) {
+            if ($request->filled('warehouse_id')) {
+                $query->where('warehouse_id', $request->warehouse_id);
+            }
+        } elseif ($user->warehouse->type === 'master') {
 
             $masterWarehouseId = $user->warehouse_id;
 
@@ -48,13 +46,13 @@ class stockWarehouseController extends Controller
                 ->where('parent_id', $masterWarehouseId)
                 ->pluck('id');
 
-          
+
             $talukaIds = Warehouse::where('type', 'taluka')
                 ->whereIn('parent_id', $districtIds)
                 ->pluck('id');
 
-            $shopIds = Warehouse::where('type','distribution_center')
-                ->whereIn('parent_id',$talukaIds)
+            $shopIds = Warehouse::where('type', 'distribution_center')
+                ->whereIn('parent_id', $talukaIds)
                 ->pluck('id');
 
 
@@ -64,9 +62,7 @@ class stockWarehouseController extends Controller
                 ->merge($shopIds);
 
             $query->whereIn('warehouse_id', $allowedWarehouseIds);
-        }
-        
-        elseif ($user->warehouse->type === 'district') {
+        } elseif ($user->warehouse->type === 'district') {
 
             $districtWarehouseId = $user->warehouse_id;
 
@@ -74,8 +70,8 @@ class stockWarehouseController extends Controller
                 ->where('parent_id', $districtWarehouseId)
                 ->pluck('id');
 
-             $shopIds = Warehouse::where('type','distribution_center')
-                ->whereIn('parent_id',$talukaIds)
+            $shopIds = Warehouse::where('type', 'distribution_center')
+                ->whereIn('parent_id', $talukaIds)
                 ->pluck('id');
 
             $allowedWarehouseIds = collect([$districtWarehouseId])
@@ -83,9 +79,7 @@ class stockWarehouseController extends Controller
                 ->merge($shopIds);
 
             $query->whereIn('warehouse_id', $allowedWarehouseIds);
-        }
-
-        elseif ($user->warehouse->type === 'taluka') {
+        } elseif ($user->warehouse->type === 'taluka') {
 
             $talukaWarehouseId = $user->warehouse_id;
 
@@ -98,17 +92,14 @@ class stockWarehouseController extends Controller
                 ->merge($shopIds);
 
             $query->whereIn('warehouse_id', $allowedWarehouseIds);
-        }
-
-    
-        else {
+        } else {
             $query->where('warehouse_id', $user->warehouse_id);
         }
 
-     
+
         $stocks = $query->paginate(20);
 
-        
+
         $warehouses = $user->role_id == 1
             ? Warehouse::select('id', 'name')->orderBy('name')->get()
             : collect();
@@ -118,6 +109,7 @@ class stockWarehouseController extends Controller
             compact('stocks', 'warehouses')
         );
     }
+
 
 
     public function addStockForm()
@@ -138,13 +130,17 @@ class stockWarehouseController extends Controller
         $sub_categories = [];
         $suppliers = Supplier::select('id', 'supplier_name')->get();
 
-        // ✅ IMPORTANT: define warehouses always
+        // ✅ define warehouses
         $warehouses = collect();
-
-        // ✅ Only Super Admin gets all warehouses
         if ($user->role_id == 1) {
             $warehouses = Warehouse::orderBy('name')->get();
         }
+
+        // ✅ NEW: Supplier Challans (Received only)
+        $challans = SupplierChallan::with('supplier')
+            ->where('status', 'received')
+            ->orderBy('id', 'desc')
+            ->get();
 
         return view(
             'menus.warehouse.add-stock.add-stock',
@@ -157,10 +153,12 @@ class stockWarehouseController extends Controller
                 'sub_categories',
                 'suppliers',
                 'readonly',
-                'warehouses'
+                'warehouses',
+                'challans' // ✅ PASS TO VIEW
             )
         );
     }
+
 
     public function byCategory($categoryId)
     {
@@ -445,5 +443,27 @@ class stockWarehouseController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
+    }
+    public function getSupplierChallan($id)
+    {
+        $challan = SupplierChallan::with([
+            'items.product.subCategory.category',
+            'supplier',
+            'warehouse'
+        ])->findOrFail($id);
+
+        return response()->json([
+            'warehouse_id' => $challan->warehouse_id,
+            'supplier_id'  => $challan->supplier_id,
+            'challan_no'   => $challan->challan_no,
+            'items' => $challan->items->map(function ($item) {
+                return [
+                    'category_id'     => $item->product->category_id,
+                    'sub_category_id' => $item->product->sub_category_id,
+                    'product_id'      => $item->product_id,
+                    'quantity'        => $item->received_qty,
+                ];
+            })
+        ]);
     }
 }

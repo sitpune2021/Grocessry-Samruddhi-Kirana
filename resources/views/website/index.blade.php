@@ -3,7 +3,9 @@
 @section('title', 'Home')
 
 @section('content')
+<style>
 
+</style>
 
 <body>
 
@@ -12,8 +14,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <!-- Hero Start -->
-
+    <!-- slider header Start -->
     <div class="container my-3">
         <div class="row">
             <div class="col-12">
@@ -45,13 +46,12 @@
             </div>
         </div>
     </div>
-
+    <!-- category main -->
     <div class="container py-4">
-        <div class="row g-3 category-row">
+        <div class="category-slider">
 
             @foreach($categoriestop as $category)
             <div class="category-col">
-
                 <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
@@ -63,14 +63,13 @@
                     </div>
 
                     <p class="category-title">{{ $category->name }}</p>
-
                 </a>
-
             </div>
             @endforeach
 
         </div>
     </div>
+
 
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
@@ -79,8 +78,11 @@
 
                 <div class="row g-4">
                     <div class="col-lg-4 text-start">
-                        <h4>Our Organic Products</h4>
+                        <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">
+                            Our Products
+                        </h3>
                     </div>
+
                     <div class="col-lg-8 text-end">
                         <ul class="nav nav-pills d-inline-flex text-center">
                             <li class="nav-item">
@@ -108,7 +110,15 @@
                             @foreach($allProducts as $product)
                             <div class="col-md-6 col-lg-3">
                                 <div class="rounded position-relative fruite-item">
-                                    <div class="badge-off">40% OFF</div>
+
+                                    {{-- DISCOUNT --}}
+                                    @if($product->mrp > $product->final_price)
+                                    @php
+                                    $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                                    @endphp
+                                    <div class="offer-badge">{{ $discount }}% OFF</div>
+                                    @endif
+
                                     @php
                                     $images = $product->product_images;
                                     $image = $images[0] ?? null;
@@ -132,18 +142,37 @@
                                         </a>
                                     </div>
 
-                                    <div class="p-4 border border-top-0  ">
+                                    <div class="p-4 border border-top-0">
+
+                                        <div class="delivery-time mb-1">Free delivery</div>
 
                                         <form action="{{ route('add_cart') }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                            <h4>{{ $product->name }}</h4>
-                                            <p>₹ {{ $product->mrp }}</p>
-                                            <button type="submit" class="btn-add-sm">Add to cart</button>
+
+                                            <h6 class="product-title">
+                                                {{ Str::limit(Str::title($product->name), 40) }}
+                                            </h6>
+
+                                            <p class="product-unit">
+                                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                                {{ Str::title(optional($product->unit)->name) }}
+                                            </p>
+
+                                            <div class="price-row">
+                                                <div class="price-box">
+                                                    <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                                    <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                                                </div>
+
+                                                <button type="submit" class="btn-add-sm">ADD</button>
+                                            </div>
+
                                         </form>
                                     </div>
                                 </div>
                             </div>
+
                             @endforeach
                         </div>
 
@@ -177,38 +206,64 @@
                             @forelse($categoryProducts as $product)
                             <div class="col-md-2 col-lg-2">
                                 <div class="rounded position-relative fruite-item">
-                                    <div class="badge-off">40% OFF</div>
+
+                                    {{-- DISCOUNT --}}
+                                    @if($product->mrp > $product->final_price)
                                     @php
-                                    $images = $product->product_images; // Already array
+                                    $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                                    @endphp
+                                    <div class="offer-badge">{{ $discount }}% OFF</div>
+                                    @endif
+
+                                    @php
+                                    $images = $product->product_images;
                                     $image = $images[0] ?? null;
                                     @endphp
 
                                     <div class="fruite-img">
-                                        <a href="{{ route('productdetails', $product->id) }}"></a>
-                                        @if($image)
-                                        <img
-                                            src="{{ asset('storage/products/'.$image) }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="{{ $product->name }}"
-                                            style="height: 200px; object-fit: cover;">
-                                        @else
-                                        <img
-                                            src="{{ asset('website/img/no-image.png') }}"
-                                            class="img-fluid w-100 rounded-top"
-                                            alt="No Image"
-                                            style="height: 200px; object-fit: cover;">
-                                        @endif
+                                        <a href="{{ route('productdetails', $product->id) }}">
+                                            @if($image)
+                                            <img
+                                                src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="{{ $product->name }}"
+                                                style="height: 200px; object-fit: cover;">
+                                            @else
+                                            <img
+                                                src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 rounded-top"
+                                                alt="No Image"
+                                                style="height: 200px; object-fit: cover;">
+                                            @endif
                                         </a>
                                     </div>
 
-                                    <div class="p-4 border border-top-0  ">
+                                    <div class="p-4 border border-top-0">
+
+                                        <div class="delivery-time mb-1">Free delivery</div>
 
                                         <form action="{{ route('add_cart') }}" method="POST">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                            <h4>{{ $product->name }}</h4>
-                                            <p>₹ {{ $product->mrp }}</p>
-                                            <button type="submit" class="btn-add-sm">Add to cart</button>
+
+                                            <h6 class="product-title">
+                                                {{ Str::limit(Str::title($product->name), 40) }}
+                                            </h6>
+
+                                            <p class="product-unit">
+                                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                                {{ Str::title(optional($product->unit)->name) }}
+                                            </p>
+
+                                            <div class="price-row">
+                                                <div class="price-box">
+                                                    <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                                    <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                                                </div>
+
+                                                <button type="submit" class="btn-add-sm">ADD</button>
+                                            </div>
+
                                         </form>
                                     </div>
                                 </div>
@@ -217,6 +272,7 @@
                             <p class="text-center">No products found</p>
                             @endforelse
                         </div>
+
 
                         <div class="mt-4 d-flex flex-column align-items-end">
                             {{-- Pagination --}}
@@ -234,9 +290,10 @@
     <div class="container py-2">
         @foreach($cate as $category)
         @if($category->products->count())
+
         <div class="row p-3">
             <div class="col text-start">
-                <h4 class="fw-bold text-dark">{{ $category->name }}</h4>
+                <h3 class="fw-bold text-dark">{{ $category->name }}</h3>
             </div>
         </div>
 
@@ -248,29 +305,48 @@
                 @php
                 $image = $product->product_images[0] ?? null;
                 @endphp
+
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <div class="badge-off">40% OFF</div>
+
+                        {{-- DISCOUNT --}}
+                        @if($product->mrp > $product->final_price)
+                        @php
+                        $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                        @endphp
+                        <div class="offer-badge">{{ $discount }}% OFF</div>
+                        @endif
+
                         <a href="{{ route('productdetails', $product->id) }}">
                             <div class="product-sm-img">
                                 <img src="{{ $image 
-                                    ? asset('storage/products/'.$image) 
-                                    : asset('website/img/no-image.png') }}">
+                                ? asset('storage/products/'.$image) 
+                                : asset('website/img/no-image.png') }}">
                             </div>
+
                             <div class="product-sm-title">
-                                {{ Str::limit($product->name, 35) }}
+                                {{ Str::limit(Str::title($product->name), 35) }}
                             </div>
-                            <div class="product-sm-footer">
 
-                                <form action="{{ route('add_cart') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                                    <p>₹ {{ $product->mrp }}</p>
-                                    <button type="submit" class="btn-add-sm">Add to cart</button>
-                                </form>
+                            <div class="product-unit">
+                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                {{ Str::title(optional($product->unit)->name) }}
                             </div>
                         </a>
+
+                        <div class="product-sm-footer">
+                            <div>
+                                <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                            </div>
+
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button type="submit" class="btn-add-sm">ADD</button>
+                            </form>
+                        </div>
+
                     </div>
                 </div>
                 @endforeach
@@ -278,16 +354,15 @@
 
             <button class="slider-arrow right">&#10095;</button>
         </div>
+
         @endif
         @endforeach
-
     </div>
 
     <div class="container py-2">
-
         <div class="row p-3">
             <div class="col text-start">
-                <h4 class="fw-bold text-dark">Latest Products</h4>
+                <h3 class="fw-bold text-dark">Latest Products</h3>
             </div>
         </div>
 
@@ -302,36 +377,72 @@
 
                 <div class="product-slide-item">
                     <div class="product-sm-card">
-                        <div class="badge-off">40% OFF</div>
+
+                        {{-- DISCOUNT --}}
+                        @if($product->mrp > $product->final_price)
+                        @php
+                        $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                        @endphp
+                        <div class="offer-badge">{{ $discount }}% OFF</div>
+                        @endif
+
                         <a href="{{ route('productdetails', $product->id) }}">
                             <div class="product-sm-img">
                                 <img src="{{ $image 
-                                ? asset('storage/products/'.$image) 
-                                : asset('website/img/no-image.png') }}">
+                        ? asset('storage/products/'.$image) 
+                        : asset('website/img/no-image.png') }}">
                             </div>
 
                             <div class="product-sm-title">
-                                {{ Str::limit($product->name, 35) }}
+                                {{ Str::limit(Str::title($product->name), 35) }}
                             </div>
 
-                            <div class="product-sm-footer">
-                                <form action="{{ route('add_cart') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                                    <p>₹ {{ $product->mrp }}</p>
-                                    <button type="submit" class="btn-add-sm">Add to cart</button>
-                                </form>
+                            <div class="product-unit">
+                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                {{ Str::title(optional($product->unit)->name) }}
                             </div>
+                        </a>
+
+                        <div class="product-sm-footer">
+                            <div>
+                                <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                            </div>
+
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button type="submit" class="btn-add-sm">ADD</button>
+                            </form>
+                        </div>
+
                     </div>
-                    </a>
                 </div>
                 @endforeach
             </div>
 
+
             <button class="slider-arrow right">&#10095;</button>
         </div>
 
+    </div>
+
+    <div class="container py-2">
+        <div class="row p-3">
+            <div class="col text-start">
+                <h3 class="fw-bold text-dark">Top Brands</h3>
+            </div>
+        </div>
+        <div class="brand-slider p-3" id="brandSlider">
+            <div class="brand-track" id="brandTrack">
+                @foreach($brands as $brand)
+                <div class="brand-col">
+                    <img src="{{ asset('storage/brands/'.$brand->logo) }}"
+                        alt="{{ $brand->name }}">
+                </div>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     <!-- Featurs Section Start -->
@@ -394,6 +505,21 @@
     </div>
 
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const slider = document.querySelector(".category-slider");
+        let scrollAmount = 0;
+
+        setInterval(() => {
+            if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth) {
+                slider.scrollLeft = 0;
+            } else {
+                slider.scrollLeft += 130;
+            }
+        }, 2500); // speed control
+    });
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -426,6 +552,35 @@
 
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const slider = document.getElementById("brandSlider");
+        const track = document.getElementById("brandTrack");
+
+        /* 🔁 clone brands MULTIPLE times */
+        const original = track.innerHTML;
+        track.innerHTML = original + original + original + original;
+
+        let speed = 0.5;
+
+        function infiniteScroll() {
+            slider.scrollLeft += speed;
+
+            if (slider.scrollLeft >= track.scrollWidth / 2) {
+                slider.scrollLeft = 0;
+            }
+
+            requestAnimationFrame(infiniteScroll);
+        }
+
+        infiniteScroll();
+    });
+</script>
+
+
+
 
 
 @endsection

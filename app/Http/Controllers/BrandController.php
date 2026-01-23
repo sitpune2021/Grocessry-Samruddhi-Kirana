@@ -13,19 +13,14 @@ use Illuminate\Support\Facades\Auth;
 
 class BrandController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+   
+
     public function index()
     {
         $brands = Brand::orderBy('created_at', 'desc')->paginate(20);
         return view('menus.brands.index', compact('brands'));
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('menus.brands.add-brands', [
@@ -35,26 +30,6 @@ class BrandController extends Controller
         ]);
     }
 
-//     public function edit($id)
-// {
-//     $brand = Brand::findOrFail($id);
-
-//     return view('menus.brands.add-brands', [
-//         'brand'         => $brand,
-//         'categories'    => Category::select('id', 'name')->orderBy('name')->get(),
-//         'subCategories' => SubCategory::where('category_id', $brand->category_id)
-//                                 ->select('id', 'name')
-//                                 ->orderBy('name')
-//                                 ->get(),
-//         'mode'          => 'edit',
-//     ]);
-// }
-
-
-    /**
-     * Store a newly created resource in storage.
-     */
-
     public function store(Request $request)
     {
 
@@ -62,8 +37,8 @@ class BrandController extends Controller
             'category_id'      => 'required|exists:categories,id',
             'sub_category_id'  => 'required|exists:sub_categories,id',
 
-            'name'             => 'required|string|max:255|unique:brands,name',
-            'slug'             => 'nullable|string|max:255|unique:brands,slug',
+            'name'             => 'required|string|max:255',
+            'slug'             => 'nullable|string|max:255',
             'description'      => 'nullable|string',
             'logo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status'           => 'required|boolean',
@@ -115,10 +90,6 @@ class BrandController extends Controller
         return view('menus.brands.add-brands', compact('brand', 'categories', 'subCategories', 'mode'));
     }
 
-
-    /**
-     * Display the specified resource.
-     */
     public function edit(Brand $brand)
     {
         return view('menus.brands.add-brands', [
@@ -133,7 +104,6 @@ class BrandController extends Controller
             'mode' => 'edit'
         ]);
     }
-
 
     public function update(Request $request, Brand $brand)
     {
@@ -188,7 +158,6 @@ class BrandController extends Controller
             ->with('success', 'Brand updated successfully');
     }
 
-
     public function destroy(Brand $brand)
     {
         $brand->delete();
@@ -209,4 +178,6 @@ class BrandController extends Controller
         // Return JSON if called via AJAX, or back() if standard
         return back();
     }
+
+    
 }

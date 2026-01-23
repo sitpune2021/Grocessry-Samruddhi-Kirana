@@ -22,7 +22,6 @@
                 </div>
             </div>
 
-
             <!-- Search -->
             <x-datatable-search />
 
@@ -40,30 +39,37 @@
                     </thead>
 
                     <tbody>
-                        @forelse ($roles as $role)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $role->name }}</td>
-                            <td>{{ $role->description ?? '-' }}</td>
+                        @php
+                            // 🔹 Descending Sr No calculation with pagination
+                            $srNo = $roles->total() - ($roles->currentPage() - 1) * $roles->perPage();
+                        @endphp
 
-                            <td>
-                                <x-action-buttons 
-                                :view-url="route('roles.show', $role->id)" 
-                                :edit-url="route('roles.edit', $role->id)" 
-                                :delete-url="route('roles.destroy', $role->id)" />
-                            </td>
-                        </tr>
+                        @forelse ($roles as $role)
+                            <tr>
+                                <td>{{ $srNo-- }}</td> <!-- Descending Sr No -->
+                                <td>{{ $role->name }}</td>
+                                <td>{{ $role->description ?? '-' }}</td>
+                                <td>
+                                    <x-action-buttons 
+                                        :view-url="route('roles.show', $role->id)" 
+                                        :edit-url="route('roles.edit', $role->id)" 
+                                        :delete-url="route('roles.destroy', $role->id)" />
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="12" class="text-center text-muted">No role found</td>
-                        </tr>
+                            <tr>
+                                <td colspan="12" class="text-center text-muted">No role found</td>
+                            </tr>
                         @endforelse
                     </tbody>
+
                 </table>
             </div>
 
             <!-- Pagination -->
-            <x-pagination :from="$roles->firstItem()" :to="$roles->lastItem()" :total="$roles->total()" />
+            <div class="px-3 py-2">
+                {{ $roles->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
 
         </div>
     </div>

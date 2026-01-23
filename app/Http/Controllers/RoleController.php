@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\Log;
 
 class RoleController extends Controller
 {
+
+
     public function index()
     {
-        $roles = Role::latest()->paginate(10);
-        $users = User::latest()->paginate(10);
+        //  Roles descending by created_at
+        $roles = Role::orderBy('created_at', 'desc')->paginate(10);
+
+        //  Users descending by created_at
+        $users = User::orderBy('created_at', 'desc')->paginate(10);
 
         return view('roles.index', compact('roles', 'users'));
     }
@@ -25,7 +30,21 @@ class RoleController extends Controller
         return view('roles.add-roles', compact('mode'));
     }
 
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|unique:roles,name',
+    //         'description' => 'nullable|string',
+    //     ]);
 
+    //     Role::create($validated);
+
+    //     return redirect()
+    //         ->route('roles.index')
+    //         ->with('success', 'Role created successfully.');
+    // }
+
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -33,10 +52,37 @@ class RoleController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $roleName = strtolower($validated['name']); // lowercase for uniform comparison
+        $existingRoles = Role::pluck('name')->map(fn($r) => strtolower($r))->toArray();
+
+        // 🔹 Sequence Enforcement
+        if (!in_array('master', $existingRoles)) {
+            // Master role must be first
+            if ($roleName !== 'master') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add Master role first.');
+            }
+        } elseif (!in_array('district', $existingRoles)) {
+            // Master exists, District must come next
+            if ($roleName !== 'district') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add District role next.');
+            }
+        } elseif (!in_array('taluka', $existingRoles)) {
+            // District exists, Taluka must come next
+            if ($roleName !== 'taluka') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add Taluka role next.');
+            }
+        }
+        // 🔹 After Master → District → Taluka, any other role is allowed freely
+
         Role::create($validated);
 
-        return redirect()
-            ->route('roles.index')
+        return redirect()->route('roles.index')
             ->with('success', 'Role created successfully.');
     }
 
@@ -94,4 +140,6 @@ class RoleController extends Controller
                 ->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+
 }
