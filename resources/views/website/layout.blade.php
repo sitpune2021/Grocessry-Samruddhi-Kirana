@@ -735,6 +735,226 @@
             height: 70px;
             object-fit: contain;
         }
+
+
+        /* shop details page  */
+        /* Product image hover effect */
+        .product-image-wrapper {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .product-main-img {
+            transition: transform 0.4s ease;
+        }
+
+        .product-image-wrapper:hover .product-main-img {
+            transform: scale(1.08);
+        }
+
+        .product-hover-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .product-hover-overlay span {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            border: 2px solid #fff;
+            padding: 8px 18px;
+            border-radius: 30px;
+        }
+
+        .product-image-wrapper:hover .product-hover-overlay {
+            opacity: 1;
+        }
+
+        /* Related Products Card */
+        .related-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 6px;
+            background-color: #fff;
+        }
+
+        .related-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .related-card img {
+            height: 150px;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+
+        .related-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .related-card .card-body {
+            padding: 8px;
+        }
+
+        .related-card h6 {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .related-card p {
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .related-card .btn {
+            font-size: 13px;
+            padding: 6px 10px;
+        }
+
+        .offer-badge {
+            background: #253bdf;
+            color: #fff;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+
+
+        .qty-box button {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+        }
+
+        .qty-input {
+            height: 32px;
+            font-size: 14px;
+        }
+
+        /* simi pro */
+
+        .related-card img {
+            height: 120px;
+            object-fit: contain;
+        }
+
+        .related-card h6 {
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .related-card .btn {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+    </style>
+
+    <style>
+        .product-card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: 0.3s;
+            background: #fff;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .discount-ribbon {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .delivery-time {
+            font-size: 12px;
+            color: #444;
+            margin-top: 6px;
+        }
+
+        .product-img {
+            height: 150px;
+            object-fit: contain;
+            padding: 10px;
+        }
+
+        .price {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .mrp {
+            font-size: 13px;
+            color: #888;
+            text-decoration: line-through;
+        }
+
+        .add-btn {
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 4px 14px;
+            background: #fff;
+        }
+
+        .add-btn:hover {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .fruite-item {
+            background: #fff;
+            transition: transform .2s ease;
+        }
+
+        .fruite-item:hover {
+            transform: translateY(-4px);
+        }
+
+        .product-title {
+            font-size: 14px;
+            line-height: 1.3;
+        }
+
+        .product-unit {
+            font-size: 12px;
+        }
+
+        .price-new {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .price-old {
+            font-size: 12px;
+            text-decoration: line-through;
+        }
+
+        
     </style>
 
 </head>
