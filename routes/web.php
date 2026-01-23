@@ -95,6 +95,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
         Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
+        Route::get('/search-customers', [PosOrderController::class, 'searchCustomers']);
     });
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
