@@ -188,6 +188,7 @@ Route::middleware(['auth:admin'])->group(function () {
         '/get-supplier-challan/{id}',
         [stockWarehouseController::class, 'getSupplierChallan']
     );
+
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']

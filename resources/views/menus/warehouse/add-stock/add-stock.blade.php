@@ -63,7 +63,37 @@
                                                     </div>
                                                 </div>
 
+                                                <div class="col-md-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Supplier</label>
+                                                        <select name="supplier_id" class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                            <option value="">Select Supplier</option>
+                                                            @foreach ($suppliers as $supplier)
+                                                                <option value="{{ $supplier->id }}"
+                                                                    {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
+                                                                    {{ $supplier->supplier_name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                        @error('supplier_id')
+                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        @enderror
+                                                    </div>
+                                                </div>
 
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">
+                                                        Challan No <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" name="challan_no" class="form-control"
+                                                        value="{{ old('challan_no', $warehouse_stock->challan_no ?? '') }}"
+                                                        placeholder="Enter challan number"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                    @error('challan_no')
+                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
                                                 {{-- Warehouse --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
@@ -120,7 +150,7 @@
                                                 </div>
 
                                                 {{-- Category --}}
-                                                <div class="col-md-4">
+                                                {{-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Category <span class="text-danger">
                                                                 *</span></label>
@@ -142,9 +172,9 @@
                                                             <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> --}}
 
-                                                <div class="col-md-4">
+                                                {{-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Sub Category <span
                                                                 class="text-danger">*</span></label>
@@ -166,9 +196,9 @@
                                                             <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> --}}
 
-                                                <div class="col-md-4">
+                                                {{-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label for="product_id">Product <span
                                                                 class="text-danger">*</span></label>
@@ -192,11 +222,11 @@
                                                             <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> --}}
 
 
-                                                {{-- Prices --}}
-                                                <div class="col-md-3">
+                                                {{-- qty --}}
+                                                {{-- <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">Quantity <span
                                                                 class="text-danger">*</span></label>
@@ -209,7 +239,8 @@
                                                             <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
-                                                </div>
+                                                </div> --}}
+
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">
                                                         Bill No <span class="text-danger">*</span>
@@ -223,18 +254,6 @@
                                                     @enderror
                                                 </div>
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Challan No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="challan_no" class="form-control"
-                                                        value="{{ old('challan_no', $warehouse_stock->challan_no ?? '') }}"
-                                                        placeholder="Enter challan number"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('challan_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
 
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">
@@ -249,25 +268,40 @@
                                                     @enderror
                                                 </div>
 
+                                                {{-- Supplier Challan Products Table --}}
+                                                <div class="col-12 mt-4">
+                                                    <div class="card border">
+                                                        <div class="card-header bg-light fw-semibold">
+                                                            Supplier Challan Products
+                                                        </div>
 
-                                                <div class="col-md-3">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Supplier</label>
-                                                        <select name="supplier_id" class="form-select"
-                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                            <option value="">Select Supplier</option>
-                                                            @foreach ($suppliers as $supplier)
-                                                                <option value="{{ $supplier->id }}"
-                                                                    {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
-                                                                    {{ $supplier->supplier_name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                        @error('supplier_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
+                                                        <div class="card-body p-0">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered mb-0"
+                                                                    id="challanProductsTable">
+                                                                    <thead class="table-light">
+                                                                        <tr>
+                                                                            <th>Sr No</th>
+                                                                            <th>Category</th>
+                                                                            <th>Sub Category</th>
+                                                                            <th>Product</th>
+                                                                            <th>Quantity</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td colspan="5"
+                                                                                class="text-center text-muted">
+                                                                                Select Supplier Challan to view products
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
+
 
                                                 <!-- Buttons (Right Aligned) -->
                                                 <div class="mt-4 d-flex justify-content-end gap-2">
@@ -463,33 +497,66 @@
                 .then(res => res.json())
                 .then(data => {
 
-                    // Warehouse
-                    document.querySelector('[name="warehouse_id"]').value = data.warehouse_id;
+                    /* ===============================
+                       ✅ AUTO FILL FIELDS
+                    =============================== */
 
                     // Supplier
-                    document.querySelector('[name="supplier_id"]').value = data.supplier_id;
+                    const supplierSelect = document.querySelector('[name="supplier_id"]');
+                    if (supplierSelect) {
+                        supplierSelect.value = data.supplier_id;
+                    }
+
+                    // Warehouse (dropdown or hidden both supported)
+                    const warehouseField = document.querySelector('[name="warehouse_id"]');
+                    if (warehouseField) {
+                        warehouseField.value = data.warehouse_id;
+                    }
 
                     // Challan No
-                    document.querySelector('[name="challan_no"]').value = data.challan_no;
+                    const challanInput = document.querySelector('[name="challan_no"]');
+                    if (challanInput) {
+                        challanInput.value = data.challan_no;
+                    }
 
-                    // Category
-                    document.getElementById('category_id').value = data.items[0].category_id;
-                    document.getElementById('category_id').dispatchEvent(new Event('change'));
+                    /* ===============================
+                       ✅ FILL PRODUCTS TABLE
+                    =============================== */
 
-                    // Sub Category (delay for ajax)
-                    setTimeout(() => {
-                        document.getElementById('sub_category_id').value = data.items[0]
-                            .sub_category_id;
-                        document.getElementById('sub_category_id').dispatchEvent(new Event('change'));
-                    }, 400);
+                    const tbody = document.querySelector('#challanProductsTable tbody');
+                    tbody.innerHTML = '';
 
-                    // Product
-                    setTimeout(() => {
-                        document.getElementById('product_id').value = data.items[0].product_id;
-                    }, 800);
+                    if (!data.items || data.items.length === 0) {
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                No products found
+                            </td>
+                        </tr>`;
+                        return;
+                    }
 
-                    // Quantity
-                    document.querySelector('[name="quantity"]').value = data.items[0].quantity;
+                    data.items.forEach((item, index) => {
+                        tbody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.category}</td>
+                            <td>${item.sub_category}</td>
+                            <td>${item.product}</td>
+                            <td>${item.quantity}</td>
+
+                            <!-- 🔒 hidden inputs for submit -->
+                            <input type="hidden" name="products[${index}][category_id]" value="${item.category_id}">
+                            <input type="hidden" name="products[${index}][sub_category_id]" value="${item.sub_category_id}">
+                            <input type="hidden" name="products[${index}][product_id]" value="${item.product_id}">
+                            <input type="hidden" name="products[${index}][quantity]" value="${item.quantity}">
+                        </tr>
+                    `;
+                    });
+
+                })
+                .catch(err => {
+                    console.error('Supplier challan fetch error:', err);
                 });
         });
 </script>

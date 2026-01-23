@@ -31,8 +31,5 @@ class SupplierChallan extends Model
         return $this->belongsTo(Warehouse::class);
     }
 
-    public function purchaseOrder()
-    {
-        return $this->belongsTo(PurchaseOrder::class);
-    }
+  
 }

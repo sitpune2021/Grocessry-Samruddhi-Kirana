@@ -23,7 +23,7 @@ class SupplierChallenController extends Controller
     public function index()
     {
         $challans = SupplierChallan::with([
-            'purchaseOrder',
+            // 'purchaseOrder',
             'supplier',
             'warehouse'
         ])
@@ -175,7 +175,7 @@ class SupplierChallenController extends Controller
             'items.product',
             'supplier',
             'warehouse',
-            'purchaseOrder'
+            // 'purchaseOrder'
         ])
             ->findOrFail($id);
 
