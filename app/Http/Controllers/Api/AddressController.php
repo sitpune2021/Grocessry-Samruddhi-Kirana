@@ -41,6 +41,7 @@ class AddressController extends Controller
                     'pincode'      => $a->postcode,
                     'latitude'     => $a->latitude,
                     'longitude'    => $a->longitude,
+                    'type'         => (int) $a->type,
                     'is_default'   => (bool) $a->is_default,
                     'created_at'   => $a->created_at,
                     'updated_at'   => $a->updated_at
@@ -79,7 +80,7 @@ class AddressController extends Controller
             'city'          => 'required|string',
             'state'         => 'required|string',
             'pincode'       => 'required|digits:6',
-            'type'          => 'required|in:1,2,3', // ✅ 1=Home,2=Work,3=Other
+            'type'          => 'required|in:1,2,3',
             'latitude'      => 'nullable|numeric',
             'longitude'     => 'nullable|numeric',
             'is_default'    => 'nullable|in:0,1'
@@ -138,6 +139,7 @@ class AddressController extends Controller
             'address_line' => 'required|string',
             'landmark'     => 'nullable|string',
             'city'         => 'required|string',
+            'type'         => 'required|in:1,2,3',
             'state'        => 'required|string',
             'pincode'      => 'required|digits:6',
             'latitude'     => 'nullable|numeric',
@@ -161,6 +163,7 @@ class AddressController extends Controller
             'email'      => $user->email,
             'latitude'   => $request->latitude,
             'longitude'  => $request->longitude,
+            'type'       => (int) $request->type,
             'is_default' => $request->is_default ?? $address->is_default,
         ]);
 

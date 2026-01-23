@@ -13,11 +13,27 @@ return new class extends Migration
     {
         Schema::create('supplier_challan_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('supplier_challan_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained();
+
+            $table->foreignId('supplier_challan_id')
+                ->constrained('supplier_challans')
+                ->onDelete('cascade');
+
+            $table->foreignId('category_id')
+                ->constrained('categories')
+                ->onDelete('cascade');
+
+            $table->foreignId('sub_category_id')
+                ->constrained('sub_categories')
+                ->onDelete('cascade');
+
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->onDelete('cascade');
+
             $table->integer('ordered_qty');
-            $table->integer('received_qty');
+            $table->integer('received_qty')->default(0);
             $table->decimal('rate', 10, 2);
+
             $table->timestamps();
         });
     }

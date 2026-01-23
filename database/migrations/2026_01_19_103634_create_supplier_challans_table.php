@@ -13,9 +13,9 @@ return new class extends Migration
 
             $table->string('challan_no')->unique();
 
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('warehouse_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->unsignedBigInteger('supplier_id');
+            $table->unsignedBigInteger('warehouse_id');
+            $table->unsignedBigInteger('created_by');
 
             $table->date('challan_date');
 
@@ -23,7 +23,21 @@ return new class extends Migration
                 ->default('received');
 
             $table->timestamps();
+
+            // 🔹 Foreign Keys
+            $table->foreign('supplier_id')
+                ->references('id')->on('suppliers')
+                ->onDelete('cascade');
+
+            $table->foreign('warehouse_id')
+                ->references('id')->on('warehouses')
+                ->onDelete('cascade');
+
+            $table->foreign('created_by')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
         });
+
     }
 
     public function down(): void
