@@ -147,6 +147,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/delivery_boy/profile/{type}', [DeliveryAgentController::class, 'updateProfileField']);
     Route::get('/partner/profile/summary', [DeliveryAgentController::class, 'profileSummary']);
     Route::get('/partner/performance/graph', [DeliveryAgentController::class, 'performanceGraph']);
+    Route::post('/partner/duty/start', [DeliveryAgentController::class, 'startDuty']);
+    Route::post('/partner/duty/pause', [DeliveryAgentController::class, 'pauseDuty']);
+    Route::post('/partner/duty/resume', [DeliveryAgentController::class, 'resumeDuty']);
+    Route::post('/partner/duty/stop',[DeliveryAgentController::class, 'stopDuty']);
+    Route::get('/partner/profile/summary',[DeliveryAgentController::class, 'partnerSummary']);
+
+
 });
 
 // Route::middleware('auth:sanctum')->group(function () {

@@ -22,20 +22,11 @@ return [
                 ['title' => 'Role Management', 'route' => 'roles.index'],
                 ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Permission Management', 'route' => 'RolePermission'],
-                ['title' => 'Tax Management', 'route' => 'taxes.index'],
-
-            ],
-        ],
-
-        /* ================= Supplier Management ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'suppplierMenu',
-            'title' => 'Supplier Management',
-            'icon'  => 'bx bx-package',
-            'children' => [
-                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
-                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
+                [
+                    'title' => 'Tax Management',
+                    'route' => 'taxes.index',
+                    'roles' => [1, 2] // Only visible for role_id 1 & 2
+                ],
 
             ],
         ],
@@ -67,12 +58,24 @@ return [
         // ],
          [
             'type'  => 'single',
-            'title' => 'Warehouse / Distribution Center',
+            'title' => 'Warehouse / Distribution',
             'icon'  => 'bx bx-store',
             'route'   => 'warehouse.index',
         ],
 
+        /* ================= Supplier Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'suppplierMenu',
+            'title' => 'Supplier Management',
+            'icon'  => 'bx bx-package',
+            'roles' => [1, 2], // ✅ allowed roles
+            'children' => [
+                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
 
+            ],
+        ],
 
         /* ================= Inventory Management ================= */
         [
@@ -81,7 +84,7 @@ return [
             'title' => 'Inventory Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Warehouse Stock', 'route' => 'index.addStock.warehouse'],
+                ['title' => 'Stock Management', 'route' => 'index.addStock.warehouse'],
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
                 //['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
@@ -146,6 +149,7 @@ return [
             'key'   => 'shopMenu',
             'title' => 'Delivery Agent',
             'icon'  => 'bx bx-store',
+            'exclude_roles' => [3],
             'children' => [
                 // ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
                 ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
@@ -167,10 +171,11 @@ return [
         //     ],
         // ],
 
-         [
+        [
             'type'  => 'single',
             'title' => 'POS System',
             'icon'  => 'bx bx-package',
+            'exclude_roles' => [3, 4],
             'route'   => 'pos.create',
         ],
 
@@ -180,6 +185,7 @@ return [
             'key'   => 'OfferMenu',
             'title' => 'Offer / Scheme Management',
             'icon'  => 'bx bx-package',
+            'exclude_roles' => [3, 4],
             'children' => [
                 ['title' => 'Offer Management', 'route' => 'offers.index'],
                 //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
@@ -193,6 +199,7 @@ return [
             'key'   => 'CustomerMenu',
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
+            'exclude_roles' => [3, 4],
             'children' => [
                 ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
@@ -253,6 +260,7 @@ return [
             'key'   => 'wesiteMenu',
             'title' => 'Website Management',
             'icon'  => 'bx bx-store',
+            'exclude_roles' => [2, 3, 4],
             'children' => [
                 ['title' => 'Banner Management', 'route' => 'banners.index'],
                 ['title' => 'User Contact Details', 'route' => 'admin.contacts'],

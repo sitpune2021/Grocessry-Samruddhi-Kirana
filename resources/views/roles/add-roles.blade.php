@@ -26,7 +26,7 @@
                                     <h4>Role</h4>
                                 @endif
 
-                            </div>
+                            </div>                         
 
                             <div class="card-body">
                                 <form
@@ -35,6 +35,23 @@
                                     @csrf
                                     @if ($mode == 'edit')
                                         @method('PUT') <!-- Use PUT method for editing -->
+                                    @endif
+
+                                    {{-- 🔴 Flash error --}}
+                                    @if(session('error'))
+                                        <div class="alert alert-danger">
+                                            {{ session('error') }}
+                                        </div>
+                                    @endif
+
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     @endif
 
                                     <div class="d-flex gap-3">

@@ -21,6 +21,32 @@
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
 
+                {{-- Validation Errors --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- Success Message --}}
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                {{-- Custom Error --}}
+                @if(session('error'))
+                    <div class="alert alert-danger">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="row justify-content-center">
@@ -288,7 +314,7 @@
                                                             <option value="">-- Select GST --</option>
 
                                                             @foreach($taxes as $tax)
-                                                            <option value="{{ $tax->id }}"
+                                                            <option value="{{ $tax->id }}" data-gst="{{ $tax->gst }}"
                                                                 {{ old('tax_id', $product->tax_id ?? '') == $tax->id ? 'selected' : '' }}>
                                                                 {{ $tax->name }} ({{ $tax->gst }}%)
                                                             </option>
@@ -485,108 +511,31 @@
 
     });
 </script>
+
 <script>
-    function calculateFinalPrice() {
-        const basePrice = parseFloat(document.querySelector('[name="base_price"]').value) || 0;
-        const sellingPrice = parseFloat(document.querySelector('[name="retailer_price"]').value) || 0;
-        const mrp = parseFloat(document.querySelector('[name="mrp"]').value) || 0;
+function calculateFinalPrice() {
 
-        const taxSelect = document.querySelector('[name="tax_id"]');
-        const gstPercent = taxSelect ?
-            parseFloat(
-                taxSelect.options[taxSelect.selectedIndex]?.text
-                .match(/(\d+(\.\d+)?)/)?.[0] || 0
-            ) :
-            0;
+    const basePrice    = parseFloat($('[name="base_price"]').val()) || 0;
+    const sellingPrice = parseFloat($('[name="retailer_price"]').val()) || 0;
+    const mrp          = parseFloat($('[name="mrp"]').val()) || 0;
 
-        // ❌ Validation rules
-        if (sellingPrice < basePrice) {
-            document.getElementById('gst_amount').value = '';
-            document.getElementById('final_price').value = '';
-            return;
-        }
+    const gstPercent = parseFloat($('[name="tax_id"] option:selected').data('gst')) || 0;
 
-        if (sellingPrice > mrp) {
-            document.getElementById('gst_amount').value = '';
-            document.getElementById('final_price').value = '';
-            return;
-        }
+    if (!sellingPrice || !gstPercent) return;
 
-        // ✅ GST calculation (on selling price)
-        const gstAmount = (sellingPrice * gstPercent) / 100;
-        const finalPrice = sellingPrice + gstAmount;
+    const gstAmount  = (sellingPrice * gstPercent) / 100;
+    const finalPrice = sellingPrice + gstAmount;
 
-        // ✅ Show values
-        document.getElementById('gst_amount').value = gstAmount.toFixed(2);
-        document.getElementById('final_price').value = finalPrice.toFixed(2);
-    }
+    $('#gst_amount').val(gstAmount.toFixed(2));
+    $('#final_price').val(finalPrice.toFixed(2));
+}
 
-    // 🔄 Trigger calculation
-    document.querySelectorAll(
-        '[name="base_price"], [name="retailer_price"], [name="mrp"], [name="tax_id"]'
-    ).forEach(el => el.addEventListener('change', calculateFinalPrice));
+$(document).ready(function () {
+
+    calculateFinalPrice();
+
+    $('[name="base_price"], [name="retailer_price"], [name="mrp"], [name="tax_id"]')
+        .on('input change', calculateFinalPrice);
+
+});
 </script>
-
-
-<!-- 
-<script>
-    $(document).ready(function() {
-
-        let categorySelect = $('#category_id');
-
-        let subCategorySelect = $('#sub_category_id');
-
-        let selectedCategoryId = $('#selected_category_id').val();
-
-        let selectedSubCategoryId = $('#selected_sub_category_id').val();
-
-
-        $.ajax({
-            url: "{{ url('get-categories') }}",
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-                let options = '<option value="">Select Category</option>';
-                $.each(data, function(key, value) {
-                    let selected = value.id == selectedCategoryId ? 'selected' : '';
-                    options += `<option value="${value.id}" ${selected}>${value.name}</option>`;
-                });
-                categorySelect.html(options);
-                // If edit mode → load sub categories
-                if (selectedCategoryId) {
-                    loadSubCategories(selectedCategoryId, selectedSubCategoryId);
-                }
-            },
-            error: function() {
-                categorySelect.html('<option value="">Select Category</option>');
-            }
-        });
-
-        categorySelect.on('change', function() {
-            let categoryId = $(this).val();
-            subCategorySelect.html('<option value="">Select Sub Category</option>');
-            if (!categoryId) return;
-            loadSubCategories(categoryId, null);
-        });
-
-        function loadSubCategories(categoryId, selectedSubCatId = null) {
-            subCategorySelect.html('<option value="">Loading...</option>');
-            $.ajax({
-                url: "{{ url('get-sub-categories') }}/" + categoryId,
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    let options = '<option value="">Select Sub Category</option>';
-                    $.each(data, function(key, value) {
-                        let selected = value.id == selectedSubCatId ? 'selected' : '';
-                        options += `<option value="${value.id}" ${selected}>${value.name}</option>`;
-                    });
-                    subCategorySelect.html(options);
-                },
-                error: function() {
-                    subCategorySelect.html('<option value="">Select Sub Category</option>');
-                }
-            });
-        }
-    });
-</script> -->

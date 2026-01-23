@@ -111,7 +111,7 @@ class DeliveryAgentController extends Controller
                 'password'  => Hash::make('Agent@123'),
                 'role_id'   => $role->id,
                 'profile_photo'   => $profileImage,
-                'warehouse_id' => $validated['warehouse_id'], 
+                'warehouse_id' => $validated['warehouse_id'],
             ]);
 
             Log::info('User created successfully', [
@@ -151,7 +151,7 @@ class DeliveryAgentController extends Controller
 
             DeliveryAgent::create([
                 'user_id'         => $user->id,
-                'shop_id'         => $validated['shop_id'],
+                'shop_id'         => $validated['shop_id'] ?? null,
                 'dob'             => $validated['dob'] ?? null,
                 'gender'          => $validated['gender'] ?? null,
                 'address'         => $validated['address'] ?? null,
@@ -164,7 +164,7 @@ class DeliveryAgentController extends Controller
 
             Log::info('Delivery agent created successfully', [
                 'user_id' => $user->id,
-                'shop_id' => $validated['shop_id']
+                'shop_id' => $validated['shop_id'] ?? null
             ]);
 
             DB::commit();
