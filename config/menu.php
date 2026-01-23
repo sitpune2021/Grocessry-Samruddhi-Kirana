@@ -100,6 +100,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Warehouse Stock Request', 'route' => 'transfer.index'],
+                ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
                 // ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
                 // ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
                 // ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
@@ -215,8 +216,7 @@ return [
                 ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
-                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
-                ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
+                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],               
                 ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],
