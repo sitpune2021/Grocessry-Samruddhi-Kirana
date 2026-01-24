@@ -8,10 +8,10 @@
 
             {{-- 🔐 Permissions --}}
             @php
-                $canView   = hasPermission('supplier_challan.view');
-                $canCreate = hasPermission('supplier_challan.create');
-                $canEdit   = hasPermission('supplier_challan.edit');
-                $canDelete = hasPermission('supplier_challan.delete');
+            $canView = hasPermission('supplier_challan.view');
+            $canCreate = hasPermission('supplier_challan.create');
+            $canEdit = hasPermission('supplier_challan.edit');
+            $canDelete = hasPermission('supplier_challan.delete');
             @endphp
 
             <!-- Header -->
@@ -22,10 +22,10 @@
 
                 <div class="col-md-auto ms-auto">
                     @if($canCreate)
-                        <a href="{{ route('supplier_challan.create') }}"
-                           class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                            <i class="bx bx-plus"></i> Create Challan
-                        </a>
+                    <a href="{{ route('supplier_challan.create') }}"
+                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        <i class="bx bx-plus"></i> Create Challan
+                    </a>
                     @endif
                 </div>
             </div>
@@ -35,6 +35,25 @@
                 <x-datatable-search />
             </div>
 
+            @if(session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+            
             <!-- Table -->
             <div class="table-responsive mt-3">
                 <table id="challanTable" class="table table-bordered table-striped mb-0">
@@ -48,33 +67,33 @@
                             {{-- <th>Status</th> --}}
 
                             @if($canView || $canEdit || $canDelete)
-                                <th class="text-center" style="width:180px;">Actions</th>
+                            <th class="text-center" style="width:180px;">Actions</th>
                             @endif
                         </tr>
                     </thead>
 
                     <tbody>
                         @forelse ($challans as $index => $challan)
-                            <tr>
-                                <td class="text-center fw-semibold">
-                                    {{ $challans->firstItem() + $index }}
-                                </td>
+                        <tr>
+                            <td class="text-center fw-semibold">
+                                {{ $challans->firstItem() + $index }}
+                            </td>
 
-                                <td>{{ $challan->challan_no }}</td>
+                            <td>{{ $challan->challan_no }}</td>
 
-                                <td>
-                                    {{ $challan->supplier->supplier_name ?? '-' }}
-                                </td>
+                            <td>
+                                {{ $challan->supplier->supplier_name ?? '-' }}
+                            </td>
 
-                                <td>
-                                    {{ $challan->warehouse->name ?? '-' }}
-                                </td>
+                            <td>
+                                {{ $challan->warehouse->name ?? '-' }}
+                            </td>
 
-                                <td>
-                                    {{ \Carbon\Carbon::parse($challan->challan_date)->format('d-m-Y') }}
-                                </td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($challan->challan_date)->format('d-m-Y') }}
+                            </td>
 
-                                {{-- <td>
+                            {{-- <td>
                                     @if($challan->status === 'received')
                                         <span class="badge bg-success">Received</span>
                                     @elseif($challan->status === 'partial')
@@ -84,46 +103,46 @@
                                     @endif
                                 </td> --}}
 
-                                {{-- 🔘 ACTION BUTTONS --}}
-                                @if($canView || $canEdit || $canDelete)
-                                <td class="text-center" style="white-space:nowrap;">
+                            {{-- 🔘 ACTION BUTTONS --}}
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
 
-                                    @if($canView)
-                                        <a href="{{ route('supplier_challan.show', $challan->id) }}"
-                                           class="btn btn-sm btn-primary">
-                                            View
-                                        </a>
-                                    @endif
-
-                                    @if($canEdit)
-                                        <a href="{{ route('supplier_challan.edit', $challan->id) }}"
-                                           class="btn btn-sm btn-warning">
-                                            Edit
-                                        </a>
-                                    @endif
-
-                                    @if($canDelete)
-                                        <form action="{{ route('supplier_challan.destroy', $challan->id) }}"
-                                              method="POST"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this challan?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    @endif
-
-                                </td>
+                                @if($canView)
+                                <a href="{{ route('supplier_challan.show', $challan->id) }}"
+                                    class="btn btn-sm btn-primary">
+                                    View
+                                </a>
                                 @endif
-                            </tr>
+
+                                @if($canEdit)
+                                <a href="{{ route('supplier_challan.edit', $challan->id) }}"
+                                    class="btn btn-sm btn-warning">
+                                    Edit
+                                </a>
+                                @endif
+
+                                @if($canDelete)
+                                <form action="{{ route('supplier_challan.destroy', $challan->id) }}"
+                                    method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this challan?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
+
+                            </td>
+                            @endif
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">
-                                    No supplier challans found
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No supplier challans found
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>

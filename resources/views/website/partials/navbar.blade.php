@@ -84,7 +84,26 @@
     }
 </style>
 
+<style>
+    .user-btn {
+        color: #333;
+        text-decoration: none;
+    }
 
+    .user-dropdown {
+        min-width: 200px;
+        border-radius: 10px;
+    }
+
+    .user-dropdown .dropdown-item {
+        padding: 10px 15px;
+        font-size: 15px;
+    }
+
+    .user-dropdown i {
+        width: 20px;
+    }
+</style>
 <!-- Navbar start -->
 <div class="container-fluid fixed-top">
 
@@ -105,26 +124,6 @@
         </div>
     </div>
 
-    <style>
-        .user-btn {
-            color: #333;
-            text-decoration: none;
-        }
-
-        .user-dropdown {
-            min-width: 200px;
-            border-radius: 10px;
-        }
-
-        .user-dropdown .dropdown-item {
-            padding: 10px 15px;
-            font-size: 15px;
-        }
-
-        .user-dropdown i {
-            width: 20px;
-        }
-    </style>
 
     <div class="container px-0">
         <nav class="navbar navbar-light bg-white navbar-expand-xl">
