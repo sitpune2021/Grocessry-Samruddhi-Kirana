@@ -48,10 +48,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-    // public function customerAddress()
-    // {
-    //     return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
-    // }
+    public function customerAddress()
+    {
+        return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
+    }
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');

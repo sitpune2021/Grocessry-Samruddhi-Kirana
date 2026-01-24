@@ -51,15 +51,22 @@
                                                         <label class="form-label">Supplier Challan <span
                                                                 class="text-danger">
                                                                 *</span></label>
-                                                        <select id="supplier_challan_id" class="form-select">
+                                                        <select id="supplier_challan_id" class="form-select"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Challan --</option>
                                                             @foreach ($challans as $challan)
-                                                                <option value="{{ $challan->id }}">
+                                                                <option value="{{ $challan->id }}"
+                                                                    {{ isset($selectedChallan) && $selectedChallan->id == $challan->id ? 'selected' : '' }}>
                                                                     {{ $challan->challan_no }}
-                                                                    {{-- {{ $challan->supplier->supplier_name }} --}}
                                                                 </option>
                                                             @endforeach
                                                         </select>
+                                                        @if (session('error'))
+                                                            <span class="text-danger mt-1 d-block">
+                                                                {{ session('error') }}
+                                                            </span>
+                                                        @endif
+
                                                     </div>
                                                 </div>
 
@@ -82,18 +89,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Challan No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="challan_no" class="form-control"
-                                                        value="{{ old('challan_no', $warehouse_stock->challan_no ?? '') }}"
-                                                        placeholder="Enter challan number"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('challan_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                             
                                                 {{-- Warehouse --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
@@ -559,4 +555,14 @@
                     console.error('Supplier challan fetch error:', err);
                 });
         });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const challanSelect = document.getElementById('supplier_challan_id');
+
+        // ✅ AUTO LOAD challan products on VIEW / EDIT
+        if (challanSelect && challanSelect.value) {
+            challanSelect.dispatchEvent(new Event('change'));
+        }
+    });
 </script>

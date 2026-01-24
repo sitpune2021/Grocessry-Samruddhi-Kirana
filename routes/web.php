@@ -724,7 +724,11 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('destroy');
     });
 
+    Route::get('ajax/subcategories', [SupplierChallenController::class, 'subcategories'])
+        ->name('ajax.subcategories');
 
+    Route::get('ajax/products-by-subcategory', [SupplierChallenController::class, 'productsBySubCategory'])
+        ->name('ajax.products.by.subcategory');
     //product offer 
     Route::prefix('offer')->group(function () {
         Route::resource('offers', OfferController::class);
