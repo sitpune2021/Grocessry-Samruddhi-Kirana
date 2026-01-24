@@ -24,41 +24,40 @@ class CouponController extends Controller
         return view('coupons.create', compact('products', 'categories',))->with('mode', 'add');
     }
 
-    public function store(Request $request)
-    {
-        // convert "all" to null
-        if ($request->category_id === 'all') {
-            $request->merge(['category_id' => null]);
-        }
+  public function store(Request $request)
+{
+    \Log::info('Offer Store Request Received', $request->all());
 
-        if ($request->product_id === 'all') {
-            $request->merge(['product_id' => null]);
-        }
+    $validated = $request->validate([
+        'code' => 'required|string|unique:coupons,code', // ✅ correct table name
+        'title' => 'nullable|string',
+        'discount_type' => 'required|in:percentage,flat',
+        'discount_value' => [
+            'required',
+            'numeric',
+            function ($attribute, $value, $fail) use ($request) {
+                if ($request->discount_type === 'percentage' && $value > 100) {
+                    $fail('Percentage discount cannot be more than 100.');
+                }
+            }
+        ],
+        'start_date' => 'nullable|date',
+        'end_date' => 'nullable|date|after_or_equal:start_date',
+        'min_amount' => 'required|numeric|min:0',
+        'max_usage' => 'required|integer|min:1',
+        'description' => 'nullable|string',
+        'terms_condition' => 'nullable|string',
+        'status' => 'required|in:0,1',
+    ]);
 
-        Log::info('Offer Store Request Received', $request->all());
+    $coupon = \App\Models\Coupon::create($validated);
 
-        $validated = $request->validate([
-            'code' => 'required|string|unique:offers,code',
-            'title' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
-            'product_id' => 'nullable|exists:products,id',
-            'discount_type' => 'required|in:percentage,flat',
-            'discount_value' => 'required|numeric|min:0',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'min_amount' => 'required|numeric|min:0',
-            'max_usage' => 'required|integer|min:1',
-            'description' => 'nullable|string',
-            'terms_condition' => 'nullable|string',
-            'status' => 'required|in:0,1',
-        ]);
+    \Log::info('Coupon Created', ['coupon_id' => $coupon->id]);
 
-        $offer = Coupon::create($validated);
+    return redirect()->route('coupons.index')
+                     ->with('success', 'Coupon created successfully');
+}
 
-        Log::info('Offer Created', ['offer_id' => $offer->id]);
-
-        return redirect()->route('coupons.index')->with('success', 'Offer created successfully');
-    }
 
 
 
@@ -87,8 +86,8 @@ class CouponController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|unique:offers,code,' . $offer->id,
             'title' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
-            'product_id' => 'nullable|exists:products,id',
+            // 'category_id' => 'nullable|exists:categories,id',
+            // 'product_id' => 'nullable|exists:products,id',
             'discount_type' => 'required|in:percentage,flat',
             'discount_value' => 'required|numeric|min:0',
             'start_date' => 'nullable|date',

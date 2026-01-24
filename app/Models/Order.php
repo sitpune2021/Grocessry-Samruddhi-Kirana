@@ -47,10 +47,7 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-    // public function customerAddress()
-    // {
-    //     return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
-    // }
+   
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -64,4 +61,12 @@ class Order extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    // App\Models\Order.php
+    public function deliveryAgent()
+    {
+        return $this->belongsTo(\App\Models\DeliveryAgent::class, 'delivery_agent_id', 'id')
+                    ->with('user'); // eager load the related user
+    }
+
 }

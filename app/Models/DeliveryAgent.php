@@ -37,7 +37,8 @@ class DeliveryAgent extends Model
     public function shop()
     {
         return $this->belongsTo(GroceryShop::class, 'shop_id');
-        // If table is `shops`, then:
-        // return $this->belongsTo(Shop::class, 'shop_id');
+       
     }
+
+
 }
