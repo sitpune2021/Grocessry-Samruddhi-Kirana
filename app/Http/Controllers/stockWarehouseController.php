@@ -138,10 +138,15 @@ class stockWarehouseController extends Controller
         }
 
         // ✅ NEW: Supplier Challans (Received only)
-        $challans = SupplierChallan::with('supplier')
-            ->where('status', 'received')
+        $usedChallanIds = WarehouseStock::whereNotNull('supplier_challan_id')
+            ->pluck('supplier_challan_id')
+            ->unique();
+
+        $challans = SupplierChallan::where('status', 'received')
+            ->whereNotIn('id', $usedChallanIds)
             ->orderBy('id', 'desc')
             ->get();
+
 
         return view(
             'menus.warehouse.add-stock.add-stock',
@@ -174,8 +179,11 @@ class stockWarehouseController extends Controller
         Log::info('🟢 AddStock: Request received', [
             'payload' => $request->all()
         ]);
+        // $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
+        //     ->where('challan_no', $request->challan_no)
+        //     ->exists();
         $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-            ->where('challan_no', $request->challan_no)
+            ->where('supplier_challan_id', $request->supplier_challan_id)
             ->exists();
 
         if ($exists) {
@@ -193,6 +201,7 @@ class stockWarehouseController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id',
             'supplier_id'  => 'required|exists:suppliers,id',
             'bill_no'      => 'required|string',
+            'supplier_challan_id' => 'required|exists:supplier_challans,id',
 
             // 'challan_no' => [
             //     'required',
@@ -259,15 +268,16 @@ class stockWarehouseController extends Controller
                     Log::info('🆕 AddStock: Creating new stock row');
 
                     $newStock = WarehouseStock::create([
-                        'warehouse_id'    => $request->warehouse_id,
-                        'supplier_id'     => $request->supplier_id,
-                        'category_id'     => $item['category_id'],
-                        'sub_category_id' => $item['sub_category_id'],
-                        'product_id'      => $item['product_id'],
-                        'quantity'        => $item['quantity'],
-                        'bill_no'         => $request->bill_no,
-                        'challan_no'      => $request->challan_no,
-                        'batch_no'        => $request->batch_no,
+                        'warehouse_id'         => $request->warehouse_id,
+                        'supplier_id'          => $request->supplier_id,
+                        'supplier_challan_id'  => $request->supplier_challan_id, // ✅ IMPORTANT
+                        'category_id'          => $item['category_id'],
+                        'sub_category_id'      => $item['sub_category_id'],
+                        'product_id'           => $item['product_id'],
+                        'quantity'             => $item['quantity'],
+                        'bill_no'              => $request->bill_no,
+                        'challan_no'           => $request->challan_no,
+                        'batch_no'             => $request->batch_no,
                     ]);
 
                     Log::info('✅ AddStock: New stock created', [

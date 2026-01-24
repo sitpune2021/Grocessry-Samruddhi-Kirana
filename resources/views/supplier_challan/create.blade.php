@@ -15,6 +15,7 @@
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="card">
+
                         <h4 class="card-header">
                             @if ($mode === 'view')
                                 View Supplier Challan
@@ -36,19 +37,17 @@
                                     @method('PUT')
                                 @endif
 
-
                                 {{-- HEADER --}}
-
                                 <div class="row mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label">Warehouse <span class="text-danger">*</span></label>
+                                        <label class="form-label">Warehouse *</label>
                                         <input type="text" class="form-control" value="{{ $warehouse->name ?? '' }}"
                                             readonly>
                                         <input type="hidden" name="warehouse_id" value="{{ $warehouse->id ?? '' }}">
                                     </div>
-                                    {{-- Supplier --}}
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Supplier <span class="text-danger">*</span></label>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Supplier *</label>
                                         <select name="supplier_id" class="form-select"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                             <option value="">Select Supplier</option>
@@ -61,84 +60,76 @@
                                         </select>
                                     </div>
 
-                                    {{-- Auto Challan No --}}
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Challan No <span class="text-danger">*</span></label>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Challan No *</label>
                                         <input type="text" name="challan_no" class="form-control"
                                             value="{{ old('challan_no', $challan->challan_no ?? $autoChallanNo) }}"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+                                    </div>
+                                </div>
 
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Challan Date *</label>
+                                        <input type="date" name="challan_date" class="form-control"
+                                            value="{{ old('challan_date', isset($challan) ? $challan->challan_date->format('Y-m-d') : date('Y-m-d')) }}"
+                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                {{-- CATEGORY / SUB CATEGORY / PRODUCT --}}
+                                <div class="row mb-3 align-items-end" id="selectionSection">
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Category *</label>
+                                        <select id="categorySelect" class="form-select" multiple>
+                                            @foreach ($categories as $c)
+                                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
 
-                                    <div class="row mb-4">
-                                        <div class="col-md-4">
-                                            <label class="form-label">Challan Date <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="date" name="challan_date" class="form-control"
-                                                value="{{ old('challan_date', isset($challan) ? $challan->challan_date->format('Y-m-d') : date('Y-m-d')) }}"
-                                                {{ $mode === 'view' ? 'disabled' : '' }} required>
-
-                                        </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Sub Category *</label>
+                                        <select id="subCategorySelect" class="form-select" multiple></select>
                                     </div>
-                                    <hr>
 
-                                    {{-- CATEGORY | SUB CATEGORY | PRODUCT --}}
-                                    <div class="row mb-3 align-items-end">
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Category <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="categorySelect" class="form-select" multiple
-                                                {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                @foreach ($categories as $c)
-                                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label">Sub Category <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="subCategorySelect" class="form-select" multiple
-                                                {{ $mode === 'view' ? 'disabled' : '' }}></select>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label class="form-label">Product <span class="text-danger">*</span></label>
-                                            <select id="productSelect" class="form-select" multiple
-                                                {{ $mode === 'view' ? 'disabled' : '' }}></select>
-                                        </div>
-
+                                    <div class="col-md-6">
+                                        <label class="form-label">Product *</label>
+                                        <select id="productSelect" class="form-select" multiple></select>
                                     </div>
+
+                                </div>
+
+                                @if ($mode !== 'view')
+                                    <button type="button" id="addProductBtn" class="btn btn-success mb-3">
+                                        + Add Product
+                                    </button>
+                                @endif
+
+                                {{-- TABLE --}}
+                                <div id="itemsSection" class="d-none mt-3">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Sub Category</th>
+                                                <th>Product</th>
+                                                <th>Qty</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="itemsBody"></tbody>
+                                    </table>
+
                                     @if ($mode !== 'view')
-                                        <button type="button" id="addProductBtn" class="btn btn-success">
-                                            + Add Product
+                                        <button type="submit" class="btn btn-success">
+                                            Save Supplier Challan
                                         </button>
                                     @endif
-
-
-                                    {{-- TABLE --}}
-                                    <div id="itemsSection" class="d-none mt-4">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Category</th>
-                                                    <th>Sub Category</th>
-                                                    <th>Product</th>
-                                                    <th>Qty</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="itemsBody"></tbody>
-                                        </table>
-
-                                        @if ($mode !== 'view')
-                                            <button type="submit" class="btn btn-success">
-                                                Save Supplier Challan
-                                            </button>
-                                        @endif
-
-                                    </div>
+                                </div>
 
                             </form>
                         </div>
@@ -149,156 +140,152 @@
         </div>
     </div>
 
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    @if (isset($challan))
+        <script>
+            window.existingItems = @json($challan->items);
+            window.pageMode = "{{ $mode }}";
+        </script>
+    @endif
 
     <script>
         $(document).ready(function() {
 
-            /* =====================
-               INDEX INIT
-            ===================== */
             let index = 0;
 
-            /* =====================
-               SELECT2 INIT
-            ===================== */
             $('#categorySelect').select2({
-                placeholder: 'Select Category',
                 closeOnSelect: false,
                 width: '100%'
             });
-
             $('#subCategorySelect, #productSelect').select2({
                 closeOnSelect: false,
                 width: '100%'
             });
 
+            if (typeof pageMode !== 'undefined' && pageMode === 'view') {
+                $('#selectionSection').hide();
+                $('#addProductBtn').hide();
+            }
 
             /* =====================
-               CATEGORY → AUTO SUB CATEGORY
+               PREFILL EDIT / VIEW
+            ===================== */
+            if (typeof existingItems !== 'undefined' && existingItems.length) {
+
+                $('#itemsSection').removeClass('d-none');
+
+                existingItems.forEach(item => {
+                    $('#itemsBody').append(`
+                <tr>
+                    <td>${item.category.name}</td>
+                    <td>${item.sub_category.name}</td>
+                    <td>${item.product.name}</td>
+                    <td>
+                        <input type="number"
+                               name="items[${index}][received_qty]"
+                               class="form-control"
+                               value="${item.received_qty}"
+                               ${pageMode === 'view' ? 'readonly' : ''}>
+                    </td>
+                    <td>
+                        ${pageMode !== 'view'
+                            ? '<button type="button" class="btn btn-danger btn-sm removeRow">X</button>'
+                            : ''}
+                    </td>
+
+                    <input type="hidden" name="items[${index}][category_id]" value="${item.category_id}">
+                    <input type="hidden" name="items[${index}][sub_category_id]" value="${item.sub_category_id}">
+                    <input type="hidden" name="items[${index}][product_id]" value="${item.product_id}">
+                </tr>
+            `);
+                    index++;
+                });
+            }
+
+            /* =====================
+               CATEGORY → SUB CATEGORY
             ===================== */
             $('#categorySelect').on('change', function() {
 
-                let categoryIds = $(this).val();
-
-                if (!categoryIds || categoryIds.length === 0) {
-                    $('#subCategorySelect').empty().trigger('change');
-                    $('#productSelect').empty().trigger('change');
-                    $('#itemsBody').empty();
-                    return;
-                }
-
-                let existingSubCats = $('#subCategorySelect option')
-                    .map(function() {
-                        return $(this).val();
-                    })
-                    .get();
+                let ids = $(this).val();
+                if (!ids || ids.length === 0) return;
 
                 $.get('/ajax/subcategories', {
-                    category_ids: categoryIds
+                    category_ids: ids
                 }, function(res) {
-
                     res.data.forEach(sc => {
-                        if (!existingSubCats.includes(sc.id.toString())) {
-                            let option = new Option(sc.name, sc.id, true, true);
-                            $('#subCategorySelect').append(option);
+                        if (!$('#subCategorySelect option[value="' + sc.id + '"]').length) {
+                            $('#subCategorySelect')
+                                .append(new Option(sc.name, sc.id, true, true));
                         }
                     });
-
                     $('#subCategorySelect').trigger('change');
                 });
             });
 
-
             /* =====================
-               SUB CATEGORY → AUTO PRODUCT
+               SUB CATEGORY → PRODUCT
             ===================== */
             $('#subCategorySelect').on('change', function() {
 
-                let subCategoryIds = $(this).val();
-
-                if (!subCategoryIds || subCategoryIds.length === 0) {
-                    $('#productSelect').empty().trigger('change');
-                    $('#itemsBody').empty();
-                    return;
-                }
-
-                let existingProducts = $('#productSelect option')
-                    .map(function() {
-                        return $(this).val();
-                    })
-                    .get();
+                let ids = $(this).val();
+                if (!ids || ids.length === 0) return;
 
                 $.get('/ajax/products-by-subcategory', {
-                    sub_category_ids: subCategoryIds
+                    sub_category_ids: ids
                 }, function(res) {
 
                     res.data.forEach(p => {
+                        if ($('#productSelect option[value="' + p.id + '"]').length) return;
 
-                        if (existingProducts.includes(p.id.toString())) return;
-
-                        let option = new Option(p.name, p.id, true, true);
-
-                        $(option)
+                        let opt = new Option(p.name, p.id, true, true);
+                        $(opt)
                             .attr('data-category-id', p.sub_category.category.id)
                             .attr('data-category-name', p.sub_category.category.name)
                             .attr('data-sub-category-id', p.sub_category.id)
                             .attr('data-sub-category-name', p.sub_category.name);
 
-                        $('#productSelect').append(option);
+                        $('#productSelect').append(opt);
                     });
 
                     $('#productSelect').trigger('change');
                 });
             });
 
-
             /* =====================
-               ADD PRODUCT (NO CHANGE)
+               ADD PRODUCT
             ===================== */
             $('#addProductBtn').on('click', function() {
 
-                let productIds = $('#productSelect').val();
-
-                if (!productIds || productIds.length === 0) {
-                    alert('No products available');
-                    return;
-                }
+                let ids = $('#productSelect').val();
+                if (!ids || ids.length === 0) return;
 
                 $('#itemsSection').removeClass('d-none');
 
-                productIds.forEach(pid => {
+                ids.forEach(pid => {
 
-                    // prevent duplicate row
-                    if ($('#itemsBody input[name$="[product_id]"][value="' + pid + '"]').length) {
-                        return;
-                    }
+                    if ($('#itemsBody input[value="' + pid + '"]').length) return;
 
-                    let option = $('#productSelect option[value="' + pid + '"]');
+                    let opt = $('#productSelect option[value="' + pid + '"]');
 
                     $('#itemsBody').append(`
                 <tr>
-                    <td>${option.data('category-name')}</td>
-                    <td>${option.data('sub-category-name')}</td>
-                    <td>${option.text()}</td>
-
+                    <td>${opt.data('category-name')}</td>
+                    <td>${opt.data('sub-category-name')}</td>
+                    <td>${opt.text()}</td>
                     <td>
                         <input type="number"
-                            name="items[${index}][received_qty]"
-                            class="form-control"
-                            min="1"
-                            required>
+                               name="items[${index}][received_qty]"
+                               class="form-control" required>
                     </td>
-
                     <td>
-                        <button type="button"
-                            class="btn btn-danger btn-sm removeRow">X</button>
+                        <button type="button" class="btn btn-danger btn-sm removeRow">X</button>
                     </td>
 
-                    <input type="hidden" name="items[${index}][category_id]" value="${option.data('category-id')}">
-                    <input type="hidden" name="items[${index}][sub_category_id]" value="${option.data('sub-category-id')}">
+                    <input type="hidden" name="items[${index}][category_id]" value="${opt.data('category-id')}">
+                    <input type="hidden" name="items[${index}][sub_category_id]" value="${opt.data('sub-category-id')}">
                     <input type="hidden" name="items[${index}][product_id]" value="${pid}">
                 </tr>
             `);
@@ -307,86 +294,11 @@
                 });
             });
 
-
-            /* =====================
-               MANUAL REMOVE : PRODUCT CHIP
-            ===================== */
-            $('#productSelect').on('select2:unselect', function(e) {
-
-                let productId = e.params.data.id;
-
-                $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
-                    .closest('tr')
-                    .remove();
-            });
-
-
-            /* =====================
-               MANUAL REMOVE : SUB CATEGORY CHIP
-            ===================== */
-            $('#subCategorySelect').on('select2:unselect', function(e) {
-
-                let subCategoryId = e.params.data.id;
-
-                $('#productSelect option[data-sub-category-id="' + subCategoryId + '"]').each(function() {
-
-                    let productId = $(this).val();
-
-                    $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
-                        .closest('tr')
-                        .remove();
-
-                    $(this).remove();
-                });
-
-                $('#productSelect').trigger('change');
-            });
-
-
-            /* =====================
-               MANUAL REMOVE : CATEGORY CHIP
-            ===================== */
-            $('#categorySelect').on('select2:unselect', function(e) {
-
-                let categoryId = e.params.data.id;
-
-                $('#productSelect option[data-category-id="' + categoryId + '"]').each(function() {
-
-                    let productId = $(this).val();
-
-                    $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
-                        .closest('tr')
-                        .remove();
-
-                    $(this).remove();
-                });
-
-                $('#subCategorySelect option').each(function() {
-                    $(this).remove();
-                });
-
-                $('#subCategorySelect').trigger('change');
-                $('#productSelect').trigger('change');
-            });
-
-
-            /* =====================
-               REMOVE ROW BUTTON (TABLE)
-            ===================== */
             $(document).on('click', '.removeRow', function() {
-
-                let productId = $(this)
-                    .closest('tr')
-                    .find('input[name$="[product_id]"]')
-                    .val();
-
-                // remove chip also
-                $('#productSelect option[value="' + productId + '"]').prop('selected', false);
-                $('#productSelect').trigger('change');
-
                 $(this).closest('tr').remove();
             });
 
         });
     </script>
+
 </body>

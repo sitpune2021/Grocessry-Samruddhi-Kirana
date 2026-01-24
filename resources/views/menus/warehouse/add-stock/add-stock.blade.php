@@ -51,8 +51,11 @@
                                                         <label class="form-label">Supplier Challan <span
                                                                 class="text-danger">
                                                                 *</span></label>
-                                                        <select id="supplier_challan_id" class="form-select"
+                                                        <select id="supplier_challan_id" name="supplier_challan_id"
+                                                            class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+
+
                                                             <option value="">-- Select Challan --</option>
                                                             @foreach ($challans as $challan)
                                                                 <option value="{{ $challan->id }}"
@@ -89,7 +92,7 @@
                                                     </div>
                                                 </div>
 
-                                             
+
                                                 {{-- Warehouse --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
