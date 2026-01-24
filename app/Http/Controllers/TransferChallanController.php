@@ -25,7 +25,7 @@ class TransferChallanController extends Controller
                 ->orWhere('to_warehouse_id', $request->warehouse_id);
         }
 
-        $challans = $query->latest()->paginate(10);
+        $challans = $query->latest()->paginate(20);
         $warehouses = Warehouse::all();
 
         return view('Transfer_Challan.index', compact('challans', 'warehouses'));

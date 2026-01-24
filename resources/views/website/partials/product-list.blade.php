@@ -58,7 +58,7 @@
     @endforelse
 </div>
 
-<div class="mt-4">
-    {{ $products->links('pagination::bootstrap-5') }}
+<div class="mt-4 d-flex flex-column align-items-end">
+    {{-- Pagination --}}
+    {{ $products->onEachSide(0)->links() }}
 </div>
-

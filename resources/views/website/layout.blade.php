@@ -188,6 +188,47 @@
 
         /*   ///////////////////new css index file ////////////*/
 
+
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .slider-dots .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .slider-dots .dot.active {
+            opacity: 0.6;
+            transform: scale(0.9);
+            animation: zoom 2s infinite alternate;
+        }
+
+        .slider-dots .dot.active {
+            transform: scale(1.3);
+            opacity: 1;
+        }
+
+        /* Colors */
+        .dot-red {
+            background: #7e7e7e;
+        }
+
+        .dot-green {
+            background: #36240e;
+        }
+
+        .dot-blue {
+            background: #1db709;
+        }
+
         /* Product Slider Base */
         .product-slider {
             display: flex;
@@ -953,8 +994,6 @@
             font-size: 12px;
             text-decoration: line-through;
         }
-
-        
     </style>
 
 </head>
