@@ -1,21 +1,4 @@
 @include('layouts.header')
-<!-- 
-<style>
-    .table-wrapper {
-        overflow-x: auto;
-        white-space: nowrap;
-        width: 100%;
-    }
-
-    .table-wrapper table {
-        min-width: 600px; /* adjust if needed */
-    }
-
-    .table-wrapper th,
-    .table-wrapper td {
-        white-space: nowrap;
-    }
-</style> -->
 
 <body>
     <div class="layout-wrapper layout-content-navbar">
@@ -42,55 +25,54 @@
 
                         <div class="card-body">
                             <div class="">
+                                <form id="posForm" method="POST" action="{{ route('pos.store') }}">
+                                    @csrf
+                                    {{-- LEFT : PRODUCTS --}}
+                                    <div class="col-12 col-md-12">
+                                        <div class="row g-3 mb-3">
 
-                                {{-- LEFT : PRODUCTS --}}
-                                <div class="col-12 col-md-12">
-                                    <div class="row g-3 mb-3">
+                                            {{-- CUSTOMER SEARCH --}}
+                                            <div class="col-12 col-md-4 position-relative">
+                                                <label class="form-label fw-bold">Customer</label>
 
-                                        {{-- CUSTOMER SEARCH --}}
-                                        <div class="col-12 col-md-4 position-relative">
-                                            <label class="form-label fw-bold">Customer</label>
+                                                <input type="text"
+                                                    id="customerSearch"
+                                                    class="form-control form-control-lg"
+                                                    placeholder="Search customer by name or mobile">
 
-                                            <input type="text"
-                                                id="customerSearch"
-                                                class="form-control form-control-lg"
-                                                placeholder="Search customer by name or mobile">
+                                                <input type="hidden" name="customer_id" id="customer_id">
 
-                                            <input type="hidden" name="customer_id" id="customer_id">
-
-                                            <div id="customerSuggestions"
-                                                class="list-group position-absolute w-100 shadow"
-                                                style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
+                                                <div id="customerSuggestions"
+                                                    class="list-group position-absolute w-100 shadow"
+                                                    style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
+                                                </div>
                                             </div>
+
+                                            {{-- PRODUCT / BARCODE SEARCH --}}
+                                            <div class="col-12 col-md-8 position-relative">
+                                                <label class="form-label fw-bold">Product</label>
+
+                                                <input type="text"
+                                                    id="barcode"
+                                                    autofocus
+                                                    class="form-control form-control-lg"
+                                                    placeholder="Scan barcode / type product name">
+
+                                                <div id="suggestions"
+                                                    class="list-group position-absolute w-100 shadow"
+                                                    style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
+                                                </div>
+                                            </div>
+
                                         </div>
 
-                                        {{-- PRODUCT / BARCODE SEARCH --}}
-                                        <div class="col-12 col-md-8 position-relative">
-                                            <label class="form-label fw-bold">Product</label>
 
-                                            <input type="text"
-                                                id="barcode"
-                                                autofocus
-                                                class="form-control form-control-lg"
-                                                placeholder="Scan barcode / type product name">
-
-                                            <div id="suggestions"
-                                                class="list-group position-absolute w-100 shadow"
-                                                style="z-index: 1050; display: none; max-height: 280px; overflow-y: auto;">
-                                            </div>
-                                        </div>
-
-                                    </div>
+                                        {{-- FILTERS --}}
+                                        <div class="row mb-3 align-items-end">
 
 
-                                    {{-- FILTERS --}}
-                                    <div class="row mb-3 align-items-end">
-
-
-                                        {{-- RIGHT : CART --}}
-                                        <div class="col-12 col-md-12 mt-5" style="margin-top: 50px !important;">
-                                            <form id="posForm" method="POST" action="{{ route('pos.store') }}">
-                                                @csrf
+                                            {{-- RIGHT : CART --}}
+                                            <div class="col-12 col-md-12 mt-5" style="margin-top: 50px !important;">
 
                                                 <div class="border p-4 rounded bg-white shadow sticky-top">
 
@@ -154,21 +136,26 @@
                                                         </button>
                                                     </div>
                                                 </div>
-                                            </form>
-                                        </div>
-
-                                    </div>
-                                </div>
+                                </form>
                             </div>
 
                         </div>
                     </div>
                 </div>
+
             </div>
+        </div>
+    </div>
+    </div>
 </body>
 <script>
     let cart = {};
     let searchTimer = null;
+    let isBarcodeScan = false;
+
+    function looksLikeBarcode(value) {
+        return /^[0-9]{6,14}$/.test(value); // numeric 6–14 digits
+    }
 
     const barcodeInput = document.getElementById('barcode');
     const suggestions = document.getElementById('suggestions');
@@ -265,6 +252,11 @@
         const q = this.value.trim();
         clearTimeout(searchTimer);
 
+        if (looksLikeBarcode(q)) {
+            hideSuggestions();
+            return;
+        }
+
         if (q.length < 2) {
             hideSuggestions();
             return;
@@ -322,8 +314,6 @@
 
     /* ---------------- BARCODE ---------------- */
 
-
-
     barcodeInput.addEventListener('keydown', function(e) {
 
         if (e.key !== 'Enter') return;
@@ -333,8 +323,8 @@
         const code = barcodeInput.value.trim();
         if (!code) return;
 
-        isBarcodeScan = true; // 🔥 mark barcode mode
-        hideSuggestions(); // close auto search
+        isBarcodeScan = true;
+        hideSuggestions();
 
         fetch(`/pos/product-by-barcode/${encodeURIComponent(code)}`)
             .then(res => res.ok ? res.json() : Promise.reject())
@@ -403,6 +393,8 @@
     function selectCustomer(customer) {
         customerInput.value = `${customer.name} (${customer.mobile})`;
         document.getElementById('customer_id').value = customer.id;
+
+
         hideCustomerSuggestions();
     }
 
