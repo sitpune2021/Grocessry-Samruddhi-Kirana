@@ -79,7 +79,7 @@
 
                         {{-- Shop Name --}}
                         <td>
-                            {{ $agent->shop->shop_name ?? '-' }}
+                            {{ $agent->shop->name ?? '-' }}
                         </td>
 
                         {{-- Agent Name --}}
@@ -154,10 +154,7 @@
 
         <!-- Pagination -->
         <div class="px-3 py-2">
-            <x-pagination
-                :from="$agents->firstItem()"
-                :to="$agents->lastItem()"
-                :total="$agents->total()" />
+            {{ $agents->onEachSide(0)->links('pagination::bootstrap-5') }}
         </div>
 
     </div>

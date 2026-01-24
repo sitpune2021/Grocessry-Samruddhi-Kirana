@@ -38,6 +38,16 @@
                                         @endif
                                     </div>
 
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
+
                                     <div class="card-body">
                                         <form enctype="multipart/form-data"
                                             action="{{ isset($agent) ? route('delivery-agents.update', $agent->id) : route('delivery-agents.store') }}"
@@ -55,14 +65,14 @@
                                                         Shop Name <span class="text-danger">*</span>
                                                     </label>
 
-                                                    <select name="warehouse_id" id="warehouse_id" class="form-select"
+                                                    <select name="shop_id" id="shop_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
 
                                                         <option value="">Select Shop</option>
 
                                                         @foreach ($shops as $shop)
                                                             <option value="{{ $shop->id }}"
-                                                                {{ old('warehouse_id', $agent->warehouse_id ?? '') == $shop->id ? 'selected' : '' }}>
+                                                                {{ old('shop_id', $agent->shop_id ?? '') == $shop->id ? 'selected' : '' }}>
                                                                 {{ $shop->name }}
                                                             </option>
                                                         @endforeach
