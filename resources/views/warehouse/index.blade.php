@@ -23,10 +23,49 @@
                     </a>
                 </div>
                 @endif
-              
+
             </div><br><br>
             <!-- Search -->
             <x-datatable-search />
+
+            @if(session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+
+            @if(session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+
             <div class="table-responsive mt-3">
                 <table id="transfersTable" class="table table-bordered table-striped  mb-0">
                     <thead class="table-light">
@@ -52,19 +91,19 @@
                             <!-- <td>{{ $t->approvedByWarehouse->name ?? '' }}</td> -->
                             <td>{{ $t->requestedByWarehouse->name  ?? '' }}</td>
                             <td>{{ $t->category->name }}</td>
-                            <td>{{ $t->product->name }}</td>
+                            <td>{{ $t->product->name ?? '' }}</td>
                             <td>{{ $t->batch->batch_no ?? '' }}</td>
                             <td>{{ $t->quantity }}</td>
                             <td>{{ optional($t->created_at)->format('d-m-Y') }}</td>
                             <td>
-                                        @if ($t->status == 1)
-                                            <span class="badge bg-success">Dispatched</span>
-                                        @elseif($t->status == 2)
-                                            <span class="badge bg-success">Recived</span>
-                                        @else
-                                            <span class="badge bg-warning">Pending</span>
-                                        @endif
-                                    </td>
+                                @if ($t->status == 1)
+                                <span class="badge bg-success">Dispatched</span>
+                                @elseif($t->status == 2)
+                                <span class="badge bg-success">Recived</span>
+                                @else
+                                <span class="badge bg-warning">Pending</span>
+                                @endif
+                            </td>
 
                             @if($canView || $canEdit || $canDelete)
                             <td class="action-column" style="white-space:nowrap;">
@@ -94,7 +133,7 @@
                                 @endif
                             </td>
                             @endif
-                        
+
                         </tr>
                         @empty
                         <tr>

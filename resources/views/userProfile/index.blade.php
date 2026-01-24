@@ -5,11 +5,11 @@
 
     <div class="card">
         <div class="card-datatable text-nowrap">
-             @php
+            @php
             $canView = hasPermission('user.view');
             $canEdit = hasPermission('user.edit');
             $canDelete = hasPermission('user.delete');
-        @endphp
+            @endphp
 
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
@@ -33,6 +33,25 @@
                 <!-- Search -->
                 <x-datatable-search />
 
+                @if(session('success'))
+                <div id="successAlert"
+                    class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                    role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <script>
+                    setTimeout(function() {
+                        let alert = document.getElementById('successAlert');
+                        if (alert) {
+                            let bsAlert = new bootstrap.Alert(alert);
+                            bsAlert.close();
+                        }
+                    }, 10000); // 15 seconds
+                </script>
+                @endif
+                
                 <!-- Table -->
                 <div class="table-responsive mt-3">
                     <table id="batchTable" class="table table-bordered table-striped">
@@ -103,9 +122,9 @@
                 </div>
 
                 <!-- Pagination -->
-                 <div class="px-3 py-2">
-                {{ $users->onEachSide(0)->links('pagination::bootstrap-5') }}
-            </div>
+                <div class="px-3 py-2">
+                    {{ $users->onEachSide(0)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </div>

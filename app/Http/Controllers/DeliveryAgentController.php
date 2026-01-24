@@ -21,9 +21,8 @@ use Illuminate\Validation\ValidationException;
 
 class DeliveryAgentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
+
     public function index()
     {
         $agents = DeliveryAgent::with(['user', 'shop'])
@@ -33,7 +32,6 @@ class DeliveryAgentController extends Controller
         return view('menus.delivery-agent.delivery-agent.index', compact('agents'));
     }
 
-
     public function create()
     {
         $mode = 'add';
@@ -41,7 +39,6 @@ class DeliveryAgentController extends Controller
         $shops = Warehouse::where('status', 'active')->get();
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('mode', 'agent', 'shops'));
     }
-
 
     public function store(Request $request)
     {
@@ -63,7 +60,8 @@ class DeliveryAgentController extends Controller
                 'mobile'          => 'required|digits:10|unique:users,mobile',
                 'email'           => 'nullable|email|unique:users,email',
                 'password'        => 'nullable|min:6',
-                'warehouse_id' => 'required|exists:warehouses,id',
+                //'warehouse_id' => 'required|exists:warehouses,id',
+                'shop_id' => 'required|exists:warehouses,id',
                 // 'shop_id'         => 'required|exists:grocery_shops,id',
                 'dob'             => 'nullable|date',
                 'gender'          => 'nullable|in:male,female',
@@ -81,12 +79,22 @@ class DeliveryAgentController extends Controller
                     ->withInput();
             }
 
-            /* ✅ THIS LINE FIXES EVERYTHING */
+            /* THIS LINE FIXES EVERYTHING */
             $validated = $validated->validated();
 
             Log::info('Fetching Delivery Agent role');
 
-            $role = Role::where('name', 'Delivery Agent')->firstOrFail();
+            //$role = Role::where('name', 'Delivery Agent')->firstOrFail();
+            $role = Role::where('name', 'Delivery Agent')->first();
+
+            if (!$role) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->withErrors([
+                        'role' => 'Delivery Agent role is not configured. Please contact admin.'
+                    ]);
+            }
 
             Log::info('Role found', [
                 'role_id' => $role->id
@@ -111,7 +119,8 @@ class DeliveryAgentController extends Controller
                 'password'  => Hash::make('Agent@123'),
                 'role_id'   => $role->id,
                 'profile_photo'   => $profileImage,
-                'warehouse_id' => $validated['warehouse_id'],
+                //'warehouse_id' => $validated['warehouse_id'],
+                'shop_id'       => $validated['shop_id'],
             ]);
 
             Log::info('User created successfully', [
@@ -151,7 +160,9 @@ class DeliveryAgentController extends Controller
 
             DeliveryAgent::create([
                 'user_id'         => $user->id,
-                'shop_id'         => $validated['shop_id'] ?? null,
+                //'shop_id'         => $validated['shop_id'] ?? null,
+                //'warehouse_id'  => $validated['warehouse_id'],
+                'shop_id'   => $validated['shop_id'],
                 'dob'             => $validated['dob'] ?? null,
                 'gender'          => $validated['gender'] ?? null,
                 'address'         => $validated['address'] ?? null,
@@ -193,9 +204,6 @@ class DeliveryAgentController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
 
@@ -205,9 +213,6 @@ class DeliveryAgentController extends Controller
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('agent', 'mode', 'shops'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $agent = DeliveryAgent::with('user')->findOrFail($id);
@@ -216,10 +221,6 @@ class DeliveryAgentController extends Controller
 
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('agent', 'mode', 'shops'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
 
     public function update(Request $request, $id)
     {
@@ -387,10 +388,6 @@ class DeliveryAgentController extends Controller
         }
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {
@@ -412,74 +409,50 @@ class DeliveryAgentController extends Controller
         }
     }
 
-
     public function assignDelivery(Request $request)
     {
         try {
             $validated = $request->validate([
-                'order_id' => 'required|exists:customer_orders,id',
+                'order_id' => 'required|exists:orders,id', // other customer_orders table
                 'delivery_agent_id' => 'required|exists:delivery_agents,id',
             ]);
 
             DB::beginTransaction();
 
-            $order = CustomerOrder::lockForUpdate()->findOrFail($validated['order_id']);
+            $order = \App\Models\Order::lockForUpdate()->findOrFail($validated['order_id']);
 
-            if ($order->agent_id) {
-
-                Log::warning('Reassignment attempt blocked', [
-                    'order_id' => $order->id,
-                    'current_agent_id' => $order->agent_id,
-                    'attempted_agent_id' => $validated['delivery_agent_id'],
-                    'user_id' => Auth::id(),
-                ]);
-
-                throw ValidationException::withMessages([
+            if ($order->delivery_agent_id) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
                     'order_id' => 'Delivery agent already assigned to this order.'
                 ]);
             }
 
             // ✅ Assign agent
-            $order->agent_id    = $validated['delivery_agent_id'];
-            $order->status      = 'accepted';
-            $order->accepted_by = Auth::id();
+            $order->delivery_agent_id = $validated['delivery_agent_id'];
+            $order->status = 'assigned';
             $order->save();
+
+            // Insert into deliveries table
+            \DB::table('deliveries')->insert([
+                'order_id' => $order->id,
+                'delivery_agent_id' => $validated['delivery_agent_id'],
+                'status' => 'assigned',
+                'customer_otp' => rand(1000, 9999),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             DB::commit();
 
-            Log::info('Delivery agent assigned successfully', [
-                'order_id' => $order->id,
-                'agent_id' => $validated['delivery_agent_id'],
-                'assigned_by' => Auth::id(),
-            ]);
-
             return back()->with('success', 'Delivery agent assigned successfully.');
-        } catch (ValidationException $e) {
-
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-
-            // Validation-specific log
-            Log::notice('Validation failed while assigning delivery agent', [
-                'errors' => $e->errors(),
-                'user_id' => Auth::id(),
-            ]);
-
-            return back()
-                ->withErrors($e->errors())
-                ->withInput();
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Throwable $e) {
-
             DB::rollBack();
-
-            Log::error('Unexpected error while assigning delivery agent', [
-                'order_id' => $request->order_id ?? null,
-                'agent_id' => $request->delivery_agent_id ?? null,
-                'user_id'  => Auth::id(),
-                'message'  => $e->getMessage(),
-                'trace'    => $e->getTraceAsString(),
-            ]);
-
             return back()->withErrors('Something went wrong. Please try again.');
         }
     }
+
+
 }

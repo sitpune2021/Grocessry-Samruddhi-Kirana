@@ -77,7 +77,7 @@
                     <tr>
                         <td>{{ $t->requestedByWarehouse->name }}</td>
                         <td>{{ $t->approvedByWarehouse->name }}</td>                       
-                        <td>{{ $t->product->name }}</td>
+                        <td>{{ $t->product->name ?? '' }}</td>
                         <td>{{ 
                                 $t->challan?->items
                                     ->where('product_id', $t->product_id)

@@ -8,8 +8,8 @@
             @php
             $canView = hasPermission('warehouse.view');
             $canEdit = hasPermission('warehouse.edit');
-        //   $canDelete = hasPermission(permission: 'warehouse.delete');
-        @endphp
+            // $canDelete = hasPermission(permission: 'warehouse.delete');
+            @endphp
 
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
@@ -30,7 +30,25 @@
                 <x-datatable-search />
             </div>
 
+            @if(session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+            
             <!-- Table -->
             <div class="table-responsive mt-3 p-3">
                 <table id="warehouse_id" class="table table-bordered table-striped align-middle">
@@ -44,7 +62,7 @@
                             <th>Contact Number</th>
                             <th>Email</th>
                             <th>Status</th>
-                            @if($canView || $canEdit ) {{-- || $canDelete --}}     
+                            @if($canView || $canEdit ) {{-- || $canDelete --}}
                             <th>Actions</th>
                             @endif
                             </tr>
@@ -63,8 +81,8 @@
                             <td>{{ $warehouse->email ?? '-'}}</td>
                             <td>{{$warehouse->status ?? '-'}}</td>
 
-                            @if($canView || $canEdit ) {{-- || $canDelete --}}                            
-                             <td class="text-center" style="white-space:nowrap;">
+                            @if($canView || $canEdit ) {{-- || $canDelete --}}
+                            <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('warehouse.view'))
                                 <a href="{{ route('warehouse.show', $warehouse->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
@@ -73,11 +91,11 @@
                                 @endif
                                 {{-- @if(hasPermission('warehouse.delete'))
                                 <form action="{{ route('warehouse.destroy', $warehouse->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button onclick="return confirm('Delete warehouse?')" class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
+                                @csrf
+                                @method('DELETE')
+                                <button onclick="return confirm('Delete warehouse?')" class="btn btn-sm btn-danger">
+                                    Delete
+                                </button>
                                 </form>
                                 @endif --}}
                             </td>

@@ -24,7 +24,7 @@ class PosOrderController extends Controller
 
     public function store(Request $request)
     {
-
+        // dd($request->all());
         $request->validate([
             'items' => 'required',
             'payment_method' => 'required|in:cash,upi,card',
@@ -74,7 +74,7 @@ class PosOrderController extends Controller
             ];
         }
 
-
+// dd($orderData);
         $order = app(OrderService::class)->create($orderData, $user);
 
         return redirect()
