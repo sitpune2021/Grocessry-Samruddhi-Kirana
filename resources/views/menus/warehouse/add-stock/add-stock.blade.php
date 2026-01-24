@@ -51,11 +51,8 @@
                                                         <label class="form-label">Supplier Challan <span
                                                                 class="text-danger">
                                                                 *</span></label>
-                                                        <select id="supplier_challan_id" name="supplier_challan_id"
-                                                            class="form-select"
-                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
-
-
+                                                        <select id="supplier_challan_id" class="form-select"
+                                                            {{ $mode === 'view' || $mode === 'edit' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Challan --</option>
                                                             @foreach ($challans as $challan)
                                                                 <option value="{{ $challan->id }}"
@@ -63,6 +60,27 @@
                                                                     {{ $challan->challan_no }}
                                                                 </option>
                                                             @endforeach
+                                                        </select>
+
+                                                        {{-- ✅ REAL value for submit --}}
+                                                        @if ($mode === 'view' || $mode === 'edit')
+                                                            <input type="hidden" name="supplier_challan_id"
+                                                                value="{{ $selectedChallan->id ?? '' }}">
+                                                        @else
+                                                            {{-- add mode --}}
+                                                            <input type="hidden" name="supplier_challan_id"
+                                                                id="supplier_challan_hidden">
+                                                        @endif
+
+
+
+                                                        <option value="">-- Select Challan --</option>
+                                                        @foreach ($challans as $challan)
+                                                            <option value="{{ $challan->id }}"
+                                                                {{ isset($selectedChallan) && $selectedChallan->id == $challan->id ? 'selected' : '' }}>
+                                                                {{ $challan->challan_no }}
+                                                            </option>
+                                                        @endforeach
                                                         </select>
                                                         @if (session('error'))
                                                             <span class="text-danger mt-1 d-block">
@@ -569,3 +587,13 @@
         }
     });
 </script>
+<script>
+document.getElementById('supplier_challan_id')
+    ?.addEventListener('change', function () {
+        const hidden = document.getElementById('supplier_challan_hidden');
+        if (hidden) {
+            hidden.value = this.value;
+        }
+    });
+</script>
+

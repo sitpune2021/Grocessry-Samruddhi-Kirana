@@ -182,8 +182,7 @@ class stockWarehouseController extends Controller
         // $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
         //     ->where('challan_no', $request->challan_no)
         //     ->exists();
-        $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-            ->where('supplier_challan_id', $request->supplier_challan_id)
+        $exists = WarehouseStock::where('supplier_challan_id', $request->supplier_challan_id)
             ->exists();
 
         if ($exists) {
@@ -199,7 +198,7 @@ class stockWarehouseController extends Controller
 
         $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
-            'supplier_id'  => 'required|exists:suppliers,id',
+            // 'supplier_id'  => 'required|exists:suppliers,id',
             'bill_no'      => 'required|string',
             'supplier_challan_id' => 'required|exists:supplier_challans,id',
 
@@ -226,7 +225,7 @@ class stockWarehouseController extends Controller
             Log::info('🟡 AddStock: Transaction started', [
                 'warehouse_id' => $request->warehouse_id,
                 'challan_no'   => $request->challan_no,
-                'supplier_id'  => $request->supplier_id,
+                // 'supplier_id'  => $request->supplier_id,
                 'products_cnt' => count($request->products),
             ]);
 
@@ -269,8 +268,8 @@ class stockWarehouseController extends Controller
 
                     $newStock = WarehouseStock::create([
                         'warehouse_id'         => $request->warehouse_id,
-                        'supplier_id'          => $request->supplier_id,
-                        'supplier_challan_id'  => $request->supplier_challan_id, // ✅ IMPORTANT
+                        // 'supplier_id'          => $request->supplier_id,
+                        'supplier_challan_id' => $request->supplier_challan_id, // ✅ MUST
                         'category_id'          => $item['category_id'],
                         'sub_category_id'      => $item['sub_category_id'],
                         'product_id'           => $item['product_id'],
