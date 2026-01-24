@@ -184,12 +184,12 @@ class SupplierChallenController extends Controller
     public function edit(string $id)
     {
         $challan = SupplierChallan::with([
-            'items.product',
+            'items.category',      // ✅ ADD
+            'items.subCategory',   // ✅ ADD
+            'items.product',       // ✅ already there
             'supplier',
             'warehouse',
-            // 'purchaseOrder'
-        ])
-            ->findOrFail($id);
+        ])->findOrFail($id);
 
         return view('supplier_challan.create', [
             'mode' => 'edit',
@@ -200,6 +200,7 @@ class SupplierChallenController extends Controller
             'purchaseOrders' => PurchaseOrder::all()
         ]);
     }
+
 
     public function update(Request $request, string $id)
     {

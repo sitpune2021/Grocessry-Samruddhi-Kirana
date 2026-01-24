@@ -15,11 +15,27 @@
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="card">
-                        <h4 class="card-header">Create Supplier Challan</h4>
+                        <h4 class="card-header">
+                            @if ($mode === 'view')
+                                View Supplier Challan
+                            @elseif($mode === 'edit')
+                                Edit Supplier Challan
+                            @else
+                                Create Supplier Challan
+                            @endif
+                        </h4>
 
                         <div class="card-body">
-                            <form method="POST" action="{{ route('supplier_challan.store') }}">
+                            <form method="POST"
+                                action="{{ isset($challan) && $mode === 'edit'
+                                    ? route('supplier_challan.update', $challan->id)
+                                    : route('supplier_challan.store') }}">
+
                                 @csrf
+                                @if (isset($challan) && $mode === 'edit')
+                                    @method('PUT')
+                                @endif
+
 
                                 {{-- HEADER --}}
 
@@ -49,7 +65,9 @@
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Challan No <span class="text-danger">*</span></label>
                                         <input type="text" name="challan_no" class="form-control"
-                                            value="{{ old('challan_no', $challan->challan_no ?? $autoChallanNo) }}">
+                                            value="{{ old('challan_no', $challan->challan_no ?? $autoChallanNo) }}"
+                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                     </div>
 
                                     <div class="row mb-4">
@@ -57,7 +75,9 @@
                                             <label class="form-label">Challan Date <span
                                                     class="text-danger">*</span></label>
                                             <input type="date" name="challan_date" class="form-control"
-                                                value="{{ date('Y-m-d') }}" required>
+                                                value="{{ old('challan_date', isset($challan) ? $challan->challan_date->format('Y-m-d') : date('Y-m-d')) }}"
+                                                {{ $mode === 'view' ? 'disabled' : '' }} required>
+
                                         </div>
                                     </div>
                                     <hr>
@@ -68,7 +88,8 @@
                                         <div class="col-md-3">
                                             <label class="form-label">Category <span
                                                     class="text-danger">*</span></label>
-                                            <select id="categorySelect" class="form-select" multiple>
+                                            <select id="categorySelect" class="form-select" multiple
+                                                {{ $mode === 'view' ? 'disabled' : '' }}>
                                                 @foreach ($categories as $c)
                                                     <option value="{{ $c->id }}">{{ $c->name }}</option>
                                                 @endforeach
@@ -78,19 +99,23 @@
                                         <div class="col-md-3">
                                             <label class="form-label">Sub Category <span
                                                     class="text-danger">*</span></label>
-                                            <select id="subCategorySelect" class="form-select" multiple></select>
+                                            <select id="subCategorySelect" class="form-select" multiple
+                                                {{ $mode === 'view' ? 'disabled' : '' }}></select>
                                         </div>
 
                                         <div class="col-md-6">
                                             <label class="form-label">Product <span class="text-danger">*</span></label>
-                                            <select id="productSelect" class="form-select" multiple></select>
+                                            <select id="productSelect" class="form-select" multiple
+                                                {{ $mode === 'view' ? 'disabled' : '' }}></select>
                                         </div>
 
                                     </div>
+                                    @if ($mode !== 'view')
+                                        <button type="button" id="addProductBtn" class="btn btn-success">
+                                            + Add Product
+                                        </button>
+                                    @endif
 
-                                    <button type="button" id="addProductBtn" class="btn btn-success">
-                                        + Add Product
-                                    </button>
 
                                     {{-- TABLE --}}
                                     <div id="itemsSection" class="d-none mt-4">
@@ -107,9 +132,12 @@
                                             <tbody id="itemsBody"></tbody>
                                         </table>
 
-                                        <button type="submit" class="btn btn-success">
-                                            Save Supplier Challan
-                                        </button>
+                                        @if ($mode !== 'view')
+                                            <button type="submit" class="btn btn-success">
+                                                Save Supplier Challan
+                                            </button>
+                                        @endif
+
                                     </div>
 
                             </form>
@@ -121,49 +149,87 @@
         </div>
     </div>
 
-    {{-- JS --}}
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         $(document).ready(function() {
 
+            /* =====================
+               INDEX INIT
+            ===================== */
             let index = 0;
 
-            $('#categorySelect, #subCategorySelect, #productSelect').select2({
-                placeholder: 'Select',
+            /* =====================
+               SELECT2 INIT
+            ===================== */
+            $('#categorySelect').select2({
+                placeholder: 'Select Category',
                 closeOnSelect: false,
                 width: '100%'
             });
 
-            /* CATEGORY → SUB CATEGORY */
+            $('#subCategorySelect, #productSelect').select2({
+                closeOnSelect: false,
+                width: '100%'
+            });
+
+
+            /* =====================
+               CATEGORY → AUTO SUB CATEGORY
+            ===================== */
             $('#categorySelect').on('change', function() {
 
                 let categoryIds = $(this).val();
-                $('#subCategorySelect').empty().trigger('change');
-                $('#productSelect').empty().trigger('change');
 
-                if (!categoryIds || categoryIds.length === 0) return;
+                if (!categoryIds || categoryIds.length === 0) {
+                    $('#subCategorySelect').empty().trigger('change');
+                    $('#productSelect').empty().trigger('change');
+                    $('#itemsBody').empty();
+                    return;
+                }
+
+                let existingSubCats = $('#subCategorySelect option')
+                    .map(function() {
+                        return $(this).val();
+                    })
+                    .get();
 
                 $.get('/ajax/subcategories', {
                     category_ids: categoryIds
                 }, function(res) {
+
                     res.data.forEach(sc => {
-                        $('#subCategorySelect').append(
-                            new Option(sc.name, sc.id)
-                        );
+                        if (!existingSubCats.includes(sc.id.toString())) {
+                            let option = new Option(sc.name, sc.id, true, true);
+                            $('#subCategorySelect').append(option);
+                        }
                     });
+
                     $('#subCategorySelect').trigger('change');
                 });
             });
 
-            /* SUB CATEGORY → PRODUCT */
+
+            /* =====================
+               SUB CATEGORY → AUTO PRODUCT
+            ===================== */
             $('#subCategorySelect').on('change', function() {
 
                 let subCategoryIds = $(this).val();
-                $('#productSelect').empty().trigger('change');
 
-                if (!subCategoryIds || subCategoryIds.length === 0) return;
+                if (!subCategoryIds || subCategoryIds.length === 0) {
+                    $('#productSelect').empty().trigger('change');
+                    $('#itemsBody').empty();
+                    return;
+                }
+
+                let existingProducts = $('#productSelect option')
+                    .map(function() {
+                        return $(this).val();
+                    })
+                    .get();
 
                 $.get('/ajax/products-by-subcategory', {
                     sub_category_ids: subCategoryIds
@@ -171,7 +237,9 @@
 
                     res.data.forEach(p => {
 
-                        let option = new Option(p.name, p.id, false, false);
+                        if (existingProducts.includes(p.id.toString())) return;
+
+                        let option = new Option(p.name, p.id, true, true);
 
                         $(option)
                             .attr('data-category-id', p.sub_category.category.id)
@@ -186,13 +254,16 @@
                 });
             });
 
-            /* ✅ ADD PRODUCT — MUST BE INSIDE READY */
+
+            /* =====================
+               ADD PRODUCT (NO CHANGE)
+            ===================== */
             $('#addProductBtn').on('click', function() {
 
                 let productIds = $('#productSelect').val();
 
                 if (!productIds || productIds.length === 0) {
-                    alert('Select Product');
+                    alert('No products available');
                     return;
                 }
 
@@ -200,46 +271,122 @@
 
                 productIds.forEach(pid => {
 
-                    let option = $('#productSelect option[value="' + pid + '"]');
+                    // prevent duplicate row
+                    if ($('#itemsBody input[name$="[product_id]"][value="' + pid + '"]').length) {
+                        return;
+                    }
 
-                    let productName = option.text();
-                    let categoryId = option.data('category-id');
-                    let categoryName = option.data('category-name');
-                    let subCategoryId = option.data('sub-category-id');
-                    let subCategoryName = option.data('sub-category-name');
+                    let option = $('#productSelect option[value="' + pid + '"]');
 
                     $('#itemsBody').append(`
                 <tr>
-                    <td>${categoryName}</td>
-                    <td>${subCategoryName}</td>
-                    <td>${productName}</td>
+                    <td>${option.data('category-name')}</td>
+                    <td>${option.data('sub-category-name')}</td>
+                    <td>${option.text()}</td>
+
                     <td>
                         <input type="number"
-                               name="items[${index}][received_qty]"
-                               class="form-control" min="1" required>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm removeRow">X</button>
+                            name="items[${index}][received_qty]"
+                            class="form-control"
+                            min="1"
+                            required>
                     </td>
 
-                    <input type="hidden" name="items[${index}][category_id]" value="${categoryId}">
-                    <input type="hidden" name="items[${index}][sub_category_id]" value="${subCategoryId}">
+                    <td>
+                        <button type="button"
+                            class="btn btn-danger btn-sm removeRow">X</button>
+                    </td>
+
+                    <input type="hidden" name="items[${index}][category_id]" value="${option.data('category-id')}">
+                    <input type="hidden" name="items[${index}][sub_category_id]" value="${option.data('sub-category-id')}">
                     <input type="hidden" name="items[${index}][product_id]" value="${pid}">
                 </tr>
             `);
 
                     index++;
                 });
-
-                $('#productSelect').val(null).trigger('change');
             });
 
-            /* REMOVE ROW */
+
+            /* =====================
+               MANUAL REMOVE : PRODUCT CHIP
+            ===================== */
+            $('#productSelect').on('select2:unselect', function(e) {
+
+                let productId = e.params.data.id;
+
+                $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
+                    .closest('tr')
+                    .remove();
+            });
+
+
+            /* =====================
+               MANUAL REMOVE : SUB CATEGORY CHIP
+            ===================== */
+            $('#subCategorySelect').on('select2:unselect', function(e) {
+
+                let subCategoryId = e.params.data.id;
+
+                $('#productSelect option[data-sub-category-id="' + subCategoryId + '"]').each(function() {
+
+                    let productId = $(this).val();
+
+                    $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
+                        .closest('tr')
+                        .remove();
+
+                    $(this).remove();
+                });
+
+                $('#productSelect').trigger('change');
+            });
+
+
+            /* =====================
+               MANUAL REMOVE : CATEGORY CHIP
+            ===================== */
+            $('#categorySelect').on('select2:unselect', function(e) {
+
+                let categoryId = e.params.data.id;
+
+                $('#productSelect option[data-category-id="' + categoryId + '"]').each(function() {
+
+                    let productId = $(this).val();
+
+                    $('#itemsBody input[name$="[product_id]"][value="' + productId + '"]')
+                        .closest('tr')
+                        .remove();
+
+                    $(this).remove();
+                });
+
+                $('#subCategorySelect option').each(function() {
+                    $(this).remove();
+                });
+
+                $('#subCategorySelect').trigger('change');
+                $('#productSelect').trigger('change');
+            });
+
+
+            /* =====================
+               REMOVE ROW BUTTON (TABLE)
+            ===================== */
             $(document).on('click', '.removeRow', function() {
+
+                let productId = $(this)
+                    .closest('tr')
+                    .find('input[name$="[product_id]"]')
+                    .val();
+
+                // remove chip also
+                $('#productSelect option[value="' + productId + '"]').prop('selected', false);
+                $('#productSelect').trigger('change');
+
                 $(this).closest('tr').remove();
             });
 
         });
     </script>
-
 </body>
