@@ -17,6 +17,7 @@ class Product extends Model
         'brand_id',
         'name',
         'sku',
+        'barcode',
         'description',
         'effective_date',
         'expiry_date',

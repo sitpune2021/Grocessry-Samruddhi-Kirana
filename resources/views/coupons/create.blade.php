@@ -152,7 +152,7 @@
                                             @enderror
                                         </div>
                                         {{-- Category --}}
-                                        <div class="col-md-4">
+                                        <!-- <div class="col-md-4">
                                             <label class="form-label fw-medium">Category</label>
                                             <select name="category_id" class="form-control"
                                                 {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -172,10 +172,10 @@
                                                     </option>
                                                 @endforeach
                                             </select>
-                                        </div>
+                                        </div> -->
 
                                         {{-- Product --}}
-                                        <div class="col-md-4">
+                                        <!-- <div class="col-md-4">
                                             <label class="form-label fw-medium">Product</label>
                                             <select name="product_id" class="form-control"
                                                 {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -196,7 +196,7 @@
                                                     </option>
                                                 @endforeach
                                             </select>
-                                        </div>
+                                        </div> -->
 
 
                                         <div class="col-md-12">
@@ -272,7 +272,7 @@
 
     });
 </script> --}}
-<script>
+<!-- <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const categorySelect = document.querySelector('select[name="category_id"]');
@@ -326,4 +326,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
-</script>
+</script> -->

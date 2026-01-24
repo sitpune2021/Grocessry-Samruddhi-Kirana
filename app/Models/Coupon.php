@@ -7,25 +7,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coupon extends Model
 {
-    
     protected $fillable = [
-        'code',
-        'category_id',
-        'product_id',
-        'title',
-        'description',
-        'discount_type',
-        'discount_value',
-        'start_date',
-        'end_date',
-        'min_amount',
-        'max_usage',
-        'terms_condition',
-        'status',
-        'offer_id',
-        'coupon_code',
-        'coupon_discount',
-    ];
+    'code',
+    'title',
+    'description',
+    'discount_type',
+    'discount_value',
+    'start_date',
+    'end_date',
+    'min_amount',
+    'max_usage',
+    'terms_condition',
+    'status',
+    'category_id',
+    'product_id',
+];
+
 
     public function product()
     {
@@ -36,9 +33,10 @@ class Coupon extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
     public function scopeActive($query)
     {
-        return $query->where('status', true)
+        return $query->where('status', 1)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now());
     }
