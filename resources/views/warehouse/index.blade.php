@@ -52,7 +52,7 @@
                             <!-- <td>{{ $t->approvedByWarehouse->name ?? '' }}</td> -->
                             <td>{{ $t->requestedByWarehouse->name  ?? '' }}</td>
                             <td>{{ $t->category->name }}</td>
-                            <td>{{ $t->product->name }}</td>
+                            <td>{{ $t->product->name ?? '' }}</td>
                             <td>{{ $t->batch->batch_no ?? '' }}</td>
                             <td>{{ $t->quantity }}</td>
                             <td>{{ optional($t->created_at)->format('d-m-Y') }}</td>

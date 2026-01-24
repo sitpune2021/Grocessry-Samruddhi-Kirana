@@ -19,8 +19,8 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-   
-    
+
+
     public function index()
     {
         Log::info('Product Index Page Loaded');
@@ -57,7 +57,7 @@ class ProductController extends Controller
             $taxes = Tax::where('is_active', 1)->get();
             $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes','units'));
+            return view('menus.product.add-product', compact('mode', 'categories', 'brands', 'subCategories', 'taxes', 'units'));
         } catch (\Throwable $e) {
 
             Log::error('Product Create Page Error', [
@@ -77,42 +77,43 @@ class ProductController extends Controller
 
         try {
 
-                $validated = $request->validate([
-                    'category_id'     => 'required|exists:categories,id',
-                    'brand_id'        => 'required|exists:brands,id',
+            $validated = $request->validate([
+                'category_id'     => 'required|exists:categories,id',
+                'brand_id'        => 'required|exists:brands,id',
 
-                    'name'            => 'required|string|max:255',
+                'name'            => 'required|string|max:255',
 
-                    'sku'             => 'nullable|string|max:255|unique:products,sku',
+                'sku'             => 'nullable|string|max:255|unique:products,sku',
+                'barcode'         => 'nullable|string|max:12',
 
-                    'sub_category_id' => 'required|exists:sub_categories,id',
-                    'description'     => 'nullable|string',
+                'sub_category_id' => 'required|exists:sub_categories,id',
+                'description'     => 'nullable|string',
 
-                    'unit_id'         => 'required|exists:units,id',
-                    'unit_value'      => 'required|numeric|min:0.01',
+                'unit_id'         => 'required|exists:units,id',
+                'unit_value'      => 'required|numeric|min:0.01',
 
-                    'base_price'      => 'required|numeric|min:1',
+                'base_price'      => 'required|numeric|min:1',
 
-                    // ✅ FULL VALIDATION HERE
-                    'retailer_price'  => 'required|numeric|min:1|gte:base_price|lte:mrp',
+                // ✅ FULL VALIDATION HERE
+                'retailer_price'  => 'required|numeric|min:1|gte:base_price|lte:mrp',
 
-                    'mrp'             => 'required|numeric|min:1',
+                'mrp'             => 'required|numeric|min:1',
 
-                    'tax_id'          => 'required|exists:taxes,id',
+                'tax_id'          => 'required|exists:taxes,id',
 
-                    'product_images'   => 'nullable|array',
-                    'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+                'product_images'   => 'nullable|array',
+                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
 
-                ], [
-                    'retailer_price.gte' => 'Selling price cannot be less than Base Price',
-                    'retailer_price.lte' => 'Selling price cannot be greater than MRP',
-                ]);
+            ], [
+                'retailer_price.gte' => 'Selling price cannot be less than Base Price',
+                'retailer_price.lte' => 'Selling price cannot be greater than MRP',
+            ]);
 
 
-                if ($request->retailer_price > $request->mrp) {
-                    return back()->withInput()
-                        ->with('error', 'Selling price cannot be greater than MRP');
-                }
+            if ($request->retailer_price > $request->mrp) {
+                return back()->withInput()
+                    ->with('error', 'Selling price cannot be greater than MRP');
+            }
 
             $tax = Tax::findOrFail($request->tax_id);
             $gstPercent = $tax->gst ?? 0;
@@ -182,9 +183,9 @@ class ProductController extends Controller
                 ->get();
 
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
-             $units = Unit::orderBy('name')->get();
+            $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories','units'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'units'));
         } catch (\Throwable $e) {
             Log::error('Product View Error', ['message' => $e->getMessage()]);
             return redirect()->route('product.index')
@@ -215,7 +216,7 @@ class ProductController extends Controller
             $subCategories = SubCategory::where('category_id', $product->category_id)->get();
             $units = Unit::orderBy('name')->get();
 
-            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes','units'));
+            return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'taxes', 'units'));
         } catch (\Throwable $e) {
 
             Log::error('Product Edit Error', [
@@ -255,22 +256,23 @@ class ProductController extends Controller
                     Rule::unique('products', 'name')->ignore($product->id),
                 ],
 
-                'sku'        => 'nullable|string|max:255',
-                'description'=> 'nullable|string',
+                'sku'               => 'nullable|string|max:255',
+                'barcode'           => 'nullable|string|max:12',
+                'description'       => 'nullable|string',
 
-                'unit_id'    => 'required|exists:units,id',
-                'unit_value' => 'required|numeric|min:0.01',
+                'unit_id'           => 'required|exists:units,id',
+                'unit_value'        => 'required|numeric|min:0.01',
 
-                'base_price'     => 'required|numeric|min:1',
-                'retailer_price' => 'required|numeric|min:1',
-                'mrp'            => 'required|numeric|min:1',
+                'base_price'        => 'required|numeric|min:1',
+                'retailer_price'    => 'required|numeric|min:1',
+                'mrp'               => 'required|numeric|min:1',
 
-                'tax_id' => 'required|exists:taxes,id',
+                'tax_id'            => 'required|exists:taxes,id',
 
-                'product_images'   => 'nullable|array',
-                'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+                'product_images'    => 'nullable|array',
+                'product_images.*'  => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ], [
-                'name.unique' => 'This product name already exists!',
+                'name.unique'       => 'This product name already exists!',
             ]);
 
             if ($request->retailer_price < $request->base_price) {
@@ -313,14 +315,12 @@ class ProductController extends Controller
 
             return redirect()->route('product.index')
                 ->with('success', 'Product updated successfully');
-
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             Log::warning('Product Update Validation Failed', [
                 'errors' => $e->errors()
             ]);
             throw $e;
-
         } catch (\Throwable $e) {
 
             Log::error('Product Update Error', [
@@ -395,6 +395,4 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
     }
-
-
 }

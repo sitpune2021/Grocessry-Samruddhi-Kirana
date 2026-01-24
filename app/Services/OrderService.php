@@ -12,6 +12,7 @@ class OrderService
 {
     public function create(array $data, $user)
     {
+ 
         return DB::transaction(function () use ($data, $user) {
 
             /* ---------------- ORDER ---------------- */
@@ -75,7 +76,7 @@ class OrderService
 
             /* ---------------- APPLY DISCOUNT ---------------- */
             $discount = min($data['discount'] ?? 0, $subtotal);
-            $payable  = $subtotal - $discount;
+            $payable  = $subtotal ;
 
             $order->update([
                 'subtotal'     => $subtotal,
