@@ -53,7 +53,7 @@ class WebsiteController extends Controller
         // ALL PRODUCTS (always)
         $allProducts = Product::whereNull('deleted_at')
             ->latest()
-            ->paginate(8, ['*'], 'all_page');
+            ->paginate(12, ['*'], 'all_page');
 
         // CATEGORY PRODUCTS
         $categoryProducts = Product::whereNull('deleted_at')
@@ -141,7 +141,7 @@ class WebsiteController extends Controller
             $query->whereBetween('mrp', [$minPrice, $maxPrice]);
         }
 
-        $products = $query->latest()->paginate(12)->withQueryString();
+        $products = $query->latest()->paginate(40)->withQueryString();
 
         return view('website.shop', compact(
             'products',
@@ -229,7 +229,6 @@ class WebsiteController extends Controller
         return redirect()->route('cart')
             ->with('success', 'Product added to cart');
     }
-
 
     public function cart()
     {
@@ -320,4 +319,6 @@ class WebsiteController extends Controller
 
         return view('website.category-products', compact('category', 'products'));
     }
+
+    
 }
