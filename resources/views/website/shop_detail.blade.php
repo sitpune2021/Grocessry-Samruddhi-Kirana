@@ -4,91 +4,10 @@
 
 @section('content')
 
-<style>
-    /* Product image hover effect */
-    .product-image-wrapper {
-        position: relative;
-        overflow: hidden;
-        cursor: pointer;
-    }
 
-    .product-main-img {
-        transition: transform 0.4s ease;
-    }
 
-    .product-image-wrapper:hover .product-main-img {
-        transform: scale(1.08);
-    }
 
-    .product-hover-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.55);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .product-hover-overlay span {
-        color: #fff;
-        font-size: 18px;
-        font-weight: 600;
-        border: 2px solid #fff;
-        padding: 8px 18px;
-        border-radius: 30px;
-    }
-
-    .product-image-wrapper:hover .product-hover-overlay {
-        opacity: 1;
-    }
-
-    /* Related Products Card */
-    .related-card {
-        border-radius: 12px;
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-        padding: 6px;
-        background-color: #fff;
-    }
-
-    .related-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .related-card img {
-        height: 150px;
-        object-fit: contain;
-        transition: transform 0.3s;
-    }
-
-    .related-card:hover img {
-        transform: scale(1.05);
-    }
-
-    .related-card .card-body {
-        padding: 8px;
-    }
-
-    .related-card h6 {
-        font-size: 13px;
-        margin-bottom: 4px;
-    }
-
-    .related-card p {
-        font-size: 13px;
-        margin-bottom: 6px;
-    }
-
-    .related-card .btn {
-        font-size: 13px;
-        padding: 6px 10px;
-    }
-</style>
-
-<!-- Page Header -->
+<!-- Similar products -->
 <div class="container-fluid page-header py-4 mb-5 bg-dark">
     <h1 class="text-center text-white display-6">Product Details</h1>
 </div>
@@ -105,15 +24,35 @@
             </div>
         </div>
 
-        <!-- Product Info -->
         <div class="col-lg-7">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h3 class="fw-bold">{{ $product->name }}</h3>
+
+                    <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
                     <p class="text-muted mb-2">Category: {{ $product->category->name ?? 'N/A' }}</p>
 
-                    <h4 class="text-primary mb-3">₹{{ $product->mrp }}</h4>
+                    <div class="mb-2">
+                        <span class="fs-4 fw-bold text-success">
+                            ₹{{ number_format($product->final_price, 0) }}
+                        </span>
 
+                        @if($product->mrp > $product->final_price)
+                        <span class="text-muted text-decoration-line-through ms-2">
+                            ₹{{ number_format($product->mrp, 0) }}
+                        </span>
+                        @endif
+                    </div>
+                    {{-- DISCOUNT --}}
+                    @if($product->mrp > $product->final_price)
+                    @php
+                    $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+                    @endphp
+                    <div class="offer-badge">{{ $discount }}% OFF</div>
+                    @endif
+                    <div class="product-unit">
+                        {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                        {{ Str::title(optional($product->unit)->name) }}
+                    </div>
                     <form action="{{ route('add_cart') }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -158,49 +97,71 @@
         </div>
     </div>
 
-    <!-- Similar products -->
-    <div class="mt-5">
-        <h3 class="fw-bold mb-4">Similar products</h3>
+    <div class="row g-3 mt-3">
+        <h3 class="fw-bold mb-3">Similar products</h3>
 
-        <div class="row g-4">
-            @foreach($relatedProducts as $related)
-            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-                <div class="card h-100 shadow-sm position-relative related-card">
+        @foreach($relatedProducts as $related)
+        <div class="col-6 col-sm-4 col-md-2"> <!-- 6 cards per row on large screens -->
+
+            <div class="rounded position-relative fruite-item">
+
+                {{-- DISCOUNT --}}
+                @if($related->mrp > $related->final_price)
+                @php
+                $discount = round((($related->mrp - $related->final_price) / $related->mrp) * 100);
+                @endphp
+                <div class="offer-badge">{{ $discount }}% OFF</div>
+                @endif
+
+                @php
+                $images = $related->product_images;
+                $image = $images[0] ?? null;
+                @endphp
+
+                <div class="fruite-img">
                     <a href="{{ route('productdetails', $related->id) }}">
-                        <span class="badge bg-primary position-absolute top-0 end-0 m-2">
-                            {{ $related->category->name ?? 'Category' }}
-                        </span>
-
-                        <img src="{{ asset('storage/products/'.$related->product_images[0]) }}"
-                            class="card-img-top" alt="{{ $related->name }}">
-
-                        <div class="card-body d-flex flex-column">
-                            <h6 class="fw-bold">{{ $related->name }}</h6>
-                            <p class="text-primary fw-bold mb-3">₹{{ $related->mrp }}</p>
-                        </div>
+                        <img src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
+                            class="img-fluid w-100 rounded-top"
+                            alt="{{ $related->name }}"
+                            style="height: 150px; object-fit: cover;">
                     </a>
+                </div>
 
-                    <form action="{{ route('add_cart') }}" method="POST" class="add-to-cart-form d-flex align-items-center gap-3 flex-wrap">
+                <div class="p-3 border border-top-0">
+
+                    <div class="delivery-time mb-1 text-muted" style="font-size:12px;">Free delivery</div>
+
+                    <form action="{{ route('add_cart') }}" method="POST">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <!-- <div class="qty-box d-inline-flex align-items-center gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-minus">-</button>
-                            <input type="number" name="qty" value="1" min="1" class="form-control text-center qty-input" style="width:60px">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-plus">+</button>
-                        </div> -->
+                        <h6 class="product-title" style="font-size:14px; margin-bottom:4px;">
+                            {{ Str::limit(Str::title($related->name), 40) }}
+                        </h6>
 
-                        <button class="btn btn-primary rounded-pill px-4">
-                            <i class="fa fa-shopping-bag me-2"></i>Add to Cart
-                        </button>
+                        <p class="product-unit" style="font-size:12px; margin-bottom:6px;">
+                            {{ rtrim(rtrim(number_format($related->unit_value, 2), '0'), '.') }}
+                            {{ Str::title(optional($related->unit)->name) }}
+                        </p>
+
+                        <div class="price-row d-flex justify-content-between align-items-center">
+                            <div class="price-box" style="font-size:14px;">
+                                <span class="price-new fw-bold">₹{{ number_format($related->final_price, 0) }}</span><br>
+                                <span class="price-old text-muted" style="text-decoration:line-through; font-size:12px;">
+                                    ₹{{ number_format($related->mrp, 0) }}
+                                </span>
+                            </div>
+
+                            <button type="submit" class="btn btn-sm btn-primary">ADD</button>
+                        </div>
+
                     </form>
-
                 </div>
             </div>
-            @endforeach
         </div>
-
+        @endforeach
     </div>
+
 
 </div>
 

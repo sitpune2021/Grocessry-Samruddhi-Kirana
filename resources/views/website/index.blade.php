@@ -1,511 +1,10 @@
 @extends('website.layout')
 
+
 @section('title', 'Home')
 
 @section('content')
-<style>
-    /* Product Slider Base */
-    .product-slider {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        padding: 10px 5px;
-    }
 
-    .product-slide-item {
-        flex: 0 0 180px;
-    }
-
-
-
-    /* Image */
-    .product-sm-img img {
-        width: 100%;
-        height: 140px;
-        object-fit: contain;
-    }
-
-    /* Title */
-    .product-sm-title {
-        font-size: 14px;
-        font-weight: 600;
-        margin: 6px 0;
-        height: 40px;
-        overflow: hidden;
-    }
-
-    /* Footer */
-    .product-sm-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    /* Arrows */
-    .slider-arrow {
-        position: absolute;
-        top: 40%;
-        background: #fff;
-        border: none;
-        font-size: 20px;
-        padding: 5px 10px;
-        z-index: 10;
-    }
-
-    /* 🔥 MOBILE FIX */
-    @media (max-width: 576px) {
-        .product-slide-item {
-            flex: 0 0 140px;
-            /* Smaller cards */
-        }
-
-        .product-sm-img img {
-            height: 110px;
-        }
-
-        .product-sm-title {
-            font-size: 13px;
-            height: 36px;
-        }
-
-        .btn-add-sm {
-            font-size: 12px;
-            padding: 5px 8px;
-        }
-    }
-</style>
-
-<style>
-    .pagination {
-        justify-content: center !important;
-        flex-wrap: wrap;
-    }
-
-    .pagination .page-item {
-        display: inline-flex !important;
-    }
-
-    .pagination .page-link {
-        padding: 4px 8px;
-        font-size: 12px;
-        line-height: 1.2;
-        min-width: 30px;
-        height: 30px;
-        border-radius: 4px;
-    }
-
-
-    /* Small product card () */
-    .product-sm-card {
-        border: 1px solid #e9e7e7;
-        border-radius: 12px;
-        padding: 10px;
-        background: #ffffff;
-        height: 100%;
-        transition: box-shadow 0.2s ease;
-    }
-
-    .product-sm-card:hover {
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    }
-
-    .product-sm-img {
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .product-sm-img img {
-        max-height: 100%;
-        max-width: 100%;
-        object-fit: contain;
-    }
-
-    .product-sm-title {
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 1.2;
-        margin: 8px 0 4px;
-    }
-
-    .product-sm-weight {
-        font-size: 12px;
-        color: #777;
-    }
-
-    .product-sm-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 8px;
-    }
-
-    .product-sm-price {
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .btn-add-sm {
-        border: 1px solid #28a745;
-        color: #28a745;
-        background: #fff;
-        padding: 3px 14px;
-        font-size: 13px;
-        border-radius: 8px;
-    }
-
-    .btn-add-sm:hover {
-        background: #28a745;
-        color: #fff;
-    }
-
-    .counter:hover {
-        transform: translateY(-5px);
-        transition: all 0.3s ease;
-    }
-
-    .hover-shadow {
-        transition: all 0.3s ease;
-    }
-
-    .service-item {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .service-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    html,
-    body {
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    .carousel,
-    .carousel-inner,
-    .carousel-item {
-        overflow: hidden;
-    }
-
-
-    img {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .product-slider {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
-        scroll-behavior: smooth;
-        padding-bottom: 10px;
-    }
-
-    /* hide scrollbar */
-    .product-slider::-webkit-scrollbar {
-        display: none;
-    }
-
-    .product-slider {
-        scrollbar-width: none;
-    }
-
-    /* 6 cards per row */
-    .product-slide-item {
-        flex: 0 0 calc(100% / 6 - 10px);
-    }
-
-    .slider-arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #b0a5a5ff;
-        color: #fff;
-        border: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        font-size: 22px;
-        cursor: pointer;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0.85;
-    }
-
-    .slider-arrow.left {
-        left: -20px;
-    }
-
-    .slider-arrow.right {
-        right: -20px;
-    }
-
-    .slider-arrow:hover {
-        opacity: 1;
-    }
-
-    /* hide arrows on mobile */
-    @media (max-width: 768px) {
-        .slider-arrow {
-            display: none;
-        }
-    }
-
-
-    /* categery model  */
-
-
-    /* CATEGORY CARD */
-
-
-    /* HOVER */
-    .category-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
-    }
-
-    /* IMAGE WRAPPER */
-    .category-img {
-        width: 80%;
-        aspect-ratio: 1 / 1;
-        margin: 0 auto;
-        border-radius: 50%;
-        overflow: hidden;
-        background: #f8f9fa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* IMAGE FULL FIT */
-    .category-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        /* 🔥 FULL FIT */
-        border-radius: 50%;
-    }
-
-
-    .category-card:hover .category-img {
-        transform: scale(1.05);
-    }
-
-    /* TITLE */
-    .category-title {
-        margin-top: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        text-align: center;
-        line-height: 1.2;
-        color: #333;
-    }
-
-    .category-row {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .category-col {
-        width: 10%;
-        /* 🔥 10 in one row */
-        padding: 8px;
-    }
-
-    /* RESPONSIVE FIX */
-    @media (max-width: 1200px) {
-        .category-col {
-            width: 20%;
-        }
-
-        /* 5 per row */
-    }
-
-    @media (max-width: 768px) {
-        .category-col {
-            width: 25%;
-        }
-
-        /* 4 per row */
-    }
-
-    @media (max-width: 576px) {
-        .category-col {
-            width: 33.33%;
-        }
-
-        /* 3 per row */
-    }
-
-    .hero-banner {
-        height: 380px;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-        /* 🔴 KEY LINE */
-        border-radius: 16px;
-        background: #000;
-
-    }
-
-    .hero-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-
-        object-position: center;
-        display: block;
-    }
-
-    /* Overlay safe */
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right,
-                rgba(46, 43, 43, 0.26),
-                rgba(0, 0, 0, 0.1));
-        z-index: 1;
-    }
-
-
-    .carousel-control-prev,
-    .carousel-control-next {
-        top: 50%;
-        transform: translateY(-50%);
-        width: 50px;
-        height: 50px;
-        background: rgba(0, 0, 0, 0.45);
-        border-radius: 50%;
-    }
-
-    .carousel-control-prev-icon,
-    .carousel-control-next-icon {
-        background-size: 18px 18px;
-    }
-
-    /* Mobile */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 22px;
-            margin-top: 20px;
-        }
-
-        .hero-btn {
-            margin-bottom: 20px;
-        }
-    }
-
-    /* ===== BETTER TAB SEARCH UI ===== */
-
-    .nav-pills {
-        gap: 10px;
-    }
-
-    /* TAB BUTTON */
-    .nav-pills .nav-link,
-    .nav-pills a {
-        background: #f5f5f5 !important;
-        border-radius: 20px !important;
-        padding: 8px 18px !important;
-        transition: all 0.25s ease;
-        border: 1px solid #e0e0e0;
-    }
-
-    /* TAB TEXT */
-    .nav-pills span {
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    /* ACTIVE TAB */
-    .nav-pills .active {
-        background: #28a745 !important;
-        border-color: #28a745 !important;
-    }
-
-    .nav-pills .active span {
-        color: #fff !important;
-    }
-
-    /* ===== CATEGORY SEARCH DROPDOWN ===== */
-
-    form .form-select {
-        height: 44px;
-        border-radius: 10px;
-        border: 1px solid #dcdcdc;
-        font-size: 14px;
-        font-weight: 600;
-        padding-left: 14px;
-        background-color: #fff;
-        cursor: pointer;
-        transition: all 0.25s ease;
-    }
-
-    /* Hover */
-    form .form-select:hover {
-        border-color: #28a745;
-    }
-
-    /* Focus */
-    form .form-select:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.15rem rgba(40, 167, 69, 0.25);
-    }
-
-    /* Optional container look */
-    form .col-md-4 {
-        position: relative;
-    }
-
-    .product-sm-card {
-        position: relative;
-    }
-
-    /* Mobile full width */
-    @media (max-width: 768px) {
-        form .col-md-4 {
-            width: 100%;
-        }
-    }
-
-    /* ALIGN RIGHT NICELY */
-    @media (min-width: 992px) {
-        .nav-pills {
-            justify-content: flex-end;
-        }
-    }
-
-    /* categry box  */
-
-    .whatsapp-float {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #25D366;
-        color: #fff;
-        border-radius: 50%;
-        width: 55px;
-        height: 55px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        z-index: 9999;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        text-decoration: none;
-    }
-
-    .whatsapp-float:hover {
-        background: #1ebe5d;
-        color: #fff;
-    }
-</style>
 
 <body>
 
@@ -548,11 +47,15 @@
     </div>
     <!-- category main -->
     <div class="container py-4">
-        <div class="row g-3 category-row">
+        <div class="col-lg-4 mb-4" style="margin:auto; text-align:center;">
+            <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">
+                Popular Categories
+            </h3>
+        </div>
 
+        <div class="category-slider">
             @foreach($categoriestop as $category)
             <div class="category-col">
-
                 <a href="{{ route('website.category-products', $category->slug) }}"
                     class="category-card text-center">
 
@@ -564,12 +67,15 @@
                     </div>
 
                     <p class="category-title">{{ $category->name }}</p>
-
                 </a>
-
             </div>
             @endforeach
 
+        </div>
+        <div class="slider-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-green active"></span>
+            <span class="dot dot-blue"></span>
         </div>
     </div>
 
@@ -580,8 +86,11 @@
 
                 <div class="row g-4">
                     <div class="col-lg-4 text-start">
-                        <h4>Our Organic Products</h4>
+                        <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">
+                            Our Products
+                        </h3>
                     </div>
+
                     <div class="col-lg-8 text-end">
                         <ul class="nav nav-pills d-inline-flex text-center">
                             <li class="nav-item">
@@ -677,7 +186,7 @@
 
                         <div class="mt-4 d-flex flex-column align-items-end">
                             {{-- Pagination --}}
-                            {{ $allProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
+                            {{ $allProducts->onEachSide(0)->links() }}
                         </div>
 
                     </div>
@@ -771,13 +280,9 @@
                             <p class="text-center">No products found</p>
                             @endforelse
                         </div>
-
-
                         <div class="mt-4 d-flex flex-column align-items-end">
                             {{-- Pagination --}}
-                            {{ $categoryProducts->onEachSide(0)->links('pagination::bootstrap-5') }}
-
-
+                            {{ $categoryProducts->onEachSide(0)->links() }}
                         </div>
                     </div>
                 </div>
@@ -786,14 +291,15 @@
     </div>
 
     <!-- slide product  -->
-    <div class="container py-2">
+    <div class="container p-0 ">
         @foreach($cate as $category)
         @if($category->products->count())
 
-        <div class="row p-3">
+        <div class="row p-2">
             <div class="col text-start">
-                <h4 class="fw-bold text-dark">{{ $category->name }}</h4>
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">{{ $category->name }}</h3>
             </div>
+
         </div>
 
         <div class="position-relative product-slider-wrapper">
@@ -848,10 +354,16 @@
 
                     </div>
                 </div>
+
                 @endforeach
             </div>
-
+            <div class="slider-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-green active"></span>
+                <span class="dot dot-blue"></span>
+            </div>
             <button class="slider-arrow right">&#10095;</button>
+            <div class="slider-dots text-center mt-3"></div>
         </div>
 
         @endif
@@ -859,10 +371,9 @@
     </div>
 
     <div class="container py-2">
-
-        <div class="row p-3">
+        <div class="row p-2">
             <div class="col text-start">
-                <h4 class="fw-bold text-dark">Latest Products</h4>
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">Latest Products</h3>
             </div>
         </div>
 
@@ -920,73 +431,112 @@
                 </div>
                 @endforeach
             </div>
-
-
+            <div class="slider-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-green active"></span>
+                <span class="dot dot-blue"></span>
+            </div>
             <button class="slider-arrow right">&#10095;</button>
         </div>
 
     </div>
 
+    <div class="container py-2">
+        <div class="row p-2">
+            <div class="col text-start">
+                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">Top Brands</h3>
+            </div>
+        </div>
+        <div class="brand-slider p-3" id="brandSlider">
+            <div class="brand-track" id="brandTrack">
+                @foreach($brands as $brand)
+                <div class="brand-col">
+                    <img src="{{ asset('storage/brands/'.$brand->logo) }}"
+                        alt="{{ $brand->name }}">
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     <!-- Featurs Section Start -->
-    <div class="container-fluid featurs">
-        <div class="container py-4 p">
-            <div class="row g-4">
+    <div class="container featurs py-5">
+        <div class="container">
+            <div class="row g-3">
+
                 <!-- Feature 1 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-car-side fa-2x text-white"></i>
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-car-side"></i>
                         </div>
-                        <div class="featurs-content text-center">
+                        <div class="featurs-content">
                             <h5>Free Shipping</h5>
-                            <p class="mb-0">Free on order over $300</p>
+                            <p>Free on orders over $300</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-user-shield fa-2x text-white"></i>
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-user-shield"></i>
                         </div>
-                        <div class="featurs-content text-center">
-                            <h5>Security Payment</h5>
-                            <p class="mb-0">100% security payment</p>
+                        <div class="featurs-content">
+                            <h5>Secure Payment</h5>
+                            <p>100% secure payment</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fas fa-exchange-alt fa-2x text-white"></i>
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
-                        <div class="featurs-content text-center">
+                        <div class="featurs-content">
                             <h5>30 Day Return</h5>
-                            <p class="mb-0">30 day money guarantee</p>
+                            <p>30-day money guarantee</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Feature 4 -->
-                <div class="col-md-6 col-lg-3">
-                    <div class="featurs-item text-center rounded bg-light p-4">
-                        <div class="featurs-icon btn-square rounded-circle bg-secondary mb-4 mx-auto" style="width:60px; height:60px; line-height:60px;">
-                            <i class="fa fa-phone-alt fa-2x text-white"></i>
+                <div class="col-6 col-md-3">
+                    <div class="featurs-item">
+                        <div class="featurs-icon">
+                            <i class="fas fa-phone-alt"></i>
                         </div>
-                        <div class="featurs-content text-center">
+                        <div class="featurs-content">
                             <h5>24/7 Support</h5>
-                            <p class="mb-0">Support every time fast</p>
+                            <p>Fast support anytime</p>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
+
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const slider = document.querySelector(".category-slider");
+        let scrollAmount = 0;
+
+        setInterval(() => {
+            if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth) {
+                slider.scrollLeft = 0;
+            } else {
+                slider.scrollLeft += 130;
+            }
+        }, 2500); // speed control
+    });
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -1019,6 +569,35 @@
 
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const slider = document.getElementById("brandSlider");
+        const track = document.getElementById("brandTrack");
+
+        /* 🔁 clone brands MULTIPLE times */
+        const original = track.innerHTML;
+        track.innerHTML = original + original + original + original;
+
+        let speed = 0.5;
+
+        function infiniteScroll() {
+            slider.scrollLeft += speed;
+
+            if (slider.scrollLeft >= track.scrollWidth / 2) {
+                slider.scrollLeft = 0;
+            }
+
+            requestAnimationFrame(infiniteScroll);
+        }
+
+        infiniteScroll();
+    });
+</script>
+
+
+
 
 
 @endsection

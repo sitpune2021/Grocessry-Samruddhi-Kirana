@@ -17,11 +17,9 @@
             </ol> -->
     </div>
     <!-- Single Page Header End -->
-
-
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite py-5">
-        <div class="container py-5">
+        <div class="container  ">
             <!-- <h1 class="mb-4">All Products</h1> -->
             <div class="row g-4">
                 <div class="col-lg-12">
@@ -97,52 +95,31 @@
     <!-- Fruits Shop End-->
 
 
-    <script>
-        document.getElementById('categoryFilter').addEventListener('change', function() {
-            loadProducts(1);
-        });
+<script>
+    // Category change
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        loadProducts(1);
+    });
 
-        function loadProducts(page = 1) {
-            let categoryId = document.getElementById('categoryFilter').value;
+    function loadProducts(page = 1) {
+        let categoryId = document.getElementById('categoryFilter').value;
+        let minPrice   = document.getElementById('minPrice').value;
+        let maxPrice   = document.getElementById('maxPrice').value;
 
-            fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&page=${page}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('product-container').innerHTML = html;
-                });
-        }
+        fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('product-container').innerHTML = html;
+            });
+    }
 
-        // pagination ajax
-        document.addEventListener('click', function(e) {
-            let link = e.target.closest('.pagination a');
-            if (!link) return;
+    // Pagination AJAX
+    document.addEventListener('click', function (e) {
+        let link = e.target.closest('.pagination a');
+        if (!link) return;
 
-            e.preventDefault();
-            let page = new URL(link.href).searchParams.get('page');
-            loadProducts(page);
-        });
-    </script>
-
-    <script>
-        function loadProducts(page = 1) {
-            let categoryId = document.getElementById('categoryFilter').value;
-            let minPrice = document.getElementById('minPrice').value;
-            let maxPrice = document.getElementById('maxPrice').value;
-
-            fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('product-container').innerHTML = html;
-                });
-        }
-
-        // Pagination AJAX
-        document.addEventListener('click', function(e) {
-            let link = e.target.closest('.pagination a');
-            if (!link) return;
-
-            e.preventDefault();
-            let page = new URL(link.href).searchParams.get('page');
-            loadProducts(page);
-        });
-    </script>
+        e.preventDefault();
+        let page = new URL(link.href).searchParams.get('page');
+        loadProducts(page);
+    });
+</script>

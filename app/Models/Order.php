@@ -22,7 +22,6 @@ class Order extends Model
         'delivery_agent_id',
         'pickup_proof',
         'coupon_code',
-        'order_number',
         'coupon_discount',
         'cancel_reason',
         'cancel_comment',

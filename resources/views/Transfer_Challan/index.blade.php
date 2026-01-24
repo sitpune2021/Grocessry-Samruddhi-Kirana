@@ -169,7 +169,7 @@
 
                 <!-- Pagination -->
                 <div class="px-3 py-2">
-                    <x-pagination :from="$challans->firstItem()" :to="$challans->lastItem()" :total="$challans->total()" />
+                    {{ $challans->onEachSide(0)->links('pagination::bootstrap-5') }}
                 </div>
 
             </div>

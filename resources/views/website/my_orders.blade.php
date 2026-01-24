@@ -39,9 +39,37 @@
         height: 90px;
         background: #f1f1f1;
     }
+
+    .card-body {
+        font-size: 14px;
+        /* was 13px */
+    }
+
+    h6 {
+        font-size: 23px;
+    }
+
+    .small {
+        font-size: 16px !important;
+    }
+
+    strong,
+    .fw-bold {
+        font-weight: 600;
+    }
 </style>
 
+
+
 <div class="container py-3" style="margin-top:160px;">
+
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     <div class="row g-3">
 
         <!-- LEFT SIDEBAR (SMALL) -->
@@ -157,9 +185,6 @@
                             <span>Subtotal:
                                 <strong>₹{{ number_format($order->subtotal, 2) }}</strong>
                             </span>
-                            <span class="fw-bold text-primary">
-                                ₹{{ number_format($order->total_amount, 2) }}
-                            </span>
                         </div>
                     </div>
                     @endforeach
@@ -203,7 +228,7 @@
                         </div>
 
                         <!-- Address -->
-                        <p class="mb-2 text-muted">
+                        <p class="mb-2 ">
                             <i class="bi bi-geo-alt me-1"></i>
                             {{ $address->address }},
                             {{ $address->city }} - {{ $address->postcode }},
@@ -233,50 +258,55 @@
                     {{-- ================= END ADDRESS ================= --}}
 
                     @if($tab == 'profile')
-                    <h6 class="fw-bold text-primary mb-3">My Profile</h6>
+                    <h5 class="fw-bold text-primary mb-4">My Profile</h5>
 
-                    <div class="profile-card border rounded-4 p-3 p-md-4 shadow-sm">
+                    <div class="profile-card border rounded-4 p-4 shadow-sm">
 
-                        <!-- Profile Image & Name -->
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            @if(Auth::user()->profile_photo)
-                            <img src="{{ asset('storage/profile_photos/' . Auth::user()->profile_photo) }}"
-                                class="rounded-circle border"
-                                width="90"
-                                height="90"
-                                style="object-fit: cover;">
-                            @else
-                            <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center">
-                                <i class="bi bi-person fs-1 text-muted"></i>
+                        <!-- Profile Header -->
+                        <div class="row align-items-center mb-4 text-center text-md-start">
+
+                            <!-- Profile Image -->
+                            <div class="col-12 col-md-auto mb-3 mb-md-0 text-center">
+                                @if(Auth::user()->profile_photo)
+                                <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}"
+                                    class="rounded-circle border"
+                                    style="width:140px;height:140px;object-fit:cover;">
+                                @else
+                                <div class="avatar-placeholder rounded-circle mx-auto
+                            d-flex align-items-center justify-content-center"
+                                    style="width:140px;height:140px;">
+                                    <i class="bi bi-person fs-1 text-muted"></i>
+                                </div>
+                                @endif
                             </div>
-                            @endif
 
-                            <div>
-                                <h5 class="mb-1 fw-semibold">
+                            <!-- Name -->
+                            <div class="col-12 col-md">
+                                <h4 class="mb-1 fw-semibold">
                                     {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
-                                </h5>
-                                <span class="text-muted small">User Profile</span>
+                                </h4>
+                                <span class="text-muted">User Profile</span>
                             </div>
                         </div>
 
-                        <hr>
+                        <hr class="mb-4">
 
                         <!-- User Details -->
-                        <div class="row g-2 small">
+                        <div class="row g-4">
                             <div class="col-12 col-md-6">
-                                <strong>Email:</strong><br>
-                                <span class="text-muted">{{ Auth::user()->email }}</span>
+                                <div class="fw-bold mb-1">Email</div>
+                                <div class="text-muted fs-6">{{ Auth::user()->email }}</div>
                             </div>
 
                             <div class="col-12 col-md-6">
-                                <strong>Mobile:</strong><br>
-                                <span class="text-muted">{{ Auth::user()->mobile }}</span>
+                                <div class="fw-bold mb-1">Mobile</div>
+                                <div class="text-muted fs-6">{{ Auth::user()->mobile }}</div>
                             </div>
                         </div>
 
                     </div>
-
                     @endif
+
 
 
                 </div>
@@ -285,5 +315,6 @@
 
 
     </div>
+
 </div>
 @endsection

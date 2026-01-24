@@ -19,103 +19,91 @@ use App\Models\WarehouseStockReturn;
 
 class DashboardController extends Controller
 {
+
+
     public function index()
     {
-        // =====================
-        // Basic Counts
-        // =====================
-        $categoryCount           = Category::count();
-        $ProductCount            = Product::count();
-        $BatchCount              = Batch::count();
-        $WarehouseCount          = Warehouse::count();
-        $StockMovementCount      = WarehouseStock::count();
-        $WarehouseTransferCount  = WarehouseTransfer::count();
-        $UserCount               = User::count();
+        $user = auth()->user()->load('warehouse');
+        $warehouse = $user->warehouse;
 
-        // =====================
-        // Warehouse / Shop Lists
-        // =====================
-        $warehouseDistrict = Warehouse::whereNotNull('district_id')
-            ->pluck('name');
+        // =======================
+        // Counts
+        // =======================
+        $categoryCount = Category::count();
+        $ProductCount = Product::count();
+        $BatchCount = Batch::count();
+        $WarehouseCount = Warehouse::count();
+        $StockMovementCount = WarehouseStock::count();
+        $WarehouseTransferCount = WarehouseTransfer::count();
 
-        $warehouseTaluka = Warehouse::whereNotNull('taluka_id')
-            ->pluck('name');
+        // Only show Users count for admin roles (optional)
+        $UserCount = in_array($user->role_id, [1,2]) 
+            ? User::count() 
+            : 1; // login user only
 
-        $shops = GroceryShop::where('status', 'active')
-            ->pluck('shop_name');
-
-        // =====================
-        // Expiry Alert Logic (Dashboard Only)
-        // =====================
+        // =======================
+        // Expiry alerts
+        // =======================
         $today = now();
 
-        // Expired batches (only if stock available)
         $expiredCount = ProductBatch::where('quantity', '>', 0)
             ->whereDate('expiry_date', '<', $today)
             ->count();
 
-        // Expiring in next 7 days
         $expiringSoonCount = ProductBatch::where('quantity', '>', 0)
-            ->whereBetween('expiry_date', [
-                $today,
-                $today->copy()->addDays(7)
-            ])
+            ->whereBetween('expiry_date', [$today, $today->copy()->addDays(7)])
             ->count();
 
-
-        // =====================
-        // 🔁 RETURN COUNTS (NEW)
-        // =====================
-        $user = auth()->user()->load('warehouse');
-        $warehouse = $user->warehouse;
-
-        $warehouseStockReturnCount = null;
-        $customerOrderReturnCount  = null;
+        // =======================
+        // Warehouse / Shop Lists (login user)
+        // =======================
+        $warehouseDistrict = collect();
+        $warehouseTaluka = collect();
+        $shops = collect();
 
         if ($warehouse) {
-
-            // TALUKA → Only returns raised by taluka
-            if ($warehouse->type === 'taluka') {
-                $warehouseStockReturnCount =
-                    WarehouseStockReturn::where('from_warehouse_id', $warehouse->id)
-                    ->where('status', '!=', 'received')
-                    ->count();
-            }
-
-            // DISTRICT → Taluka + District
             if ($warehouse->type === 'district') {
-                $warehouseStockReturnCount =
-                    WarehouseStockReturn::where(function ($q) use ($warehouse) {
-                        $q->where('from_warehouse_id', $warehouse->id)
-                            ->orWhere('to_warehouse_id', $warehouse->id);
-                    })
-                    ->where('status', '!=', 'received')
-                    ->count();
+                $warehouseDistrict = Warehouse::where('district_id', $warehouse->district_id)
+                    ->pluck('name');
+                $warehouseTaluka = Warehouse::where('district_id', $warehouse->district_id)
+                    ->whereNotNull('taluka_id')
+                    ->pluck('name');
+                // FIXED LINE: shops related to taluka_id
+                $shops = GroceryShop::whereIn('taluka_id', Warehouse::where('district_id', $warehouse->district_id)->pluck('id'))
+                    ->pluck('shop_name');
             }
 
-            // MASTER → All warehouse returns
-            // if ($warehouse->type === 'master') {
-            //     $warehouseStockReturnCount =
-            //         WarehouseStockReturn::where('status', '!=', 'received')->count();
-
-            //     $customerOrderReturnCount =
-            //         CustomerOrderReturn::where('status', 'pending')->count();
-            // }
+            if ($warehouse->type === 'taluka') {
+                $warehouseTaluka = Warehouse::where('id', $warehouse->id)->pluck('name');
+                // FIXED LINE: shops related to this taluka
+                $shops = GroceryShop::where('taluka_id', $warehouse->id)
+                    ->pluck('shop_name');
+            }
         }
 
-        // ADMIN → See everything
-        // if ($user->role->name === 'Super Admin') {
-        //     $warehouseStockReturnCount =
-        //         WarehouseStockReturn::where('status', '!=', 'received')->count();
+        // =======================
+        // Warehouse Stock Returns (login user)
+        // =======================
+        $warehouseStockReturnCount = 0;
 
-        //     $customerOrderReturnCount =
-        //         CustomerOrderReturn::where('status', 'pending')->count();
-        // }
+        if ($warehouse) {
+            if ($warehouse->type === 'taluka') {
+                $warehouseStockReturnCount = WarehouseStockReturn::where('from_warehouse_id', $warehouse->id)
+                    ->where('status', '!=', 'received')
+                    ->count();
+            }
 
+            if ($warehouse->type === 'district') {
+                $warehouseStockReturnCount = WarehouseStockReturn::where(function ($q) use ($warehouse) {
+                    $q->where('from_warehouse_id', $warehouse->id)
+                    ->orWhere('to_warehouse_id', $warehouse->id);
+                })->where('status', '!=', 'received')->count();
+            }
+        }
 
-        // =====================
-        // Send Data to Dashboard
-        // =====================
+        // =======================
+        // Send to view
+        // =======================
         return view('dashboard.dashboard', compact(
             'categoryCount',
             'ProductCount',
@@ -129,8 +117,9 @@ class DashboardController extends Controller
             'warehouseDistrict',
             'warehouseTaluka',
             'shops',
-            'warehouseStockReturnCount',
-            'customerOrderReturnCount'
+            'warehouseStockReturnCount'
         ));
     }
+    
+
 }

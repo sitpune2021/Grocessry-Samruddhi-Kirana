@@ -22,7 +22,11 @@ return [
                 ['title' => 'Role Management', 'route' => 'roles.index'],
                 ['title' => 'User Management', 'route' => 'user.profile'],
                 ['title' => 'Permission Management', 'route' => 'RolePermission'],
-                ['title' => 'Tax Management', 'route' => 'taxes.index'],
+                [
+                    'title' => 'Tax Management',
+                    'route' => 'taxes.index',
+                    'roles' => [1, 2] // Only visible for role_id 1 & 2
+                ],
 
             ],
         ],
@@ -52,9 +56,9 @@ return [
         //         ['title' => 'Warehouse', 'route' => 'warehouse.index'],
         //     ],
         // ],
-         [
+        [
             'type'  => 'single',
-            'title' => 'Warehouse / Distribution Center',
+            'title' => 'Warehouse / Distribution',
             'icon'  => 'bx bx-store',
             'route'   => 'warehouse.index',
         ],
@@ -65,6 +69,7 @@ return [
             'key'   => 'suppplierMenu',
             'title' => 'Supplier Management',
             'icon'  => 'bx bx-package',
+            'roles' => [1, 2], // allowed roles
             'children' => [
                 ['title' => 'Supplier Details', 'route' => 'supplier.index'],
                 ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
@@ -95,6 +100,7 @@ return [
             'icon'  => 'bx bx-package',
             'children' => [
                 ['title' => 'Warehouse Stock Request', 'route' => 'transfer.index'],
+                ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
                 // ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
                 // ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
                 // ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
@@ -144,6 +150,7 @@ return [
             'key'   => 'shopMenu',
             'title' => 'Delivery Agent',
             'icon'  => 'bx bx-store',
+            'exclude_roles' => [3, 4],
             'children' => [
                 // ['title' => 'Shop Management', 'route' => 'grocery-shops.index'],
                 ['title' => 'Delivery Agent', 'route' => 'delivery-agents.index'],
@@ -165,10 +172,11 @@ return [
         //     ],
         // ],
 
-         [
+        [
             'type'  => 'single',
             'title' => 'POS System',
             'icon'  => 'bx bx-package',
+            'exclude_roles' => [3, 4],
             'route'   => 'pos.create',
         ],
 
@@ -178,6 +186,7 @@ return [
             'key'   => 'OfferMenu',
             'title' => 'Offer / Scheme Management',
             'icon'  => 'bx bx-package',
+            'exclude_roles' => [3, 4],
             'children' => [
                 ['title' => 'Offer Management', 'route' => 'offers.index'],
                 //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
@@ -192,7 +201,7 @@ return [
             'title' => 'Customer Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Customer Order', 'route' => 'customer-orders.index'],
+                ['title' => 'Customer Order', 'route' => 'customer-orders.index', 'exclude_roles' => [3, 4],],
                 ['title' => 'Order Return', 'route' => 'customer-returns.index'],
             ],
         ],
@@ -207,9 +216,8 @@ return [
                 ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
-                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
-                ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
-                ['title' => 'Web-Site Order', 'route' => 'userorder'],
+                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],               
+                ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],
 
@@ -251,6 +259,7 @@ return [
             'key'   => 'wesiteMenu',
             'title' => 'Website Management',
             'icon'  => 'bx bx-store',
+            'roles' => [1],
             'children' => [
                 ['title' => 'Banner Management', 'route' => 'banners.index'],
                 ['title' => 'User Contact Details', 'route' => 'admin.contacts'],

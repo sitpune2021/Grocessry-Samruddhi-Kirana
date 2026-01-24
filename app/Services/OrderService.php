@@ -24,6 +24,7 @@ class OrderService
                 'created_by'     => $user->id,
                 'status'         => 'placed',
                 'payment_status' => 'pending',
+                'payment_method' => $data['payment']['method'],
                 'discount'       => $data['discount'] ?? 0,
             ]);
 
@@ -88,7 +89,7 @@ class OrderService
                     'order_id'        => $order->id,
                     'user_id'         => $user->id,
                     'payment_gateway'=> $data['payment']['method'],
-                    'amount'          => $payable, 
+                    'amount'          => $payable,
                     'status'          => 'success',
                 ]);
 
