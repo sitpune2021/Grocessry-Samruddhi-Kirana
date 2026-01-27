@@ -868,6 +868,10 @@ Route::post('/enduserlogout', [AuthController::class, 'websitelogout'])->name('w
 Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
     ->middleware('auth');
 
+Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
+    ->name('apply.coupon');
+
+
 Route::get('/orders', [CustomerOrderController::class, 'userorder'])
     ->name('userorder');
 
