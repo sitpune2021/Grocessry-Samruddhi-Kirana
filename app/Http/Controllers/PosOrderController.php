@@ -35,6 +35,10 @@ class PosOrderController extends Controller
 
         $items = $request->items;
 
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+        }
+
         if (!$items || count($items) === 0) {
             if ($request->wantsJson()) {
                 return response()->json([
