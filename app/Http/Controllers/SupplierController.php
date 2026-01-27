@@ -63,9 +63,9 @@ class SupplierController extends Controller
             ],
             'email'         => 'required|email|max:255',
             'address'       => 'required|string',
-            'state_id'      => 'nullable|exists:states,id', //temp nullable
-            'district_id'   => 'nullable|exists:districts,id',// "    "
-            'taluka_id'     => 'nullable|exists:talukas,id',// "    "
+            'state_id'      => 'required|exists:states,id', //temp required
+            'district_id'   => 'required|exists:districts,id',// "    "
+            'taluka_id'     => 'required|exists:talukas,id',// "    "
          
         ], [
             'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',

@@ -28,12 +28,16 @@ class PosOrderController extends Controller
 
         $request->validate([
             'items' => 'required',
-            'payment_method' => 'required|in:cash,upi,card',
+            'payment_method' => 'required|in:cash,online',
             'discount' => 'nullable|numeric|min:0',
             'customer_id' => 'nullable|exists:users,id',
         ]);
 
         $items = $request->items;
+
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+        }
 
         if (!$items || count($items) === 0) {
             if ($request->wantsJson()) {
@@ -86,7 +90,7 @@ class PosOrderController extends Controller
         $order = app(OrderService::class)->create($orderData, $user);
 
 
-        if (in_array($request->payment_method, ['upi', 'card'])) {
+        if (in_array($request->payment_method, ['online'])) {
             return response()->json([
                 'order_id' => $order->id,
                 'amount'   => $order->total_amount

@@ -48,6 +48,12 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function createdBy()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);

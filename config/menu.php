@@ -19,14 +19,14 @@ return [
             'title' => 'User Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+                ['title' => 'Role Management', 'route' => 'roles.index', 'roles' => [1, 2]],
                 [
                     'title' => 'Tax Management',
                     'route' => 'taxes.index',
                     'roles' => [1, 2] // Only visible for role_id 1 & 2
                 ],
+                ['title' => 'Permission Management', 'route' => 'RolePermission', 'roles' => [1, 2, 3, 4]],
+                ['title' => 'User Management', 'route' => 'user.profile'],
 
             ],
         ],
@@ -215,8 +215,11 @@ return [
             'children' => [
                 ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
+                ['title' => ' Warehouse Stock Return Report', 'route' => 'stock-returns.report'],
+                ['title' => 'POS Report', 'route' => 'pos-report'],
+
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
-                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],               
+                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
                 ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],
