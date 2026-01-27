@@ -97,8 +97,8 @@
 
     <div class="header">
         <!-- Replace with your logo -->
-         <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}" alt="Samruddhi Kirana">
-       <h2>Transfer Challan</h2>
+        <img src="{{ asset('admin/assets/img/logo/samrudhi-kirana-logo1.png') }}" alt="Samruddhi Kirana">
+        <h2>Transfer Challan</h2>
         <p><strong>Challan No:</strong> {{ $challan->challan_no }}</p>
         <p><strong>Date:</strong> {{ \Carbon\Carbon::parse($challan->transfer_date)->format('d-m-Y') }}</p>
     </div>
@@ -126,13 +126,14 @@
         <tbody>
             @php $totalQty = 0; @endphp
             @foreach ($challan->items as $index => $item)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->product->name ?? 'N/A' }}</td>
-                    {{-- <td>{{ $item->batch_id ?? '-' }}</td> --}}
-                    <td class="text-right">{{ $item->quantity }}</td>
-                </tr>
-                @php $totalQty += $item->quantity; @endphp
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->product->name ?? 'N/A' }}</td>
+                {{-- <td>{{ $item->batch_id ?? '-' }}</td> --}}
+                <!-- <td class="text-right">{{ $item->quantity }}</td> -->
+                <td class="text-right">{{ number_format($item->quantity, 0) }}</td>
+            </tr>
+            @php $totalQty += $item->quantity; @endphp
             @endforeach
         </tbody>
     </table>
@@ -152,7 +153,7 @@
 </body>
 
 <script>
-    window.onload = function () {
+    window.onload = function() {
         window.print();
     };
 </script>

@@ -34,7 +34,6 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-
     public function placeOrder(Request $request)
     {
         try {
@@ -104,6 +103,7 @@ class CheckoutController extends Controller
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'order_number' => 'ORD-' . time(),
+                'warehouse_id' => 0,
                 'subtotal' => $cart->subtotal,
                 'coupon_discount' => $couponDiscount,
                 'coupon_code' => $couponCode,
@@ -119,6 +119,7 @@ class CheckoutController extends Controller
                     'quantity' => $item->qty,
                     'price' => $item->price,
                     'line_total' => $item->line_total,
+                    'total'     => $item->line_total,
                 ]);
             }
 
@@ -129,50 +130,53 @@ class CheckoutController extends Controller
                 ->with('success', 'Order placed successfully!');
         } catch (\Exception $e) {
             return back()->with('error', 'Something went wrong');
+           // dd($e->getMessage());
         }
     }
 
-public function applyCoupon(Request $request)
-{
-    $coupon = Coupon::where('code', $request->coupon_code)
-        ->where('status', 1)
-        ->whereDate('start_date', '<=', now())
-        ->whereDate('end_date', '>=', now())
-        ->first();
+    public function applyCoupon(Request $request)
+    {
+        $coupon = Coupon::where('code', $request->coupon_code)
+            ->where('status', 1)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->first();
 
-    if (!$coupon) {
+        if (!$coupon) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid or expired coupon'
+            ]);
+        }
+
+        // Minimum order validation (₹1000 etc.)
+        if ($request->subtotal < $coupon->min_amount) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
+            ]);
+        }
+
+        // Discount calculation
+        if ($coupon->discount_type === 'percentage') {
+            $discount = ($request->subtotal * $coupon->discount_value) / 100;
+        } else {
+            $discount = $coupon->discount_value;
+        }
+
+        // safety
+        if ($discount > $request->subtotal) {
+            $discount = $request->subtotal;
+        }
+
+        $finalTotal = $request->subtotal - $discount;
+
         return response()->json([
-            'status' => false,
-            'message' => 'Invalid or expired coupon'
+            'status' => true,
+            'discount' => number_format($discount, 2),
+            'final_total' => number_format($finalTotal, 2)
         ]);
     }
 
-    // Minimum order validation (₹1000 etc.)
-    if ($request->subtotal < $coupon->min_amount) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
-        ]);
-    }
 
-    // Discount calculation
-    if ($coupon->discount_type === 'percentage') {
-        $discount = ($request->subtotal * $coupon->discount_value) / 100;
-    } else {
-        $discount = $coupon->discount_value;
-    }
-
-    // safety
-    if ($discount > $request->subtotal) {
-        $discount = $request->subtotal;
-    }
-
-    $finalTotal = $request->subtotal - $discount;
-
-    return response()->json([
-        'status' => true,
-        'discount' => number_format($discount, 2),
-        'final_total' => number_format($finalTotal, 2)
-    ]);
-}
 }
