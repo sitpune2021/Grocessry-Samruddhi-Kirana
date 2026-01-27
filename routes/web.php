@@ -595,6 +595,8 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/low-stock-alerts', [LowStockController::class, 'index'])
         ->name('lowstock.index');
 
+    Route::get('/low-stock', [LowStockController::class, 'index'])
+        ->name('low-stock.index');
     // Analytics (optional API / page)
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
@@ -687,8 +689,10 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('warehouse-stock.report');
     Route::get('stock-movement/report', [ReportsController::class, 'stock_movement'])
         ->name('stock-movement.report');
-
-
+    Route::get('/reports/stock-returns', [ReportsController::class, 'stockReturnReport'])
+        ->name('stock-returns.report');
+    Route::get('/reports/pos-report', [ReportsController::class, 'pos_report'])
+        ->name('pos-report');
 
     /////////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
 

@@ -62,7 +62,7 @@
                             <th>Warehouse Request</th>
                             <th>Warehouse Approved</th>                   
                             <th>Transfer In</th>
-                            <!-- <th>Remaining Total Qty</th> -->
+                             <th>Product</th>
                             <th>Created Date</th>
                             <th>Updated Date</th>
                         </tr>
@@ -74,6 +74,7 @@
                                 <td>{{ $ws['warehouse_name'] }}</td>
                                 <td>{{ $ws['warehouse_from'] }}</td>                               
                                 <td>{{ $ws['transfer_in'] }}</td>
+                                <td>{{ $ws['product_name'] }}</td>
                                 <!-- <td class="fw-bold">{{ $ws['quantity'] }}</td> -->
                                 <td>{{ \Carbon\Carbon::parse($ws['created_at'])->format('d-m-Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($ws['updated_at'])->format('d-m-Y') }}</td>
