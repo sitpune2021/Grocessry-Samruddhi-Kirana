@@ -65,12 +65,8 @@
                                             </div>
 
                                         </div>
-
-
                                         {{-- FILTERS --}}
                                         <div class="row mb-3 align-items-end">
-
-
                                             {{-- RIGHT : CART --}}
                                             <div class="col-12 col-md-12 mt-5" style="margin-top: 50px !important;">
 
@@ -126,28 +122,29 @@
                                                             </label>
                                                         </div>
                                                     </div>
-
-
+                                                    {{-- Action Button --}}
                                                     <div class="">
                                                         <button type="button"
-                                                            onclick="submitPosOrder()"
+                                                            onclick="submitPosOrder(event)"
                                                             class="btn btn-success block btn-lg  mt-3">
                                                             Pay & Print
                                                         </button>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </form>
                             </div>
-
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
-    </div>
 </body>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
     let cart = {};
     let searchTimer = null;
@@ -403,28 +400,159 @@
         customerSuggestions.innerHTML = '';
     }
 
+    let razorpayOrderId = null;
 
+    function openRazorpay(orderId) {
+
+        fetch('/razorpay/create-order', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    order_id: orderId
+                })
+            })
+            .then(async res => {
+                const text = await res.text();
+                if (!text) throw new Error('Empty Razorpay response');
+                return JSON.parse(text);
+            })
+            .then(rzp => {
+
+                razorpayOrderId = rzp.razorpay_order_id;
+
+
+                const options = {
+                    key: rzp.key,
+                    amount: rzp.amount,
+                    currency: "INR",
+                    name: "Samruddh Kirana",
+                    description: "POS Payment",
+                    order_id: rzp.razorpay_order_id,
+
+                    handler: function(response) {
+                        // console.log('DEBUG razorpayOrderId:', razorpayOrderId);
+                        fetch('/razorpay/verify', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: razorpayOrderId,
+                                    razorpay_signature: response.razorpay_signature,
+                                    order_id: orderId
+                                })
+                            })
+                            .then(async res => {
+                                const text = await res.text();
+
+                                if (!res.ok) {
+                                    console.error('Verify failed:', text);
+                                    alert('Payment verification failed');
+                                    return;
+                                }
+
+                                if (!text) {
+                                    alert('Empty verify response');
+                                    return;
+                                }
+
+                                return JSON.parse(text);
+                            })
+                            .then(data => {
+                                if (data && data.success) {
+                                    window.location.href = `/pos/invoice/${orderId}`;
+                                } else {
+                                    alert('Payment not saved');
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                alert('Payment verification error');
+                            });
+                    }
+                };
+
+                const rzpInstance = new Razorpay(options);
+                rzpInstance.open();
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Unable to start Razorpay payment');
+            });
+    }
     /* ---------------- SUBMIT ---------------- */
 
     let submitted = false;
 
-    function submitPosOrder() {
-
-        // Prevent double submit
-        if (submitted) return;
+    function submitPosOrder(e) {
+        const btn = e.target;
+        btn.disabled = true;
+        btn.innerText = 'Opening Payment...';
 
         if (!Object.keys(cart).length) {
             alert('Add at least one product');
+            btn.disabled = false;
+            btn.innerText = 'Pay & Print';
             return;
         }
 
-        submitted = true;
+        const paymentMethod =
+            document.querySelector('input[name="payment_method"]:checked').value;
 
-        const btn = event?.target;
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = 'Processing...';
+        const payload = {
+            items: Object.values(cart).map(i => ({
+                product_id: i.product_id,
+                qty: i.qty
+            })),
+            discount: document.getElementById('discount_input').value,
+            payment_method: paymentMethod,
+            customer_id: document.getElementById('customer_id').value || null
+        };
+
+        // CASH → normal submit
+        if (paymentMethod === 'cash') {
+            document.getElementById('items_input').value = JSON.stringify(payload.items);
+            document.getElementById('posForm').submit();
+            return;
         }
-        document.getElementById('posForm').submit();
+
+        // UPI / CARD → AJAX
+        fetch("{{ route('pos.store') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async res => {
+                const text = await res.text();
+                if (!text) throw new Error('Empty response');
+
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Invalid server response');
+                }
+            })
+
+            .then(data => {
+                openRazorpay(data.order_id);
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Payment initiation failed');
+                btn.disabled = false;
+                btn.innerText = 'Pay & Print';
+            });
     }
 </script>
