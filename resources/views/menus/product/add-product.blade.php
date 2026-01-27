@@ -19,34 +19,7 @@
                 <!-- / Navbar -->
 
                 <!-- Content wrapper -->
-                <div class="content-wrapper">
-
-                {{-- Validation Errors --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                {{-- Success Message --}}
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                {{-- Custom Error --}}
-                @if(session('error'))
-                    <div class="alert alert-danger">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-
+                <div class="content-wrapper">              
                     <!-- Content -->
                     <div class="container-xxl flex-grow-1 container-p-y">
                         <div class="row justify-content-center">
@@ -325,7 +298,7 @@
                                                             value="{{ $product->tax->gst ?? 0 }}%"
                                                             readonly>
                                                         @else
-                                                        <select name="tax_id" class="form-control" required>
+                                                        <select name="tax_id" class="form-control">
                                                             <option value="">-- Select GST --</option>
 
                                                             @foreach($taxes as $tax)

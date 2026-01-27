@@ -38,6 +38,7 @@ class DeliveryCouponsOffersController extends Controller
     public function applyOffer(Request $request)
     {
         $user = $request->user();
+
         if (!$user) {
             return response()->json([
                 'status' => false,
@@ -46,13 +47,13 @@ class DeliveryCouponsOffersController extends Controller
         }
 
         $request->validate([
-            'coupon_code' => 'required|string',
+            'id'           => 'required|integer|exists:offers,id',
             'order_amount' => 'required|numeric|min:1'
         ]);
 
         $today = Carbon::today()->toDateString();
 
-        $offer = Offer::where('title', $request->coupon_code)
+        $offer = Offer::where('id', $request->id)
             ->where('status', 1)
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
@@ -61,7 +62,7 @@ class DeliveryCouponsOffersController extends Controller
         if (!$offer) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid or expired coupon'
+                'message' => 'Invalid or expired offer'
             ], 400);
         }
 
@@ -85,18 +86,18 @@ class DeliveryCouponsOffersController extends Controller
 
         $discount = min($discount, $request->order_amount);
 
-
         return response()->json([
             'status' => true,
-            'message' => 'Coupon applied successfully',
+            'message' => 'Offer applied successfully',
             'data' => [
-                'offer_id'     => $offer->id,
-                'offer_title'  => $offer->title,
-                'discount'     => round($discount, 2),
-                'final_amount' => max($request->order_amount - $discount, 0)
+                'id'            => $offer->id,
+                'title'         => $offer->title,
+                'discount'      => round($discount, 2),
+                'final_amount'  => round(max($request->order_amount - $discount, 0), 2)
             ]
         ], 200);
     }
+
 
     public function removeOffer()
     {

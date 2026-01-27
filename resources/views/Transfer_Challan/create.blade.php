@@ -250,5 +250,33 @@
     });
     </script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Function to validate quantity
+        function validateQuantity(input) {
+            const maxQty = parseFloat(input.getAttribute('max')) || Infinity;
+            const val = parseFloat(input.value);
+
+            if (val > maxQty) {
+                alert(`You cannot enter more than ${maxQty}`);
+                input.value = maxQty;
+            }
+
+            if (val < 1 || isNaN(val)) {
+                input.value = 1;
+            }
+        }
+
+        // Listen for input changes on all quantity fields (existing + new)
+        document.body.addEventListener('input', function(e) {
+            if (e.target.name && e.target.name.includes('quantities')) {
+                validateQuantity(e.target);
+            }
+        });
+    });
+    </script>
+
+
 
 </body>

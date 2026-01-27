@@ -89,7 +89,7 @@
                 </li>
             @endif
 
-            {{-- 🔹 Dropdown menu --}}
+            {{-- Dropdown menu --}}
             @if($menu['type'] === 'dropdown')
                 <li>
                     <div class="dropdown-outer" onclick="toggleMenu('{{ $menu['key'] }}','{{ $menu['key'] }}Arrow')">
@@ -109,12 +109,12 @@
                     <ul class="submenu" id="{{ $menu['key'] }}">
                         @foreach($menu['children'] as $child)
 
-                            {{-- 🔹 Child role check --}}
+                            {{-- Child role check --}}
                             @if(isset($child['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $child['roles']))
                                 @continue
                             @endif
 
-                            {{-- 🔹 Child exclude check --}}
+                            {{-- Child exclude check --}}
                             @if(isset($child['exclude_roles']) && auth()->check() && in_array(auth()->user()->role_id, $child['exclude_roles']))
                                 @continue
                             @endif

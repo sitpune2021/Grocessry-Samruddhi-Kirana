@@ -26,19 +26,47 @@ class DashboardController extends Controller
         $user = auth()->user()->load('warehouse');
         $warehouse = $user->warehouse;
 
+       
         // =======================
-        // Counts
+            // FINAL COUNTS (100% FIXED)
         // =======================
+
         $categoryCount = Category::count();
-        $ProductCount = Product::count();
-        $BatchCount = Batch::count();
-        $WarehouseCount = Warehouse::count();
-        $StockMovementCount = WarehouseStock::count();
-        $WarehouseTransferCount = WarehouseTransfer::count();
+        $ProductCount  = Product::count();
+
+        $isAdmin = in_array($user->role_id, [1, 2]); // Super Admin + Master
+
+        if ($isAdmin) {
+
+            // 🔹 ADMIN / MASTER
+            $BatchCount = ProductBatch::count();
+            $WarehouseCount = Warehouse::count();
+
+            $StockMovementCount = WarehouseStock::count();
+
+            $WarehouseTransferCount = WarehouseTransfer::where('status', 2)->count();
+
+        } else {
+
+            // 🔹 DISTRICT / TALUKA / DC (WAREHOUSE USERS)
+
+            $BatchCount = ProductBatch::where('warehouse_id', $warehouse->id)
+                ->count();
+
+            $WarehouseCount = Warehouse::count();
+
+            // ✅ EXACT REQUIRED LOGIC
+            $StockMovementCount = WarehouseStock::where('warehouse_id', $warehouse->id)
+                ->count();
+
+            $WarehouseTransferCount = WarehouseTransfer::where('approved_by_warehouse_id', $warehouse->id)
+                ->where('status', 2)
+                ->count();
+        }
 
         // Only show Users count for admin roles (optional)
-        $UserCount = in_array($user->role_id, [1,2]) 
-            ? User::count() 
+        $UserCount = in_array($user->role_id, [1, 2])
+            ? User::count()
             : 1; // login user only
 
         // =======================
@@ -57,7 +85,9 @@ class DashboardController extends Controller
         // =======================
         // Warehouse / Shop Lists (login user)
         // =======================
-        $warehouseDistrict = collect();
+        $warehouseDistrict = Warehouse::where('status', 'active')
+            ->orderBy('type')
+            ->pluck('name');
         $warehouseTaluka = collect();
         $shops = collect();
 
@@ -96,10 +126,66 @@ class DashboardController extends Controller
             if ($warehouse->type === 'district') {
                 $warehouseStockReturnCount = WarehouseStockReturn::where(function ($q) use ($warehouse) {
                     $q->where('from_warehouse_id', $warehouse->id)
-                    ->orWhere('to_warehouse_id', $warehouse->id);
+                        ->orWhere('to_warehouse_id', $warehouse->id);
                 })->where('status', '!=', 'received')->count();
             }
         }
+
+        $threshold = 100;
+
+        $totalLowStock = WarehouseStock::where('quantity', '<=', $threshold)->count();
+
+        $warehouseWise = WarehouseStock::selectRaw(
+            'warehouse_id, COUNT(*) as total'
+        )
+            ->where('quantity', '<=', $threshold)
+            ->groupBy('warehouse_id')
+            ->with('warehouse')
+            ->get();
+
+        // =======================
+            // Pending Warehouse Transfers (status = 0)
+        // =======================
+
+        // Total Pending Requests
+        //$pendingTransferCount = WarehouseTransfer::where('status', 0)->count();
+        if (in_array($user->role_id, [1, 2])) {
+
+            $pendingTransferCount = WarehouseTransfer::where('status', 0)->count();
+
+        } else {
+
+            if ($warehouse->type === 'district') {
+
+                $warehouseIds = Warehouse::where('district_id', $warehouse->district_id)
+                    ->pluck('id');
+
+                $pendingTransferCount = WarehouseTransfer::where('status', 0)
+                    ->where(function ($q) use ($warehouseIds) {
+                        $q->whereIn('requested_by_warehouse_id', $warehouseIds)
+                        ->orWhereIn('approved_by_warehouse_id', $warehouseIds);
+                    })->count();
+
+            } else {
+
+                $pendingTransferCount = WarehouseTransfer::where('status', 0)
+                    ->where(function ($q) use ($warehouse) {
+                        $q->where('requested_by_warehouse_id', $warehouse->id)
+                        ->orWhere('approved_by_warehouse_id', $warehouse->id);
+                    })->count();
+            }
+        }
+
+        // Requested -> Approved warehouse wise analytics
+        $pendingTransferAnalytics = WarehouseTransfer::selectRaw('
+                requested_by_warehouse_id,
+                approved_by_warehouse_id,
+                COUNT(*) as total
+            ')
+            ->where('status', 0)
+            ->groupBy('requested_by_warehouse_id', 'approved_by_warehouse_id')
+            ->with(['requestedByWarehouse', 'approvedByWarehouse'])
+            ->get();
 
         // =======================
         // Send to view
@@ -117,9 +203,13 @@ class DashboardController extends Controller
             'warehouseDistrict',
             'warehouseTaluka',
             'shops',
-            'warehouseStockReturnCount'
+            'warehouseStockReturnCount',
+            'totalLowStock',
+            'warehouseWise',
+            'pendingTransferCount',
+            'pendingTransferAnalytics'
         ));
     }
-    
+
 
 }

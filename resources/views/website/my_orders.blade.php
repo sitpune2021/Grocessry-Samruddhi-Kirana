@@ -132,7 +132,7 @@
 
                     @if($orders->count() > 0)
                     @foreach($orders as $order)
-                    <div class="border rounded-2 p-2 mb-3">
+                    <div class="border rounded-2 p-3 mb-3">
 
                         <!-- Order Header -->
                         <div class="d-flex justify-content-between align-items-center mb-2 small">
@@ -149,14 +149,14 @@
                             };
                             @endphp
 
-                            <span class="{{ $statusClass }} small">
+                            <span class="{{ $statusClass }}">
                                 {{ ucfirst($order->status) }}
                             </span>
                         </div>
 
                         <!-- Order Items -->
                         <div class="table-responsive">
-                            <table class="table table-sm mb-1 small">
+                            <table class="table table-sm mb-2 small">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Product</th>
@@ -180,13 +180,42 @@
                             </table>
                         </div>
 
-                        <!-- Total -->
-                        <div class="d-flex justify-content-end gap-3 small">
-                            <span>Subtotal:
+                        <!-- Price Summary -->
+                        <div class="border-top pt-2 small">
+
+                            <div class="d-flex justify-content-between">
+                                <span>Subtotal</span>
                                 <strong>₹{{ number_format($order->subtotal, 2) }}</strong>
-                            </span>
+                            </div>
+
+                            @if($order->coupon_discount > 0)
+                            <div class="d-flex justify-content-between text-danger">
+                                <span>
+                                    Coupon Discount
+                                    @if($order->coupon_code)
+                                    ({{ $order->coupon_code }})
+                                    @endif
+                                </span>
+                                <strong>- ₹{{ number_format($order->coupon_discount, 2) }}</strong>
+                            </div>
+                            @endif
+
+                            @if($order->delivery_charge > 0)
+                            <div class="d-flex justify-content-between">
+                                <span>Delivery Charge</span>
+                                <strong>₹{{ number_format($order->delivery_charge, 2) }}</strong>
+                            </div>
+                            @endif
+
+                            <div class="d-flex justify-content-between fw-bold text-success border-top pt-2 mt-1">
+                                <span>Total Payable</span>
+                                <span>₹{{ number_format($order->total_amount, 2) }}</span>
+                            </div>
+
                         </div>
+
                     </div>
+
                     @endforeach
                     @else
                     <div class="text-center py-4">
