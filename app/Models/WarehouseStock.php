@@ -25,6 +25,7 @@ class WarehouseStock extends Model
         'bill_no',
         'challan_no',
         'batch_no',
+        'supplier_challan_id'
 
     ];
 
