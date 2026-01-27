@@ -167,10 +167,18 @@
                             <div class="mt-2">
                                 <small class="text-muted">Available Offers:</small>
 
-                                <select class="form-select mt-1" id="coupon_dropdown"
-                                    onchange="applyCouponFromDropdown(this)">
+                                <select class="form-select mt-1" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
                                     <option value="">Select Offer Code</option>
+
                                     @foreach($coupons as $coupon)
+                                    @php
+                                    // Check if user already used this coupon
+                                    $used = \App\Models\Order::where('user_id', auth()->id())
+                                    ->where('coupon_code', $coupon->code)
+                                    ->exists();
+                                    @endphp
+
+                                    @if(!$used)
                                     <option value="{{ $coupon->code }}">
                                         {{ $coupon->code }}
                                         @if($coupon->discount_type == 'flat')
@@ -179,8 +187,10 @@
                                         ({{ $coupon->discount_value }}% OFF)
                                         @endif
                                     </option>
+                                    @endif
                                     @endforeach
                                 </select>
+
                             </div>
                         </div>
 
@@ -281,6 +291,7 @@
     }
 
     function applyCoupon() {
+
         let code = document.getElementById('coupon_code').value;
         let subtotal = parseFloat(document.getElementById('subtotal').innerText);
 
@@ -301,16 +312,14 @@
                 let msg = document.getElementById('coupon_msg');
 
                 if (!data.status) {
-                    msg.classList.remove('d-none');
-                    msg.classList.remove('text-success');
+                    msg.classList.remove('d-none', 'text-success');
                     msg.classList.add('text-danger');
                     msg.innerText = data.message;
                     return;
                 }
 
-                // success
-                msg.classList.remove('d-none');
-                msg.classList.remove('text-danger');
+                // ✅ UI UPDATE
+                msg.classList.remove('d-none', 'text-danger');
                 msg.classList.add('text-success');
                 msg.innerText = 'Coupon applied successfully';
 
@@ -318,11 +327,13 @@
                 document.getElementById('discountAmount').innerText = data.discount;
                 document.getElementById('finalTotal').innerText = data.final_total;
 
-                // 🔥 hidden input for place order
-                document.getElementById('coupon_code_hidden').value = code;
+                // ✅🔥 VERY IMPORTANT (PLACE ORDER SATHI)
+                document.getElementById('applied_coupon').value = code;
+                document.getElementById('coupon_discount').value = data.discount;
             });
     }
 </script>
+
 
 
 @endsection

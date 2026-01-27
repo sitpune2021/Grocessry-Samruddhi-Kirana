@@ -95,13 +95,13 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
 
                 // ✅ FULL VALIDATION HERE
-                'retailer_price'  => 'required|numeric|min:1|gte:base_price|lte:mrp',
+               'retailer_price' => 'required|numeric|gte:base_price',
 
                 'mrp'             => 'required|numeric|min:1',
 
                 'tax_id'          => 'required|exists:taxes,id',
 
-                'product_images'   => 'nullable|array',
+                'product_images'   => 'required|array',
                 'product_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
 
             ], [

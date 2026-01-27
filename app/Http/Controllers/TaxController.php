@@ -32,14 +32,14 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
-    $request->validate([
-                'name'      => 'required|string|max:100|unique:taxes,name',
-                'cgst'      => 'required|numeric|min:0|max:100',
-                'sgst'      => 'required|numeric|min:0|max:100',
-                'igst'      => 'nullable|numeric|min:0|max:100',
-                'gst'       => 'required|numeric|min:0|max:100',
-                'is_active' => 'required|in:0,1',
-            ]);
+        $request->validate([
+            'name'      => 'required|string|max:100|unique:taxes,name',
+            'cgst'      => 'required|numeric|min:0|max:100',
+            'sgst'      => 'required|numeric|min:0|max:100',
+            'igst'      => 'nullable|numeric|min:0|max:100',
+            'gst' => 'required|numeric|min:0|max:100',
+            'is_active' => 'required|in:0,1',
+        ]);
         try {
 
             DB::beginTransaction();
@@ -71,8 +71,7 @@ class TaxController extends Controller
                 'input'  => $request->all(),
             ]);
 
-            throw $e; 
-
+            throw $e;
         } catch (\Exception $e) {
 
             DB::rollBack();
