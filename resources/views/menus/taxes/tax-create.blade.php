@@ -49,16 +49,20 @@
                                             @endif
                                             <div class="row mb-3">
                                                 <div class="col-md-6">
-                                                    <label for="name" class="form-label">Tax Name</label>
+                                                    <label for="name" class="form-label">Tax Name <span class="text-danger">*</span></label>
                                                     <input type="text" name="name" id="name" class="form-control"
                                                         value="{{ old('name', $tax->name ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="GST 5%" required>
+                                                        placeholder="GST 5%">
+
+                                                    @error('name')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="is_active" class="form-label">Status</label>
                                                     <select name="is_active" id="is_active" class="form-control"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }} required>
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}>
                                                         <option value="1" {{ (old('is_active', $tax->is_active ?? '') == 1) ? 'selected' : '' }}>
                                                             Active
                                                         </option>
@@ -67,6 +71,9 @@
                                                         </option>
                                                     </select>
                                                 </div>
+                                                @error('is_active')
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
                                             </div>
 
                                             <div class="row mb-3">
@@ -75,28 +82,42 @@
                                                     <input type="number" step="0.01" name="cgst" id="cgst" class="form-control"
                                                         value="{{ old('cgst', $tax->cgst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5" required>
+                                                        placeholder="2.5">
+
+                                                    @error('cgst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="sgst" class="form-label">SGST (%)</label>
                                                     <input type="number" step="0.01" name="sgst" id="sgst" class="form-control"
                                                         value="{{ old('sgst', $tax->sgst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5" required>
+                                                        placeholder="2.5">
+
+                                                    @error('sgst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
-                                                 <div class="col-md-4">
+                                                <div class="col-md-4">
                                                     <label for="igst" class="form-label">IGST</label>
                                                     <input type="number" step="0.01" name="igst" id="igst" class="form-control"
                                                         value="{{ old('igst', $tax->igst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5" >
+                                                        placeholder="5">
+                                                    @error('igst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="gst" class="form-label">GST (%)</label>
                                                     <input type="number" step="0.01" name="gst" id="gst" class="form-control"
                                                         value="{{ old('gst', $tax->gst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5" required>
+                                                        placeholder="5">
+                                                         @error('gst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
 
@@ -132,7 +153,7 @@
     <!-- / Layout wrapper -->
 </body>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
         const cgstInput = document.getElementById('cgst');
         const sgstInput = document.getElementById('sgst');

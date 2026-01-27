@@ -13,13 +13,17 @@
                 </div>
 
                 <div class="col-md-auto ms-auto d-flex gap-2">
+                    @if(hasPermission('roles.create'))
                     <div class="col-md-auto ms-auto d-flex gap-2">
                         <!-- Add Role Button -->
                         <a href="{{ route('roles.create') }}" class="btn btn-success">
                             <i class="bx bx-plus"></i> Add Role
                         </a>
                     </div>
+                    @endif
                 </div>
+
+
             </div>
 
             <!-- Search -->
@@ -53,7 +57,9 @@
                             <th>Sr No</th>
                             <th>Role Name</th>
                             <th>Description</th>
+                            @if(hasPermission('roles.edit'))
                             <th>Actions</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -68,7 +74,7 @@
                             <td>{{ $srNo-- }}</td> <!-- Descending Sr No -->
                             <td>{{ $role->name }}</td>
                             <td>{{ $role->description ?? '-' }}</td>
-                           
+                            @if(hasPermission('roles.edit'))
                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('roles.show'))
                                 <a href="{{ route('roles.show', $role->id) }}" class="btn btn-sm btn-primary">View</a>
@@ -86,6 +92,7 @@
                                 </form>
                                 @endif
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

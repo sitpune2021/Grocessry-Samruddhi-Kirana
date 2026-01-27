@@ -53,7 +53,7 @@ class CategoryController extends Controller
             $validated = $request->validate([
                 'name'     => 'required|string|max:255|unique:categories,name',
                 'slug'     => 'required|string|max:255',
-                'category_images'   => 'nullable|array',
+                'category_images'   => 'required|array',
                 'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
