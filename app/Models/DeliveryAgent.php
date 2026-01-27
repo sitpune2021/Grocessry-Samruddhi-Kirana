@@ -36,9 +36,9 @@ class DeliveryAgent extends Model
     }
     public function shop()
     {
-        return $this->belongsTo(GroceryShop::class, 'shop_id');
-       
+        return $this->belongsTo(Warehouse::class, 'shop_id');
     }
+
 
 
 }
