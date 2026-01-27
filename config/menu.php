@@ -19,14 +19,14 @@ return [
             'title' => 'User Management',
             'icon'  => 'bx bx-package',
             'children' => [
-                ['title' => 'Role Management', 'route' => 'roles.index'],
-                ['title' => 'User Management', 'route' => 'user.profile'],
-                ['title' => 'Permission Management', 'route' => 'RolePermission'],
+                ['title' => 'Role Management', 'route' => 'roles.index', 'roles' => [1, 2]],
                 [
                     'title' => 'Tax Management',
                     'route' => 'taxes.index',
                     'roles' => [1, 2] // Only visible for role_id 1 & 2
                 ],
+                ['title' => 'Permission Management', 'route' => 'RolePermission', 'roles' => [1, 2, 3, 4]],
+                ['title' => 'User Management', 'route' => 'user.profile'],
 
             ],
         ],

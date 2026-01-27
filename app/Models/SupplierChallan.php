@@ -16,6 +16,10 @@ class SupplierChallan extends Model
         'created_by'
 
     ];
+
+    protected $casts = [
+        'challan_date' => 'date',
+    ];
     public function items()
     {
         return $this->hasMany(SupplierChallanItem::class);
@@ -29,10 +33,5 @@ class SupplierChallan extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
-    }
-
-    public function purchaseOrder()
-    {
-        return $this->belongsTo(PurchaseOrder::class);
     }
 }

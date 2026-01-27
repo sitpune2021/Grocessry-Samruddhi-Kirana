@@ -24,7 +24,6 @@ class MasterWarehouseController extends Controller
     {
         $user = auth()->user();
 
-        
         if ($user->role_id == 1) {
 
             $warehouses = Warehouse::orderBy('id', 'desc')

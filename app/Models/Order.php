@@ -12,13 +12,18 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_number',
+        'razorpay_order_id',
+        'order_type',
         'subtotal',
         'delivery_charge',
+        'created_by',
         'discount',
         'total_amount',
+        'channel',
         'warehouse_id',
         'status',
         'payment_method',
+        'payment_status',
         'delivery_agent_id',
         'pickup_proof',
         'coupon_code',
@@ -47,7 +52,10 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-   
+    public function customerAddress()
+    {
+        return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
+    }
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');

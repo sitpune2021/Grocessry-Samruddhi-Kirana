@@ -181,7 +181,7 @@
                                                 {{-- SLAG --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Slag</label>
+                                                        <label class="form-label">Slug</label>
                                                         <input type="text" name="sku" class="form-control "
                                                             placeholder="Enter sku"
                                                             value="{{ old('sku', $product->sku ?? '') }}"
@@ -190,6 +190,21 @@
                                                         @error('sku')
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror
+                                                    </div>
+                                                </div>
+
+                                                {{-- BARCODE --}}
+                                                <div class="col-md-4">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Barcode</label>
+                                                        <input type="text" name="barcode" class="form-control "
+                                                            placeholder="Enter Barcode"
+                                                            value="{{ old('barcode', $product->barcode ?? '') }}"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}
+                                                            placeholder="Enter Barcode">
+                                                        {{-- @error('Barcode')
+                                                        <span class="text-danger">{{ $message }}</span>
+                                                        @enderror --}}
                                                     </div>
                                                 </div>
 

@@ -54,6 +54,7 @@ use App\Http\Controllers\DistrictToTalukaApprovalController;
 use App\Http\Controllers\TalukashopTransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentGetwayController;
 use App\Http\Controllers\PosOrderController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
@@ -96,7 +97,13 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
         Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
         Route::get('/search-customers', [PosOrderController::class, 'searchCustomers']);
-    });
+
+       });
+
+        //razorpay
+        Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder']);
+        Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment']);
+    
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
@@ -189,6 +196,7 @@ Route::middleware(['auth:admin'])->group(function () {
         '/get-supplier-challan/{id}',
         [stockWarehouseController::class, 'getSupplierChallan']
     );
+
     Route::get(
         '/get-sub-categories/{category}',
         [stockWarehouseController::class, 'byCategory']
@@ -726,7 +734,11 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('destroy');
     });
 
+    Route::get('ajax/subcategories', [SupplierChallenController::class, 'subcategories'])
+        ->name('ajax.subcategories');
 
+    Route::get('ajax/products-by-subcategory', [SupplierChallenController::class, 'productsBySubCategory'])
+        ->name('ajax.products.by.subcategory');
     //product offer 
     Route::prefix('offer')->group(function () {
         Route::resource('offers', OfferController::class);
