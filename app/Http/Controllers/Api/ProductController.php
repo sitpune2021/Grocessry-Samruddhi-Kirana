@@ -260,7 +260,7 @@ class ProductController extends Controller
             // 🔹 APPLY OFFER
             if ($request->filled('coupon_code')) {
 
-                $offer = Offer::where('title', $request->coupon_code)
+                $offer = Offer::where('code', $request->coupon_code)
                     ->where('status', 1)
                     ->whereDate('start_date', '<=', now())
                     ->whereDate('end_date', '>=', now())
@@ -273,23 +273,25 @@ class ProductController extends Controller
                     ], 400);
                 }
 
-                if ($subtotal < $offer->min_order_amount) {
+                if ($subtotal < $offer->min_amount) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Minimum order amount not met'
+                        'message' => 'Minimum order amount should be ₹' . $offer->min_amount
                     ], 400);
                 }
 
-                // 💸 Discount calculation
-                if (in_array($offer->offer_type, ['flat', 'flat_discount'])) {
-                    $couponDiscount = $offer->discount_value;
-                } else {
-                    $couponDiscount = ($subtotal * $offer->discount_value) / 100;
 
-                    if (!empty($offer->max_discount)) {
-                        $couponDiscount = min($couponDiscount, $offer->max_discount);
-                    }
+                // 💸 Discount calculation
+                if ($offer->discount_type === 'flat') {
+
+                    // Flat ₹ discount
+                    $couponDiscount = $offer->discount_value;
+                } elseif ($offer->discount_type === 'percentage') {
+
+                    // % discount
+                    $couponDiscount = ($subtotal * $offer->discount_value) / 100;
                 }
+
 
                 // 🛑 Discount cannot exceed subtotal
                 $couponDiscount = min($couponDiscount, $subtotal);
@@ -299,7 +301,7 @@ class ProductController extends Controller
             }
 
             // 🔹 Total
-            $totalAmount = max(($subtotal + $deliveryCharge - $couponDiscount), 0);
+            $totalAmount = ($subtotal + $deliveryCharge) - $couponDiscount;
 
             // 🔹 STOCK CHECK
             foreach ($cartItems as $item) {

@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
- use App\Models\Order;
+use App\Models\Coupon;
+use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
-    
+
     public function index()
     {
         $userId = Auth::id();
@@ -32,8 +33,6 @@ class CheckoutController extends Controller
     {
         try {
 
-            Log::info('Place order request received', $request->all());
-
             $request->validate([
                 'first_name' => 'required',
                 'address'    => 'required',
@@ -46,39 +45,63 @@ class CheckoutController extends Controller
             ]);
 
             UserAddress::updateOrCreate(
-            [
-                'user_id' => auth()->id(),
-                'type' => 1
-            ],
-            [
-                'first_name' => $request->first_name,
-                'last_name'  => $request->last_name,
-                'address'    => $request->address,
-                'city'       => $request->city,
-                'country'    => $request->country,
-                'postcode'   => $request->postcode,
-                'phone'      => $request->phone,
-                'email'      => $request->email,
-                'type'       => 1
-            ]
-        );
+                ['user_id' => auth()->id(), 'type' => 1],
+                $request->only([
+                    'first_name',
+                    'last_name',
+                    'address',
+                    'city',
+                    'country',
+                    'postcode',
+                    'phone',
+                    'email'
+                ]) + ['type' => 1]
+            );
 
+            $cart = Cart::where('user_id', auth()->id())
+                ->with('items')
+                ->first();
 
-             $cart = Cart::where('user_id', auth()->id())
-                    ->with('items')
+            if (!$cart || $cart->items->isEmpty()) {
+                return redirect()->route('cart')->with('error', 'Cart empty');
+            }
+
+            // 🔥 SERVER SIDE COUPON
+            $couponDiscount = 0;
+            $couponCode = null;
+
+            if ($request->coupon_code) {
+                $coupon = Coupon::where('code', $request->coupon_code)
+                    ->where('status', 1)
+                    ->whereDate('start_date', '<=', now())
+                    ->whereDate('end_date', '>=', now())
+                    ->where('min_amount', '<=', $cart->subtotal)
                     ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart')
-                   ->with('error', 'Your cart is empty');
-        }
+                if ($coupon) {
+                    if ($coupon->discount_type == 'percentage') {
+                        $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
+                    } else {
+                        $couponDiscount = $coupon->discount_value;
+                    }
+
+                    if ($couponDiscount > $cart->subtotal) {
+                        $couponDiscount = $cart->subtotal;
+                    }
+
+                    $couponCode = $coupon->code;
+                }
+            }
+
+            $totalAmount = $cart->subtotal - $couponDiscount;
 
             $order = Order::create([
                 'user_id' => auth()->id(),
-                'warehouse_id' => 0,
-                'order_number' => 'ORD-' . now()->timestamp,
+                'order_number' => 'ORD-' . time(),
                 'subtotal' => $cart->subtotal,
-                'total_amount' => $cart->total,
+                'coupon_discount' => $couponDiscount,
+                'coupon_code' => $couponCode,
+                'total_amount' => $totalAmount,
                 'payment_method' => $request->payment_method,
                 'status' => 'pending',
             ]);
@@ -90,30 +113,16 @@ class CheckoutController extends Controller
                     'quantity' => $item->qty,
                     'price' => $item->price,
                     'line_total' => $item->line_total,
-                    'total'      => $item->qty * $item->price,
                 ]);
             }
 
             $cart->items()->delete();
             $cart->delete();
 
-            Log::info('Order placed successfully', ['order_id' => $order->id]);
-
-            //return redirect('/')->with('success','Order placed successfully!');
             return redirect()->route('my_orders')
-       ->with('success', 'Order placed successfully!');
-
-
+                ->with('success', 'Order placed successfully!');
         } catch (\Exception $e) {
-
-            Log::error('Order place failed', [
-                'message' => $e->getMessage(),
-                'line' => $e->getLine(),
-            ]);
-
-            return back()->with('error','Something went wrong!');
+            return back()->with('error', 'Something went wrong');
         }
     }
-
-
 }
