@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_number',
+        'razorpay_order_id',
         'order_type',
         'subtotal',
         'delivery_charge',

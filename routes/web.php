@@ -54,6 +54,7 @@ use App\Http\Controllers\DistrictToTalukaApprovalController;
 use App\Http\Controllers\TalukashopTransferController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\PaymentGetwayController;
 use App\Http\Controllers\PosOrderController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
@@ -96,7 +97,13 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
         Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
         Route::get('/search-customers', [PosOrderController::class, 'searchCustomers']);
-    });
+
+       });
+
+        //razorpay
+        Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder']);
+        Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment']);
+    
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
@@ -259,55 +266,55 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/warehouse-stock-returns/{id}', [WarehouseStockReturnController::class, 'downloadPdf'])->name('warehouse-stock-returns.download-pdf');
     Route::post('/warehouse-stock-returns-approve/{id}', [WarehouseStockReturnController::class, 'approveByMaster'])->name('approveByMaster');
     Route::post('/warehouse-stock-returns-dispatch/{id}', [WarehouseStockReturnController::class, 'dispatch'])->name('dispatch');
-        Route::post('/warehouse-stock-returns-receive/{id}', [WarehouseStockReturnController::class, 'receiveAtMaster'])->name('receiveAtMaster');
+    Route::post('/warehouse-stock-returns-receive/{id}', [WarehouseStockReturnController::class, 'receiveAtMaster'])->name('receiveAtMaster');
 
-//     Route::post(
-//         'stock-returns/{id}/send-for-approval',
-//         [WarehouseStockReturnController::class, 'sendForApproval']
-//     )->name('stock-returns.send-for-approval');
-//     Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
-//         ->name('stock-returns.dispatch');
-//     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
-//         ->name('stock-returns.receive');
+    //     Route::post(
+    //         'stock-returns/{id}/send-for-approval',
+    //         [WarehouseStockReturnController::class, 'sendForApproval']
+    //     )->name('stock-returns.send-for-approval');
+    //     Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
+    //         ->name('stock-returns.dispatch');
+    //     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
+    //         ->name('stock-returns.receive');
 
 
-//     Route::get(
-//         'stock-returns/{id}/return-to-master',
-//         [WarehouseStockReturnController::class, 'returnToMaster']
-//     )->name('stock-returns.return-to-master');
+    //     Route::get(
+    //         'stock-returns/{id}/return-to-master',
+    //         [WarehouseStockReturnController::class, 'returnToMaster']
+    //     )->name('stock-returns.return-to-master');
 
-//     Route::put(
-//         'stock-returns/store-district-to-master',
-//         [WarehouseStockReturnController::class, 'update']
-//     )->name('stock-returns.store-district-to-master');
+    //     Route::put(
+    //         'stock-returns/store-district-to-master',
+    //         [WarehouseStockReturnController::class, 'update']
+    //     )->name('stock-returns.store-district-to-master');
 
-//     Route::post(
-//         'stock-returns/{id}/district-approval',
-//         [WarehouseStockReturnController::class, 'approve1']
-//     )->name('stock-returns.approve1');
-//     Route::post('stock-returns/{id}/district-dispatch', [WarehouseStockReturnController::class, 'dispatch1'])
-//         ->name('stock-returns.dispatch1');
-//     Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
-//         ->name('stock-returns.receive1');
+    //     Route::post(
+    //         'stock-returns/{id}/district-approval',
+    //         [WarehouseStockReturnController::class, 'approve1']
+    //     )->name('stock-returns.approve1');
+    //     Route::post('stock-returns/{id}/district-dispatch', [WarehouseStockReturnController::class, 'dispatch1'])
+    //         ->name('stock-returns.dispatch1');
+    //     Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
+    //         ->name('stock-returns.receive1');
 
-//     // Taluka approves a stock return from Distribution Center
-//     Route::post('stock-returns/{id}/dc-approve', [WarehouseStockReturnController::class, 'dcApprove'])
-//         ->name('stock-returns.dc-approve');
+    //     // Taluka approves a stock return from Distribution Center
+    //     Route::post('stock-returns/{id}/dc-approve', [WarehouseStockReturnController::class, 'dcApprove'])
+    //         ->name('stock-returns.dc-approve');
 
-//     // Distribution Center dispatches the stock to Taluka
-//     Route::post('stock-returns/{id}/dc-dispatch', [WarehouseStockReturnController::class, 'dcDispatch'])
-//         ->name('stock-returns.dc-dispatch');
+    //     // Distribution Center dispatches the stock to Taluka
+    //     Route::post('stock-returns/{id}/dc-dispatch', [WarehouseStockReturnController::class, 'dcDispatch'])
+    //         ->name('stock-returns.dc-dispatch');
 
-//     // Taluka receives the stock from Distribution Center
-//     Route::post('stock-returns/{id}/dc-receive', [WarehouseStockReturnController::class, 'dcReceive'])
-//         ->name('stock-returns.dc-receive');
+    //     // Taluka receives the stock from Distribution Center
+    //     Route::post('stock-returns/{id}/dc-receive', [WarehouseStockReturnController::class, 'dcReceive'])
+    //         ->name('stock-returns.dc-receive');
 
-//         // 
+    //         // 
 
-// Route::post(
-//     'stock-returns/{id}/district-approve',
-//     [WarehouseStockReturnController::class, 'districtApprove']
-// )->name('stock-returns.district-approve');
+    // Route::post(
+    //     'stock-returns/{id}/district-approve',
+    //     [WarehouseStockReturnController::class, 'districtApprove']
+    // )->name('stock-returns.district-approve');
 
 
 

@@ -12,7 +12,7 @@ class OrderService
 {
     public function create(array $data, $user)
     {
- 
+
         return DB::transaction(function () use ($data, $user) {
 
             /* ---------------- ORDER ---------------- */
@@ -76,7 +76,7 @@ class OrderService
 
             /* ---------------- APPLY DISCOUNT ---------------- */
             $discount = min($data['discount'] ?? 0, $subtotal);
-            $payable  = $subtotal ;
+            $payable  = $subtotal;
 
             $order->update([
                 'subtotal'     => $subtotal,
@@ -85,18 +85,18 @@ class OrderService
             ]);
 
             /* ---------------- PAYMENT ---------------- */
-            if (!empty($data['payment'])) {
+            // Only for CASH
+            if (($data['payment']['method'] ?? null) === 'cash') {
                 Payment::create([
-                    'order_id'        => $order->id,
-                    'user_id'         => $user->id,
-                    'payment_gateway'=> $data['payment']['method'],
-                    'amount'          => $payable,
-                    'status'          => 'success',
+                    'order_id' => $order->id,
+                    'user_id'  => $order->user_id,
+                    'payment_gateway' => 'cash',
+                    'amount' => $order->total_amount,
+                    'status' => 'success',
                 ]);
 
                 $order->update(['payment_status' => 'paid']);
             }
-
             return $order;
         });
     }

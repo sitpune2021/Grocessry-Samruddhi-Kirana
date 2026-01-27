@@ -24,19 +24,27 @@ class PosOrderController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
+        $isAjax = $request->ajax() || $request->wantsJson();
+
         $request->validate([
             'items' => 'required',
             'payment_method' => 'required|in:cash,upi,card',
             'discount' => 'nullable|numeric|min:0',
-             'customer_id' => 'nullable|exists:users,id',
+            'customer_id' => 'nullable|exists:users,id',
         ]);
 
-        $items = json_decode($request->items, true);
+        $items = $request->items;
 
         if (!$items || count($items) === 0) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Cart is empty'
+                ], 422);
+            }
+
             return back()->withErrors(['items' => 'Cart is empty']);
         }
+
         $discount = (float) $request->discount;
         $customerId = $request->customer_id;
 
@@ -74,8 +82,24 @@ class PosOrderController extends Controller
             ];
         }
 
-// dd($orderData);
+        // dd($orderData);
         $order = app(OrderService::class)->create($orderData, $user);
+
+
+        if (in_array($request->payment_method, ['upi', 'card'])) {
+            return response()->json([
+                'order_id' => $order->id,
+                'amount'   => $order->total_amount
+            ]);
+        }
+
+        // CASH FLOW
+        if ($isAjax) {
+            return response()->json([
+                'order_id' => $order->id,
+                'redirect' => route('pos.invoice', $order->id)
+            ]);
+        }
 
         return redirect()
             ->route('pos.invoice', $order->id)
@@ -186,35 +210,35 @@ class PosOrderController extends Controller
     }
 
     public function searchCustomers(Request $request)
-{
-    $request->validate([
-        'q' => 'required|string|min:1',
-    ]);
+    {
+        $request->validate([
+            'q' => 'required|string|min:1',
+        ]);
 
-    $cashier = Auth::user();
+        $cashier = Auth::user();
 
-    $customers = DB::table('users as u')
-        ->join('roles as r', 'r.id', '=', 'u.role_id')   // 👈 dynamic roles
-        ->where('r.name', 'customer')                    // 👈 customer role
-        ->whereNotNull('u.warehouse_id')                 // 👈 ignore NULL
-        ->where('u.warehouse_id', $cashier->warehouse_id)
-        ->whereNull('u.deleted_at')
-        ->where(function ($q) use ($request) {
-            $q->where('u.first_name', 'like', "%{$request->q}%")
-              ->orWhere('u.last_name', 'like', "%{$request->q}%")
-              ->orWhere('u.mobile', 'like', "%{$request->q}%");
-        })
-        ->select(
-            'u.id',
-            DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"),
-            'u.mobile'
-        )
-        ->orderBy('u.first_name')
-        ->limit(10)
-        ->get();
+        $customers = DB::table('users as u')
+            ->join('roles as r', 'r.id', '=', 'u.role_id')   // 👈 dynamic roles
+            ->where('r.name', 'customer')                    // 👈 customer role
+            ->whereNotNull('u.warehouse_id')                 // 👈 ignore NULL
+            ->where('u.warehouse_id', $cashier->warehouse_id)
+            ->whereNull('u.deleted_at')
+            ->where(function ($q) use ($request) {
+                $q->where('u.first_name', 'like', "%{$request->q}%")
+                    ->orWhere('u.last_name', 'like', "%{$request->q}%")
+                    ->orWhere('u.mobile', 'like', "%{$request->q}%");
+            })
+            ->select(
+                'u.id',
+                DB::raw("CONCAT(u.first_name, ' ', u.last_name) as name"),
+                'u.mobile'
+            )
+            ->orderBy('u.first_name')
+            ->limit(10)
+            ->get();
 
-    return response()->json($customers);
-}
+        return response()->json($customers);
+    }
 
 
 
