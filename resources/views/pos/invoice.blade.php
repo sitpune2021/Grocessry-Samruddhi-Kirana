@@ -81,17 +81,18 @@
         Customer Type: {{ $order->user_id ? 'REG' : 'URD' }}
     </div>
 
-    <div class="small" style="width:90%; overflow:hidden;">
-    <div style="float:left; text-align:left;">
-        Date: {{ $order->created_at->format('d/m/Y H:i:s') }}<br>
-        Bill No: {{ $order->order_number }}
-    </div>
+    <div class="small" style="width:95%; overflow:hidden;">
+        <div style="float:left; text-align:left;">
+            Date: {{ $order->created_at->timezone('Asia/Kolkata')->format('d/m/Y h:i A') }}<br>
+            Cashier: {{ $order->createdBy->first_name ?? '' }} {{ $order->createdBy->last_name ?? '' }}
 
-    <div style="float:right; text-align:right;">
-        POS: {{ $order->warehouse_id }}<br>
-        Cashier: {{ $order->createdBy->name ?? 'SYSTEM' }}
+        </div>
+
+        <div style="float:right; text-align:right;">
+            POS: {{ $order->warehouse_id }}<br>
+            Bill No: {{ $order->order_number }}
+        </div>
     </div>
-</div>
 
     <div class="line"></div>
 

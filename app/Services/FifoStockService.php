@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\ProductBatch;
 use App\Models\StockMovement;
+use App\Models\WarehouseStock;
+use Illuminate\Support\Facades\DB;
 
 class FifoStockService
 {
@@ -18,7 +20,7 @@ class FifoStockService
                 $q->whereNull('expiry_date')
                   ->orWhere('expiry_date', '>=', now());
             })
-            ->orderByRaw('expiry_date IS NULL, expiry_date ASC') // real FIFO
+            ->orderByRaw('expiry_date IS NULL, expiry_date ASC') // FIFO
             ->lockForUpdate()
             ->get();
 
@@ -26,14 +28,32 @@ class FifoStockService
 
         foreach ($batches as $batch) {
 
-            if ($remaining <= 0) {
-                break;
-            }
+            if ($remaining <= 0) break;
 
             $take = min($batch->quantity, $remaining);
 
+            /* ---------- PRODUCT BATCH ---------- */
             $batch->decrement('quantity', $take);
 
+            /* ---------- WAREHOUSE STOCK (SUMMARY) ---------- */
+            $ws = WarehouseStock::where([
+                'warehouse_id' => $warehouseId,
+                'product_id'   => $productId,
+                // 'batch_id'     => $batch->id,
+            ])->lockForUpdate()->first();
+
+            if ($ws) {
+                $ws->decrement('quantity', $take);
+            } else {
+                WarehouseStock::create([
+                    'warehouse_id' => $warehouseId,
+                    'product_id'   => $productId,
+                    'batch_id'     => $batch->id,
+                    'quantity'     => 0 - $take, // will not go negative in practice
+                ]);
+            }
+
+            /* ---------- STOCK MOVEMENT ---------- */
             StockMovement::create([
                 'product_batch_id' => $batch->id,
                 'warehouse_id'     => $warehouseId,
@@ -54,6 +74,7 @@ class FifoStockService
         if ($remaining > 0) {
             throw new \Exception('Insufficient stock');
         }
+
         return $consumed;
     }
 }

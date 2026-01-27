@@ -1,5 +1,32 @@
 @include('layouts.header')
 
+{{-- Payment Failed Overlay --}}
+<div id="payment-failed-box"
+    class="position-fixed top-50 start-50 translate-middle bg-white shadow p-4 rounded text-center"
+    style="z-index:9999; width:420px; display:none;">
+
+    <h2 class="text-danger mb-3">Payment Failed</h2>
+
+    <p class="mb-2">
+        Order #: <strong id="failed-order-number"></strong>
+    </p>
+
+    <p class="text-muted mb-4">
+        Payment could not be completed. Please retry.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3">
+        <button class="btn btn-warning" onclick="retryPayment()">
+            Retry Payment
+        </button>
+
+        <button class="btn btn-secondary" onclick="closePaymentFailedBox()">
+            Continue Billing
+        </button>
+    </div>
+</div>
+
+
 <body>
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
@@ -69,9 +96,7 @@
                                         <div class="row mb-3 align-items-end">
                                             {{-- RIGHT : CART --}}
                                             <div class="col-12 col-md-12 mt-5" style="margin-top: 50px !important;">
-
                                                 <div class="border p-4 rounded bg-white shadow sticky-top">
-
                                                     <h3 class="fw-bold mb-3">Billing</h3>
                                                     <div class="table-wrapper">
                                                         <table class="table table-bordered">
@@ -88,47 +113,47 @@
                                                         </table>
                                                     </div>
                                                     <hr>
+                                                    <div class="row">
+                                                        <div class="col-md-8"></div>
+                                                        <div class="col-md-4 row mb-2 align-items-end ">
+                                                            <p class="fw-bold">Subtotal ₹ <span id="subtotal">0</span></p>
+                                                            <input type="hidden" name="discount" id="discount_input" value="0">
+                                                            <p class="fw-bold text-success">
+                                                                Total Discount ₹ <span id="discount-total">0</span>
+                                                            </p>
+                                                            <p class="fw-bold">GST ₹ <span id="gst">0</span></p>
 
-                                                    <p class="fw-bold">Subtotal ₹ <span id="subtotal">0</span></p>
-                                                    <input type="hidden" name="discount" id="discount_input" value="0">
-                                                    <p class="fw-bold text-success">
-                                                        Total Discount ₹ <span id="discount-total">0</span>
-                                                    </p>
-                                                    <p class="fw-bold">GST ₹ <span id="gst">0</span></p>
+                                                            <h4 class="fw-bold">
+                                                                Grand Total ₹ <span id="grand-total">0</span>
+                                                            </h4>
 
-                                                    <h4 class="fw-bold">
-                                                        Grand Total ₹ <span id="grand-total">0</span>
-                                                    </h4>
+                                                            {{-- Hidden --}}
+                                                            <input type="hidden" name="items" id="items_input">
+                                                            <div class="mt-2">
+                                                                <label class="form-label fw-bold">Payment Mode</label>
 
-                                                    {{-- Hidden --}}
-                                                    <input type="hidden" name="items" id="items_input">
-                                                    <div class="mt-3">
-                                                        <label class="form-label fw-bold">Payment Mode</label>
+                                                                <div class="gap-3 payment-options">
+                                                                    <label class="payment-radio">
+                                                                        <input type="radio" name="payment_method" value="cash" checked>
+                                                                        <span>Cash</span>
+                                                                    </label>
 
-                                                        <div class="d-flex gap-3">
-                                                            <label>
-                                                                <input type="radio" name="payment_method" value="cash" checked>
-                                                                Cash
-                                                            </label>
+                                                                    <label class="payment-radio">
+                                                                        <input type="radio" name="payment_method" value="online">
+                                                                        <span>Online</span>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
 
-                                                            <label>
-                                                                <input type="radio" name="payment_method" value="upi">
-                                                                UPI
-                                                            </label>
-
-                                                            <label>
-                                                                <input type="radio" name="payment_method" value="card">
-                                                                Card
-                                                            </label>
+                                                            {{-- Action Button --}}
+                                                            <div class="">
+                                                                <button type="button"
+                                                                    onclick="submitPosOrder(event)"
+                                                                    class="btn btn-success block btn-lg  mt-3">
+                                                                    Pay & Print
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    {{-- Action Button --}}
-                                                    <div class="">
-                                                        <button type="button"
-                                                            onclick="submitPosOrder(event)"
-                                                            class="btn btn-success block btn-lg  mt-3">
-                                                            Pay & Print
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -146,9 +171,44 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
+    let lastOrderId = null;
+    let lastOrderNumber = null;
+
+    function showPaymentFailed(orderId, orderNumber) {
+        lastOrderId = orderId;
+        lastOrderNumber = orderNumber;
+
+        document.getElementById('failed-order-number').innerText = orderNumber;
+        document.getElementById('payment-failed-box').style.display = 'block';
+
+        enablePayButton();
+    }
+
+    function closePaymentFailedBox() {
+        document.getElementById('payment-failed-box').style.display = 'none';
+    }
+
+    function retryPayment() {
+        closePaymentFailedBox();
+        openRazorpay(lastOrderId);
+    }
+
+
     let cart = {};
     let searchTimer = null;
     let isBarcodeScan = false;
+
+    function enablePayButton() {
+        const btn = document.querySelector('button[onclick="submitPosOrder(event)"]');
+        btn.disabled = false;
+        btn.innerText = 'Pay & Print';
+        paymentInProgress = false;
+    }
+
+    function showPaymentError(msg) {
+        alert(msg || 'Payment failed. Please try again.');
+    }
+
 
     function looksLikeBarcode(value) {
         return /^[0-9]{6,14}$/.test(value); // numeric 6–14 digits
@@ -243,7 +303,7 @@
     /* ---------------- AUTO SEARCH ---------------- */
 
     barcodeInput.addEventListener('input', function() {
-        console.log('typing:', this.value);
+        // console.log('typing:', this.value);
         isBarcodeScan = false; // typing = NOT barcode
 
         const q = this.value.trim();
@@ -415,15 +475,13 @@
                     order_id: orderId
                 })
             })
-            .then(async res => {
-                const text = await res.text();
-                if (!text) throw new Error('Empty Razorpay response');
-                return JSON.parse(text);
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to create Razorpay order');
+                return res.json();
             })
             .then(rzp => {
 
                 razorpayOrderId = rzp.razorpay_order_id;
-
 
                 const options = {
                     key: rzp.key,
@@ -431,10 +489,10 @@
                     currency: "INR",
                     name: "Samruddh Kirana",
                     description: "POS Payment",
-                    order_id: rzp.razorpay_order_id,
+                    order_id: razorpayOrderId,
 
                     handler: function(response) {
-                        // console.log('DEBUG razorpayOrderId:', razorpayOrderId);
+                        // ✅ PAYMENT SUCCESS
                         fetch('/razorpay/verify', {
                                 method: 'POST',
                                 headers: {
@@ -444,54 +502,60 @@
                                 },
                                 body: JSON.stringify({
                                     razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_order_id: razorpayOrderId,
                                     razorpay_signature: response.razorpay_signature,
                                     order_id: orderId
                                 })
                             })
-                            .then(async res => {
-                                const text = await res.text();
-
-                                if (!res.ok) {
-                                    console.error('Verify failed:', text);
-                                    alert('Payment verification failed');
-                                    return;
-                                }
-
-                                if (!text) {
-                                    alert('Empty verify response');
-                                    return;
-                                }
-
-                                return JSON.parse(text);
-                            })
+                            .then(res => res.json())
                             .then(data => {
-                                if (data && data.success) {
-                                    window.location.href = `/pos/invoice/${orderId}`;
+                                if (data.success) {
+                                    window.location.href = data.redirect;
                                 } else {
-                                    alert('Payment not saved');
+                                    showPaymentFailed(orderId, lastOrderNumber);
                                 }
                             })
-                            .catch(err => {
-                                console.error(err);
-                                alert('Payment verification error');
+                            .catch(() => {
+                                showPaymentFailed(orderId, lastOrderNumber);
                             });
+                    },
+
+                    modal: {
+                        ondismiss: function() {
+                            // ❌ USER CLOSED POPUP
+                            showPaymentFailed(orderId, lastOrderNumber);
+                        }
                     }
                 };
 
                 const rzpInstance = new Razorpay(options);
+
+                // ❌ BANK / CARD FAILURE
+                rzpInstance.on('payment.failed', function(response) {
+                    console.error('Payment failed:', response.error);
+                    showPaymentFailed(orderId, lastOrderNumber);
+                });
+
                 rzpInstance.open();
             })
             .catch(err => {
                 console.error(err);
-                alert('Unable to start Razorpay payment');
+                alert('Unable to start payment');
+                enablePayButton();
+                paymentInProgress = false;
             });
     }
+
+
     /* ---------------- SUBMIT ---------------- */
 
     let submitted = false;
+    let paymentInProgress = false;
 
     function submitPosOrder(e) {
+
+        if (paymentInProgress) return;
+        paymentInProgress = true;
+
         const btn = e.target;
         btn.disabled = true;
         btn.innerText = 'Opening Payment...';
@@ -546,6 +610,8 @@
             })
 
             .then(data => {
+                lastOrderId = data.order_id;
+                lastOrderNumber = data.order_number ?? `POS-${data.order_id}`;
                 openRazorpay(data.order_id);
             })
             .catch(err => {

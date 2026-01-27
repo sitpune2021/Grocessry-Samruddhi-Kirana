@@ -501,3 +501,44 @@
     transform: translateY(-100%);
   }
 }
+
+/* **********************Bill Radio************** */
+.payment-options {
+  margin-top: 6px;
+  display: flex;
+}
+
+.payment-radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background-color: #fff;
+}
+
+.payment-radio input[type="radio"] {
+  accent-color: #198754;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.payment-radio:hover {
+  border-color: #198754;
+  background-color: #f0fff7;
+}
+
+.payment-radio input[type="radio"]:checked+span {
+  color: #198754;
+}
+
+.payment-radio:has(input[type="radio"]:checked) {
+  border-color: #198754;
+  background-color: #e9f9f0;
+  box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.15);
+}

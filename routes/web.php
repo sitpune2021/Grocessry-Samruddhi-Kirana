@@ -58,7 +58,7 @@ use App\Http\Controllers\PaymentGetwayController;
 use App\Http\Controllers\PosOrderController;
 use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
-
+use App\Models\Order;
 
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
@@ -97,13 +97,16 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/product-by-barcode/{code}', [PosOrderController::class, 'productByBarcode']);
         Route::get('/search-products', [PosOrderController::class, 'searchProducts']);
         Route::get('/search-customers', [PosOrderController::class, 'searchCustomers']);
+    });
 
-       });
+    //razorpay
+    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder']);
+    Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment']);
+    Route::get('/pos/payment-failed/{order}', function (Order $order) {
+        return view('pos.payment-failed', compact('order'));
+    })->name('pos.payment.failed');
 
-        //razorpay
-        Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder']);
-        Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment']);
-    
+
 
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
