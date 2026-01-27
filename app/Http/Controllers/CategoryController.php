@@ -57,7 +57,7 @@ class CategoryController extends Controller
                 'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
-             if ($request->hasFile('category_images')) {
+            if ($request->hasFile('category_images')) {
 
                 $imageNames = [];
 
@@ -111,7 +111,7 @@ class CategoryController extends Controller
 
             return redirect()
                 ->route('category.index')
-                ->with('error', 'Category not stored.');
+                ->with('success', 'Category added successfully');
         }
     }
 
@@ -164,82 +164,76 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    
+
     public function update(Request $request, $id)
     {
         Log::info('Category Update Request Received', [
-        'id' => $id,
-        'request' => $request->all(),
-    ]);
+            'id' => $id,
+            'request' => $request->all(),
+        ]);
 
-    try {
+        try {
 
-        $category = Category::find($id);
+            $category = Category::find($id);
 
-        if (!$category) {
-            Log::warning('Category Not Found', ['id' => $id]);
+            if (!$category) {
+                Log::warning('Category Not Found', ['id' => $id]);
+
+                return redirect()
+                    ->route('category.index')
+                    ->with('error', 'Category not found');
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255|unique:categories,name,' . $id,
+                'slug' => 'required|string|max:255',
+                'category_images' => 'nullable|array',
+                'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            ]);
+
+            $imageNames = $category->category_images ?? [];
+
+            if ($request->hasFile('category_images')) {
+                $imageNames = []; // Clear old images
+                foreach ($request->file('category_images') as $image) {
+                    $name = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->storeAs('categories', $name, 'public');
+                    $imageNames[] = $name; // Only new images
+                }
+            }
+            $category->update([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'category_images' => $imageNames,
+            ]);
+
+            Log::info('Category Updated Successfully', [
+                'category_id' => $category->id,
+                'images' => $imageNames,
+            ]);
 
             return redirect()
-                ->route('menus.category.index')
-                ->with('error', 'Category not found');
+                ->route('category.index')
+                ->with('success', 'Category updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Category Update Validation Failed', [
+                'errors' => $e->errors(),
+            ]);
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('Category Update Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
         }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $id,
-            'slug' => 'required|string|max:255',
-            'category_images' => 'nullable|array',
-            'category_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
-
-        $imageNames = $category->category_images ?? [];
-
-        if ($request->hasFile('category_images')) {
-
-            foreach ($request->file('category_images') as $image) {
-                $name = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->storeAs('categories', $name, 'public');
-                $imageNames[] = $name;
-            }
-        }
-
-       
-        $category->update([
-            'name' => $validated['name'],
-            'slug' => $validated['slug'],
-            'category_images' => $imageNames,
-        ]);
-
-        Log::info('Category Updated Successfully', [
-            'category_id' => $category->id,
-            'images' => $imageNames,
-        ]);
-
-        return redirect()
-            ->route('menus.category.index')
-            ->with('success', 'Category updated successfully');
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-
-        Log::warning('Category Update Validation Failed', [
-            'errors' => $e->errors(),
-        ]);
-
-        throw $e;
-
-    } catch (\Throwable $e) {
-
-        Log::error('Category Update Error', [
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-        ]);
-
-        return redirect()
-            ->back()
-            ->withInput()
-            ->with('error', 'Something went wrong. Please try again.');
     }
-}
+
 
 
 

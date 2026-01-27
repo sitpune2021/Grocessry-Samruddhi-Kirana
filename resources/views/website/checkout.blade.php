@@ -25,6 +25,9 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <input type="hidden" name="coupon_code" id="applied_coupon">
+                                <input type="hidden" name="coupon_discount" id="coupon_discount">
+
                                 <label class="form-label">First Name *</label>
                                 <input type="text" name="first_name"
                                     class="form-control @error('first_name') is-invalid @enderror"
@@ -126,14 +129,38 @@
                                 @endforeach
                                 <tr>
                                     <th colspan="2">Subtotal</th>
-                                    <th class="text-end">₹{{ $cart->subtotal }}</th>
+                                    <th class="text-end">
+                                        ₹<span id="subtotal">{{ $cart->subtotal }}</span>
+                                    </th>
                                 </tr>
+
+                                <tr id="discountRow" class="d-none">
+                                    <th colspan="2">Coupon Discount</th>
+                                    <th class="text-end text-danger">
+                                        - ₹<span id="discountAmount">0</span>
+                                    </th>
+                                </tr>
+
                                 <tr>
                                     <th colspan="2">Total</th>
-                                    <th class="text-end text-success">₹{{ $cart->total }}</th>
+                                    <th class="text-end text-success fw-bold">
+                                        ₹<span id="finalTotal">{{ $cart->total }}</span>
+                                    </th>
                                 </tr>
+
                             </tbody>
                         </table>
+                        <!-- Coupon Apply -->
+                        <div class="mb-3"> 
+                           
+                            <div class="input-group">
+                                <input type="text" id="coupon_code" class="form-control" placeholder="Enter coupon code">
+                                <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                                    Apply
+                                </button>
+                            </div>
+                            <small id="coupon_msg" class="text-danger d-none"></small>
+                        </div>
 
                         <!-- Payment -->
                         <div class="form-check my-3">
@@ -178,5 +205,47 @@
             });
     }
 </script>
+
+
+<script>
+    function applyCoupon() {
+
+        let code = document.getElementById('coupon_code').value;
+
+        if (!code) return;
+
+        fetch("{{ route('apply.coupon') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    coupon_code: code
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                let msg = document.getElementById('coupon_msg');
+
+                if (!data.status) {
+                    msg.classList.remove('d-none');
+                    msg.innerText = data.message;
+                    return;
+                }
+
+                msg.classList.add('d-none');
+
+                document.getElementById('discountRow').classList.remove('d-none');
+                document.getElementById('discountAmount').innerText = data.discount;
+                document.getElementById('finalTotal').innerText = data.final_total;
+
+                document.getElementById('applied_coupon').value = data.coupon_code;
+                document.getElementById('coupon_discount').value = data.discount;
+            });
+    }
+</script>
+
 
 @endsection

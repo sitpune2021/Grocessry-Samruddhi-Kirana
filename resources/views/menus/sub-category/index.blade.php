@@ -5,7 +5,7 @@
 
     <div class="card shadow-sm">
         <div class="card-datatable text-nowrap">
- @php
+            @php
             $canView = hasPermission('sub_category.view');
             $canEdit = hasPermission('sub_category.edit');
             $canDelete = hasPermission('sub_category.delete');
@@ -31,6 +31,25 @@
                 <x-datatable-search />
             </div>
 
+            @if(session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+            
             <!-- Table -->
             <div class="table-responsive mt-5 p-3">
                 <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
@@ -40,7 +59,7 @@
                             <th style="width: 30%;">Category</th>
                             <th style="width: 30%;">Sub Category</th>
                             <th style="width: 40%;">Slug</th>
-                             @if($canView || $canEdit || $canDelete)
+                            @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>
                             @endif
                         </tr>
@@ -64,25 +83,25 @@
                             </td>
 
                             {{-- Actions --}}
-     @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;" >
+                            @if($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('sub_category.view'))
                                 <a href="{{ route('sub-category.show', $item->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
                                 @if(hasPermission('sub_category.edit'))
-                                    <a href="{{route('sub-category.edit', $item->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                 @endif
+                                <a href="{{route('sub-category.edit', $item->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                @endif
                                 @if(hasPermission('sub_category.delete'))
-                                    <form action="{{ route('sub-category.destroy', $item->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button onclick="return confirm('Delete subcategory?')" class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
-                                    @endif
-                                </td>
-@endif
+                                <form action="{{ route('sub-category.destroy', $item->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete subcategory?')" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>
@@ -95,7 +114,7 @@
                 </table>
             </div>
 
-          
+
             <!-- Pagination -->
             <div class="px-3 py-2">
                 {{ $subCategories->onEachSide(0)->links('pagination::bootstrap-5') }}
