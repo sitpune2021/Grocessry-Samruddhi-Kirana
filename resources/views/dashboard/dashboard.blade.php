@@ -48,6 +48,13 @@
             transform: translateY(-50%);
           }
         }
+        .stat-card .card-body {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
       </style>
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
@@ -69,49 +76,65 @@
             <!-- STAT CARDS -->
             <div class="row g-3">
 
-              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                <a href="{{ route('category.index') }}" class="text-decoration-none">
+              <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('warehouse.transfer.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                  <div class="card-body">
+                    <p>Pending Transfer Requests</p>
+                    <h3 class="text-warning">{{ $pendingTransferCount }}</h3>
+                    <small class="text-muted">
+                      Warehouse → Warehouse
+                    </small>
+                  </div>
+                </div>
+                </a>
+              </div>
+
+              <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
                   <div class="card stat-card">
                     <div class="card-body">
-                      <p>Total Categories</p>
-                      <h3>{{ $categoryCount }}</h3>
+                      <p>Expired Batches</p>
+                      <h3>{{ $expiredCount }}</h3>
+                      <small class="text-warning">
+                          Expiring in 7 days: {{ $expiringSoonCount }}
+                        </small>
                     </div>
                   </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('category.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                  <div class="card-body">
+                    <p>Total Categories</p>
+                    <h3 class="text-warning">{{ $categoryCount }}</h3>
+                  </div>
+                </div>
                 </a>
               </div>
 
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <a href="{{ route('product.index') }}" class="text-decoration-none">
-                  <div class="card stat-card">
-                    <div class="card-body">
-                      <p>Total Products</p>
-                      <h3>{{ $ProductCount }}</h3>
-                    </div>
-                  </div>
-                </a>
-              </div>
-
-              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
-                  <div class="card stat-card border-danger">
-                    <div class="card-body">
-                      <p>Expired Batches</p>
-                      <h3 class="text-danger">{{ $expiredCount }}</h3>
-                      <small class="text-warning">
-                        Expiring in 7 days: {{ $expiringSoonCount }}
-                      </small>
-                    </div>
-                  </div>
-                </a>
-              </div>
-
-              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                <div class="card stat-card">
+                <div class="card stat-card border-warning">
                   <div class="card-body">
-                    <p>Total Users</p>
-                    <h3>{{ $UserCount }}</h3>
+                    <p>Total Products</p>
+                    <h3 class="text-warning">{{ $ProductCount }}</h3>
                   </div>
                 </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('product.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                  <div class="card-body">
+                    <p>Total Users</p>
+                    <h3 class="text-warning">{{ $UserCount }}</h3>
+                  </div>
+                </div>
+                </a>
               </div>
 
             </div>
@@ -123,7 +146,7 @@
                 <div class="card stat-card">
                   <div class="card-body">
                     <p>Total Batches</p>
-                    <h3>{{ $BatchCount }}</h3>
+                    <h3 class="text-warning">{{ $BatchCount }}</h3>
                   </div>
                 </div>
               </div>
@@ -132,7 +155,7 @@
                 <div class="card stat-card">
                   <div class="card-body">
                     <p>Total Warehouses</p>
-                    <h3>{{ $WarehouseCount }}</h3>
+                    <h3 class="text-warning">{{ $WarehouseCount }}</h3>
                   </div>
                 </div>
               </div>
@@ -141,7 +164,7 @@
                 <div class="card stat-card">
                   <div class="card-body">
                     <p>Total Stock</p>
-                    <h3>{{ $StockMovementCount }}</h3>
+                    <h3 class="text-warning">{{ $StockMovementCount }}</h3>
                   </div>
                 </div>
               </div>
@@ -150,10 +173,10 @@
                 <div class="card stat-card">
                   <div class="card-body">
                     <p>Warehouse Transfers</p>
-                    <h3>{{ $WarehouseTransferCount }}</h3>
+                    <h3 class="text-warning">{{ $WarehouseTransferCount }}</h3>
                   </div>
                 </div>
-              </div>
+              </div>       
 
             </div>
 
@@ -215,7 +238,7 @@
                 </div>
               </div>
 
-            </div>
+            </div>   
 
           </div>
 

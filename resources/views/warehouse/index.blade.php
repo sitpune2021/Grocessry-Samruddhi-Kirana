@@ -47,25 +47,6 @@
             </script>
             @endif
 
-            @if(session('success'))
-            <div id="successAlert"
-                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
-                role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <script>
-                setTimeout(function() {
-                    let alert = document.getElementById('successAlert');
-                    if (alert) {
-                        let bsAlert = new bootstrap.Alert(alert);
-                        bsAlert.close();
-                    }
-                }, 10000); // 15 seconds
-            </script>
-            @endif
-
             <div class="table-responsive mt-3">
                 <table id="transfersTable" class="table table-bordered table-striped  mb-0">
                     <thead class="table-light">
