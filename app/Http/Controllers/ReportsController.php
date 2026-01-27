@@ -12,11 +12,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ReportsController extends Controller
 {
 
-    
+
     public function warehouse_stock_report(Request $request)
     {
         $fromDate      = $request->query('from_date');
@@ -26,7 +27,6 @@ class ReportsController extends Controller
         $download      = $request->query('download');
 
         $query = DB::table('warehouse_transfers')
-        // ->where('status', 2) // ✅ APPROVED
             ->orderBy('id', 'desc');
 
         if ($fromDate && $toDate && $fromDate <= $toDate) {
@@ -60,22 +60,67 @@ class ReportsController extends Controller
             $remainingQty = DB::table('warehouse_stock')
                 ->where('warehouse_id', $transfer->requested_by_warehouse_id)
                 ->sum('quantity');
-
+            $productName = DB::table('products')
+                ->where('id', $transfer->product_id)
+                ->value('name') ?? '-';
             $warehouseStock[] = [
                 'warehouse_from' => $fromName,
-                'warehouse_name' => $toName,
+                'warehouse_name' => $toName,   // 👈 expected
                 'transfer_in'    => $transfer->quantity,
+                'product_name'   => $productName, // ✅ ADD THIS
                 'quantity'       => $remainingQty,
                 'created_at'     => $transfer->created_at,
                 'updated_at'     => $transfer->updated_at,
             ];
         }
 
+        if ($download === 'csv') {
+
+            $filename = 'warehouse_stock_report_' . date('Ymd_His') . '.csv';
+
+            $headers = [
+                "Content-Type"        => "text/csv",
+                "Content-Disposition" => "attachment; filename=$filename",
+            ];
+
+            $callback = function () use ($warehouseStock) {
+                $file = fopen('php://output', 'w');
+
+                // CSV Header
+                fputcsv($file, [
+                    'From Warehouse',
+                    'To Warehouse',
+                    'Transfer In',
+                    'product_name',
+                    'Created At',
+                    'Updated At'
+                ]);
+
+                foreach ($warehouseStock as $row) {
+                    fputcsv($file, [
+                        $row['warehouse_from'] ?? '-',
+                        $row['warehouse_name'] ?? '-',
+                        $row['transfer_in'] ?? 0,
+                        $row['product_name'] ?? 0,
+                        $row['created_at'] ?? '',
+                        $row['updated_at'] ?? '',
+                    ]);
+                }
+
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        // 🔹 Normal page load
         return view(
             'reports.warehouse-transfers.warehouse-transfer',
             compact('warehouseStock')
         );
     }
+
 
     public function stock_movement(Request $request)
     {
@@ -112,8 +157,7 @@ class ReportsController extends Controller
         $runningBalance = [];
         $finalRows = [];
 
-        foreach ($movements as $row) 
-        {
+        foreach ($movements as $row) {
 
             $warehouseId = $row->warehouse_id;
             $batchId     = $row->product_batch_id;
@@ -143,8 +187,7 @@ class ReportsController extends Controller
         }
 
         // CSV DOWNLOAD
-        if ($download === 'csv') 
-        {
+        if ($download === 'csv') {
             $filename = 'stock_movements_' . now()->format('Ymd_His') . '.csv';
 
             return response()->stream(function () use ($finalRows) {
@@ -184,8 +227,195 @@ class ReportsController extends Controller
         return view('reports.stock-movements.stock-movement', [
             'movements' => $finalRows
         ]);
+    }
+    public function stockReturnReport(Request $request)
+    {
+        $fromDate    = $request->query('from_date');
+        $toDate      = $request->query('to_date');
+        $warehouseId = $request->query('warehouse_id');
+        $download    = $request->query('download');
 
+        $query = DB::table('warehouse_stock_returns as r')
+            ->join('warehouse_stock_return_items as i', 'i.stock_return_id', '=', 'r.id')
+            ->leftJoin('warehouses as fw', 'fw.id', '=', 'r.from_warehouse_id')
+            ->leftJoin('warehouses as tw', 'tw.id', '=', 'r.to_warehouse_id')
+            ->leftJoin('products as p', 'p.id', '=', 'i.product_id')
+            ->select([
+                'r.return_number',
+                'fw.name as from_warehouse',
+                'tw.name as to_warehouse',
+                'p.name as product_name',
+                'i.batch_no',
+                'i.return_qty',
+                'i.received_qty',
+                'i.damaged_qty',
+                'i.condition',
+                'r.status',
+                'r.created_at',
+                'r.updated_at',
+            ])
+            ->orderBy('r.id', 'desc');
+
+        if ($warehouseId) {
+            $query->where(function ($q) use ($warehouseId) {
+                $q->where('r.from_warehouse_id', $warehouseId)
+                    ->orWhere('r.to_warehouse_id', $warehouseId);
+            });
+        }
+
+        if ($fromDate && $toDate && $fromDate <= $toDate) {
+            $query->whereBetween('r.created_at', [
+                $fromDate . ' 00:00:00',
+                $toDate . ' 23:59:59'
+            ]);
+        }
+
+        $returns = $query->get();
+
+        /* ===============================
+       ✅ CSV DOWNLOAD
+    ================================*/
+        if ($download === 'csv') {
+
+            $filename = 'stock_return_report_' . date('Ymd_His') . '.csv';
+
+            $headers = [
+                "Content-Type"        => "text/csv",
+                "Content-Disposition" => "attachment; filename=$filename",
+            ];
+
+            $callback = function () use ($returns) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Return No',
+                    'From Warehouse',
+                    'To Warehouse',
+                    'Product',
+                    'Batch No',
+                    'Return Qty',
+                    'Received Qty',
+                    'Damaged Qty',
+                    'Condition',
+                    'Status',
+                    'Created Date',
+                ]);
+
+                foreach ($returns as $row) {
+                    fputcsv($file, [
+                        $row->return_number,
+                        $row->from_warehouse ?? '-',
+                        $row->to_warehouse ?? '-',
+                        $row->product_name ?? '-',
+                        $row->batch_no ?? '-',
+                        $row->return_qty,
+                        $row->received_qty,
+                        $row->damaged_qty,
+                        $row->condition,
+                        $row->status,
+                        \Carbon\Carbon::parse($row->created_at)->format('d-m-Y'),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return view('reports.warehouse-stock-returns.warehouse-stock-returns', compact('returns'));
     }
 
- 
+
+    public function pos_report(Request $request)
+    {
+        $fromDate    = $request->query('from_date');
+        $toDate      = $request->query('to_date');
+        $warehouseId = $request->query('warehouse_id');
+        $download    = $request->query('download');
+
+        $query = DB::table('orders as o')
+            ->join('order_items as oi', 'oi.order_id', '=', 'o.id')
+            ->leftJoin('products as p', 'p.id', '=', 'oi.product_id')
+            ->leftJoin('warehouses as w', 'w.id', '=', 'o.warehouse_id')
+            ->where('o.channel', 'pos')          // POS only
+            ->where('o.order_type', 'walkin')    // ✅ WALK-IN ONLY
+            ->select([
+                'o.order_number',
+                'w.name as warehouse_name',
+                'o.payment_method',
+                'o.payment_status',
+                'p.name as product_name',
+                'oi.quantity',
+                'oi.price',
+                'oi.total as line_total',
+                'o.total_amount',
+                'o.created_at',
+            ])
+            ->orderBy('o.id', 'desc');
+
+        if ($warehouseId) {
+            $query->where('o.warehouse_id', $warehouseId);
+        }
+
+        if ($fromDate && $toDate && $fromDate <= $toDate) {
+            $query->whereBetween('o.created_at', [
+                $fromDate . ' 00:00:00',
+                $toDate . ' 23:59:59'
+            ]);
+        }
+
+        $rows = $query->get();
+
+        /* ===============================
+       CSV DOWNLOAD
+    ================================*/
+        if ($download === 'csv') {
+
+            $filename = 'pos_walkin_report_' . date('Ymd_His') . '.csv';
+
+            $headers = [
+                "Content-Type"        => "text/csv",
+                "Content-Disposition" => "attachment; filename=$filename",
+            ];
+
+            $callback = function () use ($rows) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Order No',
+                    'Warehouse',
+                    'Product',
+                    'Quantity',
+                    'Price',
+                    'Line Total',
+                    'Order Total',
+                    'Payment Method',
+                    'Payment Status',
+                    'Date'
+                ]);
+
+                foreach ($rows as $row) {
+                    fputcsv($file, [
+                        $row->order_number,
+                        $row->warehouse_name ?? '-',
+                        $row->product_name ?? '-',
+                        $row->quantity,
+                        $row->price,
+                        $row->line_total,
+                        $row->total_amount,
+                        $row->payment_method ?? '-',
+                        $row->payment_status,
+                        Carbon::parse($row->created_at)->format('d-m-Y'),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return view('reports.pos-report.pos-report', compact('rows'));
+    }
 }
