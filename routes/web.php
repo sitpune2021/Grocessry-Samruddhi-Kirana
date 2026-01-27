@@ -587,6 +587,7 @@ Route::middleware(['auth:admin'])->group(function () {
     // Analytics (optional API / page)
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
+        
 
 
     // Still Comment this module

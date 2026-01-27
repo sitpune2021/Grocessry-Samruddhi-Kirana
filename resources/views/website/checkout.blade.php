@@ -13,6 +13,7 @@
 <div class="container py-5">
     <form action="{{ url('/place-order') }}" method="POST">
         @csrf
+        <input type="hidden" name="coupon_code" id="coupon_code_hidden">
 
         <div class="row g-5">
 
@@ -77,7 +78,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Postcode *</label>
-                                <input type="text" name="postcode" maxlength="6"
+                                <input type="text" id="pincode" name="postcode" maxlength="6"
                                     pattern="[0-9]{6}"
                                     class="form-control @error('postcode') is-invalid @enderror"
                                     value="{{ old('postcode', $address->postcode ?? '') }}" required>
@@ -99,10 +100,10 @@
                                 value="{{ old('email', $address->email ?? '') }}" required>
                         </div>
 
-                        <!-- Current Location -->
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="getLocation()">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="getLocation(this)">
                             📍 Use Current Location
                         </button>
+
 
                     </div>
                 </div>
@@ -150,17 +151,40 @@
 
                             </tbody>
                         </table>
+
                         <!-- Coupon Apply -->
-                        <div class="mb-3"> 
-                           
+                        <div class="mb-3">
                             <div class="input-group">
                                 <input type="text" id="coupon_code" class="form-control" placeholder="Enter coupon code">
-                                <button type="button" class="btn btn-outline-primary" onclick="applyCoupon()">
+                                <button type="button" class="btn btn-outline-primary d-none">
                                     Apply
                                 </button>
                             </div>
+
                             <small id="coupon_msg" class="text-danger d-none"></small>
+
+                            <!-- Offer Codes -->
+                            <div class="mt-2">
+                                <small class="text-muted">Available Offers:</small>
+
+                                <select class="form-select mt-1" id="coupon_dropdown"
+                                    onchange="applyCouponFromDropdown(this)">
+                                    <option value="">Select Offer Code</option>
+                                    @foreach($coupons as $coupon)
+                                    <option value="{{ $coupon->code }}">
+                                        {{ $coupon->code }}
+                                        @if($coupon->discount_type == 'flat')
+                                        (₹{{ $coupon->discount_value }} OFF)
+                                        @else
+                                        ({{ $coupon->discount_value }}% OFF)
+                                        @endif
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
+
+
 
                         <!-- Payment -->
                         <div class="form-check my-3">
@@ -187,32 +211,78 @@
 
 <!-- Location Script -->
 <script>
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        } else {
+    function getLocation(btn) {
+        btn.innerText = '📍 Detecting...';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            showPosition(pos);
+            btn.innerText = '📍 Location Added';
+            btn.disabled = false;
+        }, () => {
+            btn.innerText = '📍 Use Current Location';
+            btn.disabled = false;
+            alert('Location access denied');
+        });
+    }
+</script>
+
+<script>
+    function getLocation(btn) {
+        btn.innerText = '📍 Detecting...';
+        btn.disabled = true;
+
+        if (!navigator.geolocation) {
             alert("Geolocation not supported");
+            btn.disabled = false;
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(showPosition, () => {
+            btn.innerText = '📍 Use Current Location';
+            btn.disabled = false;
+            alert('Location access denied');
+        });
     }
 
     function showPosition(position) {
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('address').value = data.display_name || '';
-                document.getElementById('city').value = data.address.city || data.address.town || '';
-                document.getElementById('country').value = data.address.country || '';
+                let addr = data.address || {};
+
+                document.getElementById('address').value =
+                    `${addr.road || ''} ${addr.suburb || ''}`.trim();
+
+                document.getElementById('city').value =
+                    addr.city || addr.town || addr.municipality || 'Pune';
+
+                document.getElementById('pincode').value =
+                    addr.postcode || '';
+
+                document.getElementById('country').value =
+                    addr.country || '';
+
+                // button text update
+                document.querySelector('[onclick^="getLocation"]').innerText = '📍 Location Added';
+                document.querySelector('[onclick^="getLocation"]').disabled = false;
             });
     }
 </script>
 
 
 <script>
-    function applyCoupon() {
-
-        let code = document.getElementById('coupon_code').value;
-
+    function applyCouponFromDropdown(el) {
+        let code = el.value;
         if (!code) return;
+
+        document.getElementById('coupon_code').value = code;
+        applyCoupon();
+    }
+
+    function applyCoupon() {
+        let code = document.getElementById('coupon_code').value;
+        let subtotal = parseFloat(document.getElementById('subtotal').innerText);
 
         fetch("{{ route('apply.coupon') }}", {
                 method: "POST",
@@ -221,7 +291,8 @@
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
                 body: JSON.stringify({
-                    coupon_code: code
+                    coupon_code: code,
+                    subtotal: subtotal
                 })
             })
             .then(res => res.json())
@@ -231,21 +302,33 @@
 
                 if (!data.status) {
                     msg.classList.remove('d-none');
+                    msg.classList.remove('text-success');
+                    msg.classList.add('text-danger');
                     msg.innerText = data.message;
                     return;
                 }
 
-                msg.classList.add('d-none');
+                // success
+                msg.classList.remove('d-none');
+                msg.classList.remove('text-danger');
+                msg.classList.add('text-success');
+                msg.innerText = 'Coupon applied successfully';
 
                 document.getElementById('discountRow').classList.remove('d-none');
                 document.getElementById('discountAmount').innerText = data.discount;
                 document.getElementById('finalTotal').innerText = data.final_total;
 
-                document.getElementById('applied_coupon').value = data.coupon_code;
-                document.getElementById('coupon_discount').value = data.discount;
+                // 🔥 hidden input for place order
+                document.getElementById('coupon_code_hidden').value = code;
             });
     }
 </script>
+
+
+
+
+
+
 
 
 @endsection

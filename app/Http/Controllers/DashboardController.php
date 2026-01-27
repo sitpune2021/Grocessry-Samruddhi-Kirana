@@ -37,8 +37,8 @@ class DashboardController extends Controller
         $WarehouseTransferCount = WarehouseTransfer::count();
 
         // Only show Users count for admin roles (optional)
-        $UserCount = in_array($user->role_id, [1,2]) 
-            ? User::count() 
+        $UserCount = in_array($user->role_id, [1, 2])
+            ? User::count()
             : 1; // login user only
 
         // =======================
@@ -54,10 +54,13 @@ class DashboardController extends Controller
             ->whereBetween('expiry_date', [$today, $today->copy()->addDays(7)])
             ->count();
 
+
         // =======================
         // Warehouse / Shop Lists (login user)
         // =======================
-        $warehouseDistrict = collect();
+        $warehouseDistrict = Warehouse::where('status', 'active')
+            ->orderBy('type')
+            ->pluck('name');
         $warehouseTaluka = collect();
         $shops = collect();
 
@@ -96,10 +99,22 @@ class DashboardController extends Controller
             if ($warehouse->type === 'district') {
                 $warehouseStockReturnCount = WarehouseStockReturn::where(function ($q) use ($warehouse) {
                     $q->where('from_warehouse_id', $warehouse->id)
-                    ->orWhere('to_warehouse_id', $warehouse->id);
+                        ->orWhere('to_warehouse_id', $warehouse->id);
                 })->where('status', '!=', 'received')->count();
             }
         }
+
+        $threshold = 100;
+
+        $totalLowStock = WarehouseStock::where('quantity', '<=', $threshold)->count();
+
+        $warehouseWise = WarehouseStock::selectRaw(
+            'warehouse_id, COUNT(*) as total'
+        )
+            ->where('quantity', '<=', $threshold)
+            ->groupBy('warehouse_id')
+            ->with('warehouse')
+            ->get();
 
         // =======================
         // Send to view
@@ -117,9 +132,9 @@ class DashboardController extends Controller
             'warehouseDistrict',
             'warehouseTaluka',
             'shops',
-            'warehouseStockReturnCount'
+            'warehouseStockReturnCount',
+            'totalLowStock',
+            'warehouseWise'
         ));
     }
-    
-
 }
