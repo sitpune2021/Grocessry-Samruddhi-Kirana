@@ -61,6 +61,29 @@
                                                     </div>
                                                 </div>
 
+                                                {{-- Transfer Challan --}}
+                                                <div class="row mt-3">
+                                                    <div class="col-md-6">
+                                                        <label>Transfer Challan <span class="text-danger">*</span></label>
+                                                        <select name="transfer_challan_id"
+                                                            id="challanSelect"
+                                                            class="form-control"
+                                                            required>
+                                                            <option value="">Select Challan</option>
+                                                            @foreach($challans as $ch)
+                                                            <option value="{{ $ch->id }}"
+                                                                data-from="{{ $ch->from_warehouse_id }}">
+                                                                {{ $ch->challan_no }}
+                                                                ({{ $ch->fromWarehouse->name }})
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+
+
+
                                                 {{-- Reason --}}
                                                 <div class="row mt-3">
                                                     <div class="col-md-6">
@@ -98,27 +121,34 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr>
-                                                            <td>                             
-                                                                <select name="items[0][product_id]"
+                                                            <td>
+                                                                {{-- <select name="items[0][product_id]"
                                                                     class="form-control product-select"
                                                                     required>
 
                                                                     <option value="">Select Product</option>
-                                                                   
+
                                                                     @foreach($warehouseStocks->groupBy('product_id') as $productId => $batches)
-                                                                 
+
                                                                     <option value="{{ $productId }}"
-                                                                        data-batches='@json(
-                                                                        $batches->map(fn($batch) => [
-                                                                        "batch_id" => $batch->id,
-                                                                        "batch_no" => $batch->batch_no,
-                                                                        "stock"    => $batch->quantity
-                                                                        ])
-                                                                    )'>
-                                                                        {{ $batches->first()->product->name }}
-                                                                    </option>
-                                                                    @endforeach
+                                                                data-batches='@json(
+                                                                $batches->map(fn($batch) => [
+                                                                "batch_id" => $batch->id,
+                                                                "batch_no" => $batch->batch_no,
+                                                                "stock" => $batch->quantity
+                                                                ])
+                                                                )'>
+                                                                {{ $batches->first()->product->name }}
+                                                                </option>
+                                                                @endforeach
+                                                                </select> --}}
+
+                                                                <select name="items[0][product_id]"
+                                                                    class="form-control product-select"
+                                                                    required>
+                                                                    <option value="">Select Product</option>
                                                                 </select>
+
                                                             </td>
                                                             {{-- Product Image --}}
                                                             <td class="text-center">
@@ -196,7 +226,7 @@
     let rowIndex = 1;
 
     /* ================= ADD ROW ================= */
-    document.getElementById('addRow').addEventListener('click', function () {
+    document.getElementById('addRow').addEventListener('click', function() {
         let table = document.querySelector('#productTable tbody');
         let row = table.rows[0].cloneNode(true);
 
@@ -218,10 +248,11 @@
     });
 
     /* ================= ALL CHANGE EVENTS ================= */
-    document.addEventListener('change', function (e) {
+    document.addEventListener('change', function(e) {
 
         /* PRODUCT CHANGE */
         if (e.target.classList.contains('product-select')) {
+
             let row = e.target.closest('tr');
             let batchSelect = row.querySelector('.batch-select');
             let stockInput = row.querySelector('.available-stock');
@@ -229,16 +260,15 @@
             batchSelect.innerHTML = '<option value="">Select Batch</option>';
             stockInput.value = '';
 
-            let batches = e.target.selectedOptions[0]?.dataset.batches;
-            if (!batches) return;
+            const selected = e.target.selectedOptions[0];
+            if (!selected) return;
 
-            JSON.parse(batches).forEach(batch => {
-                let option = document.createElement('option');
-                option.value = batch.batch_id;
-                option.textContent = batch.batch_no;
-                option.dataset.stock = batch.stock;
-                batchSelect.appendChild(option);
-            });
+            // Add batch from challan
+            const option = document.createElement('option');
+            option.value = selected.dataset.batchId;
+            option.textContent = selected.dataset.batchNo;
+            option.dataset.stock = selected.dataset.max; // challan qty
+            batchSelect.appendChild(option);
         }
 
         /* BATCH CHANGE */
@@ -256,7 +286,7 @@
 
             if (e.target.files && e.target.files[0]) {
                 let reader = new FileReader();
-                reader.onload = function (ev) {
+                reader.onload = function(ev) {
                     preview.src = ev.target.result;
                 };
                 reader.readAsDataURL(e.target.files[0]);
@@ -265,7 +295,7 @@
     });
 
     /* ================= STOCK VALIDATION ================= */
-    document.addEventListener('input', function (e) {
+    document.addEventListener('input', function(e) {
         if (e.target.classList.contains('return-qty')) {
             let row = e.target.closest('tr');
             let available =
@@ -278,7 +308,52 @@
         }
     });
 
-    $(document).on('click', '.removeRow', function () {
+    $(document).on('click', '.removeRow', function() {
         $(this).closest('tr').remove();
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const challanSelect = document.getElementById('challanSelect');
+        if (!challanSelect) {
+            console.error('Challan select not found');
+            return;
+        }
+
+        challanSelect.addEventListener('change', function() {
+            const challanId = this.value;
+            if (!challanId) return;
+
+            fetch(`/stock-return/challan-products/${challanId}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Failed to fetch challan products');
+                    }
+                    return res.json();
+                })
+                .then(items => {
+
+                    document.querySelectorAll('.product-select').forEach(select => {
+                        select.innerHTML = '<option value="">Select Product</option>';
+
+                        items.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item.product_id;
+                            opt.textContent = item.product_name;
+                            opt.dataset.batchId = item.batch_id;
+                            opt.dataset.batchNo = item.batch_no;
+                            opt.dataset.max = item.challan_qty;
+                            select.appendChild(opt);
+                        });
+
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Unable to load challan products');
+                });
+        });
+
     });
 </script>

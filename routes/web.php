@@ -270,6 +270,12 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/warehouse-stock-returns-approve/{id}', [WarehouseStockReturnController::class, 'approveByMaster'])->name('approveByMaster');
     Route::post('/warehouse-stock-returns-dispatch/{id}', [WarehouseStockReturnController::class, 'dispatch'])->name('dispatch');
     Route::post('/warehouse-stock-returns-receive/{id}', [WarehouseStockReturnController::class, 'receiveAtMaster'])->name('receiveAtMaster');
+    Route::get(
+        '/stock-return/challan-products/{challan}',
+        [WarehouseStockReturnController::class, 'challanProducts']
+    )->name('stock-return.challan-products');
+
+
 
     //     Route::post(
     //         'stock-returns/{id}/send-for-approval',
@@ -600,7 +606,7 @@ Route::middleware(['auth:admin'])->group(function () {
     // Analytics (optional API / page)
     Route::get('/low-stock-analytics', [LowStockController::class, 'analytics'])
         ->name('lowstock.analytics');
-        
+
 
 
     // Still Comment this module
