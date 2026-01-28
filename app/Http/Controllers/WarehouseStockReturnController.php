@@ -114,29 +114,29 @@ class WarehouseStockReturnController extends Controller
             'mode'
         ));
     }
-
     public function challanProducts($challanId)
-{
-    $items = TransferChallanItem::join('product_batches', 'product_batches.id', '=', 'transfer_challan_items.batch_id')
-        ->join('products', 'products.id', '=', 'transfer_challan_items.product_id')
-        ->where('transfer_challan_items.transfer_challan_id', $challanId)
-        ->selectRaw('
+    {
+        $items = TransferChallanItem::join('products', 'products.id', '=', 'transfer_challan_items.product_id')
+            ->join('product_batches', function ($join) {
+                $join->on('product_batches.batch_no', '=', 'transfer_challan_items.batch_no')
+                    ->on('product_batches.product_id', '=', 'transfer_challan_items.product_id');
+            })
+            ->where('transfer_challan_items.transfer_challan_id', $challanId)
+            ->selectRaw('
             transfer_challan_items.product_id,
             products.name as product_name,
-            transfer_challan_items.batch_id,
-            product_batches.batch_no,
+            transfer_challan_items.batch_no,
             SUM(transfer_challan_items.quantity) as challan_qty
         ')
-        ->groupBy(
-            'transfer_challan_items.product_id',
-            'products.name',
-            'transfer_challan_items.batch_id',
-            'product_batches.batch_no'
-        )
-        ->get();
+            ->groupBy(
+                'transfer_challan_items.product_id',
+                'products.name',
+                'transfer_challan_items.batch_no'
+            )
+            ->get();
 
-    return response()->json($items);
-}
+        return response()->json($items);
+    }
 
 
 
@@ -147,6 +147,7 @@ class WarehouseStockReturnController extends Controller
             'to_warehouse_id' => 'required|exists:warehouses,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.batch_no' => 'required|string',
             'items.*.return_qty' => 'required|numeric|min:1',
         ]);
 
@@ -169,6 +170,7 @@ class WarehouseStockReturnController extends Controller
                 'created_by' => $user->id,
             ]);
 
+
             foreach ($request->items as $item) {
 
                 // Prevent over-return
@@ -177,13 +179,23 @@ class WarehouseStockReturnController extends Controller
                     'product_id' => $item['product_id'],
                 ])->sum('quantity');
 
+                $challanQty = TransferChallanItem::where('transfer_challan_id', $request->transfer_challan_id)
+                    ->where('product_id', $item['product_id'])
+                    ->where('batch_no', $item['batch_no'])
+                    ->sum('quantity');
+
+                if ($item['return_qty'] > $challanQty) {
+                    abort(422, 'Return quantity exceeds challan quantity for this batch');
+                }
+
+
                 if ($item['return_qty'] > $available) {
                     abort(422, 'Return quantity exceeds available stock');
                 }
 
                 WarehouseStockReturnItem::create([
                     'stock_return_id' => $return->id,
-                    'batch_no' => $item['batch_id'],
+                    'batch_no' => $item['batch_no'],
                     'product_id' => $item['product_id'],
                     'return_qty' => $item['return_qty'],
                 ]);

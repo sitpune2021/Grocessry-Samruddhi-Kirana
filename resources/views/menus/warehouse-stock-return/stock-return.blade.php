@@ -163,7 +163,7 @@
                                                             </td>
 
                                                             <td>
-                                                                <select name="items[0][batch_id]" class="form-control batch-select" required>
+                                                                <select name="items[0][batch_no]" class="form-control batch-select" required>
                                                                     <option value="">Select Batch</option>
                                                                 </select>
                                                             </td>
@@ -265,7 +265,7 @@
 
             // Add batch from challan
             const option = document.createElement('option');
-            option.value = selected.dataset.batchId;
+            option.value = selected.dataset.batchNo;
             option.textContent = selected.dataset.batchNo;
             option.dataset.stock = selected.dataset.max; // challan qty
             batchSelect.appendChild(option);
@@ -341,7 +341,6 @@
                             const opt = document.createElement('option');
                             opt.value = item.product_id;
                             opt.textContent = item.product_name;
-                            opt.dataset.batchId = item.batch_id;
                             opt.dataset.batchNo = item.batch_no;
                             opt.dataset.max = item.challan_qty;
                             select.appendChild(opt);
