@@ -137,7 +137,6 @@
                                                             <input type="number" name="quantities[]" 
                                                                 class="form-control"
                                                                 value="{{ $item->quantity }}"
-                                                                min="1"
                                                                 max="{{ $item->quantity }}">
                                                         </td>
 
