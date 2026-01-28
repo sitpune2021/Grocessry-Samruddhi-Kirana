@@ -21,7 +21,6 @@ class ProductBatchController extends Controller
 {
 
 
-
     public function index()
     {
         $user = Auth::user();
@@ -45,7 +44,8 @@ class ProductBatchController extends Controller
         $units = Unit::select('id', 'name')->get();
 
         $warehouses = $isSuperAdmin
-            ? Warehouse::select('id', 'name')->orderBy('name')->get()
+           // ? Warehouse::select('id', 'name')->orderBy('name')->get()
+           ? Warehouse::whereNull('parent_id')->get()
             : Warehouse::where('id', $user->warehouse_id)->get();
 
 
@@ -181,6 +181,7 @@ class ProductBatchController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -322,7 +323,6 @@ class ProductBatchController extends Controller
         return view('batches.expiry', compact('batches'));
     }
 
-
     public function getCategoriesByWarehouse($warehouseId)
     {
         return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
@@ -336,7 +336,6 @@ class ProductBatchController extends Controller
             ->distinct()
             ->get();
     }
-
 
     public function getProductsByWarehouseCategory($warehouseId, $categoryId)
     {
@@ -390,4 +389,6 @@ class ProductBatchController extends Controller
             'quantity' => (int) $qty
         ]);
     }
+
+
 }
