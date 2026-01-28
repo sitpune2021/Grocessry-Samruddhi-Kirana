@@ -18,63 +18,69 @@
 
                          <!-- Full Name + Email -->
                          <div class="row">
-                             <div class="col-md-6 mb-3">
-                                 <label class="form-label">Full Name</label>
+                             <div class="col-md-4 mb-3">
+                                 <label class="form-label">Full Name <span class="text-danger">*</span></label>
                                  <input type="text"
-                                     name="name"
+                                     name="first_name"
                                      class="form-control"
                                      placeholder="Enter full name"
-                                     value="{{ old('name') }}"
-                                     required>
-                                 @error('name')
-                                 <div class="error-message">{{ $message }}</div>
+                                     value="{{ old('first_name') }}">
+                                 @error('first_name')
+                                 <div class="error-message text-danger">{{ $message }}</div>
                                  @enderror
+
                              </div>
 
-                             <div class="col-md-6 mb-3">
-                                 <label class="form-label">Email address</label>
-                                 <input type="email"
-                                     name="email"
+                             <div class="col-md-4 mb-3">
+                                 <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                 <input type="text"
+                                     name="last_name"
                                      class="form-control"
-                                     placeholder="Enter email"
-                                     value="{{ old('email') }}"
-                                     required>
-                                 @error('email')
-                                 <div class="error-message">{{ $message }}</div>
+                                     placeholder="last name"
+                                     value="{{ old('last_name') }}">
+                                 @error('last_name')
+                                 <div class="error-message text-danger">{{ $message }}</div>
                                  @enderror
                              </div>
-                         </div>
-
-                         <!-- Mobile + Password -->
-                         <div class="row">
-                             <div class="col-md-6 mb-3">
-                                 <label class="form-label">Mobile Number</label>
+                             <div class="col-md-4 mb-3">
+                                 <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
                                  <input type="text"
                                      name="mobile"
                                      class="form-control"
                                      placeholder="Enter mobile number"
-                                     value="{{ old('mobile') }}"
-                                     required>
+                                     value="{{ old('mobile') }}">
                                  @error('mobile')
-                                 <div class="error-message">{{ $message }}</div>
+                                 <div class="error-message text-danger">{{ $message }}</div>
+                                 @enderror
+                             </div>
+                             <div class="col-md-6 mb-3">
+                                 <label class="form-label">Email address <span class="text-danger">*</span></label>
+                                 <input type="email"
+                                     name="email"
+                                     class="form-control"
+                                     placeholder="Enter email"
+                                     value="{{ old('email') }}">
+                                 @error('email')
+                                 <div class="error-message text-danger">{{ $message }}</div>
                                  @enderror
                              </div>
 
-                             <div class="col-md-6 mb-3">
-                                 <label class="form-label">Password</label>
+
+
+                             <div class="col-md-4 mb-3">
+                                 <label class="form-label">Password <span class="text-danger">*</span></label>
                                  <input type="password"
                                      name="password"
                                      class="form-control"
-                                     placeholder="Enter password"
-                                     required>
+                                     placeholder="Enter password">
                                  @error('password')
-                                 <div class="error-message">{{ $message }}</div>
+                                 <div class="error-message text-danger">{{ $message }}</div>
                                  @enderror
                              </div>
                          </div>
 
                          <!-- Submit -->
-                         <button type="submit" class="btn btn-primary   mb-3">
+                         <button type="submit" class="btn btn-primary mb-3">
                              Register
                          </button>
 

@@ -15,24 +15,28 @@ use Illuminate\Support\Facades\Log;
 class CheckoutController extends Controller
 {
 
-    public function index()
-    {
-        $userId = Auth::id();
+public function index()
+{
+    $userId = Auth::id();
 
-        $cart = Cart::with('items.product')
-            ->where('user_id', $userId)
-            ->first();
+    $cart = Cart::with('items.product')
+        ->where('user_id', $userId)
+        ->first();
 
-        $address = UserAddress::where('user_id', $userId)->first();
-
-        // ✅ ACTIVE COUPONS
-        $coupons = Coupon::where('status', 1)
-            ->whereDate('start_date', '<=', now())
-            ->whereDate('end_date', '>=', now())
-            ->get();
-
-        return view('website.checkout', compact('cart', 'address', 'coupons'));
+    if (!$cart || $cart->items->isEmpty()) {
+        return redirect()->route('cart')
+            ->with('error', 'Your cart is empty');
     }
+
+    $address = UserAddress::where('user_id', $userId)->first();
+
+    $coupons = Coupon::where('status', 1)
+        ->whereDate('start_date', '<=', now())
+        ->whereDate('end_date', '>=', now())
+        ->get();
+
+    return view('website.checkout', compact('cart', 'address', 'coupons'));
+}
 
     public function placeOrder(Request $request)
     {

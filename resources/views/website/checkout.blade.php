@@ -118,6 +118,7 @@
 
                         <table class="table align-middle">
                             <tbody>
+                                @if($cart && $cart->items->count())
                                 @foreach($cart->items as $item)
                                 <tr>
                                     <td>
@@ -128,6 +129,13 @@
                                     <td class="text-end">₹{{ $item->line_total }}</td>
                                 </tr>
                                 @endforeach
+                                @else
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        Your cart is empty
+                                    </td>
+                                </tr>
+                                @endif
                                 <tr>
                                     <th colspan="2">Subtotal</th>
                                     <th class="text-end">
@@ -198,14 +206,17 @@
 
                         <!-- Payment -->
                         <div class="form-check my-3">
-                            <input class="form-check-input" type="radio" name="payment_method" value="cod" checked>
+                            <input class="form-check-input" type="radio"
+                                name="payment_method" value="Cash" checked>
                             <label class="form-check-label">Cash On Delivery</label>
                         </div>
 
                         <div class="form-check mb-4">
-                            <input class="form-check-input" type="radio" name="payment_method" value="paypal">
-                            <label class="form-check-label">Paypal</label>
+                            <input class="form-check-input" type="radio"
+                                name="payment_method" value="online">
+                            <label class="form-check-label">Online Payment</label>
                         </div>
+
 
                         <button type="submit" class="btn btn-primary w-100 py-3">
                             Place Order
