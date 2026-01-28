@@ -9,21 +9,26 @@ use App\Models\DeliveryNotification;
 
 class NotificationController extends Controller
 {
-    public function get_notifications()
+    public function get_notifications(Request $request)
     {
-        $notifications = DeliveryNotification::where(
-            'delivery_agent_id',
-            auth()->id()
-        )
+        $user = $request->user();
+
+        if (!$user || strtolower(optional($user->role)->name) !== 'delivery agent') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $notifications = DeliveryNotification::where('delivery_agent_id', $user->id)
             ->latest()
             ->paginate(10);
+
         return response()->json([
             'status' => true,
-            'logged_in_id' => auth()->id(),
-            'data' => DeliveryNotification::where(
-                'delivery_agent_id',
-                auth()->id()
-            )->get()
+            'message' => 'New Order Received',
+            'logged_in_id' => $user->id,
+            'data' => $notifications
         ]);
     }
 
