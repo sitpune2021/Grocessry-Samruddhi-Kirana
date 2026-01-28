@@ -101,6 +101,10 @@ return [
             'children' => [
                 ['title' => 'Warehouse Stock Request', 'route' => 'transfer.index'],
                 ['title' => 'Transfer Challen', 'route' => 'transfer-challans.index'],
+                [
+                    'title' => 'Warehouse Stock Return',
+                    'route' => 'stock-returns.index',
+                ],
                 // ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
                 // ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
                 // ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
@@ -135,10 +139,7 @@ return [
                 //     'title' => 'Taluka → Distribution Transfer Approval',
                 //     'route' => 'taluka-distribution.transfer.index',
                 // ],
-                [
-                    'title' => 'Warehouse Stock Return Approval',
-                    'route' => 'stock-returns.index',
-                ],
+                
 
             ],
         ],
@@ -213,13 +214,12 @@ return [
             'title' => 'Reports',
             'icon'  => 'bx bx-bar-chart-alt-2',
             'children' => [
-                ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
+                ['title' => 'Stock Request Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
-                ['title' => ' Warehouse Stock Return Report', 'route' => 'stock-returns.report'],
+                ['title' => ' Stock Return Report', 'route' => 'stock-returns.report'],
                 ['title' => 'POS Report', 'route' => 'pos-report'],
-
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
-                ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
+                // ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
                 ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],

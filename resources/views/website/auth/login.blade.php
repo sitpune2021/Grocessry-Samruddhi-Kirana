@@ -22,8 +22,10 @@
                                 <input type="email"
                                     name="email"
                                     class="form-control"
-                                    placeholder="Enter email"
-                                    required>
+                                    placeholder="Enter email">
+                                @error('email')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
 
                             <div class="col-md-6 mb-3">
@@ -31,8 +33,10 @@
                                 <input type="password"
                                     name="password"
                                     class="form-control"
-                                    placeholder="Enter password"
-                                    required>
+                                    placeholder="Enter password">
+                                @error('password')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
                         </div>
 
