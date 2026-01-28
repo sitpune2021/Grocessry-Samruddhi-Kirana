@@ -135,7 +135,12 @@
                                                             <input type="text" class="form-control"
                                                                 value="{{ $item->product->name }}" readonly>
                                                         </td>
+                                                        {{-- BATCH --}}
+                                                        <td>
+                                                            <input type="text" class="form-control"
+                                                                value="{{ $item->batch_id }}" readonly>
 
+                                                        </td>
                                                         <td>
                                                             <input type="number" name="quantities[]"
                                                                 class="form-control" value="{{ $item->quantity }}"
