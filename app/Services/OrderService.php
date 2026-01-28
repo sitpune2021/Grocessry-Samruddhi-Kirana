@@ -15,6 +15,9 @@ class OrderService
 
         return DB::transaction(function () use ($data, $user) {
 
+            $paymentMethod = $data['payment']['method'] ?? 'cash';
+            $isOnline = $paymentMethod === 'online';
+
             /* ---------------- ORDER ---------------- */
             $order = Order::create([
                 'order_number'   => $data['order_number'],
@@ -28,7 +31,7 @@ class OrderService
                 'payment_method' => $data['payment']['method'],
                 'discount'       => $data['discount'] ?? 0,
             ]);
-
+            // dd($order);
             $subtotal = 0;
             $gstTotal = 0;
 
@@ -39,6 +42,32 @@ class OrderService
                     throw new \Exception('Invalid quantity');
                 }
 
+                // ONLINE payment → do NOT touch stock
+                if ($isOnline) {
+
+                    $lineTotal = $item['qty'] * $item['price'];
+                    $taxAmount = ($item['tax_percent'] > 0)
+                        ? $lineTotal * ($item['tax_percent'] / (100 + $item['tax_percent']))
+                        : 0;
+
+                    OrderItem::create([
+                        'order_id'    => $order->id,
+                        'product_id'  => $item['product_id'],
+                        'quantity'    => $item['qty'],
+                        'price'       => $item['price'],
+                        'tax_percent' => $item['tax_percent'] ?? 0,
+                        'tax_amount'  => $taxAmount,
+                        'line_total'  => $lineTotal,
+                        'total'       => $lineTotal,
+                    ]);
+
+                    $subtotal += $lineTotal;
+                    $gstTotal += $taxAmount;
+
+                    continue;
+                }
+
+                // 👉 CASH payment → consume stock now
                 $fifoBatches = app(FifoStockService::class)->consume(
                     $item['product_id'],
                     $data['warehouse_id'],
@@ -49,10 +78,7 @@ class OrderService
 
                 foreach ($fifoBatches as $row) {
 
-                    // Tax-inclusive pricing
                     $lineTotal = $row['qty'] * $item['price'];
-
-                    // GST portion (derived, not added)
                     $taxAmount = ($item['tax_percent'] > 0)
                         ? $lineTotal * ($item['tax_percent'] / (100 + $item['tax_percent']))
                         : 0;
@@ -66,13 +92,14 @@ class OrderService
                         'tax_percent'      => $item['tax_percent'] ?? 0,
                         'tax_amount'       => $taxAmount,
                         'line_total'       => $lineTotal,
-                        'total'            => $lineTotal, // IMPORTANT
+                        'total'            => $lineTotal,
                     ]);
 
                     $subtotal += $lineTotal;
                     $gstTotal += $taxAmount;
                 }
             }
+
 
             /* ---------------- APPLY DISCOUNT ---------------- */
             $discount = min($data['discount'] ?? 0, $subtotal);
@@ -86,17 +113,18 @@ class OrderService
 
             /* ---------------- PAYMENT ---------------- */
             // Only for CASH
-            if (($data['payment']['method'] ?? null) === 'cash') {
+            if ($paymentMethod === 'cash') {
                 Payment::create([
-                    'order_id' => $order->id,
-                    'user_id'  => $order->user_id,
+                    'order_id'        => $order->id,
+                    'user_id'         => $order->user_id,
                     'payment_gateway' => 'cash',
-                    'amount' => $order->total_amount,
-                    'status' => 'success',
+                    'amount'          => $order->total_amount,
+                    'status'          => 'success',
                 ]);
 
                 $order->update(['payment_status' => 'paid']);
             }
+
             return $order;
         });
     }

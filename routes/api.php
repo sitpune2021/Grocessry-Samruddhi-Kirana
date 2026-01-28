@@ -128,7 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
     Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
     Route::get('/partner/deliveries/summary', [DeliveryOrderController::class, 'deliverySummary']);
-
+  Route::get( '/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems'] );
     // 🔹 PARTNER STATUS
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
     Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);

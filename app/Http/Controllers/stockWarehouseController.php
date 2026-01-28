@@ -179,9 +179,11 @@ class stockWarehouseController extends Controller
         Log::info('🟢 AddStock: Request received', [
             'payload' => $request->all()
         ]);
+        
         // $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
         //     ->where('challan_no', $request->challan_no)
         //     ->exists();
+
         $exists = WarehouseStock::where('supplier_challan_id', $request->supplier_challan_id)
             ->exists();
 

@@ -137,11 +137,6 @@
                 </a>
               </div>
 
-            </div>
-
-            <!-- SECOND ROW -->
-            <div class="row g-3 mt-3">
-
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">
                   <div class="card-body">
@@ -150,6 +145,11 @@
                   </div>
                 </div>
               </div>
+
+            </div>
+
+            <!-- SECOND ROW -->
+            <div class="row g-3 mt-3">
 
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">

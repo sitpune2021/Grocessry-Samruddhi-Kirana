@@ -48,12 +48,15 @@
                                                 {{-- Supplier Challan --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
-                                                        <label class="form-label">Supplier Challan <span
-                                                                class="text-danger">
-                                                                *</span></label>
+                                                        <label class="form-label">
+                                                            Supplier Challan <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        {{-- Visible dropdown --}}
                                                         <select id="supplier_challan_id" class="form-select"
                                                             {{ $mode === 'view' || $mode === 'edit' ? 'disabled' : '' }}>
                                                             <option value="">-- Select Challan --</option>
+
                                                             @foreach ($challans as $challan)
                                                             <option value="{{ $challan->id }}"
                                                                 {{ isset($selectedChallan) && $selectedChallan->id == $challan->id ? 'selected' : '' }}>
@@ -62,23 +65,23 @@
                                                             @endforeach
                                                         </select>
 
-                                                        {{-- ✅ REAL value for submit --}}
+                                                        {{-- Hidden field (because disabled select does not submit) --}}
                                                         @if ($mode === 'view' || $mode === 'edit')
                                                         <input type="hidden" name="supplier_challan_id"
                                                             value="{{ $selectedChallan->id ?? '' }}">
                                                         @else
-                                                        {{-- add mode --}}
-                                                        <input type="hidden" name="supplier_challan_id"
-                                                            id="supplier_challan_hidden">
+                                                            <input type="hidden" name="supplier_challan_id"
+                                                                id="supplier_challan_hidden">
                                                         @endif
+
                                                         @if (session('error'))
                                                         <span class="text-danger mt-1 d-block">
                                                             {{ session('error') }}
                                                         </span>
                                                         @endif
-
                                                     </div>
                                                 </div>
+
 
                                                 <div class="col-md-3">
                                                     <div class="mb-3">

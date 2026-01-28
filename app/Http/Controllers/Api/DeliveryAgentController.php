@@ -916,6 +916,7 @@ class DeliveryAgentController extends Controller
             ], 403);
         }
 
+        // Assuming avg delivery = 30 minutes
         $totalDutyTime = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
             ->count() * 30;
@@ -928,13 +929,8 @@ class DeliveryAgentController extends Controller
         return response()->json([
             'status' => true,
             'data' => [
-                'delivery_agent_id' => $user->id,
-                'name'              => $user->first_name . ' ' . $user->last_name,
-                // 'imageUrl'          => $user->profile_photo
-                //     ? asset('storage/' . $user->profile_photo)
-                //     : null,
-                'totalDutyTime'     => $totalDutyTime,
-                'todayDutyTime'     => $todayDutyTime
+                'totalDutyTime' => $totalDutyTime,   // minutes
+                'todayDutyTime' => $todayDutyTime    // minutes
             ]
         ]);
     }
@@ -950,44 +946,42 @@ class DeliveryAgentController extends Controller
             ], 403);
         }
 
-        $range = $request->range ?? 'daily';
+        $range = $request->get('range', 'daily');
 
         $query = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
             ->whereNotNull('delivered_at');
 
-        if ($request->fromDate && $request->toDate) {
+        if ($request->filled(['fromDate', 'toDate'])) {
             $query->whereBetween('delivered_at', [
                 $request->fromDate,
                 $request->toDate
             ]);
         }
 
-        if ($range === 'daily') {
-            $data = $query
-                ->select(
-                    DB::raw('DATE(delivered_at) as date'),
-                    DB::raw('COUNT(*) as totalOrders')
-                )
-                ->groupBy(DB::raw('DATE(delivered_at)'))
+        if ($range === 'weekly') {
+            $data = $query->select(
+                DB::raw('YEARWEEK(delivered_at, 1) as date'),
+                DB::raw('COUNT(*) as totalOrders')
+            )
+                ->groupBy('date')
                 ->orderBy('date')
                 ->get();
-        } elseif ($range === 'weekly') {
-            $data = $query
-                ->select(
-                    DB::raw('YEARWEEK(delivered_at) as date'),
-                    DB::raw('COUNT(*) as totalOrders')
-                )
-                ->groupBy(DB::raw('YEARWEEK(delivered_at)'))
+        } elseif ($range === 'monthly') {
+            $data = $query->select(
+                DB::raw('DATE_FORMAT(delivered_at, "%Y-%m") as date'),
+                DB::raw('COUNT(*) as totalOrders')
+            )
+                ->groupBy('date')
                 ->orderBy('date')
                 ->get();
         } else {
-            $data = $query
-                ->select(
-                    DB::raw('DATE_FORMAT(delivered_at, "%Y-%m") as date'),
-                    DB::raw('COUNT(*) as totalOrders')
-                )
-                ->groupBy(DB::raw('DATE_FORMAT(delivered_at, "%Y-%m")'))
+            // daily
+            $data = $query->select(
+                DB::raw('DATE(delivered_at) as date'),
+                DB::raw('COUNT(*) as totalOrders')
+            )
+                ->groupBy('date')
                 ->orderBy('date')
                 ->get();
         }
@@ -996,16 +990,16 @@ class DeliveryAgentController extends Controller
             return [
                 'date'        => $row->date,
                 'totalOrders' => (int) $row->totalOrders,
-                'totalHours'  => round($row->totalOrders * 0.5, 2)
+                'totalHours'  => round($row->totalOrders * 0.5, 2) // 30 min per order
             ];
         });
 
         return response()->json([
             'status' => true,
-            'delivery_agent_id' => $user->id,
-            'data' => $graph
+            'data'   => $graph
         ]);
     }
+
     public function startDuty(Request $request)
     {
         $agent = $request->user();
