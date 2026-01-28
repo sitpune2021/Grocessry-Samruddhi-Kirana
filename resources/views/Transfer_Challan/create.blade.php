@@ -53,8 +53,8 @@
                                                 value="{{ $transferChallan->challan_no ?? old('challan_no') }}"
                                                 {{ $readonly ? 'readonly' : '' }}>
                                             @error('challan_no')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
-                                            @enderror
+    <div class="text-danger mt-1">{{ $message }}</div>
+@enderror
                                         </div> -->
 
                                         {{-- Transfer Date --}}
@@ -115,6 +115,8 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width:50%">Product</th>
+                                                <th style="width:50%">Batch</th>
+
                                                 <th style="width:30%">Quantity</th>
                                                 @if ($mode !== 'view')
                                                     <th style="width:20%">Action</th>
@@ -124,29 +126,29 @@
 
                                         <tbody id="itemsTable">
 
-                                            @if(!empty($transferItems) && count($transferItems))
+                                            @if (!empty($transferItems) && count($transferItems))
                                                 @foreach ($transferItems as $item)
                                                     <tr data-transfer-id="{{ $item->id }}">
                                                         <td>
-                                                            <input type="hidden" name="products[]" value="{{ $item->product_id }}">
-                                                            <input type="text" class="form-control" 
+                                                            <input type="hidden" name="products[]"
+                                                                value="{{ $item->product_id }}">
+                                                            <input type="text" class="form-control"
                                                                 value="{{ $item->product->name }}" readonly>
                                                         </td>
 
                                                         <td>
-                                                            <input type="number" name="quantities[]" 
-                                                                class="form-control"
-                                                                value="{{ $item->quantity }}"
-                                                                min="1"
-                                                                max="{{ $item->quantity }}">
+                                                            <input type="number" name="quantities[]"
+                                                                class="form-control" value="{{ $item->quantity }}"
+                                                                min="1" max="{{ $item->quantity }}">
                                                         </td>
 
                                                         <td>
-                                                            <button type="button" class="btn btn-sm btn-danger remove-row">
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-danger remove-row">
                                                                 Remove
                                                             </button>
                                                         </td>
-                                                  
+
                                                     </tr>
                                                 @endforeach
                                             @endif
@@ -156,10 +158,10 @@
                                     </table>
 
                                     <!-- @if ($mode !== 'view')
-                                        <button type="button" id="addRow" class="btn btn-outline-primary btn-sm">
+<button type="button" id="addRow" class="btn btn-outline-primary btn-sm">
                                             + Add Item
                                         </button>
-                                    @endif -->
+@endif -->
 
                                     {{-- Buttons --}}
                                     <div class="mt-4 d-flex justify-content-end gap-2">
@@ -216,65 +218,65 @@
     </script>
 
     <script>
-    document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
 
-    if (e.target.classList.contains('remove-row')) {
+            if (e.target.classList.contains('remove-row')) {
 
-        if (!confirm('Are you sure you want to remove this product?')) {
-            return;
-        }
+                if (!confirm('Are you sure you want to remove this product?')) {
+                    return;
+                }
 
-        let row = e.target.closest('tr');
-        let transferId = row.dataset.transferId;
+                let row = e.target.closest('tr');
+                let transferId = row.dataset.transferId;
 
-        fetch(`/warehouse-transfer/${transferId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
+                fetch(`/warehouse-transfer/${transferId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            row.remove(); // UI se bhi remove
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(err => {
+                        alert('Something went wrong');
+                        console.error(err);
+                    });
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                row.remove();   // UI se bhi remove
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(err => {
-            alert('Something went wrong');
-            console.error(err);
         });
-    }
-    });
     </script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
 
-        // Function to validate quantity
-        function validateQuantity(input) {
-            const maxQty = parseFloat(input.getAttribute('max')) || Infinity;
-            const val = parseFloat(input.value);
+            // Function to validate quantity
+            function validateQuantity(input) {
+                const maxQty = parseFloat(input.getAttribute('max')) || Infinity;
+                const val = parseFloat(input.value);
 
-            if (val > maxQty) {
-                alert(`You cannot enter more than ${maxQty}`);
-                input.value = maxQty;
+                if (val > maxQty) {
+                    alert(`You cannot enter more than ${maxQty}`);
+                    input.value = maxQty;
+                }
+
+                if (val < 1 || isNaN(val)) {
+                    input.value = 1;
+                }
             }
 
-            if (val < 1 || isNaN(val)) {
-                input.value = 1;
-            }
-        }
-
-        // Listen for input changes on all quantity fields (existing + new)
-        document.body.addEventListener('input', function(e) {
-            if (e.target.name && e.target.name.includes('quantities')) {
-                validateQuantity(e.target);
-            }
+            // Listen for input changes on all quantity fields (existing + new)
+            document.body.addEventListener('input', function(e) {
+                if (e.target.name && e.target.name.includes('quantities')) {
+                    validateQuantity(e.target);
+                }
+            });
         });
-    });
     </script>
 
 

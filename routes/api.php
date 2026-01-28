@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
+Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/categories',                    [CategoryProductController::class, 'getCategories']);
@@ -128,7 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
     Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
     Route::get('/partner/deliveries/summary', [DeliveryOrderController::class, 'deliverySummary']);
-  Route::get( '/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems'] );
+    Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
     // 🔹 PARTNER STATUS
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
     Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);
@@ -150,10 +151,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/partner/duty/start', [DeliveryAgentController::class, 'startDuty']);
     Route::post('/partner/duty/pause', [DeliveryAgentController::class, 'pauseDuty']);
     Route::post('/partner/duty/resume', [DeliveryAgentController::class, 'resumeDuty']);
-    Route::post('/partner/duty/stop',[DeliveryAgentController::class, 'stopDuty']);
-    Route::get('/partner/profile/summary',[DeliveryAgentController::class, 'partnerSummary']);
-
-
+    Route::post('/partner/duty/stop', [DeliveryAgentController::class, 'stopDuty']);
+    Route::get('/partner/profile/summary', [DeliveryAgentController::class, 'partnerSummary']);
 });
 
 // Route::middleware('auth:sanctum')->group(function () {

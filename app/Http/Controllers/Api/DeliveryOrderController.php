@@ -408,31 +408,71 @@ class DeliveryOrderController extends Controller
     {
         $deliveryBoy = $request->user();
 
+        $limit = $request->get('limit', 10);
+
         $query = Order::where('delivery_agent_id', $deliveryBoy->id);
 
+        // 🔍 Search (order id / customer name / phone)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%$search%")
+                    ->orWhere('customer_name', 'like', "%$search%")
+                    ->orWhere('customer_phone', 'like', "%$search%");
+            });
+        }
+
+        // 📌 Status filter
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('type')) {
-            $query->where('delivery_type', $request->type);
+        // 🚚 Delivery type filter
+        if ($request->filled('deliveryType')) {
+            $query->where('delivery_type', $request->deliveryType);
         }
 
-        if ($request->filled('dateFrom')) {
-            $query->whereDate('created_at', '>=', $request->dateFrom);
+        // 📅 Date range filter
+        if ($request->filled('fromDate')) {
+            $query->whereDate('created_at', '>=', $request->fromDate);
         }
 
-        if ($request->filled('dateTo')) {
-            $query->whereDate('created_at', '<=', $request->dateTo);
+        if ($request->filled('toDate')) {
+            $query->whereDate('created_at', '<=', $request->toDate);
         }
 
-        $deliveries = $query->latest()->paginate(10);
+        // 📦 Paginated deliveries
+        $deliveries = $query->latest()->paginate($limit);
+
+        // 📊 Summary counts
+        $summary = [
+            'total' => Order::where('delivery_agent_id', $deliveryBoy->id)->count(),
+            'completed' => Order::where('delivery_agent_id', $deliveryBoy->id)
+                ->where('status', 'completed')->count(),
+            'cancelled' => Order::where('delivery_agent_id', $deliveryBoy->id)
+                ->where('status', 'cancelled')->count(),
+        ];
+
+        // 🚴 In-progress deliveries
+        $inProgress = Order::where('delivery_agent_id', $deliveryBoy->id)
+            ->whereIn('status', ['assigned', 'picked_up'])
+            ->get();
+
+        // ⏭️ Up-next delivery
+        $upNext = Order::where('delivery_agent_id', $deliveryBoy->id)
+            ->where('status', 'assigned')
+            ->orderBy('created_at')
+            ->first();
 
         return response()->json([
             'status' => true,
-            'data' => $deliveries
+            'summary' => $summary,
+            'inProgress' => $inProgress,
+            'upNext' => $upNext,
+            'deliveries' => $deliveries
         ]);
     }
+
     public function search(Request $request)
     {
         $request->validate([
@@ -629,7 +669,7 @@ class DeliveryOrderController extends Controller
     {
         $user = $request->user();
 
-        // 🔐 Delivery agent only
+        // 🔐 Only delivery agent
         if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
                 'status' => false,
@@ -637,48 +677,67 @@ class DeliveryOrderController extends Controller
             ], 403);
         }
 
-        // Base query → completed deliveries
+        // ✅ Base query: completed deliveries
         $query = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
             ->whereNotNull('delivered_at');
 
         // 📅 Date range filter
-        if ($request->dateRange === 'today') {
-            $query->whereDate('delivered_at', today());
+        if ($request->filled('dateRange')) {
+
+            switch ($request->dateRange) {
+
+                case 'today':
+                    $query->whereDate('delivered_at', now()->toDateString());
+                    break;
+
+                case 'week':
+                    $query->whereBetween('delivered_at', [
+                        now()->startOfWeek(),
+                        now()->endOfWeek()
+                    ]);
+                    break;
+
+                case 'month':
+                    $query->whereMonth('delivered_at', now()->month)
+                        ->whereYear('delivered_at', now()->year);
+                    break;
+
+                case 'custom':
+                    $request->validate([
+                        'fromDate' => 'required|date',
+                        'toDate'   => 'required|date|after_or_equal:fromDate'
+                    ]);
+
+                    $query->whereBetween('delivered_at', [
+                        $request->fromDate,
+                        $request->toDate
+                    ]);
+                    break;
+            }
         }
 
-        if ($request->dateRange === 'week') {
-            $query->whereBetween('delivered_at', [
-                now()->startOfWeek(),
-                now()->endOfWeek()
-            ]);
-        }
+        // 📦 Fetch deliveries
+        $deliveries = $query->get();
 
-        if ($request->dateRange === 'month') {
-            $query->whereMonth('delivered_at', now()->month)
-                ->whereYear('delivered_at', now()->year);
-        }
+        $completedCount = $deliveries->count();
 
-        if ($request->dateRange === 'custom') {
-            $request->validate([
-                'fromDate' => 'required|date',
-                'toDate'   => 'required|date'
-            ]);
+        // ⏱️ Avg delivery time (minutes)
+        $avgDeliveryTimeMin = $deliveries->avg(function ($order) {
+            if ($order->picked_at && $order->delivered_at) {
+                return $order->picked_at->diffInMinutes($order->delivered_at);
+            }
+            return null;
+        }) ?? 0;
 
-            $query->whereBetween('delivered_at', [
-                $request->fromDate,
-                $request->toDate
-            ]);
-        }
+        // 🛣️ Total distance (if column exists)
+        $totalDistanceKm = $deliveries->sum('delivery_distance_km') ?? 0;
 
-        $completedCount = $query->count();
         return response()->json([
             'status' => true,
-            'data' => [
-                'completedCount'      => $completedCount,
-                'totalDistanceKm'     => 0,
-                'avgDeliveryTimeMin'  => 0
-            ]
+            'completedCount' => $completedCount,
+            'totalDistanceKm' => round($totalDistanceKm, 2),
+            'avgDeliveryTimeMin' => round($avgDeliveryTimeMin)
         ]);
     }
 }

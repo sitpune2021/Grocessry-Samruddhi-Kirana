@@ -82,6 +82,8 @@ Route::middleware(['auth:admin'])->group(function () {
             'destroy' => 'permission:product.delete',
         ]);
 
+    Route::view('/privacy-policy', 'privacy-policy')
+        ->name('privacy.policy');
 
     Route::prefix('pos')->middleware('auth')->group(function () {
 
