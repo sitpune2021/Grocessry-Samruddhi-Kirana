@@ -214,11 +214,10 @@ return [
             'title' => 'Reports',
             'icon'  => 'bx bx-bar-chart-alt-2',
             'children' => [
-                ['title' => 'Warehouse transfer Report', 'route' => 'warehouse-stock.report'],
+                ['title' => 'Stock Request Report', 'route' => 'warehouse-stock.report'],
                 ['title' => 'Stock Movement Report', 'route' => 'stock-movement.report'],
-                ['title' => ' Warehouse Stock Return Report', 'route' => 'stock-returns.report'],
+                ['title' => ' Stock Return Report', 'route' => 'stock-returns.report'],
                 ['title' => 'POS Report', 'route' => 'pos-report'],
-
                 ['title' => 'Low Stock Alert', 'route' => 'lowstock.index'],
                 // ['title' => 'Low Stock Analytics', 'route' => 'lowstock.analytics'],
                 ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
