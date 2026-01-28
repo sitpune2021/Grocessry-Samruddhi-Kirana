@@ -138,10 +138,22 @@
             <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
 
                 <div class="navbar-nav mx-auto">
-                    <a href="{{ route('home') }}" class="nav-item nav-link active">Home</a>
-                    <a href="{{ route('shop') }}" class="nav-item nav-link">Shop</a>
-                    <a href="{{ route('contact') }}" class="nav-item nav-link">Contact</a>
+                    <a href="{{ route('home') }}"
+                        class="nav-item nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                        Home
+                    </a>
+
+                    <a href="{{ route('shop') }}"
+                        class="nav-item nav-link {{ request()->routeIs('shop') ? 'active' : '' }}">
+                        Shop
+                    </a>
+
+                    <a href="{{ route('contact') }}"
+                        class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">
+                        Contact
+                    </a>
                 </div>
+
 
                 <div class="d-flex m-3 me-0">
 

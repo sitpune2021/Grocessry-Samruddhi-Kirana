@@ -58,7 +58,7 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        
+
                                     </div>
 
                                     <div class="col-md-4">
@@ -124,7 +124,7 @@
                                         </thead>
                                         <tbody id="itemsBody"></tbody>
                                     </table>
-
+                                    <br>
                                     @if ($mode !== 'view')
                                         <button type="submit" class="btn btn-success">
                                             Save Supplier Challan

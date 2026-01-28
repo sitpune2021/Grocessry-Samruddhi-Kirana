@@ -162,19 +162,34 @@
                                         <th>Product</th>
                                         <th class="text-center">Qty</th>
                                         <th class="text-end">Price</th>
+                                        <th class="text-end">Pement</th>
                                         <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($order->items as $item)
-                                    <tr>
+                                    <tr class="align-middle">
                                         <td>{{ $item->product->name ?? 'N/A' }}</td>
-                                        <td class="text-center">{{ $item->quantity }}</td>
-                                        <td class="text-end">₹{{ number_format($item->price, 2) }}</td>
+
+                                        <td class="text-center">
+                                            {{ $item->quantity }}
+                                        </td>
+
+                                        <td class="text-end">
+                                            ₹{{ number_format($item->price, 2) }}
+                                        </td>
+
+                                        <td class="text-center">
+                                            <span class="badge bg-success px-3 py-2 ">
+                                                {{ strtoupper($order->payment_method) }}
+                                            </span>
+                                        </td>
+
                                         <td class="text-end fw-semibold">
                                             ₹{{ number_format($item->total, 2) }}
                                         </td>
                                     </tr>
+
                                     @endforeach
                                 </tbody>
                             </table>

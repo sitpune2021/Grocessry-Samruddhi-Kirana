@@ -59,6 +59,7 @@
                             <th>Sr. No</th>
                             <th>Warehouse</th>
                             <th>Type</th>
+                            <th>Product</th>
                             <th>Quantity</th>
                             <th>Remaining Total Qty</th>
                             <th>Created Date</th>
@@ -77,7 +78,9 @@
                                 <td class="text-uppercase fw-bold">
                                     {{ $row['type'] }}
                                 </td>
-
+                                <td>
+                                    {{ $row['product_name'] }}
+                                </td>
                                 <td class="{{ $row['quantity'] < 0 ? 'text-danger' : 'text-success' }}">
                                     {{ $row['quantity'] }}
                                 </td>
@@ -85,6 +88,7 @@
                                 <td class="fw-bold">
                                     {{ (int) $row['remaining_qty'] }}
                                 </td>
+
 
                                 <td>
                                     {{ \Carbon\Carbon::parse($row['created_at'])->format('d-m-Y') }}

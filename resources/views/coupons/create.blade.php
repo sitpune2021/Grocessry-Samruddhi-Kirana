@@ -21,11 +21,11 @@
                             <!-- Header -->
                             <div class="card-header bg-white fw-semibold">
                                 @if ($mode === 'add')
-                                    <h4>Add Coupon</h4>
+                                <h4>Add Coupon</h4>
                                 @elseif ($mode === 'edit')
-                                    <h4>Edit Coupon</h4>
+                                <h4>Edit Coupon</h4>
                                 @else
-                                    <h4>View Coupon</h4>
+                                <h4>View Coupon</h4>
                                 @endif
                             </div>
 

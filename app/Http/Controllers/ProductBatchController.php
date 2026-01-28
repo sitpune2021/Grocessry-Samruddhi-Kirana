@@ -21,7 +21,6 @@ class ProductBatchController extends Controller
 {
 
 
-
     public function index()
     {
         $user = Auth::user();
@@ -39,16 +38,17 @@ class ProductBatchController extends Controller
     public function create()
     {
         $user = Auth::user();
-
         $isSuperAdmin = $user->role_id == 1;
 
         $units = Unit::select('id', 'name')->get();
 
+        // Warehouses list
         $warehouses = $isSuperAdmin
-            ? Warehouse::select('id', 'name')->orderBy('name')->get()
+           // ? Warehouse::select('id', 'name')->orderBy('name')->get()
+           ? Warehouse::whereNull('parent_id')->get()
             : Warehouse::where('id', $user->warehouse_id)->get();
 
-
+        // Categories based on logged-in user's warehouse
         $categories = WarehouseStock::query()
             ->join('categories', 'categories.id', '=', 'warehouse_stock.category_id')
             ->where('warehouse_stock.warehouse_id', $user->warehouse_id)
@@ -61,12 +61,13 @@ class ProductBatchController extends Controller
             'mode'       => 'add',
             'batch'      => null,
             'warehouses' => $warehouses,
-            'categories' =>  $categories,
-
+            'categories' => $categories,
             'products'   => collect(),
-            'units' => $units
+            'units'      => $units,
+            'user'       => $user, // 🔥 pass user
         ]);
     }
+
 
     public function getProductsByCategory($category_id)
     {
@@ -181,6 +182,7 @@ class ProductBatchController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -322,7 +324,6 @@ class ProductBatchController extends Controller
         return view('batches.expiry', compact('batches'));
     }
 
-
     public function getCategoriesByWarehouse($warehouseId)
     {
         return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
@@ -336,7 +337,6 @@ class ProductBatchController extends Controller
             ->distinct()
             ->get();
     }
-
 
     public function getProductsByWarehouseCategory($warehouseId, $categoryId)
     {
@@ -390,4 +390,6 @@ class ProductBatchController extends Controller
             'quantity' => (int) $qty
         ]);
     }
+
+
 }

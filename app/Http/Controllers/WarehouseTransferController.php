@@ -51,30 +51,70 @@ class WarehouseTransferController extends Controller
         return view('warehouse.index', compact('transfers'));
     }
 
+    // public function create()
+    // {
+    //     $user = auth()->user();
+
+    //     // 🔹 Logged-in user's warehouse (Taluka OR District)
+    //     $toWarehouse = Warehouse::where('status', 'active')
+    //         ->where('id', $user->warehouse_id)
+    //         ->firstOrFail();
+
+    //     // 🔹 Parent warehouse (District OR Master)
+    //     $fromWarehouse = Warehouse::where('status', 'active')
+    //         ->where('id', $toWarehouse->parent_id)
+    //         ->firstOrFail();
+
+    //     return view('warehouse.transfer', [
+    //         'toWarehouse'          => $toWarehouse,          // Auto selected (disabled)
+    //         'fromWarehouses'      => collect([$fromWarehouse]), // Only parent
+    //         'defaultFromWarehouse'=> $fromWarehouse,
+    //         'products'            => collect(),              // ❌ No default products
+    //         'batches'             => collect(),
+    //         'transfer'            => null,
+    //     ]);
+    // }
+ 
+    
     public function create()
     {
         $user = auth()->user();
 
-        // 🔹 Logged-in user's warehouse (Taluka OR District)
+        // Logged-in warehouse (Taluka / District)
         $toWarehouse = Warehouse::where('status', 'active')
             ->where('id', $user->warehouse_id)
             ->firstOrFail();
 
-        // 🔹 Parent warehouse (District OR Master)
-        $fromWarehouse = Warehouse::where('status', 'active')
-            ->where('id', $toWarehouse->parent_id)
-            ->firstOrFail();
+        $parentId = $toWarehouse->parent_id;
+
+        // 1️⃣ Same parent ke saare warehouses (Taluka siblings)
+        $siblingWarehouses = Warehouse::where('status', 'active')
+            ->where('parent_id', $parentId)
+            ->where('id', '!=', $toWarehouse->id) // khud ko hatao
+            ->get();
+
+        // 2️⃣ Parent warehouse (District)
+        $parentWarehouse = Warehouse::where('status', 'active')
+            ->where('id', $parentId)
+            ->first();
+
+        // 3️⃣ Merge parent + siblings
+        $fromWarehouses = $siblingWarehouses;
+
+        if ($parentWarehouse) {
+            $fromWarehouses->push($parentWarehouse);
+        }
 
         return view('warehouse.transfer', [
-            'toWarehouse'          => $toWarehouse,          // Auto selected (disabled)
-            'fromWarehouses'      => collect([$fromWarehouse]), // Only parent
-            'defaultFromWarehouse'=> $fromWarehouse,
-            'products'            => collect(),              // ❌ No default products
-            'batches'             => collect(),
-            'transfer'            => null,
+            'toWarehouse'           => $toWarehouse,
+            'fromWarehouses'       => $fromWarehouses,
+            'defaultFromWarehouse' => null,
+            'products'             => collect(),
+            'batches'              => collect(),
+            'transfer'             => null,
         ]);
     }
- 
+
     public function getProductsByCategory($category_id)
     {
         return Product::where('category_id', $category_id)->get();

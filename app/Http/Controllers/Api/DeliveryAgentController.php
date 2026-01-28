@@ -909,6 +909,7 @@ class DeliveryAgentController extends Controller
     {
         $user = $request->user();
 
+        // 🔐 Delivery agent only
         if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
                 'status' => false,
@@ -916,29 +917,32 @@ class DeliveryAgentController extends Controller
             ], 403);
         }
 
-        // Assuming avg delivery = 30 minutes
-        $totalDutyTime = Order::where('delivery_agent_id', $user->id)
+        // ⏱️ 30 minutes per order
+        $totalOrders = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
-            ->count() * 30;
+            ->whereNotNull('delivered_at')
+            ->count();
 
-        $todayDutyTime = Order::where('delivery_agent_id', $user->id)
+        $todayOrders = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
             ->whereDate('delivered_at', today())
-            ->count() * 30;
+            ->count();
 
         return response()->json([
             'status' => true,
             'data' => [
-                'totalDutyTime' => $totalDutyTime,   // minutes
-                'todayDutyTime' => $todayDutyTime    // minutes
+                'totalDutyTime' => round(($totalOrders * 30) / 60, 2), // hours
+                'todayDutyTime' => round(($todayOrders * 30) / 60, 2)  // hours
             ]
         ]);
     }
+
 
     public function performanceGraph(Request $request)
     {
         $user = $request->user();
 
+        // 🔐 Delivery agent only
         if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
             return response()->json([
                 'status' => false,
@@ -948,49 +952,54 @@ class DeliveryAgentController extends Controller
 
         $range = $request->get('range', 'daily');
 
+        if (!in_array($range, ['daily', 'weekly', 'monthly'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid range'
+            ], 422);
+        }
+
         $query = Order::where('delivery_agent_id', $user->id)
             ->where('status', 'delivered')
             ->whereNotNull('delivered_at');
 
+        // 📅 Date filter
         if ($request->filled(['fromDate', 'toDate'])) {
             $query->whereBetween('delivered_at', [
-                $request->fromDate,
-                $request->toDate
+                Carbon::parse($request->fromDate)->startOfDay(),
+                Carbon::parse($request->toDate)->endOfDay()
             ]);
         }
 
+        // 📊 Grouping logic
         if ($range === 'weekly') {
-            $data = $query->select(
+            $query->select(
                 DB::raw('YEARWEEK(delivered_at, 1) as date'),
                 DB::raw('COUNT(*) as totalOrders')
-            )
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+            )->groupBy('date')->orderBy('date');
         } elseif ($range === 'monthly') {
-            $data = $query->select(
+            $query->select(
                 DB::raw('DATE_FORMAT(delivered_at, "%Y-%m") as date'),
                 DB::raw('COUNT(*) as totalOrders')
-            )
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+            )->groupBy('date')->orderBy('date');
         } else {
             // daily
-            $data = $query->select(
+            $query->select(
                 DB::raw('DATE(delivered_at) as date'),
                 DB::raw('COUNT(*) as totalOrders')
-            )
-                ->groupBy('date')
-                ->orderBy('date')
-                ->get();
+            )->groupBy('date')->orderBy('date');
         }
 
+        $data = $query->get();
+
+        // ⏱️ Assume 30 min per order
         $graph = $data->map(function ($row) {
+            $minutes = $row->totalOrders * 30;
+
             return [
                 'date'        => $row->date,
                 'totalOrders' => (int) $row->totalOrders,
-                'totalHours'  => round($row->totalOrders * 0.5, 2) // 30 min per order
+                'totalHours'  => round($minutes / 60, 2)
             ];
         });
 

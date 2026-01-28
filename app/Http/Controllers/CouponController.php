@@ -18,7 +18,6 @@ class CouponController extends Controller
     }
     public function create()
     {
-
         $products = Product::all();
         $categories = Category::all();
         return view('coupons.create', compact('products', 'categories',))->with('mode', 'add');

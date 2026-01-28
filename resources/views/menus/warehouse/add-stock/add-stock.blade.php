@@ -26,11 +26,11 @@
                                     <div class="card-header bg-white fw-semibold">
                                         <i class="bx bx-box me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Warehouse Stock
+                                        Add Warehouse Stock
                                         @elseif($mode === 'edit')
-                                            Edit Stock
+                                        Edit Stock
                                         @else
-                                            View Stock
+                                        View Stock
                                         @endif
                                     </div>
 
@@ -41,7 +41,7 @@
                                             enctype="multipart/form-data" method="POST">
                                             @csrf
                                             @if ($mode === 'edit')
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row">
@@ -58,26 +58,26 @@
                                                             <option value="">-- Select Challan --</option>
 
                                                             @foreach ($challans as $challan)
-                                                                <option value="{{ $challan->id }}"
-                                                                    {{ isset($selectedChallan) && $selectedChallan->id == $challan->id ? 'selected' : '' }}>
-                                                                    {{ $challan->challan_no }}
-                                                                </option>
+                                                            <option value="{{ $challan->id }}"
+                                                                {{ isset($selectedChallan) && $selectedChallan->id == $challan->id ? 'selected' : '' }}>
+                                                                {{ $challan->challan_no }}
+                                                            </option>
                                                             @endforeach
                                                         </select>
 
                                                         {{-- Hidden field (because disabled select does not submit) --}}
                                                         @if ($mode === 'view' || $mode === 'edit')
-                                                            <input type="hidden" name="supplier_challan_id"
-                                                                value="{{ $selectedChallan->id ?? '' }}">
+                                                        <input type="hidden" name="supplier_challan_id"
+                                                            value="{{ $selectedChallan->id ?? '' }}">
                                                         @else
                                                             <input type="hidden" name="supplier_challan_id"
                                                                 id="supplier_challan_hidden">
                                                         @endif
 
                                                         @if (session('error'))
-                                                            <span class="text-danger mt-1 d-block">
-                                                                {{ session('error') }}
-                                                            </span>
+                                                        <span class="text-danger mt-1 d-block">
+                                                            {{ session('error') }}
+                                                        </span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -90,14 +90,14 @@
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                                             <option value="">Select Supplier</option>
                                                             @foreach ($suppliers as $supplier)
-                                                                <option value="{{ $supplier->id }}"
-                                                                    {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
-                                                                    {{ $supplier->supplier_name }}
-                                                                </option>
+                                                            <option value="{{ $supplier->id }}"
+                                                                {{ old('supplier_id', $warehouse_stock->supplier_id ?? '') == $supplier->id ? 'selected' : '' }}>
+                                                                {{ $supplier->supplier_name }}
+                                                            </option>
                                                             @endforeach
                                                         </select>
                                                         @error('supplier_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
+                                                        <span class="text-danger mt-1">{{ $message }}</span>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -111,48 +111,48 @@
                                                         {{-- SUPER ADMIN → DROPDOWN --}}
                                                         @if (Auth::user()->role_id == 1)
 
-                                                            <select name="warehouse_id" class="form-control"
-                                                                {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <select name="warehouse_id" class="form-control"
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
 
-                                                                <option value="">-- Select Warehouse --</option>
+                                                            <option value="">-- Select Warehouse --</option>
 
-                                                                @foreach ($warehouses as $w)
-                                                                    <option value="{{ $w->id }}"
-                                                                        {{ old('warehouse_id', $warehouse_stock->warehouse_id ?? ($userWarehouse->id ?? '')) == $w->id
+                                                            @foreach ($warehouses as $w)
+                                                            <option value="{{ $w->id }}"
+                                                                {{ old('warehouse_id', $warehouse_stock->warehouse_id ?? ($userWarehouse->id ?? '')) == $w->id
                                                                             ? 'selected'
                                                                             : '' }}>
-                                                                        {{ $w->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
+                                                                {{ $w->name }}
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
 
-                                                            {{-- disabled select won't submit --}}
-                                                            @if ($mode === 'view')
-                                                                <input type="hidden" name="warehouse_id"
-                                                                    value="{{ $warehouse_stock->warehouse_id }}">
-                                                            @endif
+                                                        {{-- disabled select won't submit --}}
+                                                        @if ($mode === 'view')
+                                                        <input type="hidden" name="warehouse_id"
+                                                            value="{{ $warehouse_stock->warehouse_id }}">
+                                                        @endif
 
-                                                            {{-- OTHER USERS → KEEP CURRENT LOGIC --}}
+                                                        {{-- OTHER USERS → KEEP CURRENT LOGIC --}}
                                                         @else
-                                                            @if ($mode === 'add')
-                                                                <input type="text" class="form-control"
-                                                                    value="{{ $userWarehouse->name ?? 'N/A' }}"
-                                                                    readonly>
+                                                        @if ($mode === 'add')
+                                                        <input type="text" class="form-control"
+                                                            value="{{ $userWarehouse->name ?? 'N/A' }}"
+                                                            readonly>
 
-                                                                <input type="hidden" name="warehouse_id"
-                                                                    value="{{ $userWarehouse->id }}">
-                                                            @endif
+                                                        <input type="hidden" name="warehouse_id"
+                                                            value="{{ $userWarehouse->id }}">
+                                                        @endif
 
-                                                            @if ($mode === 'view' || $mode === 'edit')
-                                                                <input type="text"
-                                                                    {{ $mode === 'view' ? 'readonly' : '' }}
-                                                                    class="form-control"
-                                                                    value="{{ $stockWarehouse->name ?? 'N/A' }}"
-                                                                    readonly>
+                                                        @if ($mode === 'view' || $mode === 'edit')
+                                                        <input type="text"
+                                                            {{ $mode === 'view' ? 'readonly' : '' }}
+                                                            class="form-control"
+                                                            value="{{ $stockWarehouse->name ?? 'N/A' }}"
+                                                            readonly>
 
-                                                                <input type="hidden" name="warehouse_id"
-                                                                    value="{{ old('warehouse_id', $warehouse_stock->warehouse_id) }}">
-                                                            @endif
+                                                        <input type="hidden" name="warehouse_id"
+                                                            value="{{ old('warehouse_id', $warehouse_stock->warehouse_id) }}">
+                                                        @endif
 
                                                         @endif
                                                     </div>
@@ -166,24 +166,24 @@
                                                         <select name="category_id" id="category_id" class="form-select "
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
-                                                            <option value="">Select Category</option>
+                                                <option value="">Select Category</option>
 
-                                                            @foreach ($categories as $category)
-                                                                <option value="{{ $category->id }}"
-                                                                    {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                                    {{ $category->name }}
-                                                                </option>
-                                                            @endforeach
+                                                @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}"
+                                                    {{ old('category_id', $warehouse_stock->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
+                                                </option>
+                                                @endforeach
 
-                                                        </select>
+                                                </select>
 
-                                                        @error('category_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div> --}}
+                                                @error('category_id')
+                                                <span class="text-danger mt-1">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                    </div> --}}
 
-                                                {{-- <div class="col-md-4">
+                                    {{-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label class="form-label">Sub Category <span
                                                                 class="text-danger">*</span></label>
@@ -194,20 +194,20 @@
                                                             @if (isset($sub_categories))
                                                                 @foreach ($sub_categories as $sub)
                                                                     <option value="{{ $sub->id }}"
-                                                                        {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
-                                                                        {{ $sub->name }}
-                                                                    </option>
-                                                                @endforeach
-                                                            @endif
-                                                        </select>
+                                    {{ old('sub_category_id', $warehouse_stock->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                    {{ $sub->name }}
+                                    </option>
+                                    @endforeach
+                                    @endif
+                                    </select>
 
-                                                        @error('sub_category_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div> --}}
+                                    @error('sub_category_id')
+                                    <span class="text-danger mt-1">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div> --}}
 
-                                                {{-- <div class="col-md-4">
+                            {{-- <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <label for="product_id">Product <span
                                                                 class="text-danger">*</span></label>
@@ -215,136 +215,136 @@
                                                         <select name="product_id" id="product_id" class="form-select"
                                                             {{ $mode === 'view' ? 'disabled' : '' }}>
 
-                                                            <option value="">-- Select Product --</option>
+                            <option value="">-- Select Product --</option>
 
-                                                            @foreach ($products as $product)
-                                                                <option value="{{ $product->id }}"
-                                                                    {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
-                                                                    {{ $product->name }}
-                                                                </option>
-                                                            @endforeach
+                            @foreach ($products as $product)
+                            <option value="{{ $product->id }}"
+                                {{ old('product_id', $warehouse_stock->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                {{ $product->name }}
+                            </option>
+                            @endforeach
 
-                                                        </select>
-
-
-                                                        @error('product_id')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div> --}}
+                            </select>
 
 
-                                                {{-- qty --}}
-                                                {{-- <div class="col-md-3">
+                            @error('product_id')
+                            <span class="text-danger mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div> --}}
+
+
+                    {{-- qty --}}
+                    {{-- <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">Quantity <span
                                                                 class="text-danger">*</span></label>
                                                         <input type="number" step="0.01" name="quantity"
                                                             class="form-control"
                                                             value="{{ old('quantity', $warehouse_stock->quantity ?? '') }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}
-                                                            placeholder="Quantity">
-                                                        @error('quantity')
-                                                            <span class="text-danger mt-1">{{ $message }}</span>
-                                                        @enderror
-                                                    </div>
-                                                </div> --}}
+                    {{ $mode === 'view' ? 'readonly' : '' }}
+                    placeholder="Quantity">
+                    @error('quantity')
+                    <span class="text-danger mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div> --}}
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Bill No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="bill_no" class="form-control"
-                                                        value="{{ old('bill_no', $warehouse_stock->bill_no ?? '') }}"
-                                                        placeholder="Enter bill number"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('bill_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Batch No <span class="text-danger">*</span>
-                                                    </label>
-                                                    <input type="text" name="batch_no" class="form-control"
-                                                        value="{{ old('batch_no', $warehouse_stock->batch_no ?? '') }}"
-                                                        placeholder="Enter batch number"
-                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
-                                                    @error('batch_no')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                {{-- Supplier Challan Products Table --}}
-                                                <div class="col-12 mt-4">
-                                                    <div class="card border">
-                                                        <div class="card-header bg-light fw-semibold">
-                                                            Supplier Challan Products
-                                                        </div>
-
-                                                        <div class="card-body p-0">
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered mb-0"
-                                                                    id="challanProductsTable">
-                                                                    <thead class="table-light">
-                                                                        <tr>
-                                                                            <th>Sr No</th>
-                                                                            <th>Category</th>
-                                                                            <th>Sub Category</th>
-                                                                            <th>Product</th>
-                                                                            <th>Quantity</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td colspan="5"
-                                                                                class="text-center text-muted">
-                                                                                Select Supplier Challan to view products
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">
+                    Bill No <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="bill_no" class="form-control"
+                    value="{{ old('bill_no', $warehouse_stock->bill_no ?? '') }}"
+                    placeholder="Enter bill number"
+                    {{ $mode === 'view' ? 'readonly' : '' }}>
+                @error('bill_no')
+                <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
+            </div>
 
 
-                                                <!-- Buttons (Right Aligned) -->
-                                                <div class="mt-4 d-flex justify-content-end gap-2">
-                                                    <a href="{{ route('index.addStock.warehouse') }}"
-                                                        class="btn btn-success">
-                                                        <i class="bx bx-arrow-back"></i> Back
-                                                    </a>
-                                                    @if ($mode === 'add')
-                                                        <button type="submit" class="btn btn-success">
-                                                            Save Stock
-                                                        </button>
-                                                    @elseif($mode === 'edit')
-                                                        <button type="submit" class="btn btn-success">
-                                                            Update Stock
-                                                        </button>
-                                                    @endif
-                                                </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">
+                    Batch No <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="batch_no" class="form-control"
+                    value="{{ old('batch_no', $warehouse_stock->batch_no ?? '') }}"
+                    placeholder="Enter batch number"
+                    {{ $mode === 'view' ? 'readonly' : '' }}>
+                @error('batch_no')
+                <div class="text-danger mt-1">{{ $message }}</div>
+                @enderror
+            </div>
 
-                                            </div>
-
-                                        </form>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
+            {{-- Supplier Challan Products Table --}}
+            <div class="col-12 mt-4">
+                <div class="card border">
+                    <div class="card-header bg-light fw-semibold">
+                        Supplier Challan Products
                     </div>
 
-                    <!-- / Content -->
-                    @include('layouts.footer')
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0"
+                                id="challanProductsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sr No</th>
+                                        <th>Category</th>
+                                        <th>Sub Category</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5"
+                                            class="text-center text-muted">
+                                            Select Supplier Challan to view products
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+
+            <!-- Buttons (Right Aligned) -->
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <a href="{{ route('index.addStock.warehouse') }}"
+                    class="btn btn-success">
+                    <i class="bx bx-arrow-back"></i> Back
+                </a>
+                @if ($mode === 'add')
+                <button type="submit" class="btn btn-success">
+                    Save Stock
+                </button>
+                @elseif($mode === 'edit')
+                <button type="submit" class="btn btn-success">
+                    Update Stock
+                </button>
+                @endif
+            </div>
+
         </div>
+
+        </form>
+    </div>
+
+    </div>
+
+    </div>
+    </div>
+    </div>
+
+    <!-- / Content -->
+    @include('layouts.footer')
+    </div>
+    </div>
+    </div>
 
     </div>
 </body>
