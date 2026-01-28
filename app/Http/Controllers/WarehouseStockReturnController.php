@@ -68,10 +68,6 @@ class WarehouseStockReturnController extends Controller
         );
     }
 
-
-
-
-
     // Raise stock return request
     public function create()
     {
@@ -281,7 +277,7 @@ class WarehouseStockReturnController extends Controller
                 StockMovement::create([
                     'warehouse_id'      => $return->from_warehouse_id,
                     'product_batch_id'  => $batch->id,
-                    'quantity'          => $item->return_qty,
+                    'quantity'          => -$item->return_qty,
                     'type'              => 'return',
                     'reference_id'      => $return->id,
                     'created_by'        => $user->id,
@@ -294,85 +290,6 @@ class WarehouseStockReturnController extends Controller
 
         return back()->with('success', 'Stock dispatched successfully');
     }
-
-    public function receiveAtMaster($id)
-{
-    DB::transaction(function () use ($id) {
-
-        $return = WarehouseStockReturn::with('WarehouseStockReturnItem')->findOrFail($id);
-        $user = auth()->user();
-
-        if (
-            $return->status !== 'dispatched' ||
-            $user->warehouse->type !== 'master' ||
-            $user->warehouse_id !== $return->to_warehouse_id
-        ) {
-            abort(403);
-        }
-
-        foreach ($return->WarehouseStockReturnItem as $item) {
-
-            $receivedQty = $item->return_qty;
-            $damagedQty  = 0;
-
-            /**  Update return item */
-            $item->update([
-                'received_qty' => $receivedQty,
-                'damaged_qty'  => $damagedQty,
-            ]);
-
-            /**  FIND EXISTING PRODUCT BATCH (MANDATORY) */
-            $batch = ProductBatch::where('warehouse_id', $return->to_warehouse_id)
-                ->where('product_id', $item->product_id)
-                ->where('batch_no', $item->batch_no)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$batch) {
-                throw new \Exception(
-                    "Batch not found at master warehouse for Product ID {$item->product_id}, Batch {$item->batch_no}"
-                );
-            }
-
-            /**  UPDATE BATCH QUANTITY */
-            $batch->increment('quantity', $receivedQty);
-
-            /**  UPDATE WAREHOUSE STOCK */
-            $warehouseStock = WarehouseStock::where('warehouse_id', $return->to_warehouse_id)
-                ->where('product_id', $item->product_id)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$warehouseStock) {
-                throw new \Exception(
-                    "Warehouse stock not found for Product ID {$item->product_id}"
-                );
-            }
-
-            $warehouseStock->increment('quantity', $receivedQty);
-
-            /** STOCK MOVEMENT */
-            StockMovement::create([
-                'warehouse_id'     => $return->to_warehouse_id,
-                'product_batch_id' => $batch->id,
-                'quantity'         => $receivedQty,
-                'type'             => 'return',
-                'reference_id'     => $return->id,
-                'created_by'       => $user->id,
-            ]);
-        }
-
-        /**  FINAL RETURN STATUS */
-        $return->update([
-            'status'      => 'received',
-            'received_by' => $user->id,
-            'received_at' => now(),
-        ]);
-    });
-
-    return back()->with('success', 'Stock received at Master successfully');
-}
-
 
 //     public function receiveAtMaster($id)
 // {
@@ -400,60 +317,35 @@ class WarehouseStockReturnController extends Controller
 //                 'damaged_qty'  => $damagedQty,
 //             ]);
 
-//             /** Fetch product master data (IMPORTANT) */
-//             $product = Product::select(
-//                     'id',
-//                     'category_id',
-//                     'sub_category_id',
-//                     'unit_id'
-//                 )
-//                 ->findOrFail($item->product_id);
-
-//             /**  PRODUCT BATCH (IN) */
+//             /**  FIND EXISTING PRODUCT BATCH (MANDATORY) */
 //             $batch = ProductBatch::where('warehouse_id', $return->to_warehouse_id)
 //                 ->where('product_id', $item->product_id)
 //                 ->where('batch_no', $item->batch_no)
 //                 ->lockForUpdate()
 //                 ->first();
 
-//             if ($batch) {
-
-//                 $batch->increment('quantity', $receivedQty);
-
-//             } else {
-
-//                 $batch = ProductBatch::create([
-//                     'warehouse_id'    => $return->to_warehouse_id,
-//                     'product_id'      => $product->id,
-//                     'category_id'     => $product->category_id,
-//                     'sub_category_id' => $product->sub_category_id,
-//                     'unit_id'         => $product->unit_id,
-//                     'batch_no'        => $item->batch_no,
-//                     'mfg_date'        => $item->mfg_date ?? null,
-//                     'expiry_date'     => $item->expiry_date ?? null,
-//                     'quantity'        => $receivedQty,
-//                     'created_by'      => $user->id,
-//                 ]);
+//             if (!$batch) {
+//                 throw new \Exception(
+//                     "Batch not found at master warehouse for Product ID {$item->product_id}, Batch {$item->batch_no}"
+//                 );
 //             }
 
-//             /** WAREHOUSE STOCK (IN) */
+//             /**  UPDATE BATCH QUANTITY */
+//             $batch->increment('quantity', $receivedQty);
+
+//             /**  UPDATE WAREHOUSE STOCK */
 //             $warehouseStock = WarehouseStock::where('warehouse_id', $return->to_warehouse_id)
 //                 ->where('product_id', $item->product_id)
 //                 ->lockForUpdate()
 //                 ->first();
 
-//             if ($warehouseStock) {
-
-//                 $warehouseStock->increment('quantity', $receivedQty);
-
-//             } else {
-
-//                 WarehouseStock::create([
-//                     'warehouse_id' => $return->to_warehouse_id,
-//                     'product_id'   => $item->product_id,
-//                     'quantity'     => $receivedQty,
-//                 ]);
+//             if (!$warehouseStock) {
+//                 throw new \Exception(
+//                     "Warehouse stock not found for Product ID {$item->product_id}"
+//                 );
 //             }
+
+//             $warehouseStock->increment('quantity', $receivedQty);
 
 //             /** STOCK MOVEMENT */
 //             StockMovement::create([
@@ -466,7 +358,7 @@ class WarehouseStockReturnController extends Controller
 //             ]);
 //         }
 
-//         /** FINAL STATUS */
+//         /**  FINAL RETURN STATUS */
 //         $return->update([
 //             'status'      => 'received',
 //             'received_by' => $user->id,
@@ -477,53 +369,52 @@ class WarehouseStockReturnController extends Controller
 //     return back()->with('success', 'Stock received at Master successfully');
 // }
 
+    public function receiveAtMaster($id)
+    {
+        DB::transaction(function () use ($id) {
 
-    // public function receiveAtMaster($id)
-    // {
-    //     DB::transaction(function () use ($id) {
+            $return = WarehouseStockReturn::with('WarehouseStockReturnItem')->findOrFail($id);
+            $user = auth()->user();
 
-    //         $return = WarehouseStockReturn::with('WarehouseStockReturnItem')->findOrFail($id);
-    //         $user = auth()->user();
+            if (
+                $return->status !== 'dispatched' ||
+                $user->warehouse->type !== 'master' ||
+                $user->warehouse_id !== $return->to_warehouse_id
+            ) {
+                abort(403);
+            }
 
-    //         if (
-    //             $return->status !== 'dispatched' ||
-    //             $user->warehouse->type !== 'master' ||
-    //             $user->warehouse_id !== $return->to_warehouse_id
-    //         ) {
-    //             abort(403);
-    //         }
+            foreach ($return->WarehouseStockReturnItem as $item) {
 
-    //         foreach ($return->WarehouseStockReturnItem as $item) {
+                // ✅ If no damage handling UI yet, assume full quantity received
+                $receivedQty = $item->return_qty;
+                $damagedQty  = 0;
 
-    //             // ✅ If no damage handling UI yet, assume full quantity received
-    //             $receivedQty = $item->return_qty;
-    //             $damagedQty  = 0;
+                // 1️⃣ UPDATE RETURN ITEM
+                $item->update([
+                    'received_qty' => $receivedQty,
+                    'damaged_qty'  => $damagedQty,
+                ]);
+                StockMovement::create([
+                    'warehouse_id' => $return->to_warehouse_id,
+                    'product_batch_id' => $item->batch_no,
+                    'quantity' => $item->return_qty,
+                    'movement_type' => 'IN',
+                    'reference_type' => 'RETURN_TO_MASTER',
+                    'reference_id' => $return->id,
+                    'created_by' => $user->id,
+                ]);
+            }
 
-    //             // 1️⃣ UPDATE RETURN ITEM
-    //             $item->update([
-    //                 'received_qty' => $receivedQty,
-    //                 'damaged_qty'  => $damagedQty,
-    //             ]);
-    //             StockMovement::create([
-    //                 'warehouse_id' => $return->to_warehouse_id,
-    //                 'product_batch_id' => $item->batch_no,
-    //                 'quantity' => $item->return_qty,
-    //                 'movement_type' => 'IN',
-    //                 'reference_type' => 'RETURN_TO_MASTER',
-    //                 'reference_id' => $return->id,
-    //                 'created_by' => $user->id,
-    //             ]);
-    //         }
+            $return->update([
+                'status'      => 'received',
+                'received_by' => $user->id,
+                'received_at' => now(),
+            ]);
+        });
 
-    //         $return->update([
-    //             'status'      => 'received',
-    //             'received_by' => $user->id,
-    //             'received_at' => now(),
-    //         ]);
-    //     });
-
-    //     return back()->with('success', 'Stock received at Master');
-    // }
+        return back()->with('success', 'Stock received at Master');
+    }
 
 
     public function downloadPdf(string $id)
