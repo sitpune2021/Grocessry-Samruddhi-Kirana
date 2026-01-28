@@ -10,7 +10,8 @@ class TransferChallanItem extends Model
     protected $fillable = [
         'transfer_challan_id',
         'product_id',
-        'quantity'
+        'quantity',
+        'batch_no',
     ];
 
     public function product()
