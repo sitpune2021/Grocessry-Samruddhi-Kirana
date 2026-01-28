@@ -21,11 +21,11 @@
                             <!-- Header -->
                             <div class="card-header bg-white fw-semibold">
                                 @if ($mode === 'add')
-                                    <h4>Add Coupon</h4>
+                                <h4>Add Coupon</h4>
                                 @elseif ($mode === 'edit')
-                                    <h4>Edit Coupon</h4>
+                                <h4>Edit Coupon</h4>
                                 @else
-                                    <h4>View Coupon</h4>
+                                <h4>View Coupon</h4>
                                 @endif
                             </div>
 
@@ -36,7 +36,7 @@
                                     method="POST">
                                     @csrf
                                     @if ($mode === 'edit')
-                                        @method('PUT')
+                                    @method('PUT')
                                     @endif
 
                                     <div class="row g-3">
@@ -47,7 +47,7 @@
                                                 placeholder="Enter code" value="{{ old('code', $offer->code ?? '') }}"
                                                 {{ $mode === 'view' ? 'readonly' : '' }}>
                                             @error('code')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
 
@@ -58,7 +58,9 @@
                                                 placeholder="Enter title"
                                                 value="{{ old('title', $offer->title ?? '') }}"
                                                 {{ $mode === 'view' ? 'readonly' : '' }}>
-
+                                            @error('title')
+                                            <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         {{-- Discount Type --}}
                                         <div class="col-md-4">
@@ -76,7 +78,7 @@
                                                 </option>
                                             </select>
                                             @error('discount_type')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
                                         {{-- Discount Value --}}
@@ -88,7 +90,7 @@
                                                 value="{{ old('discount_value', $offer->discount_value ?? '') }}"
                                                 {{ $mode === 'view' ? 'readonly' : '' }}>
                                             @error('discount_value')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
                                         {{-- Start Date --}}
@@ -115,7 +117,7 @@
                                                 value="{{ old('min_amount', $offer->min_amount ?? '') }}"
                                                 {{ $mode === 'view' ? 'disabled' : '' }}>
                                             @error('min_amount')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
 
@@ -128,7 +130,7 @@
                                                 value="{{ old('max_usage', $offer->max_usage ?? '') }}"
                                                 {{ $mode === 'view' ? 'disabled' : '' }}>
                                             @error('max_usage')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
 
@@ -148,7 +150,7 @@
                                                 </option>
                                             </select>
                                             @error('status')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
                                         </div>
                                         {{-- Category --}}
@@ -220,9 +222,9 @@
                                         </a>
 
                                         @if ($mode === 'add')
-                                            <button type="submit" class="btn btn-success">Save Offer</button>
+                                        <button type="submit" class="btn btn-success">Save Offer</button>
                                         @elseif ($mode === 'edit')
-                                            <button type="submit" class="btn btn-success">Update Offer</button>
+                                        <button type="submit" class="btn btn-success">Update Offer</button>
                                         @endif
                                     </div>
 

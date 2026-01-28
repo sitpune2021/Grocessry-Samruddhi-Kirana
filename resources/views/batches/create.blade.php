@@ -27,11 +27,11 @@
                             <div class="card mb-4" style="max-width:1200px;margin:auto;">
                                 <h4 class="card-header">
                                     @if ($mode === 'add')
-                                        Add Batch
+                                    Add Batch
                                     @elseif ($mode === 'edit')
-                                        Edit Batch
+                                    Edit Batch
                                     @else
-                                        View Batch
+                                    View Batch
                                     @endif
                                 </h4>
 
@@ -42,45 +42,53 @@
 
                                         @csrf
                                         @if ($mode === 'edit')
-                                            @method('PUT')
+                                        @method('PUT')
                                         @endif
 
                                         <div class="row g-3 mb-3">
                                             {{-- Warehouse --}}
                                             <div class="col-md-4">
-                                                <label class="form-label">Warehouse <span
-                                                        class="text-danger">*</span></label>
+                                                <label class="form-label">
+                                                    Warehouse <span class="text-danger">*</span>
+                                                </label>
+
                                                 <select name="warehouse_id" id="warehouse_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                    <option value="">Select Warehouse</option>
-                                                    @foreach ($warehouses as $w)
 
-                                                        <option value="{{ $w->id }}"
-                                                            {{ old('warehouse_id', $batch->warehouse_id ?? Auth::user()->warehouse_id) == $w->id ? 'selected' : '' }}>
-                                                            {{ $w->name }}
-                                                        </option>
+                                                    <option value="">Select Warehouse</option>
+
+                                                    @foreach ($warehouses as $w)
+                                                    <option value="{{ $w->id }}"
+                                                        {{ old('warehouse_id', $user->warehouse_id) == $w->id ? 'selected' : '' }}>
+                                                        {{ $w->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
+
+                                                @error('warehouse_id')
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
                                             </div>
+
 
                                             {{-- Category --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Category <span
                                                         class="text-danger">*</span></label>
-                                                <select name="category_id" class="form-select" id="category_id" 
+                                                <select name="category_id" class="form-select" id="category_id"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Category</option>
 
                                                     @foreach ($categories as $category)
-                                                        <option value="{{ $category->id }}"
-                                                            {{ old('category_id', $batch->product->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                                            {{ $category->name }}
-                                                        </option>
+                                                    <option value="{{ $category->id }}"
+                                                        {{ old('category_id', $batch->product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                                        {{ $category->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
 
                                                 @error('category_id')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -92,7 +100,7 @@
                                                 <select name="sub_category_id" id="sub_category_id" class="form-select">
                                                     <option value="">Select Sub Category</option>
 
-                                                   
+
                                                 </select>
                                             </div>
 
@@ -103,29 +111,29 @@
                                                 <select name="product_id" id="product_id" class="form-select"
                                                     {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Product</option>
-                                                   
+
                                                 </select>
                                                 @error('product_id')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
 
                                                 {{-- View / Edit → Product Image --}}
                                                 @if (isset($batch->product->image))
-                                                    @php
-                                                        $imgUrl = asset('storage/products/' . $batch->product->image);
-                                                    @endphp
+                                                @php
+                                                $imgUrl = asset('storage/products/' . $batch->product->image);
+                                                @endphp
 
-                                                    @if ($mode === 'view')
-                                                        <a href="{{ $imgUrl }}" target="_blank"
-                                                            class="d-block mt-2 text-primary text-decoration-underline">
-                                                            View Product Image
-                                                        </a>
-                                                    @elseif ($mode === 'edit')
-                                                        <a href="{{ $imgUrl }}" target="_blank">
-                                                            <img src="{{ $imgUrl }}" width="80"
-                                                                class="rounded border mt-2">
-                                                        </a>
-                                                    @endif
+                                                @if ($mode === 'view')
+                                                <a href="{{ $imgUrl }}" target="_blank"
+                                                    class="d-block mt-2 text-primary text-decoration-underline">
+                                                    View Product Image
+                                                </a>
+                                                @elseif ($mode === 'edit')
+                                                <a href="{{ $imgUrl }}" target="_blank">
+                                                    <img src="{{ $imgUrl }}" width="80"
+                                                        class="rounded border mt-2">
+                                                </a>
+                                                @endif
                                                 @endif
                                             </div>
 
@@ -139,15 +147,15 @@
                                                     <option value="">Select Unit</option>
 
                                                     @foreach ($units as $unit)
-                                                        <option value="{{ $unit->id }}"
-                                                            {{ old('unit_id', $batch->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
-                                                            {{ $unit->name }}
-                                                        </option>
+                                                    <option value="{{ $unit->id }}"
+                                                        {{ old('unit_id', $batch->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
+                                                        {{ $unit->name }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
 
                                                 @error('unit_id')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -160,7 +168,7 @@
                                                     class="form-control" placeholder="Enter batch no"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('batch_no')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -173,7 +181,7 @@
                                                     class="form-control" placeholder="Enter quantity"
                                                     {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('quantity')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -185,7 +193,7 @@
                                                     value="{{ old('mfg_date', $batch->mfg_date ?? '') }}"
                                                     class="form-control" {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('mfg_date')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -197,7 +205,7 @@
                                                     value="{{ old('expiry_date', $batch->expiry_date ?? '') }}"
                                                     class="form-control " {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 @error('expiry_date')
-                                                    <span class="text-danger">{{ $message }}</span>
+                                                <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
 
@@ -210,9 +218,9 @@
                                             </a>
 
                                             @if ($mode !== 'view')
-                                                <button type="submit" class="btn btn-success">
-                                                    {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
-                                                </button>
+                                            <button type="submit" class="btn btn-success">
+                                                {{ $mode === 'edit' ? 'Update Batch' : 'Save Batch' }}
+                                            </button>
                                             @endif
                                         </div>
 
@@ -235,139 +243,138 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function () {
+    $(document).ready(function() {
 
-    /* ===============================
-       HELPERS
-    =============================== */
+        /* ===============================
+           HELPERS
+        =============================== */
 
-    function getWarehouseId() {
-        return $('#warehouse_id').val();
-    }
-
-    function resetBelowCategory() {
-        $('#sub_category_id').html('<option value="">Select Sub Category</option>');
-        $('#product_id').html('<option value="">Select Product</option>');
-        $('#quantity').val('');
-    }
-
-    /* ===============================
-       LOADERS (AJAX)
-    =============================== */
-
-    function loadCategories(wid, selected = null) {
-        if (!wid) return;
-
-        return $.get('/ws/categories/' + wid, function (data) {
-            let html = '<option value="">Select Category</option>';
-            data.forEach(c => {
-                html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
-            });
-            $('#category_id').html(html);
-        });
-    }
-
-    function loadSubCategories(wid, cid, selected = null) {
-        if (!wid || !cid) return;
-
-        return $.get('/ws/subcategories/' + wid + '/' + cid, function (data) {
-            let html = '<option value="">Select Sub Category</option>';
-            data.forEach(s => {
-                html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
-            });
-            $('#sub_category_id').html(html);
-        });
-    }
-
-    function loadProducts(wid, sid, selected = null) {
-        if (!wid || !sid) return;
-
-        return $.get('/ws/products-by-sub/' + wid + '/' + sid, function (data) {
-            let html = '<option value="">Select Product</option>';
-            data.forEach(p => {
-                html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
-            });
-            $('#product_id').html(html);
-        });
-    }
-
-    function loadQuantity(wid, pid) {
-        if (!wid || !pid) return;
-
-        return $.get('/ws/quantity/' + wid + '/' + pid, function (res) {
-            $('#quantity').val(res.quantity);
-        });
-    }
-
-    /* ===============================
-       CHANGE EVENTS
-    =============================== */
-
-    $('#warehouse_id').on('change', function () {
-        let wid = getWarehouseId();
-        resetBelowCategory();
-        loadCategories(wid);
-    });
-
-    $('#category_id').on('change', function () {
-        let wid = getWarehouseId();
-        let cid = this.value;
-
-        resetBelowCategory();
-        loadSubCategories(wid, cid);
-    });
-
-    $('#sub_category_id').on('change', function () {
-        let wid = getWarehouseId();
-        let sid = this.value;
-
-        $('#product_id').html('<option value="">Select Product</option>');
-        $('#quantity').val('');
-
-        loadProducts(wid, sid);
-    });
-
-    $('#product_id').on('change', function () {
-        let wid = getWarehouseId();
-        let pid = this.value;
-
-        loadQuantity(wid, pid);
-    });
-
-    /* ===============================
-       AUTO LOAD (ADD / EDIT / VIEW)
-    =============================== */
-
-    (async function autoLoad() {
-
-        let mode = "{{ $mode }}";
-
-        // ADD → load categories if warehouse already selected
-        if (mode === 'add') {
-            let wid = getWarehouseId();
-            if (wid) {
-                loadCategories(wid);
-            }
-            return;
+        function getWarehouseId() {
+            return $('#warehouse_id').val();
         }
 
-        // EDIT / VIEW
-        let wid = "{{ $batch->warehouse_id ?? '' }}";
-        let cid = "{{ $batch->category_id ?? '' }}";
-        let sid = "{{ $batch->sub_category_id ?? '' }}";
-        let pid = "{{ $batch->product_id ?? '' }}";
+        function resetBelowCategory() {
+            $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+            $('#product_id').html('<option value="">Select Product</option>');
+            $('#quantity').val('');
+        }
 
-        if (!wid) return;
+        /* ===============================
+           LOADERS (AJAX)
+        =============================== */
 
-        $('#warehouse_id').val(wid);
+        function loadCategories(wid, selected = null) {
+            if (!wid) return;
 
-        await loadCategories(wid, cid);
-        await loadSubCategories(wid, cid, sid);
-        await loadProducts(wid, sid, pid);
-        await loadQuantity(wid, pid);
+            return $.get('/ws/categories/' + wid, function(data) {
+                let html = '<option value="">Select Category</option>';
+                data.forEach(c => {
+                    html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
+                });
+                $('#category_id').html(html);
+            });
+        }
 
-    })();
+        function loadSubCategories(wid, cid, selected = null) {
+            if (!wid || !cid) return;
 
-});
+            return $.get('/ws/subcategories/' + wid + '/' + cid, function(data) {
+                let html = '<option value="">Select Sub Category</option>';
+                data.forEach(s => {
+                    html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
+                });
+                $('#sub_category_id').html(html);
+            });
+        }
+
+        function loadProducts(wid, sid, selected = null) {
+            if (!wid || !sid) return;
+
+            return $.get('/ws/products-by-sub/' + wid + '/' + sid, function(data) {
+                let html = '<option value="">Select Product</option>';
+                data.forEach(p => {
+                    html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
+                });
+                $('#product_id').html(html);
+            });
+        }
+
+        function loadQuantity(wid, pid) {
+            if (!wid || !pid) return;
+
+            return $.get('/ws/quantity/' + wid + '/' + pid, function(res) {
+                $('#quantity').val(res.quantity);
+            });
+        }
+
+        /* ===============================
+           CHANGE EVENTS
+        =============================== */
+
+        $('#warehouse_id').on('change', function() {
+            let wid = getWarehouseId();
+            resetBelowCategory();
+            loadCategories(wid);
+        });
+
+        $('#category_id').on('change', function() {
+            let wid = getWarehouseId();
+            let cid = this.value;
+
+            resetBelowCategory();
+            loadSubCategories(wid, cid);
+        });
+
+        $('#sub_category_id').on('change', function() {
+            let wid = getWarehouseId();
+            let sid = this.value;
+
+            $('#product_id').html('<option value="">Select Product</option>');
+            $('#quantity').val('');
+
+            loadProducts(wid, sid);
+        });
+
+        $('#product_id').on('change', function() {
+            let wid = getWarehouseId();
+            let pid = this.value;
+
+            loadQuantity(wid, pid);
+        });
+
+        /* ===============================
+           AUTO LOAD (ADD / EDIT / VIEW)
+        =============================== */
+
+        (async function autoLoad() {
+
+            let mode = "{{ $mode }}";
+
+            // ADD → load categories if warehouse already selected
+            if (mode === 'add') {
+                let wid = getWarehouseId();
+                if (wid) {
+                    loadCategories(wid);
+                }
+                return;
+            }
+
+            // EDIT / VIEW
+            let wid = "{{ $batch->warehouse_id ?? '' }}";
+            let cid = "{{ $batch->category_id ?? '' }}";
+            let sid = "{{ $batch->sub_category_id ?? '' }}";
+            let pid = "{{ $batch->product_id ?? '' }}";
+
+            if (!wid) return;
+
+            $('#warehouse_id').val(wid);
+
+            await loadCategories(wid, cid);
+            await loadSubCategories(wid, cid, sid);
+            await loadProducts(wid, sid, pid);
+            await loadQuantity(wid, pid);
+
+        })();
+
+    });
 </script>
-

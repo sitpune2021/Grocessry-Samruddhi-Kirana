@@ -18,7 +18,6 @@ class CouponController extends Controller
     }
     public function create()
     {
-
         $products = Product::all();
         $categories = Category::all();
         return view('coupons.create', compact('products', 'categories',))->with('mode', 'add');
@@ -26,7 +25,8 @@ class CouponController extends Controller
 
   public function store(Request $request)
 {
-    \Log::info('Offer Store Request Received', $request->all());
+  
+    Log::info('Offer Store Request Received', $request->all());
 
     $validated = $request->validate([
         'code' => 'required|string|unique:coupons,code', // ✅ correct table name
