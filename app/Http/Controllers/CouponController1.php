@@ -27,6 +27,7 @@ class CouponController extends Controller
 
     public function create()
 {
+    ddd
     Log::info('Coupon create page opened', [
         'user_id' => Auth::id()
     ]);
