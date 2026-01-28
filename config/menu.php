@@ -136,7 +136,7 @@ return [
                 //     'route' => 'taluka-distribution.transfer.index',
                 // ],
                 [
-                    'title' => 'Warehouse Stock Return Approval',
+                    'title' => 'Warehouse Stock Return',
                     'route' => 'stock-returns.index',
                 ],
 
