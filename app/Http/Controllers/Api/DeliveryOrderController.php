@@ -15,16 +15,15 @@ class DeliveryOrderController extends Controller
 {
     public function getNewOrders(Request $request)
     {
-        $user = $request->user();
         $perPage = $request->get('per_page', 10);
 
-        // 🔹 Available orders only
         $orders = Order::with([
             'orderItems.product',
             'deliveryAddress:id,user_id,latitude,longitude'
         ])
             ->where('status', 'pending')
             ->whereNull('delivery_agent_id')
+            ->latest()
             ->paginate($perPage);
 
         return response()->json([
@@ -33,57 +32,68 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
+
     public function acceptOrder(Request $request, $orderId)
     {
         $user = $request->user();
 
         DB::beginTransaction();
 
-        $order = Order::where('id', $orderId)
-            ->where('status', 'pending')
-            ->whereNull('delivery_agent_id')
-            ->lockForUpdate()
-            ->first();
+        try {
+            $order = Order::where('id', $orderId)
+                ->where('status', 'pending')
+                ->whereNull('delivery_agent_id')
+                ->lockForUpdate()
+                ->first();
 
-        if (!$order) {
+            if (!$order) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order not available'
+                ], 404);
+            }
+
+            // 🔹 Check if agent already has an active order
+            $hasActiveOrder = Order::where('delivery_agent_id', $user->id)
+                ->where('status', 'accepted')
+                ->exists();
+
+            if ($hasActiveOrder) {
+                // 🟡 ADD TO QUEUE
+                $order->update([
+                    'status' => 'queued',
+                    'delivery_agent_id' => $user->id
+                ]);
+            } else {
+                // 🟢 SET AS CURRENT TASK
+                $order->update([
+                    'status' => 'accepted',
+                    'delivery_agent_id' => $user->id
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order accepted successfully',
+                'data' => $order
+            ]);
+        } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => false,
-                'message' => 'Order not available'
-            ], 404);
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        // 🔹 Check active order
-        $hasActiveOrder = Order::where('delivery_agent_id', $user->id)
-            ->where('status', 'accepted')
-            ->exists();
-
-        if ($hasActiveOrder) {
-            // 🟡 Add to QUEUE
-            $order->update([
-                'status' => 'queued',
-                'delivery_agent_id' => $user->id
-            ]);
-        } else {
-            // 🟢 Add as CURRENT TASK
-            $order->update([
-                'status' => 'accepted',
-                'delivery_agent_id' => $user->id
-            ]);
-        }
-
-        DB::commit();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Order accepted successfully',
-            'data' => $order
-        ]);
     }
+
     public function rejectOrder(Request $request, $orderId)
     {
         $order = Order::where('id', $orderId)
             ->where('status', 'pending')
+            ->whereNull('delivery_agent_id')
             ->first();
 
         if (!$order) {
@@ -99,9 +109,10 @@ class DeliveryOrderController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Order rejected and removed'
+            'message' => 'Order rejected successfully'
         ]);
     }
+
 
     public function getAvailableOrders(Request $request)
     {
@@ -130,7 +141,7 @@ class DeliveryOrderController extends Controller
         $orders = Order::with('orderItems.product')
             ->where('delivery_agent_id', $user->id)
             ->where('status', 'queued')
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'asc') // FIFO
             ->paginate($perPage);
 
         return response()->json([
@@ -138,6 +149,7 @@ class DeliveryOrderController extends Controller
             'data' => $orders
         ]);
     }
+
 
 
     public function getOrderDetails(Request $request, $orderId)
