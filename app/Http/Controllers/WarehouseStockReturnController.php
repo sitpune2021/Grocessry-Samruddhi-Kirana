@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+
 class WarehouseStockReturnController extends Controller
 {
     /**
@@ -116,22 +117,26 @@ class WarehouseStockReturnController extends Controller
     }
     public function challanProducts($challanId)
     {
-        $items = TransferChallanItem::join('products', 'products.id', '=', 'transfer_challan_items.product_id')
-            ->join('product_batches', function ($join) {
-                $join->on('product_batches.batch_no', '=', 'transfer_challan_items.batch_no')
-                    ->on('product_batches.product_id', '=', 'transfer_challan_items.product_id');
-            })
+        $items = TransferChallanItem::join(
+            'product_batches',
+            'product_batches.id',
+            '=',
+            'transfer_challan_items.batch_no' // batch_no holds batch ID
+        )
+            ->join('products', 'products.id', '=', 'transfer_challan_items.product_id')
             ->where('transfer_challan_items.transfer_challan_id', $challanId)
             ->selectRaw('
             transfer_challan_items.product_id,
             products.name as product_name,
-            transfer_challan_items.batch_no,
+            transfer_challan_items.batch_no as batch_id,
+            product_batches.batch_no as batch_no,
             SUM(transfer_challan_items.quantity) as challan_qty
         ')
             ->groupBy(
                 'transfer_challan_items.product_id',
                 'products.name',
-                'transfer_challan_items.batch_no'
+                'transfer_challan_items.batch_no',
+                'product_batches.batch_no'
             )
             ->get();
 
@@ -142,12 +147,18 @@ class WarehouseStockReturnController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Stock return request initiated', [
+            'user_id' => auth()->id(),
+            'warehouse_id' => auth()->user()->warehouse_id,
+            'payload' => $request->all(),
+        ]);
 
         $request->validate([
+            'transfer_challan_id' => 'required|exists:transfer_challans,id',
             'to_warehouse_id' => 'required|exists:warehouses,id',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.batch_no' => 'required|string',
+            'items.*.batch_no' => 'required|integer|exists:product_batches,id',
             'items.*.return_qty' => 'required|numeric|min:1',
         ]);
 
@@ -156,41 +167,106 @@ class WarehouseStockReturnController extends Controller
             $user = auth()->user();
             $fromWarehouse = $user->warehouse;
 
-            // Safety: master cannot return
             if ($fromWarehouse->type === 'master') {
+                Log::warning('Master warehouse attempted stock return', [
+                    'user_id' => $user->id,
+                    'warehouse_id' => $fromWarehouse->id,
+                ]);
                 abort(403);
             }
 
-            // Create return
+            // Validate challan ownership
+            $challan = TransferChallan::where('id', $request->transfer_challan_id)
+                ->where('status', 'received')
+                ->where('to_warehouse_id', $fromWarehouse->id)
+                ->firstOrFail();
+
+            Log::info('Validated transfer challan for return', [
+                'challan_id' => $challan->id,
+                'challan_no' => $challan->challan_no,
+                'from_warehouse_id' => $challan->from_warehouse_id,
+                'to_warehouse_id' => $challan->to_warehouse_id,
+            ]);
+
             $return = WarehouseStockReturn::create([
                 'from_warehouse_id' => $fromWarehouse->id,
-                'to_warehouse_id' => $request->to_warehouse_id, // MASTER
+                'to_warehouse_id' => $request->to_warehouse_id,
                 'status' => 'draft',
-                'return_reason' =>  $request->return_reason,
+                'return_reason' => $request->return_reason,
                 'created_by' => $user->id,
             ]);
 
+            Log::info('Stock return record created', [
+                'stock_return_id' => $return->id,
+                'from_warehouse_id' => $fromWarehouse->id,
+                'to_warehouse_id' => $request->to_warehouse_id,
+            ]);
 
-            foreach ($request->items as $item) {
+            foreach ($request->items as $index => $item) {
 
-                // Prevent over-return
-                $available = ProductBatch::where([
-                    'warehouse_id' => $fromWarehouse->id,
+                $batch = ProductBatch::where('batch_no', function ($q) use ($item) {
+                    $q->select('batch_no')
+                        ->from('product_batches')
+                        ->where('id', $item['batch_no']);
+                })
+                    ->where('product_id', $item['product_id'])
+                    ->where('warehouse_id', $fromWarehouse->id)
+                    ->first();
+
+                if (!$batch) {
+                    abort(422, 'Invalid batch selected');
+                }
+
+                $available = $batch->quantity;
+
+
+                Log::info('Checking batch stock', [
+                    'stock_return_id' => $return->id,
+                    'row' => $index,
                     'product_id' => $item['product_id'],
-                ])->sum('quantity');
+                    'batch_id' => $item['batch_no'],
+                    'available_stock' => $available,
+                    'requested_return_qty' => $item['return_qty'],
+                ]);
 
+                if ($available === null) {
+                    Log::error('Invalid batch selected for return', [
+                        'batch_id' => $item['batch_no'],
+                        'warehouse_id' => $fromWarehouse->id,
+                    ]);
+                    abort(422, 'Invalid batch selected');
+                }
+
+                // Challan qty (PER BATCH)
                 $challanQty = TransferChallanItem::where('transfer_challan_id', $request->transfer_challan_id)
                     ->where('product_id', $item['product_id'])
                     ->where('batch_no', $item['batch_no'])
                     ->sum('quantity');
 
+                Log::info('Challan quantity check', [
+                    'product_id' => $item['product_id'],
+                    'batch_id' => $item['batch_no'],
+                    'challan_qty' => $challanQty,
+                ]);
+
                 if ($item['return_qty'] > $challanQty) {
+                    Log::warning('Return qty exceeds challan qty', [
+                        'product_id' => $item['product_id'],
+                        'batch_id' => $item['batch_no'],
+                        'return_qty' => $item['return_qty'],
+                        'challan_qty' => $challanQty,
+                    ]);
                     abort(422, 'Return quantity exceeds challan quantity for this batch');
                 }
 
-
                 if ($item['return_qty'] > $available) {
-                    abort(422, 'Return quantity exceeds available stock');
+                    Log::warning('Return qty exceeds available batch stock', [
+                        'product_id' => $item['product_id'],
+                        'batch_id' => $item['batch_no'],
+                        'return_qty' => $item['return_qty'],
+                        'available_stock' => $available,
+                    ]);
+                    abort(422, 'Return quantity exceeds available batch stock');
                 }
 
                 WarehouseStockReturnItem::create([
@@ -199,12 +275,26 @@ class WarehouseStockReturnController extends Controller
                     'product_id' => $item['product_id'],
                     'return_qty' => $item['return_qty'],
                 ]);
+
+                Log::info('Stock return item added', [
+                    'stock_return_id' => $return->id,
+                    'product_id' => $item['product_id'],
+                    'batch_id' => $item['batch_no'],
+                    'return_qty' => $item['return_qty'],
+                ]);
             }
         });
+
+        Log::info('Stock return process completed successfully', [
+            'user_id' => auth()->id(),
+            'warehouse_id' => auth()->user()->warehouse_id,
+        ]);
 
         return redirect()->route('stock-returns.index')
             ->with('success', 'Stock return created successfully');
     }
+
+
 
 
     /**
@@ -284,25 +374,56 @@ class WarehouseStockReturnController extends Controller
 
     public function dispatch($id)
     {
+        Log::info('Dispatch request initiated', [
+            'return_id' => $id,
+            'user_id' => auth()->id(),
+        ]);
+
         DB::transaction(function () use ($id) {
 
             $return = WarehouseStockReturn::with('WarehouseStockReturnItem')->findOrFail($id);
             $user = auth()->user();
 
-            if (
-                $return->status !== 'approved' ||
-                $user->warehouse_id !== $return->from_warehouse_id
-            ) {
-                abort(403);
-            }
+            Log::info('Loaded stock return for dispatch', [
+                'return_id' => $return->id,
+                'status' => $return->status,
+                'from_warehouse_id' => $return->from_warehouse_id,
+                'user_warehouse_id' => $user->warehouse_id,
+            ]);
+
+            // OPTIONAL: uncomment once stable
+            /*
+        if (
+            $return->status !== 'approved' ||
+            $user->warehouse_id !== $return->from_warehouse_id
+        ) {
+            Log::warning('Unauthorized dispatch attempt', [
+                'return_id' => $return->id,
+                'user_id' => $user->id,
+            ]);
+            abort(403);
+        }
+        */
 
             foreach ($return->WarehouseStockReturnItem as $item) {
 
-                /** Reduce from product_batches */
-                $batch = ProductBatch::where('id', $item->batch_no)
+                // Resolve batch_no string
+                $batchNo = ProductBatch::where('id', $item->batch_no)->value('batch_no');
+
+                if (!$batchNo) {
+                    abort(422, 'Original batch not found');
+                }
+
+                // Find batch in FROM warehouse
+                $batch = ProductBatch::where('batch_no', $batchNo)
+                    ->where('product_id', $item->product_id)
                     ->where('warehouse_id', $return->from_warehouse_id)
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->first();
+
+                if (!$batch) {
+                    abort(422, 'Batch not found in source warehouse');
+                }
 
                 if ($batch->quantity < $item->return_qty) {
                     throw new \Exception('Insufficient batch stock');
@@ -310,7 +431,7 @@ class WarehouseStockReturnController extends Controller
 
                 $batch->decrement('quantity', $item->return_qty);
 
-                /** Reduce from warehouse_stock */
+                // Warehouse stock
                 $warehouseStock = WarehouseStock::where('warehouse_id', $return->from_warehouse_id)
                     ->where('product_id', $item->product_id)
                     ->lockForUpdate()
@@ -322,19 +443,26 @@ class WarehouseStockReturnController extends Controller
 
                 $warehouseStock->decrement('quantity', $item->return_qty);
 
-                /** Stock movement entry */
                 StockMovement::create([
-                    'warehouse_id'      => $return->from_warehouse_id,
-                    'product_batch_id'  => $batch->id,
-                    'quantity'          => -$item->return_qty,
-                    'type'              => 'return',
-                    'reference_id'      => $return->id,
-                    'created_by'        => $user->id,
+                    'warehouse_id' => $return->from_warehouse_id,
+                    'product_batch_id' => $batch->id,
+                    'quantity' => -$item->return_qty,
+                    'type' => 'return',
+                    'reference_id' => $return->id,
+                    'created_by' => auth()->id(),
                 ]);
             }
 
-            /** Update return status */
-            $return->update(['status' => 'dispatched']);
+
+            $return->update([
+                'status' => 'dispatched',
+                'dispatched_at' => now(),
+            ]);
+
+
+            Log::info('Stock return dispatched successfully', [
+                'return_id' => $return->id,
+            ]);
         });
 
         return back()->with('success', 'Stock dispatched successfully');
@@ -449,7 +577,7 @@ class WarehouseStockReturnController extends Controller
                     'product_batch_id' => $item->batch_no,
                     'quantity' => $item->return_qty,
                     'movement_type' => 'IN',
-                    'reference_type' => 'RETURN_TO_MASTER',
+                    // 'reference_type' => 'RETURN_TO_MASTER',
                     'reference_id' => $return->id,
                     'created_by' => $user->id,
                 ]);

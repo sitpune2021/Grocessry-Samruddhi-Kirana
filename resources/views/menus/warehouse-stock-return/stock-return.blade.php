@@ -265,7 +265,7 @@
 
             // Add batch from challan
             const option = document.createElement('option');
-            option.value = selected.dataset.batchNo;
+            option.value = selected.dataset.batchId;
             option.textContent = selected.dataset.batchNo;
             option.dataset.stock = selected.dataset.max; // challan qty
             batchSelect.appendChild(option);
@@ -341,6 +341,7 @@
                             const opt = document.createElement('option');
                             opt.value = item.product_id;
                             opt.textContent = item.product_name;
+                            opt.dataset.batchId = item.batch_id;
                             opt.dataset.batchNo = item.batch_no;
                             opt.dataset.max = item.challan_qty;
                             select.appendChild(opt);
