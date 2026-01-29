@@ -129,7 +129,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $item->product->name ?? 'N/A' }}</td>
-                <td>{{ $item->batch_id ?? '-' }}</td>
+               <td>{{ $item->batch->batch_no ?? '-' }}</td>
                 <!-- <td class="text-right">{{ $item->quantity }}</td> -->
                 <td class="text-right">{{ number_format($item->quantity, 0) }}</td>
             </tr>

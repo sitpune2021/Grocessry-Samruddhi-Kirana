@@ -281,7 +281,7 @@ class TransferChallanController extends Controller
 
     public function downloadPdf(TransferChallan $transferChallan)
     {
-        $transferChallan->load(['items.product', 'fromWarehouse', 'toWarehouse']);
+        $transferChallan->load(['items.product', 'items.batch', 'fromWarehouse', 'toWarehouse']);
 
         return view('Transfer_Challan.challen_pdf', [
             'challan' => $transferChallan
