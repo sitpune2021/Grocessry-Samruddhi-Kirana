@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Offer;
+use App\Models\Cart;
 
 class DeliveryCouponsOffersController extends Controller
 {
@@ -85,6 +86,14 @@ class DeliveryCouponsOffersController extends Controller
         }
 
         $discount = min($discount, $request->order_amount);
+        // ✅ Save discount to cart
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if ($cart) {
+            $cart->discount = round($discount, 2);
+            $cart->total = max($request->order_amount - $discount, 0); // optional if you already use total
+            $cart->save();
+        }
 
         return response()->json([
             'status' => true,

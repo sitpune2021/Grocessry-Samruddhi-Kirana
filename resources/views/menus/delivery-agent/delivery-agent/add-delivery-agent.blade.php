@@ -36,18 +36,7 @@
                                         @else
                                             View Agent
                                         @endif
-                                    </div>
-
-                                    @if ($errors->any())
-                                        <div class="alert alert-danger">
-                                            <ul class="mb-0">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
-
+                                    </div>                               
                                     <div class="card-body">
                                         <form enctype="multipart/form-data"
                                             action="{{ isset($agent) ? route('delivery-agents.update', $agent->id) : route('delivery-agents.store') }}"
