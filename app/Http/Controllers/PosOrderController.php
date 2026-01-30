@@ -222,9 +222,10 @@ class PosOrderController extends Controller
         $cashier = Auth::user();
 
         $customers = DB::table('users as u')
-            ->join('roles as r', 'r.id', '=', 'u.role_id')   // 👈 dynamic roles
-            ->where('r.name', 'customer')                    // 👈 customer role
-            ->whereNotNull('u.warehouse_id')                 // 👈 ignore NULL
+            ->join('roles as r', 'r.id', '=', 'u.role_id')   // dynamic roles
+            // ->where('r.name', 'Customer')
+            ->whereRaw('LOWER(r.name) = ?', ['customer'])            // customer role
+            ->whereNotNull('u.warehouse_id')                 // ignore NULL
             ->where('u.warehouse_id', $cashier->warehouse_id)
             ->whereNull('u.deleted_at')
             ->where(function ($q) use ($request) {

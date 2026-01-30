@@ -101,7 +101,8 @@
                             <td>
                                 @php
                                 $userWarehouseId = auth()->user()->warehouse_id;
-                                $userWarehouseType = auth()->user()->warehouse->type;
+                        $userWarehouseType = optional(auth()->user()->warehouse)->type;
+
                                 @endphp
 
                                 {{-- MASTER → APPROVE --}}

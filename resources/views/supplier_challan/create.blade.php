@@ -37,17 +37,17 @@
                                     @method('PUT')
                                 @endif
 
-                                {{-- HEADER --}}
                                 <div class="row mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label">Warehouse *</label>
+                                        <label class="form-label">Warehouse <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" value="{{ $warehouse->name ?? '' }}"
                                             readonly>
                                         <input type="hidden" name="warehouse_id" value="{{ $warehouse->id ?? '' }}">
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label class="form-label">Supplier *</label>
+                                        <label class="form-label">Supplier  <span
+                                                            class="text-danger">*</span></label>
                                         <select name="supplier_id" class="form-select"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
                                             <option value="">Select Supplier</option>
@@ -62,7 +62,8 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label class="form-label">Challan No *</label>
+                                        <label class="form-label">Challan No  <span
+                                                            class="text-danger">*</span></label>
                                         <input type="text" name="challan_no" class="form-control"
                                             value="{{ old('challan_no', $challan->challan_no ?? $autoChallanNo) }}"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -71,7 +72,8 @@
 
                                 <div class="row mb-4">
                                     <div class="col-md-4">
-                                        <label class="form-label">Challan Date *</label>
+                                        <label class="form-label">Challan Date  <span
+                                                            class="text-danger">*</span></label>
                                         <input type="date" name="challan_date" class="form-control"
                                             value="{{ old('challan_date', isset($challan) ? $challan->challan_date->format('Y-m-d') : date('Y-m-d')) }}"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
@@ -80,11 +82,11 @@
 
                                 <hr>
 
-                                {{-- CATEGORY / SUB CATEGORY / PRODUCT --}}
                                 <div class="row mb-3 align-items-end" id="selectionSection">
 
                                     <div class="col-md-3">
-                                        <label class="form-label">Category *</label>
+                                        <label class="form-label">Category  <span
+                                                            class="text-danger">*</span></label>
                                         <select id="categorySelect" class="form-select" multiple>
                                             @foreach ($categories as $c)
                                                 <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -93,12 +95,14 @@
                                     </div>
 
                                     <div class="col-md-3">
-                                        <label class="form-label">Sub Category *</label>
+                                        <label class="form-label">Sub Category  <span
+                                                            class="text-danger">*</span></label>
                                         <select id="subCategorySelect" class="form-select" multiple></select>
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Product *</label>
+                                        <label class="form-label">Product  <span
+                                                            class="text-danger">*</span></label>
                                         <select id="productSelect" class="form-select" multiple></select>
                                     </div>
 
@@ -169,10 +173,7 @@
                 $('#selectionSection').hide();
                 $('#addProductBtn').hide();
             }
-
-            /* =====================
-               PREFILL EDIT / VIEW
-            ===================== */
+            
             if (typeof existingItems !== 'undefined' && existingItems.length) {
 
                 $('#itemsSection').removeClass('d-none');
@@ -205,9 +206,7 @@
                 });
             }
 
-            /* =====================
-               CATEGORY → SUB CATEGORY
-            ===================== */
+       
             $('#categorySelect').on('change', function() {
 
                 let ids = $(this).val();
@@ -226,9 +225,6 @@
                 });
             });
 
-            /* =====================
-               SUB CATEGORY → PRODUCT
-            ===================== */
             $('#subCategorySelect').on('change', function() {
 
                 let ids = $(this).val();
@@ -255,9 +251,6 @@
                 });
             });
 
-            /* =====================
-               ADD PRODUCT
-            ===================== */
             $('#addProductBtn').on('click', function() {
 
                 let ids = $('#productSelect').val();

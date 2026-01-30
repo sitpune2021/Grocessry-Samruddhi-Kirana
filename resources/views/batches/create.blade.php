@@ -59,7 +59,7 @@
 
                                                     @foreach ($warehouses as $w)
                                                     <option value="{{ $w->id }}"
-                                                        {{ old('warehouse_id', $user->warehouse_id) == $w->id ? 'selected' : '' }}>
+                                                        {{ old('warehouse_id', auth()->user()?->warehouse_id) == $w->id ? 'selected' : '' }}>
                                                         {{ $w->name }}
                                                     </option>
                                                     @endforeach
