@@ -135,10 +135,10 @@
 
 
                                             {{-- Buttons --}}
-                                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                            <div class="mt-4 d-flex justify-content-end gap-2 text-end">
                                                 <a href="{{ route('vehicle-assignments.index') }}"
                                                     class="btn btn-success">
-                                                    <i class="bx bx-arrow-back"></i> Back
+                                                    Back
                                                 </a>
 
                                                 @if ($mode === 'add')

@@ -19,7 +19,7 @@
                 <div class="col-md-auto ms-auto">
                     @if(hasPermission('warehouse.create'))
                     <a href="{{ route('warehouse.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Add Warehouse
+                        Add Warehouse
                     </a>
                     @endif
                 </div>

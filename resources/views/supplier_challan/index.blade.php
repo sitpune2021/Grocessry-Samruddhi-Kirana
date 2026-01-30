@@ -24,7 +24,7 @@
                     @if($canCreate)
                     <a href="{{ route('supplier_challan.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Create Challan
+                         Create Challan
                     </a>
                     @endif
                 </div>

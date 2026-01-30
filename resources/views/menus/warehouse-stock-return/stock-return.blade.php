@@ -202,7 +202,7 @@
                                                 </table>
 
                                                 <button type="button" id="addRow" class="btn btn-secondary">
-                                                    + Add Product
+                                                    Add Product
                                                 </button>
 
                                             </div>
