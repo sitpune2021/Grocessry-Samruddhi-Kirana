@@ -254,16 +254,15 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::resource('/delivery-agents', DeliveryAgentController::class);
-    Route::post(
-        '/admin-assign-delivery',
-        [DeliveryAgentController::class, 'assignDelivery']
-    )->name('admin.assign.delivery');
+        Route::post(
+            '/admin-assign-delivery',
+            [DeliveryAgentController::class, 'assignDelivery']
+        )->name('admin.assign.delivery');
 
-    Route::post(
-    '/status-update',
-    [DeliveryAgentController::class, 'updateOrderStatus']
-)->name('admin.status.update');
-
+        Route::post(
+        '/status-update',
+        [DeliveryAgentController::class, 'updateOrderStatus']
+    )->name('admin.status.update');
 
 
     // Deliveries List
@@ -282,58 +281,6 @@ Route::middleware(['auth:admin'])->group(function () {
         '/stock-return/challan-products/{challan}',
         [WarehouseStockReturnController::class, 'challanProducts']
     )->name('stock-return.challan-products');
-
-
-
-    //     Route::post(
-    //         'stock-returns/{id}/send-for-approval',
-    //         [WarehouseStockReturnController::class, 'sendForApproval']
-    //     )->name('stock-returns.send-for-approval');
-    //     Route::post('stock-returns/{id}/dispatch', [WarehouseStockReturnController::class, 'dispatch'])
-    //         ->name('stock-returns.dispatch');
-    //     Route::post('stock-returns/{id}/receive', [WarehouseStockReturnController::class, 'receive'])
-    //         ->name('stock-returns.receive');
-
-
-    //     Route::get(
-    //         'stock-returns/{id}/return-to-master',
-    //         [WarehouseStockReturnController::class, 'returnToMaster']
-    //     )->name('stock-returns.return-to-master');
-
-    //     Route::put(
-    //         'stock-returns/store-district-to-master',
-    //         [WarehouseStockReturnController::class, 'update']
-    //     )->name('stock-returns.store-district-to-master');
-
-    //     Route::post(
-    //         'stock-returns/{id}/district-approval',
-    //         [WarehouseStockReturnController::class, 'approve1']
-    //     )->name('stock-returns.approve1');
-    //     Route::post('stock-returns/{id}/district-dispatch', [WarehouseStockReturnController::class, 'dispatch1'])
-    //         ->name('stock-returns.dispatch1');
-    //     Route::post('stock-returns/{id}/master-receive', [WarehouseStockReturnController::class, 'receive1'])
-    //         ->name('stock-returns.receive1');
-
-    //     // Taluka approves a stock return from Distribution Center
-    //     Route::post('stock-returns/{id}/dc-approve', [WarehouseStockReturnController::class, 'dcApprove'])
-    //         ->name('stock-returns.dc-approve');
-
-    //     // Distribution Center dispatches the stock to Taluka
-    //     Route::post('stock-returns/{id}/dc-dispatch', [WarehouseStockReturnController::class, 'dcDispatch'])
-    //         ->name('stock-returns.dc-dispatch');
-
-    //     // Taluka receives the stock from Distribution Center
-    //     Route::post('stock-returns/{id}/dc-receive', [WarehouseStockReturnController::class, 'dcReceive'])
-    //         ->name('stock-returns.dc-receive');
-
-    //         // 
-
-    // Route::post(
-    //     'stock-returns/{id}/district-approve',
-    //     [WarehouseStockReturnController::class, 'districtApprove']
-    // )->name('stock-returns.district-approve');
-
-
 
 
     /////////////////////////////////////////////////// SHEKHAR DEVELOPMENT ///////////////////////////////////////////////
