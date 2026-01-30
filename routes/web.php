@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
@@ -521,9 +522,10 @@ Route::middleware(['auth:admin'])->group(function () {
 
     // SELL PRODUCT
     Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
-    Route::get('/sale/{product?}', [StockController::class, 'create'])
+    Route::get('/sale/{product?}', [SaleController::class, 'create'])
         ->name('sale.create');
-    Route::post('/sale', [StockController::class, 'store'])->name('sale.store');
+    Route::post('/sale/store', [SaleController::class, 'store'])
+        ->name('sale.store');
 
     Route::get('/sell/ws/subcategories/{warehouse}/{category}', [StockController::class, 'getSubCategories']);
 
