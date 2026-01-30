@@ -21,6 +21,13 @@
 
         <ul class="navbar-nav flex-row align-items-center">
 
+        <li class="nav-item ms-auto">
+            <div class="d-flex align-items-center">
+                <span id="current-date" class="me-3 fw-semibold text-success me-5"></span>
+            </div>
+        </li>
+
+
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0"
@@ -285,4 +292,46 @@
         }
 
     });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // ----- 1️⃣ Current Date & Time -----
+    function updateDateTime() {
+        const now = new Date();
+
+        // Format example: Friday, 30 Jan 2026, 14:35:12
+        const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit', second:'2-digit' };
+        document.getElementById('current-date').textContent = now.toLocaleString('en-US', options);
+    }
+    setInterval(updateDateTime, 1000); // update every second
+    updateDateTime(); // initial call
+
+    // ----- 2️⃣ Countdown Timer -----
+    // Set your target date & time here
+    const targetDate = new Date("2026-01-31 23:59:59").getTime();
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        let distance = targetDate - now;
+
+        if(distance < 0) {
+            document.getElementById('countdown-timer').textContent = "EXPIRED";
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000*60*60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000*60));
+        const seconds = Math.floor((distance % (1000*60)) / 1000);
+
+        document.getElementById('countdown-timer').textContent = 
+            `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown(); // initial call
+
+});
 </script>
