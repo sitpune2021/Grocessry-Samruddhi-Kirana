@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+// use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,6 +14,7 @@ use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class LoginController extends Controller
 {
@@ -497,29 +498,33 @@ class LoginController extends Controller
             'message' => 'Logged out successfully'
         ]);
     }
+
+
     public function orderTimeCheck(Request $request)
     {
         $user = $request->user();
 
-        // ✅ Only customer
-        if (!$user->role || strtolower($user->role->name) !== 'customer') {
+        // ✅ Customer check
+        if (!$user || !$user->role || strtolower($user->role->name) !== 'customer') {
             return response()->json([
                 'status' => false,
+                'order_allowed' => false,
                 'message' => 'Unauthorized user'
             ], 403);
         }
 
-        // 🕖 Time window
-        $now       = Carbon::now();
-        $startTime = Carbon::createFromTime(7, 0, 0);   // 07:00 AM
-        $endTime   = Carbon::createFromTime(18, 0, 0);  // 06:00 PM
+        // ✅ FORCE IST TIME
+        $now = Carbon::now('Asia/Kolkata')->format('H:i');
 
-        if ($now->between($startTime, $endTime)) {
+        $start = '07:00';
+        $end   = '18:00';
+
+        if ($now >= $start && $now <= $end) {
             return response()->json([
                 'status' => true,
                 'order_allowed' => true,
                 'message' => 'Order allowed'
-            ]);
+            ], 200);
         }
 
         return response()->json([
@@ -529,4 +534,3 @@ class LoginController extends Controller
         ], 403);
     }
 }
-

@@ -36,6 +36,7 @@
                                     </div>
 
                                     <div class="card-body">
+
                                         <form
                                             action="{{ $mode === 'edit' ? route('user.update', $user->id) : route('user.store') }}"
                                             method="POST" enctype="multipart/form-data"
@@ -62,7 +63,6 @@
                                                     @enderror
                                                 </div>
 
-
                                                 {{-- Last Name --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">
@@ -78,7 +78,6 @@
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-
 
                                                 {{-- Mobile --}}
                                                 <div class="col-md-4 mb-3">
@@ -134,7 +133,6 @@
                                                     @enderror
                                                 </div>
 
-
                                                 {{-- Role --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">
@@ -164,7 +162,6 @@
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-
 
                                                 {{-- Email --}}
                                                 <div class="col-md-4 mb-3">
@@ -203,7 +200,6 @@
                                                     @enderror
                                                 </div>
 
-
                                                 {{-- Profile Photo --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">Profile Photo</label>
@@ -237,8 +233,6 @@
                                                     @enderror
                                                 </div>
 
-
-
                                                 {{-- Buttons --}}
                                                 <div class="col-lg-12 text-end">
                                                     <a href="{{ route('user.profile') }}"
@@ -252,6 +246,7 @@
                                                 </div>
 
                                             </div>
+                                            
                                         </form>
 
                                     </div>
@@ -273,12 +268,6 @@
     </div>
     <!-- / Layout wrapper -->
 </body>
-
-
-
-
-
-
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

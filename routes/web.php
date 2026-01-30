@@ -739,8 +739,11 @@ Route::middleware(['auth:admin'])->group(function () {
         // // DELETE
         Route::delete('/{id}', [SupplierController::class, 'destroy'])
             ->name('destroy');
-        Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
-        Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
+        // Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
+        // Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
+
+        Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
+        Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
     });
 
     Route::prefix('supplier_challan')->name('supplier_challan.')->group(function () {

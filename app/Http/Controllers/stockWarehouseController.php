@@ -179,7 +179,7 @@ class stockWarehouseController extends Controller
         Log::info('🟢 AddStock: Request received', [
             'payload' => $request->all()
         ]);
-        
+
         // $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
         //     ->where('challan_no', $request->challan_no)
         //     ->exists();
@@ -330,8 +330,10 @@ class stockWarehouseController extends Controller
         $warehouses = Warehouse::select('id', 'name')->get();
 
         // 🔥 find challan by challan_no
-        $selectedChallan = SupplierChallan::where('challan_no', $warehouse_stock->challan_no)
-            ->first();
+        $selectedChallan = SupplierChallan::find(
+            $warehouse_stock->supplier_challan_id
+        );
+
 
         $challans = SupplierChallan::where('status', 'received')
             ->orderBy('id', 'desc')
@@ -360,7 +362,9 @@ class stockWarehouseController extends Controller
             'warehouse',
             'category',
             'product',
-            'batch'
+            'batch',
+            //  'supplierChallan'   
+
         ])->findOrFail($id);
 
         $stockWarehouse = $warehouse_stock->warehouse;
@@ -380,9 +384,10 @@ class stockWarehouseController extends Controller
         $challans = SupplierChallan::where('status', 'received')
             ->orderBy('id', 'desc')
             ->get();
+$selectedChallan = SupplierChallan::find(
+    $warehouse_stock->supplier_challan_id
+);
 
-        $selectedChallan = SupplierChallan::where('challan_no', $warehouse_stock->challan_no)
-            ->first();
 
         return view('menus.warehouse.add-stock.add-stock', compact(
             'warehouses',
