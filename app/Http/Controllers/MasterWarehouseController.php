@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\District;
+use App\Models\Talukas;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -93,9 +94,10 @@ class MasterWarehouseController extends Controller
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
+        $talukas = Talukas::all();
 
 
-        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
+        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts','talukas'));
     }
 
 
@@ -185,7 +187,8 @@ class MasterWarehouseController extends Controller
         try {
             $warehouse = Warehouse::with(['parent', 'country', 'state', 'district', 'taluka'])->findOrFail($id);
             $countries = Country::all();
-            $districts = District::all();   // 🔹 this was missing
+            $districts = District::all();
+            $talukas = Talukas::all();
 
             return view('menus.warehouse.master.add-warehouse', [
                 'mode' => 'view', // view mode
@@ -193,6 +196,7 @@ class MasterWarehouseController extends Controller
                 'countries' => $countries,
                 'warehouses' => Warehouse::all(),
                 'districts' => $districts,
+                'talukas' => $talukas,
 
             ]);
         } catch (\Exception $e) {
@@ -219,6 +223,7 @@ class MasterWarehouseController extends Controller
                 'countries'  => Country::all(),
                 'warehouses' => Warehouse::all(),
                 'districts'  => District::all(),
+                'talukas'    => Talukas::all(),
             ]);
         } catch (\Exception $e) {
             Log::error('Warehouse edit failed', [
