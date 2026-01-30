@@ -27,7 +27,7 @@
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
-                            <th>Order #</th>
+                            <th>Order </th>
                             <th>User</th>
                             <th>Order Number</th>
                             <th>Product Name</th>
