@@ -71,10 +71,15 @@ class ReportsController extends Controller
                 ->where('type', 'transfer')
                 ->sum('quantity');
 
-            $dispatchStock = DB::table('stock_movements')
-                ->where('reference_id', $transfer->id)
-                ->where('type', 'dispatch')
-                ->sum('quantity');
+            $dispatchStock = DB::table('warehouse_stock')
+                ->where('warehouse_id', $transfer->requested_by_warehouse_id)
+                ->where('product_id', $transfer->product_id)
+                ->orderBy('id', 'desc')   // 🔑 latest row only
+                ->value('quantity');
+
+
+
+
 
             /* 🔑 ADD END */
 
@@ -304,7 +309,7 @@ class ReportsController extends Controller
 
         $returns = $query->get();
 
-       
+
         if ($download === 'csv') {
 
             $filename = 'stock_return_report_' . date('Ymd_His') . '.csv';
@@ -396,7 +401,7 @@ class ReportsController extends Controller
         }
 
         $rows = $query->get();
-      
+
         if ($download === 'csv') {
 
             $filename = 'pos_walkin_report_' . date('Ymd_His') . '.csv';
