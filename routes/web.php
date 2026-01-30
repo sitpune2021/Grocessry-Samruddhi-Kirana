@@ -259,6 +259,12 @@ Route::middleware(['auth:admin'])->group(function () {
         [DeliveryAgentController::class, 'assignDelivery']
     )->name('admin.assign.delivery');
 
+    Route::post(
+    '/status-update',
+    [DeliveryAgentController::class, 'updateOrderStatus']
+)->name('admin.status.update');
+
+
 
     // Deliveries List
     Route::resource('/customer-orders', CustomerOrderController::class);

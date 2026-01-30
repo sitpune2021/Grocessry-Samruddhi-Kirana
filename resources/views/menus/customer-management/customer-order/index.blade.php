@@ -99,6 +99,7 @@
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
+                            
                             <td class="text-center">
                                 @if($order->status === 'pending')
                                 <button class="btn btn-sm btn-success"
@@ -107,11 +108,26 @@
                                     data-order-id="{{ $order->id }}">
                                     Assign
                                 </button>
+
+                                @elseif($order->status === 'assigned')
+                                <form method="POST" action="{{ route('admin.status.update') }}" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                    <input type="hidden" name="status" value="delivered">
+                                    <button class="btn btn-sm btn-primary">Delivered</button>
+                                </form>
+
+                                <form method="POST" action="{{ route('admin.status.update') }}" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                    <input type="hidden" name="status" value="rejected">
+                                    <button class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+
                                 @else
                                 <span class="text-muted">—</span>
                                 @endif
                             </td>
-
 
                         </tr>
                         @endforeach

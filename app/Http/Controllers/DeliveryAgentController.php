@@ -6,6 +6,7 @@ use App\Models\CustomerOrder;
 use Illuminate\Http\Request;
 use App\Models\DeliveryAgent;
 use App\Models\GroceryShop;
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ use Illuminate\Validation\ValidationException;
 
 class DeliveryAgentController extends Controller
 {
-    
+
 
     public function index()
     {
@@ -432,15 +433,32 @@ class DeliveryAgentController extends Controller
             $order->status = 'assigned';
             $order->save();
 
-            // Insert into deliveries table
-            \DB::table('deliveries')->insert([
-                'order_id' => $order->id,
-                'delivery_agent_id' => $validated['delivery_agent_id'],
-                'status' => 'assigned',
-                'customer_otp' => rand(1000, 9999),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // deliveries table
+            $delivery = DB::table('deliveries')
+                ->where('order_id', $order->id)
+                ->first();
+
+            if ($delivery) {
+                // UPDATE
+                DB::table('deliveries')
+                    ->where('order_id', $order->id)
+                    ->update([
+                        'delivery_agent_id' => $validated['delivery_agent_id'],
+                        'status' => 'assigned',
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                // INSERT
+                DB::table('deliveries')->insert([
+                    'order_id' => $order->id,
+                    'delivery_agent_id' => $validated['delivery_agent_id'],
+                    'status' => 'assigned',
+                    'customer_otp' => rand(1000, 9999),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
 
             DB::commit();
 
@@ -454,5 +472,69 @@ class DeliveryAgentController extends Controller
         }
     }
 
+    public function updateOrderStatus(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'status'   => 'required|in:delivered,rejected',
+        ]);
 
+        DB::beginTransaction();
+
+        try {
+            $order = Order::lockForUpdate()->findOrFail($request->order_id);
+
+            if ($order->status !== 'assigned') {
+                return back()->with('error', 'Order is not assigned');
+            }
+
+            /* =====================
+           DELIVERED
+        ===================== */
+            if ($request->status === 'delivered') {
+
+                // orders table
+                $order->update([
+                    'status' => 'delivered',
+                    'delivered_at' => now(),
+                    'payment_status' => 'paid',
+                ]);
+
+                // deliveries table
+                DB::table('deliveries')
+                    ->where('order_id', $order->id)
+                    ->update([
+                        'status' => 'delivered',
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            /* =====================
+           REJECTED
+        ===================== */
+            if ($request->status === 'rejected') {
+
+                // orders table
+                $order->update([
+                    'status' => 'rejected',
+                    'cancelled_at' => now(),
+                    'cancel_reason' => 'Rejected by admin',
+                ]);
+
+                // deliveries table
+                DB::table('deliveries')
+                    ->where('order_id', $order->id)
+                    ->update([
+                        'status' => 'rejected',
+                        'updated_at' => now(),
+                    ]);
+            }
+
+            DB::commit();
+            return back()->with('success', 'Order status updated successfully');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Something went wrong');
+        }
+    }
 }

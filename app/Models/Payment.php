@@ -16,6 +16,7 @@ class Payment extends Model
         'user_id',
         'payment_gateway',
         'payment_id',
+        '',
         'amount',
         'status',
         'meta',
