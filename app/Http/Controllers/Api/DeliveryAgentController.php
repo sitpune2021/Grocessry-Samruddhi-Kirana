@@ -960,8 +960,7 @@ class DeliveryAgentController extends Controller
         }
 
         $query = Order::where('delivery_agent_id', $user->id)
-            ->where('status', 'delivered')
-            ->whereNotNull('delivered_at');
+            ->where('status', 'delivered'); // removed delivered_at condition
 
         // 📅 Date filter
         if ($request->filled(['fromDate', 'toDate'])) {
