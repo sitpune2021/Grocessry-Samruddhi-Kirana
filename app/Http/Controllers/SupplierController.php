@@ -16,48 +16,41 @@ use Illuminate\Validation\Rule;
 class SupplierController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        try {
-            $suppliers = Supplier::latest()->paginate(20);
+   public function index(Request $request)
+{
+    try {
+        $suppliers = Supplier::latest()->paginate(20);
 
-            return view('supplier.index', compact('suppliers'));
-        } catch (\Throwable $e) {
+        return view('supplier.index', compact('suppliers'));
 
-            Log::error('Supplier Index Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-            ]);
+    } catch (\Throwable $e) {
 
-            return redirect()->back()
-                ->with('error', 'Unable to load suppliers');
-        }
+        Log::error('Supplier Index Error', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
+
+        return redirect()->back()
+            ->with('error', 'Unable to load suppliers');
     }
+}
+
+
 
     public function create()
     {
+        $districts = District::all();
+        $talukas   = Talukas::all();
+        $states    = State::all();
+
         return view('supplier.create', [
-            'mode'     => 'add',
-            'supplier' => null,
-            'states'   => State::select('id', 'name')->get(),
+            'mode'      => 'add',
+            'districts' => $districts,
+            'talukas'   => $talukas,
+            'supplier'  => null,
+            'states'    => State::select('id', 'name')->get(),
         ]);
     }
-
-
-    // public function create()
-    // {
-    //     $districts = District::all();
-    //     $talukas   = Talukas::all();
-    //     $states    = State::all();
-
-    //     return view('supplier.create', [
-    //         'mode'      => 'add',
-    //         'districts' => $districts,
-    //         'talukas'   => $talukas,
-    //         'supplier'  => null,
-    //         'states'    => State::select('id', 'name')->get(),
-    //     ]);
-    // }
 
     public function store(Request $request)
     {
@@ -71,16 +64,16 @@ class SupplierController extends Controller
             'email'         => 'required|email|max:255',
             'address'       => 'required|string',
             'state_id'      => 'required|exists:states,id', //temp required
-            'district_id'   => 'required|exists:districts,id', // "    "
-            'taluka_id'     => 'required|exists:talukas,id', // "    "
-
+            'district_id'   => 'required|exists:districts,id',// "    "
+            'taluka_id'     => 'required|exists:talukas,id',// "    "
+         
         ], [
             'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
             'mobile.unique' => 'This mobile number is already registered.',
         ]);
 
 
-
+       
         $supplier = Supplier::create($validated);
 
         // Log creation
@@ -135,7 +128,7 @@ class SupplierController extends Controller
             'state_id'      => 'nullable|exists:states,id',
             'district_id'   => 'nullable|exists:districts,id',
             'taluka_id'     => 'nullable|exists:talukas,id',
-
+          
         ]);
 
         if ($request->hasFile('logo')) {
