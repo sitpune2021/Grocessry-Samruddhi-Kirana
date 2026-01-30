@@ -150,7 +150,8 @@
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($warehouse->taluka))
-                                                        <option value="{{ $warehouse->taluka_id }}" selected>
+                                                        <option value="{{ $warehouse->taluka_id }}" >
+                                                            {{ old('taluka_id', $warehouse->taluka_id ?? '') == $taluka->id ? 'selected' : '' }}>
                                                             {{ $warehouse->taluka->name }}
                                                         </option>
                                                         @else
