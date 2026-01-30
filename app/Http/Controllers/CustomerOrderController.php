@@ -13,7 +13,7 @@ class CustomerOrderController extends Controller
 
     public function index()
     {
-        $orders = Order::with(['items', 'user','orderItems'])
+        $orders = Order::with(['items', 'user', 'orderItems'])
             ->latest()
             ->paginate(10);
 
@@ -36,14 +36,17 @@ class CustomerOrderController extends Controller
         );
     }
 
+
     public function userorder()
     {
-        $orders = Order::with(['items.product', 'deliveryAgent.user'])
-                        ->latest()
-                        ->get();
+        $orders = Order::where('channel', 'web')
+            ->with(['items.product', 'deliveryAgent.user'])
+            ->latest()
+            ->get();
 
         return view('website.user_order', compact('orders'));
     }
+
 
     public function orderapprove($id)
     {
@@ -74,6 +77,4 @@ class CustomerOrderController extends Controller
 
         return back()->with('success', 'Order Cancelled');
     }
-
-    
 }

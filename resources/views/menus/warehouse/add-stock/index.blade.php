@@ -87,7 +87,7 @@
                             <th>Product Name</th>
                             <th>Quantity</th>
                             @if($canView || $canEdit || $canDelete)
-                            <th>Actions</th>
+                            {{-- <th>Actions</th> --}}
                             @endif
                         </tr>
                     </thead>
@@ -111,7 +111,7 @@
                             </td>
 
                             {{-- Actions --}}
-
+{{-- 
                             @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;">
                                 @if(hasPermission('stock.view'))
@@ -130,7 +130,7 @@
                                 </form>
                                 @endif
                             </td>
-                            @endif
+                            @endif --}}
                         </tr>
                         @empty
                         <tr>

@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Talukas extends Model
 {
-    //
+        protected $table = 'talukas';
+
 }

@@ -329,7 +329,9 @@ class ProductController extends Controller
                 'offer_id'      => $offerId,
                 'coupon_code'   => $couponCode,
                 'address_id'    => $address->id,
-                'address_type'  => $address->type
+                'address_type'  => $address->type,
+                'channel'          => 'app',   
+
             ]);
 
             // 🔹 Order Items + FIFO stock deduction
@@ -395,8 +397,6 @@ class ProductController extends Controller
             ], 500);
         }
     }
-
-
 
     protected function checkCustomer($user)
     {

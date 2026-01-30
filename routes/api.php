@@ -98,9 +98,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔹 CANCELLATION (STATIC FIRST ✅)
     Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
 
+    // 🔹 Current Order Flow
+    // Route::post('/orders/{orderId}/start', [DeliveryOrderController::class, 'startOrder']);
+    Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
+    Route::post('/orders/{orderId}/pending', [DeliveryOrderController::class, 'markPending']);
+    Route::get('/orders/pending', [DeliveryOrderController::class, 'getPendingOrders']);
+    Route::post('/orders/{orderId}/resume', [DeliveryOrderController::class, 'resumeOrder']);
     // 🔹 ORDER ACTIONS
-    Route::post('/delivery/orders/{order}/accept', [DeliveryOrderController::class, 'acceptOrder']);
-    Route::post('/delivery/orders/{order}/reject', [DeliveryOrderController::class, 'rejectOrder']);
+    Route::post('/delivery/orders/{orderId}/accept', [DeliveryOrderController::class, 'acceptOrder']);
+    Route::post('/delivery/orders/{orderId}/reject', [DeliveryOrderController::class, 'rejectOrder']);
+    Route::post('/orders/{orderId}/start', [DeliveryOrderController::class, 'startOrder']);
 
     // 🔹 ORDER ITEMS
     Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);

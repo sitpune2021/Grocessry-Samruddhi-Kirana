@@ -16,18 +16,8 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-
+    
+    
     public function profile()
     {
         $users = User::with('role')->paginate(20);
@@ -35,10 +25,6 @@ class UserController extends Controller
         return view('userProfile.index', compact('users'));
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function Store(Request $request)
     {
         // Log: Raw request
@@ -100,8 +86,6 @@ class UserController extends Controller
         
     }
 
-
-
     public function show(string $id)
     {
         Log::info('User Show Request Received', ['user_id' => $id]);
@@ -141,19 +125,6 @@ class UserController extends Controller
         }
     }
 
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    // /**
-    //  * Update the specified resource in storage.
-    //  */
     public function update(Request $request, string $id)
     {
         Log::info('User Update Request Received', [
@@ -224,10 +195,6 @@ class UserController extends Controller
         }
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         Log::info('User Delete Request Received', ['user_id' => $id]);
@@ -268,7 +235,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-
 
     public function updateProfile(Request $request)
     {
@@ -327,4 +293,6 @@ class UserController extends Controller
 
         return back()->with('success', 'Profile updated successfully');
     }
+
+
 }

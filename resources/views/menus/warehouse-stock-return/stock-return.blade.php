@@ -1,6 +1,8 @@
 @include('layouts.header')
 
 <body>
+
+
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
@@ -12,6 +14,14 @@
             <div class="layout-page">
 
                 @include('layouts.navbar')
+
+                @if (session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
@@ -114,7 +124,7 @@
                                                             <th>Product</th>
                                                             <th>Condition Image</th>
                                                             <th>Batch No</th>
-                                                            <th>Available Stock</th>
+                                                            <th>Received Stock</th>
                                                             <th>Return Qty</th>
                                                             <th>Action</th>
                                                         </tr>
@@ -265,7 +275,7 @@
 
             // Add batch from challan
             const option = document.createElement('option');
-            option.value = selected.dataset.batchNo;
+            option.value = selected.dataset.batchId;
             option.textContent = selected.dataset.batchNo;
             option.dataset.stock = selected.dataset.max; // challan qty
             batchSelect.appendChild(option);
@@ -341,6 +351,7 @@
                             const opt = document.createElement('option');
                             opt.value = item.product_id;
                             opt.textContent = item.product_name;
+                            opt.dataset.batchId = item.batch_id;
                             opt.dataset.batchNo = item.batch_no;
                             opt.dataset.max = item.challan_qty;
                             select.appendChild(opt);
