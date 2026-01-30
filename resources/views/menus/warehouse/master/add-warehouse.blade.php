@@ -145,23 +145,26 @@
 
                                                 {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
-                                                    <label class="form-label">Taluka <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="taluka_id" id="taluka_id" class="form-select"
+                                                    <label class="form-label">
+                                                        Taluka <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="taluka_id"
+                                                        id="taluka_id"
+                                                        class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        @if (isset($warehouse->taluka))
-                                                        <option value="{{ $warehouse->taluka_id }}" >
-                                                            {{ old('taluka_id', $warehouse->taluka_id ?? '') == $taluka->id ? 'selected' : '' }}>
-                                                            {{ $warehouse->taluka->name }}
-                                                        </option>
-                                                        @else
                                                         <option value="">Select Taluka</option>
-                                                        @endif
+                                                        @foreach ($talukas as $taluka)
+                                                        <option value="{{ $taluka->id }}"
+                                                            {{ old('taluka_id', $warehouse->taluka_id ?? '') == $taluka->id ? 'selected' : '' }}>
+                                                            {{ $taluka->name }}
+                                                        </option>
+                                                        @endforeach
                                                     </select>
-                                                    @error('type')
+                                                    @error('taluka_id')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
