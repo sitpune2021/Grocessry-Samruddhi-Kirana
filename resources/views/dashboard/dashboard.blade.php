@@ -80,7 +80,7 @@
                 <a href="{{ route('warehouse.transfer.index') }}" class="text-decoration-none">
                 <div class="card stat-card border-warning">
                    <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Pending Transfer Requests</p>
                     <h3 class="text-warning">{{ $pendingTransferCount }}</h3>
@@ -96,7 +96,7 @@
                 <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
                   <div class="card stat-card">
                      <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                     <div class="card-body">
                       <p>Expired Batches</p>
                       <h3 class="text-warning">{{ $expiredCount }}</h3>
@@ -111,7 +111,7 @@
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">
                   <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Warehouses</p>
                     <h3 class="text-warning">{{ $WarehouseCount }}</h3>
@@ -122,7 +122,7 @@
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">
                   <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Stock</p>
                     <h3 class="text-warning">{{ $StockMovementCount }}</h3>
@@ -133,7 +133,7 @@
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">
                   <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Warehouse Transfers</p>
                     <h3 class="text-warning">{{ $WarehouseTransferCount }}</h3>
@@ -146,7 +146,7 @@
                   <div class="card-body position-relative" style="height:114px;">
                       <!-- Top color strip -->
                       <div class="position-absolute top-0 start-0 w-100"
-                          style="height:4px; background:#dc3545;"></div>
+                          style="height:4px; background:gray;"></div>
 
                       <div class="d-flex justify-content-between align-items-center h-100">
                         <div>
@@ -227,7 +227,7 @@
                 <a href="{{ route('category.index') }}" class="text-decoration-none">
                 <div class="card stat-card border-warning">
                    <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Categories</p>
                     <h3 class="text-warning">{{ $categoryCount }}</h3>
@@ -240,7 +240,7 @@
                 <a href="{{ route('product.index') }}" class="text-decoration-none">
                 <div class="card stat-card border-warning">
                    <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Products</p>
                     <h3 class="text-warning">{{ $ProductCount }}</h3>
@@ -253,7 +253,7 @@
                 <a href="{{ route('product.index') }}" class="text-decoration-none">
                 <div class="card stat-card border-warning">
                    <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Users</p>
                     <h3 class="text-warning">{{ $UserCount }}</h3>
@@ -265,7 +265,7 @@
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card">
                   <div class="position-absolute top-0 start-0 w-100"
-                    style="height:4px; background:#dc3545;"></div>
+                    style="height:4px; background:gray;"></div>
                   <div class="card-body">
                     <p>Total Batches</p>
                     <h3 class="text-warning">{{ $BatchCount }}</h3>
@@ -341,7 +341,7 @@
                       {{ $usedStock }},
                       {{ max($totalStock - $usedStock, 0) }}
                   ],
-                  backgroundColor: ['#dc3545', '#198754'],
+                  backgroundColor: ['red', '#198754'],
                   borderWidth: 0
               }]
           },
@@ -373,7 +373,7 @@
                 {
                     label: 'OUT',
                     data: @json($trendOut),
-                    backgroundColor: '#dc3545'
+                    backgroundColor: 'red'
                 }
             ]
         },
@@ -427,7 +427,7 @@
               datasets: [{
                   label: 'Low Stock Count',
                   data: lowStockData,
-                  backgroundColor: '#dc3545',
+                  backgroundColor: 'red',
                   borderRadius: 6,
                   barThickness: 28
               }]
