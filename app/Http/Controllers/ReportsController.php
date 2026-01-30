@@ -65,16 +65,18 @@ class ReportsController extends Controller
                 ->value('name') ?? '-';
 
             /* 🔑 ADD START (no logic changed) */
+            $requestStock = $transfer->quantity;
 
-            $requestStock = DB::table('stock_movements')
-                ->where('reference_id', $transfer->id)
-                ->where('type', 'transfer')
-                ->sum('quantity');
+            // $requestStock = DB::table('stock_movements')
+            //     ->where('reference_id', $transfer->id)
+            //     ->where('type', 'transfer')
+            //     ->sum('quantity');
 
-            $dispatchStock = DB::table('stock_movements')
-                ->where('reference_id', $transfer->id)
-                ->where('type', 'dispatch')
-                ->sum('quantity');
+            $dispatchStock = DB::table('warehouse_stock')
+                ->where('warehouse_id', $transfer->requested_by_warehouse_id)
+                ->where('product_id', $transfer->product_id)
+                ->orderBy('id', 'desc')   // 🔑 latest row only
+                ->value('quantity');
 
             /* 🔑 ADD END */
 
@@ -112,7 +114,8 @@ class ReportsController extends Controller
                 fputcsv($file, [
                     'From Warehouse',
                     'To Warehouse',
-                    'Transfer In',
+                    'request_stock',
+                    'dispatch_stock',
                     'product_name',
                     'Created At',
                     'Updated At'
@@ -122,7 +125,8 @@ class ReportsController extends Controller
                     fputcsv($file, [
                         $row['warehouse_from'] ?? '-',
                         $row['warehouse_name'] ?? '-',
-                        $row['transfer_in'] ?? 0,
+                        $row['request_stock'] ?? 0,
+                        $row['dispatch_stock'] ?? 0,
                         $row['product_name'] ?? 0,
                         $row['created_at'] ?? '',
                         $row['updated_at'] ?? '',
@@ -304,7 +308,7 @@ class ReportsController extends Controller
 
         $returns = $query->get();
 
-       
+
         if ($download === 'csv') {
 
             $filename = 'stock_return_report_' . date('Ymd_His') . '.csv';
@@ -396,7 +400,7 @@ class ReportsController extends Controller
         }
 
         $rows = $query->get();
-      
+
         if ($download === 'csv') {
 
             $filename = 'pos_walkin_report_' . date('Ymd_His') . '.csv';

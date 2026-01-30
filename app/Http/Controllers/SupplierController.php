@@ -22,6 +22,7 @@ class SupplierController extends Controller
             $suppliers = Supplier::latest()->paginate(20);
 
             return view('supplier.index', compact('suppliers'));
+
         } catch (\Throwable $e) {
 
             Log::error('Supplier Index Error', [
@@ -36,28 +37,18 @@ class SupplierController extends Controller
 
     public function create()
     {
+        $districts = District::all();
+        $talukas   = Talukas::all();
+        $states    = State::all();
+
         return view('supplier.create', [
-            'mode'     => 'add',
-            'supplier' => null,
-            'states'   => State::select('id', 'name')->get(),
+            'mode'      => 'add',
+            'districts' => $districts,
+            'talukas'   => $talukas,
+            'supplier'  => null,
+            'states'    => State::select('id', 'name')->get(),
         ]);
     }
-
-
-    // public function create()
-    // {
-    //     $districts = District::all();
-    //     $talukas   = Talukas::all();
-    //     $states    = State::all();
-
-    //     return view('supplier.create', [
-    //         'mode'      => 'add',
-    //         'districts' => $districts,
-    //         'talukas'   => $talukas,
-    //         'supplier'  => null,
-    //         'states'    => State::select('id', 'name')->get(),
-    //     ]);
-    // }
 
     public function store(Request $request)
     {
@@ -71,16 +62,16 @@ class SupplierController extends Controller
             'email'         => 'required|email|max:255',
             'address'       => 'required|string',
             'state_id'      => 'required|exists:states,id', //temp required
-            'district_id'   => 'required|exists:districts,id', // "    "
-            'taluka_id'     => 'required|exists:talukas,id', // "    "
-
+            'district_id'   => 'required|exists:districts,id',// "    "
+            'taluka_id'     => 'required|exists:talukas,id',// "    "
+         
         ], [
             'mobile.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
             'mobile.unique' => 'This mobile number is already registered.',
         ]);
 
 
-
+       
         $supplier = Supplier::create($validated);
 
         // Log creation
@@ -135,7 +126,7 @@ class SupplierController extends Controller
             'state_id'      => 'nullable|exists:states,id',
             'district_id'   => 'nullable|exists:districts,id',
             'taluka_id'     => 'nullable|exists:talukas,id',
-
+          
         ]);
 
         if ($request->hasFile('logo')) {
@@ -162,8 +153,6 @@ class SupplierController extends Controller
             ->with('success', 'Supplier updated successfully');
     }
 
-
-
     public function destroy(string $id)
     {
         $supplier = Supplier::find($id);
@@ -186,17 +175,20 @@ class SupplierController extends Controller
                 : redirect()->route('supplier.index')->with('error', 'Failed to delete supplier. Please try again.');
         }
     }
+   
+    // Fetch districts by state
     public function getDistricts($stateId)
     {
-        return District::where('state_id', $stateId)
-            ->select('id', 'name')
-            ->get();
+        $districts = District::where('state_id', $stateId)->get(['id', 'name']);
+        return response()->json($districts);
     }
 
+    // Fetch talukas by district
     public function getTalukas($districtId)
     {
-        return Talukas::where('district_id', $districtId)
-            ->select('id', 'name')
-            ->get();
+        $talukas = Talukas::where('district_id', $districtId)->get(['id', 'name']);
+        return response()->json($talukas);
     }
+
+
 }

@@ -19,7 +19,7 @@
                 @if ($warehouseType === 'taluka' || $warehouseType === 'district' ||$warehouseType === 'distribution_center')
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('stock-returns.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Raise Return
+                        Raise Return
                     </a>
                 </div>
                 @endif

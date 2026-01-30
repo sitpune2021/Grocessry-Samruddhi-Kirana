@@ -17,7 +17,7 @@
                     <div class="col-md-auto ms-auto d-flex gap-2">
                         <!-- Add Role Button -->
                         <a href="{{ route('roles.create') }}" class="btn btn-success">
-                            <i class="bx bx-plus"></i> Add Role
+                             Add Role
                         </a>
                     </div>
                     @endif
