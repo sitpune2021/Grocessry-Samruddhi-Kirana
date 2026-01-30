@@ -21,19 +21,17 @@
 
         <ul class="navbar-nav flex-row align-items-center">
 
-        <li class="nav-item ms-auto">
-            <div class="d-flex align-items-center">
-                <span id="current-date" class="me-3 fw-semibold text-success me-5"></span>
-            </div>
-        </li>
-
+            <li class="nav-item ms-auto">
+                <div class="d-flex align-items-center">
+                    <span id="current-date" class="me-3 fw-semibold text-success me-5"></span>
+                </div>
+            </li>
 
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0"
                     href="javascript:void(0);"
                     data-bs-toggle="dropdown">
-
                     <div class="avatar avatar-online">
                         @if(Auth::check())
                             <img
