@@ -16,17 +16,18 @@ class Payment extends Model
         'user_id',
         'payment_gateway',
         'payment_id',
-        '',
+        'razorpay_order_id',
+        'razorpay_signature',
         'amount',
         'status',
-        'meta',
+        'meta'
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'meta'   => 'array',
     ];
- 
+
     public function order()
     {
         return $this->belongsTo(Order::class);
@@ -37,5 +38,4 @@ class Payment extends Model
     {
         return $this->belongsTo(User::class);
     }
-
 }

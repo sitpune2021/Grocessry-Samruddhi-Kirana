@@ -102,9 +102,13 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/search-customers', [PosOrderController::class, 'searchCustomers']);
     });
 
-    //razorpay
-    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder']);
-    Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment']);
+    // Razorpay
+    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder'])
+        ->name('razorpay.create.order');
+
+    Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment'])
+        ->name('razorpay.verify');
+
     Route::get('/pos/payment-failed/{order}', function (Order $order) {
         return view('pos.payment-failed', compact('order'));
     })->name('pos.payment.failed');
@@ -255,10 +259,15 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::resource('/delivery-agents', DeliveryAgentController::class);
-        Route::post(
-            '/admin-assign-delivery',
-            [DeliveryAgentController::class, 'assignDelivery']
-        )->name('admin.assign.delivery');
+    Route::post(
+        '/admin-assign-delivery',
+        [DeliveryAgentController::class, 'assignDelivery']
+    )->name('admin.assign.delivery');
+
+    Route::post(
+        '/status-update',
+        [DeliveryAgentController::class, 'updateOrderStatus']
+    )->name('admin.status.update');
 
         Route::post(
         '/status-update',
@@ -378,6 +387,29 @@ Route::middleware(['auth:admin'])->group(function () {
             [RetailerPricingController::class, 'getProductsByCategory']
         );
     });
+
+    // 🔥 WEBSITE CHECKOUT RAZORPAY (WEB USER)
+    Route::post(
+        '/checkout/razorpay/create-order',
+        [CheckoutController::class, 'createOrder']
+    )->name('checkout.razorpay.create')
+        ->middleware('auth:web');
+
+    Route::post(
+        '/checkout/razorpay/verify',
+        [PaymentGetwayController::class, 'verifyRazorpayPayment']
+    )->name('checkout.razorpay.verify')
+        ->middleware('auth:web');
+
+  Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
+    ->name('payment.success');
+
+Route::get('/success/{order}', function (Order $order) {
+    return view('website.success', compact('order'));
+})->name('website.success');
+
+
+
 
 
     // RETAILER ORDER
