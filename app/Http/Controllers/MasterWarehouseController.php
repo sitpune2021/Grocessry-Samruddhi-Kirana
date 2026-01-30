@@ -21,26 +21,93 @@ use Illuminate\Validation\Rule;
 
 class MasterWarehouseController extends Controller
 {
+
+
+    // public function index()
+    // {
+    //     $user = auth()->user();
+
+    //     if ($user->role_id == 1) {
+
+    //         $warehouses = Warehouse::orderBy('id', 'desc')
+    //             ->paginate(20);
+    //     }
+      
+    //     elseif ($user->warehouse->type === 'master') {
+
+    //         $masterWarehouseId = $user->warehouse_id;
+
+          
+    //         $districtIds = Warehouse::where('type', 'district')
+    //             ->where('parent_id', $masterWarehouseId)
+    //             ->pluck('id');
+
+          
+    //         $talukaIds = Warehouse::where('type', 'taluka')
+    //             ->whereIn('parent_id', $districtIds)
+    //             ->pluck('id');
+
+    //         $shopIds = Warehouse::where('type','distribution_center')
+    //             ->whereIn('parent_id',$talukaIds)
+    //             ->pluck('id');
+
+            
+    //         $allowedWarehouseIds = collect([$masterWarehouseId])
+    //             ->merge($districtIds)
+    //             ->merge($talukaIds)
+    //             ->merge($shopIds);
+
+    //         $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
+    //             ->orderBy('id', 'desc')
+    //             ->paginate(20);
+    //     }
+    
+    //     elseif ($user->warehouse->type === 'district') {
+
+    //         $districtWarehouseId = $user->warehouse_id;
+
+    //         $talukaIds = Warehouse::where('type', 'taluka')
+    //             ->where('parent_id', $districtWarehouseId)
+    //             ->pluck('id');
+
+    //         $allowedWarehouseIds = collect([$districtWarehouseId])
+    //             ->merge($talukaIds);
+
+    //         $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
+    //             ->orderBy('id', 'desc')
+    //             ->paginate(20);
+    //     }
+    //     else {
+    //         $warehouses = Warehouse::where('id', $user->warehouse_id)
+    //             ->paginate(20);
+    //     }
+
+    //     return view(
+    //         'menus.warehouse.master.index',
+    //         compact('warehouses')
+    //     );
+    // }
+
+
     public function index()
     {
         $user = auth()->user();
 
         if ($user->role_id == 1) {
 
-            $warehouses = Warehouse::orderBy('id', 'desc')
+            $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
+                ->orderBy('id', 'desc')
                 ->paginate(20);
         }
-      
+
         elseif ($user->warehouse->type === 'master') {
 
             $masterWarehouseId = $user->warehouse_id;
 
-          
             $districtIds = Warehouse::where('type', 'district')
                 ->where('parent_id', $masterWarehouseId)
                 ->pluck('id');
 
-          
             $talukaIds = Warehouse::where('type', 'taluka')
                 ->whereIn('parent_id', $districtIds)
                 ->pluck('id');
@@ -49,17 +116,17 @@ class MasterWarehouseController extends Controller
                 ->whereIn('parent_id',$talukaIds)
                 ->pluck('id');
 
-            
             $allowedWarehouseIds = collect([$masterWarehouseId])
                 ->merge($districtIds)
                 ->merge($talukaIds)
                 ->merge($shopIds);
 
-            $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
+            $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
+                ->whereIn('id', $allowedWarehouseIds)
                 ->orderBy('id', 'desc')
                 ->paginate(20);
         }
-    
+
         elseif ($user->warehouse->type === 'district') {
 
             $districtWarehouseId = $user->warehouse_id;
@@ -71,12 +138,15 @@ class MasterWarehouseController extends Controller
             $allowedWarehouseIds = collect([$districtWarehouseId])
                 ->merge($talukaIds);
 
-            $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
+            $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
+                ->whereIn('id', $allowedWarehouseIds)
                 ->orderBy('id', 'desc')
                 ->paginate(20);
         }
         else {
-            $warehouses = Warehouse::where('id', $user->warehouse_id)
+
+            $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
+                ->where('id', $user->warehouse_id)
                 ->paginate(20);
         }
 
@@ -85,7 +155,6 @@ class MasterWarehouseController extends Controller
             compact('warehouses')
         );
     }
-
 
     public function create()
     {
@@ -99,8 +168,6 @@ class MasterWarehouseController extends Controller
 
         return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts','talukas'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -325,8 +392,6 @@ class MasterWarehouseController extends Controller
         }
     }
 
-
-
     public function destroy($id)
     {
         try {
@@ -365,4 +430,6 @@ class MasterWarehouseController extends Controller
                 ->with('error', 'Something went wrong while deleting warehouse.');
         }
     }
+
+
 }

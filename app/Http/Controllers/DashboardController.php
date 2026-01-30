@@ -16,6 +16,8 @@ use App\Models\WarehouseTransfer;
 use App\Models\GroceryShop;
 use App\Models\User;
 use App\Models\WarehouseStockReturn;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -26,6 +28,18 @@ class DashboardController extends Controller
         $user = auth()->user()->load('warehouse');
         $warehouse = $user->warehouse;
 
+        Log::info('User logged in and dashboard accessed', [
+            'user_id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'mobile' => $user->mobile,
+            'email' => $user->email,
+            'warehouse_id' => optional($warehouse)->id,
+            'warehouse_name' => optional($warehouse)->name,
+            'role_id' => $user->role_id,
+            'role_name' => optional($user->role)->name,
+            'login_time' => now()->toDateTimeString()
+        ]);
        
         // =======================
             // FINAL COUNTS (100% FIXED)

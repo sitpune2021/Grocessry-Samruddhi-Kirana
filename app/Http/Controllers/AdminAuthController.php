@@ -74,18 +74,18 @@ class AdminAuthController extends Controller
                 'profile_photo' => $photoPath,
                 'password'      => Hash::make('pass@123'),
             ]);
-            if ($request->warehouse_id) {
+            // if ($request->warehouse_id) {
 
-                $warehouse = Warehouse::find($request->warehouse_id);
+            //     $warehouse = Warehouse::find($request->warehouse_id);
 
-                if ($warehouse) {
-                    $warehouse->update([
-                        'contact_person' => $user->first_name . ' ' . $user->last_name,
-                        'contact_number' => $user->mobile,
-                        'email'          => $user->email,
-                    ]);
-                }
-            }
+            //     if ($warehouse) {
+            //         $warehouse->update([
+            //             'contact_person' => $user->first_name . ' ' . $user->last_name,
+            //             'contact_number' => $user->mobile,
+            //             'email'          => $user->email,
+            //         ]);
+            //     }
+            // }
 
             Log::info('User created successfully', ['user_id' => $user->id]);
 
@@ -198,26 +198,6 @@ class AdminAuthController extends Controller
         return view('admin-login.auth-login');
     }
 
-    // public function login(Request $request)
-    // {
-    //     $request->validate([
-    //         'email'    => 'required|email',
-    //         'password' => 'required',
-    //     ]);
-
-    //     //if (!Auth::attempt($request->only('email', 'password'))) {
-    //     if (!Auth::guard('admin')->attempt($request->only('email', 'password'))) {
-    //         return back()
-    //             ->withErrors(['email' => 'Invalid email or password'])
-    //             ->withInput();
-    //     }
-
-    //     $request->session()->regenerate();
-    //     return redirect()->route('dashboard')
-    //         ->with('success', 'Successfully logged in!');
-    // }
-
-   
     public function login(Request $request)
     {
         $request->validate([
