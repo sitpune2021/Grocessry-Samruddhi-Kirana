@@ -124,6 +124,14 @@
                                                     @enderror
                                                 </div>
 
+                                                <input type="hidden"
+                                                    id="savedTalukaId"
+                                                    value="{{ $warehouse->taluka_id ?? '' }}">
+
+                                                <input type="hidden"
+                                                    id="savedDistrictId"
+                                                    value="{{ $warehouse->district_id ?? '' }}">
+
                                                 {{-- District --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">District <span
@@ -306,6 +314,14 @@
             const parentSelect = document.getElementById('parent_id');
             const districtSelect = document.getElementById('district_id');
             const talukaSelect = document.getElementById('taluka_id');
+            const savedDistrictId = document.getElementById('savedDistrictId').value;
+            const savedTalukaId = document.getElementById('savedTalukaId').value;
+
+            if (savedDistrictId) {
+                districtSelect.value = savedDistrictId;
+                loadTalukas(savedDistrictId, savedTalukaId);
+            }
+
 
             /* ===============================
                Parent Warehouse logic
@@ -446,11 +462,13 @@
                     districtSelect.value = districtId;
 
                     // IMPORTANT: load talukas AFTER district is set
-                    if (parentType === 'taluka' || parentType === 'distribution_center') {
-                        loadTalukas(districtId, talukaId);
-                    } else {
-                        loadTalukas(districtId); // no taluka auto-select
+                    const savedTalukaId = document.getElementById('savedTalukaId').value;
+
+                    if (districtId) {
+                        districtSelect.value = districtId;
+                        loadTalukas(districtId, savedTalukaId);
                     }
+
                 }
             });
 

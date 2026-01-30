@@ -94,9 +94,10 @@ class MasterWarehouseController extends Controller
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
+        $talukas = Talukas::all();
 
 
-        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts'));
+        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts','talukas'));
     }
 
 
