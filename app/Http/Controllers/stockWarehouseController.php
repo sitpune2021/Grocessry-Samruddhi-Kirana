@@ -98,8 +98,9 @@ class stockWarehouseController extends Controller
         }
 
 
-        $stocks = $query->paginate(20);
+        // $stocks = $query->paginate(20);
 
+        $stocks = $query->get()->groupBy('warehouse_id');
 
         $warehouses = $user->role_id == 1
             ? Warehouse::select('id', 'name')->orderBy('name')->get()
@@ -110,8 +111,6 @@ class stockWarehouseController extends Controller
             compact('stocks', 'warehouses')
         );
     }
-
-
 
     public function addStockForm()
     {
@@ -384,9 +383,9 @@ class stockWarehouseController extends Controller
         $challans = SupplierChallan::where('status', 'received')
             ->orderBy('id', 'desc')
             ->get();
-$selectedChallan = SupplierChallan::find(
-    $warehouse_stock->supplier_challan_id
-);
+        $selectedChallan = SupplierChallan::find(
+            $warehouse_stock->supplier_challan_id
+        );
 
 
         return view('menus.warehouse.add-stock.add-stock', compact(

@@ -124,7 +124,7 @@
                                             <!-- <button type="submit" class="btn btn-success">Save Tax</button>
                                             <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
 
-                                            <div class="mt-3">
+                                            <div class="mt-3 text-end">
                                                 <a href="{{ route('taxes.index') }}" class="btn btn-success">
                                                     Back
                                                 </a>

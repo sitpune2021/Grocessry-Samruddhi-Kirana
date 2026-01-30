@@ -11,9 +11,14 @@
 
 <!-- Checkout Start -->
 <div class="container py-5">
-    <form action="{{ url('/place-order') }}" method="POST">
+    <form id="checkoutForm" action="{{ url('/place-order') }}" method="POST">
+        @csrf
         @csrf
         <input type="hidden" name="coupon_code" id="coupon_code_hidden">
+        <input type="hidden" name="payment_method" value="razorpay">
+        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
 
         <div class="row g-5">
 
@@ -218,7 +223,7 @@
                         </div>
 
 
-                        <button type="submit" class="btn btn-primary w-100 py-3">
+                        <button type="button" id="placeOrderBtn" class="btn btn-primary w-100 py-3">
                             Place Order
                         </button>
 
@@ -227,7 +232,7 @@
             </div>
 
         </div>
-
+    </form>
 </div>
 
 <!-- Location Script -->
@@ -344,6 +349,80 @@
             });
     }
 </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    document.getElementById('placeOrderBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+        if (paymentMethod !== 'online') {
+            document.getElementById('checkoutForm').submit();
+            return;
+        }
+
+        let amount = parseFloat(document.getElementById('finalTotal').innerText);
+
+        fetch("{{ route('razorpay.create.order') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    amount: amount
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                let options = {
+                    key: data.key,
+                    amount: data.amount,
+                    currency: "INR",
+                    name: "Your Company Name",
+                    description: "Order Payment",
+                    order_id: data.order_id,
+
+                    handler: function(response) {
+
+                        document.getElementById('razorpay_payment_id').value =
+                            response.razorpay_payment_id;
+
+                        document.getElementById('razorpay_order_id').value =
+                            response.razorpay_order_id;
+
+                        document.getElementById('razorpay_signature').value =
+                            response.razorpay_signature;
+
+                        document.getElementById('checkoutForm').submit();
+                    },
+
+                    prefill: {
+                        name: document.querySelector('input[name="first_name"]').value,
+                        email: document.querySelector('input[name="email"]').value,
+                        contact: document.querySelector('input[name="phone"]').value
+                    },
+
+                    theme: {
+                        color: "#3399cc"
+                    }
+                };
+
+                let rzp = new Razorpay(options);
+
+                rzp.on('payment.failed', function(response) {
+                    alert("Payment Failed: " + response.error.description);
+                });
+
+                rzp.open();
+            });
+    });
+</script>
+
+
+
 
 
 

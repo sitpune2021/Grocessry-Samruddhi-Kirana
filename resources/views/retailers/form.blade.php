@@ -84,9 +84,9 @@
                                                 </div>
 
                                                 <!-- Buttons -->
-                                                <div class="mt-4 d-flex justify-content-end gap-2">
+                                                <div class="mt-4 d-flex justify-content-end gap-2 text-end">
                                                     <a href="{{ route('retailers.index') }}" class="btn btn-outline-secondary">
-                                                        <i class="bx bx-arrow-back"></i> Back
+                                                        Back
                                                     </a>
 
                                                     <button type="submit" class="btn btn-primary">

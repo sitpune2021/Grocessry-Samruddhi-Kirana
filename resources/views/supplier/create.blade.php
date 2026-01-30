@@ -31,18 +31,18 @@
                                     <div class="card-header bg-white fw-semibold">
 
                                         @if ($mode === 'add')
-                                            <h4> Add Supplier </h4>
+                                        <h4> Add Supplier </h4>
                                         @elseif($mode === 'edit')
-                                            Edit Supplier
+                                        Edit Supplier
                                         @else
-                                            View Supplier
+                                        View Supplier
                                         @endif
                                     </div>
 
                                     <div class="card-body">
                                         @php
-                                            // $mode = add | edit | view
-                                            $readonly = $mode === 'view' ? 'readonly' : '';
+                                        // $mode = add | edit | view
+                                        $readonly = $mode === 'view' ? 'readonly' : '';
                                         @endphp
 
                                         <form
@@ -50,7 +50,7 @@
                                             method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @if ($mode === 'edit')
-                                                @method('PUT')
+                                            @method('PUT')
                                             @endif
 
                                             <div class="row g-3">
@@ -63,7 +63,7 @@
                                                         value="{{ $supplier->supplier_name ?? '' }}"
                                                         placeholder="Enter supplier name" {{ $readonly }}>
                                                     @error('supplier_name')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -80,7 +80,7 @@
                                                         {{ $readonly }}>
                                                     <div id="mobile-error" class="text-danger mt-1">
                                                         @error('mobile')
-                                                            {{ $message }}
+                                                        {{ $message }}
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -88,11 +88,11 @@
                                                 <div class="col-md-4">
                                                     <label class="form-label fw-medium">Email <span
                                                             class="text-danger">*</span></label>
-                                                    <input type="email" name="email" id="email"
-                                                        class="form-control" value="{{ $supplier->email ?? '' }}"
-                                                        placeholder="Enter email" {{ $readonly }}>
+                                                    <input type="email" name="email" id="email" class="form-control"
+                                                        value="{{ $supplier->email ?? '' }}" placeholder="Enter email"
+                                                        {{ $readonly }}>
                                                     @error('email')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
                                                 <div class="col-md-3 mb-3">
@@ -106,16 +106,16 @@
                                                         <option value="">Select State</option>
 
                                                         @foreach ($states as $state)
-                                                            <option value="{{ $state->id }}"
-                                                                {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
-                                                                {{ $state->name }}
-                                                            </option>
+                                                        <option value="{{ $state->id }}"
+                                                            {{ old('state_id', $supplier->state_id ?? '') == $state->id ? 'selected' : '' }}>
+                                                            {{ $state->name }}
+                                                        </option>
                                                         @endforeach
                                                     </select>
 
 
                                                     @error('state_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -123,17 +123,20 @@
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">District <span
                                                             class="text-danger">*</span></label>
-
                                                     <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
+                                                        @foreach ($districts as $district)
+                                                        <option value="{{ $district->id }}"
+                                                            {{ old('district_id', $supplier->district_id ?? '') == $district->id ? 'selected' : '' }}>
+                                                            {{ $district->name }}
+                                                        </option>
+                                                        @endforeach
                                                     </select>
-
                                                     @error('district_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-
 
                                                 {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
@@ -142,15 +145,15 @@
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($supplier->taluka))
-                                                            <option value="{{ $supplier->taluka_id }}" selected>
-                                                                {{ $supplier->taluka->name }}
-                                                            </option>
+                                                        <option value="{{ $supplier->taluka_id }}" selected>
+                                                            {{ $supplier->taluka->name }}
+                                                        </option>
                                                         @else
-                                                            <option value="">Select Taluka</option>
+                                                        <option value="">Select Taluka</option>
                                                         @endif
                                                     </select>
                                                     @error('district_id')
-                                                        <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -163,7 +166,7 @@
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>{{ $supplier->address ?? '' }}</textarea>
                                                 </div>
                                                 @error('address')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror
 
                                             </div>
@@ -175,12 +178,11 @@
                                                 </a>
 
                                                 @if ($mode === 'add')
-                                                    <button type="submit" id="submitBtn" class="btn btn-success">
-                                                        Save Supplier
-                                                    </button>
+                                                <button type="submit" class="btn btn-success">Save
+                                                    Supplier</button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-success">Update
-                                                        Supplier</button>
+                                                <button type="submit" class="btn btn-success">Update
+                                                    Supplier</button>
                                                 @endif
                                             </div>
                                         </form>
@@ -204,86 +206,82 @@
     <!-- / Layout wrapper -->
 </body>
 
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     const mobileInput = document.getElementById('mobile');
     const submitBtn = document.getElementById('submitBtn');
     const errorDiv = document.getElementById('mobile-error');
 
-    if (mobileInput) {
-        mobileInput.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-            if (this.value.length > 10) {
-                this.value = this.value.slice(0, 10);
-            }
-        });
-    }
-
-    // ✅ NULL CHECK (MOST IMPORTANT)
-    if (submitBtn && mobileInput) {
-        submitBtn.addEventListener('click', function(e) {
-            const mobile = mobileInput.value.trim();
-            errorDiv.textContent = '';
-
-            if (!/^\d{10}$/.test(mobile)) {
-                e.preventDefault();
-                errorDiv.textContent = 'Mobile number must be exactly 10 digits';
-                mobileInput.focus();
-                return false;
-            }
-        });
-    }
-</script>
-<script>
-    $(document).ready(function() {
-
-        // STATE → DISTRICT
-        $('#state_id').on('change', function() {
-            let stateId = $(this).val();
-
-            $('#district_id').html('<option value="">Select District</option>');
-            $('#taluka_id').html('<option value="">Select Taluka</option>');
-
-            if (stateId) {
-                $.ajax({
-                    url: '/supplier/get-districts/' + stateId, // ✅ FIXED
-                    type: 'GET',
-                    success: function(data) {
-                        $.each(data, function(i, district) {
-                            $('#district_id').append(
-                                '<option value="' + district.id + '">' +
-                                district.name +
-                                '</option>'
-                            );
-                        });
-                    }
-                });
-            }
-        });
-
-        // DISTRICT → TALUKA
-        $('#district_id').on('change', function() {
-            let districtId = $(this).val();
-
-            $('#taluka_id').html('<option value="">Select Taluka</option>');
-
-            if (districtId) {
-                $.ajax({
-                    url: '/supplier/get-talukas/' + districtId, // ✅ FIXED
-                    type: 'GET',
-                    success: function(data) {
-                        $.each(data, function(i, taluka) {
-                            $('#taluka_id').append(
-                                '<option value="' + taluka.id + '">' +
-                                taluka.name +
-                                '</option>'
-                            );
-                        });
-                    }
-                });
-            }
-        });
-
+    // Prevent non-digit characters and limit to 10 digits
+    mobileInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, ''); // remove non-digits
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10); // limit to 10 digits
+        }
     });
+
+    // Validate on submit
+    submitBtn.addEventListener('click', function(e) {
+        const mobile = mobileInput.value.trim();
+        errorDiv.textContent = '';
+
+        if (!/^\d{10}$/.test(mobile)) {
+            e.preventDefault(); // stop form submission
+            errorDiv.textContent = 'Mobile number must be exactly 10 digits';
+            mobileInput.focus();
+            return false;
+        }
+    });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+
+    // State -> District
+    $('#state_id').on('change', function() {
+        let stateId = $(this).val();
+
+        $('#district_id').empty().append('<option value="">Select District</option>');
+        $('#taluka_id').empty().append('<option value="">Select Taluka</option>');
+
+        if(stateId) {
+            $.ajax({
+                url: '/get-districts/' + stateId,
+                type: 'GET',
+                success: function(data) {
+                    $.each(data, function(index, district) {
+                        $('#district_id').append('<option value="'+district.id+'">'+district.name+'</option>');
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
+
+    // District -> Taluka (existing)
+    $('#district_id').on('change', function() {
+        let districtId = $(this).val();
+
+        $('#taluka_id').empty().append('<option value="">Select Taluka</option>');
+
+        if(districtId) {
+            $.ajax({
+                url: '/get-talukas/' + districtId,
+                type: 'GET',
+                success: function(data) {
+                    $.each(data, function(index, taluka) {
+                        $('#taluka_id').append('<option value="'+taluka.id+'">'+taluka.name+'</option>');
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
+
+});
 </script>
