@@ -122,9 +122,9 @@
                                             </div>
 
                                             <!-- Submit -->
-                                            <div class="mt-4 d-flex justify-content-end">
+                                            <div class="mt-4 d-flex justify-content-end text-end">
                                                 <a href="{{ route('retailer-pricing.index') }}" class="btn btn-outline-secondary">
-                                                    <i class="bx bx-arrow-back"></i> Back
+                                                    Back
                                                 </a>
                                                 <button type="submit" class="btn btn-primary">
                                                     {{ isset($pricing) ? 'Update Price' : 'Assign Price' }}

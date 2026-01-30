@@ -16,6 +16,12 @@ use App\Models\WarehouseTransfer;
 use App\Models\GroceryShop;
 use App\Models\User;
 use App\Models\WarehouseStockReturn;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\StockMovement;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
 
 class DashboardController extends Controller
 {
@@ -26,6 +32,18 @@ class DashboardController extends Controller
         $user = auth()->user()->load('warehouse');
         $warehouse = $user->warehouse;
 
+        Log::info('User logged in and dashboard accessed', [
+            'user_id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'mobile' => $user->mobile,
+            'email' => $user->email,
+            'warehouse_id' => optional($warehouse)->id,
+            'warehouse_name' => optional($warehouse)->name,
+            'role_id' => $user->role_id,
+            'role_name' => optional($user->role)->name,
+            'login_time' => now()->toDateTimeString()
+        ]);
        
         // =======================
             // FINAL COUNTS (100% FIXED)
@@ -68,6 +86,123 @@ class DashboardController extends Controller
         $UserCount = in_array($user->role_id, [1, 2])
             ? User::count()
             : 1; // login user only
+
+        // =======================
+            // Today Dispatch
+        // =======================
+
+        if ($isAdmin) {
+
+            // Admin / Master → all warehouses
+            $todayDispatchCount = StockMovement::where('type', 'dispatch')
+                ->whereDate('created_at', Carbon::today())
+                ->count();
+
+            $todayDispatchQty = StockMovement::where('type', 'dispatch')
+                ->whereDate('created_at', Carbon::today())
+                ->sum(DB::raw('ABS(quantity)'));
+
+        } else {
+
+            // Login warehouse only
+            $todayDispatchCount = StockMovement::where('type', 'dispatch')
+                ->where('warehouse_id', $warehouse->id)
+                ->whereDate('created_at', Carbon::today())
+                ->count();
+
+            $todayDispatchQty = StockMovement::where('type', 'dispatch')
+                ->where('warehouse_id', $warehouse->id)
+                ->whereDate('created_at', Carbon::today())
+                ->sum(DB::raw('ABS(quantity)'));
+        }
+
+
+        // ADD STOCK UTILIZATION HERE
+        if ($isAdmin) {
+            $totalStock = StockMovement::where('type', 'in')->sum('quantity');
+            $usedStock  = StockMovement::whereIn('type', ['dispatch','transfer'])
+                            ->sum(DB::raw('ABS(quantity)'));
+        } else {
+            $totalStock = StockMovement::where('warehouse_id', $warehouse->id)
+                            ->where('type', 'in')
+                            ->sum('quantity');
+            $usedStock  = StockMovement::where('warehouse_id', $warehouse->id)
+                            ->whereIn('type', ['dispatch','transfer'])
+                            ->sum(DB::raw('ABS(quantity)'));
+        }
+
+        $stockUtilization = $totalStock > 0
+            ? round(($usedStock / $totalStock) * 100, 1)
+            : 0;
+         
+
+        // =======================
+        // IN vs OUT Trend (last 7 days)
+        // =======================
+
+        $startDate = Carbon::today()->subDays(6); // last 7 days
+        $endDate = Carbon::today();
+
+        if ($isAdmin) {
+            $inTrend = StockMovement::select(
+                            DB::raw('DATE(created_at) as date'),
+                            DB::raw('SUM(quantity) as total_in')
+                        )
+                        ->where('type', 'in')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->groupBy(DB::raw('DATE(created_at)'))
+                        ->orderBy('date')
+                        ->pluck('total_in', 'date'); // key = date, value = total
+
+            $outTrend = StockMovement::select(
+                            DB::raw('DATE(created_at) as date'),
+                            DB::raw('SUM(ABS(quantity)) as total_out')
+                        )
+                        ->whereIn('type', ['dispatch','transfer'])
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->groupBy(DB::raw('DATE(created_at)'))
+                        ->orderBy('date')
+                        ->pluck('total_out', 'date');
+
+        } else {
+            $inTrend = StockMovement::select(
+                            DB::raw('DATE(created_at) as date'),
+                            DB::raw('SUM(quantity) as total_in')
+                        )
+                        ->where('warehouse_id', $warehouse->id)
+                        ->where('type', 'in')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->groupBy(DB::raw('DATE(created_at)'))
+                        ->orderBy('date')
+                        ->pluck('total_in', 'date');
+
+            $outTrend = StockMovement::select(
+                            DB::raw('DATE(created_at) as date'),
+                            DB::raw('SUM(ABS(quantity)) as total_out')
+                        )
+                        ->where('warehouse_id', $warehouse->id)
+                        ->whereIn('type', ['dispatch','transfer'])
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->groupBy(DB::raw('DATE(created_at)'))
+                        ->orderBy('date')
+                        ->pluck('total_out', 'date');
+        }
+
+        // Generate labels for last 7 days
+        $trendLabels = [];
+        for ($i = 0; $i < 7; $i++) {
+            $trendLabels[] = Carbon::today()->subDays(6 - $i)->format('d M');
+        }
+
+        $trendIn = [];
+        $trendOut = [];
+
+        foreach ($trendLabels as $label) {
+            $date = Carbon::createFromFormat('d M', $label)->format('Y-m-d');
+            $trendIn[] = $inTrend[$date] ?? 0;
+            $trendOut[] = $outTrend[$date] ?? 0;
+        }
+        
 
         // =======================
         // Expiry alerts
@@ -207,7 +342,15 @@ class DashboardController extends Controller
             'totalLowStock',
             'warehouseWise',
             'pendingTransferCount',
-            'pendingTransferAnalytics'
+            'pendingTransferAnalytics',
+            'todayDispatchCount', 
+            'todayDispatchQty',
+            'stockUtilization',   
+            'totalStock',        
+            'usedStock' ,
+            'trendLabels',      
+            'trendIn',          
+            'trendOut'                  
         ));
     }
 

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Warehouse extends Model
 {
+
+
     protected $fillable = [
         'country_id',
         'state_id',
@@ -33,9 +35,17 @@ class Warehouse extends Model
         return $this->belongsTo(Warehouse::class, 'parent_id');
     }
 
+    // public function users()
+    // {
+    //     return $this->hasMany(User::class, 'warehouse_id');
+    // }
+
     public function users()
     {
-        return $this->hasMany(User::class, 'warehouse_id');
+        return $this->hasMany(User::class)
+            ->whereHas('role', function ($q) {
+                $q->where('name', '!=', 'Customer');
+            });
     }
 
     public function suppliers()
@@ -74,7 +84,9 @@ class Warehouse extends Model
     }
 
     public function groceryShop()
-{
-    return $this->belongsTo(GroceryShop::class, 'grocery_shop_id');
-}
+    {
+        return $this->belongsTo(GroceryShop::class, 'grocery_shop_id');
+    }
+
+
 }

@@ -148,7 +148,7 @@
                             </table>
 
 
-                            <div class="mt-3">
+                            <div class="mt-3 text-end">
                                 <button type="submit" class="btn btn-success">Save Permissions</button>
                             </div>
 

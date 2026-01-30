@@ -19,7 +19,7 @@
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('retailer-offers.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Retailer Offer
+                        Add Retailer Offer
                     </a>
                 </div>
             </div>

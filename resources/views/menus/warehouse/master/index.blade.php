@@ -19,7 +19,7 @@
                 <div class="col-md-auto ms-auto">
                     @if(hasPermission('warehouse.create'))
                     <a href="{{ route('warehouse.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Add Warehouse
+                        Add Warehouse
                     </a>
                     @endif
                 </div>
@@ -52,21 +52,20 @@
             <!-- Table -->
             <div class="table-responsive mt-3 p-3">
                 <table id="warehouse_id" class="table table-bordered table-striped align-middle">
-                    <thead>
-                        <thead class="table-light">
-                            <th>Sr No</th>
-                            <th>Warehouse Name</th>
-                            <th>Type</th>
-                            <th>Address</th>
-                            <th>Contact Person</th>
-                            <th>Contact Number</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            @if($canView || $canEdit ) {{-- || $canDelete --}}
-                            <th>Actions</th>
-                            @endif
-                            </tr>
-                        </thead>
+                    <thead class="table-light">
+                        <th>Sr No</th>
+                        <th>Warehouse Name</th>
+                        <th>Type</th>
+                        <th>Address</th>
+                        <th>Contact Person</th>
+                        <th>Contact Number</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        @if($canView || $canEdit ) {{-- || $canDelete --}}
+                        <th>Actions</th>
+                        @endif
+                        </tr>
+                    </thead>
 
                     <tbody>
                         @forelse ($warehouses as $warehouse)
@@ -76,9 +75,33 @@
                             <td>{{ $warehouse->name }}</td>
                             <td>{{ $warehouse->type }}</td>
                             <td>{{ $warehouse->address ?? '-' }}</td>
-                            <td>{{ $warehouse->contact_person ?? '-' }}</td>
+                            <!-- <td>{{ $warehouse->contact_person ?? '-' }}</td>
                             <td>{{ $warehouse->contact_number ?? '-'}}</td>
-                            <td>{{ $warehouse->email ?? '-'}}</td>
+                            <td>{{ $warehouse->email ?? '-'}}</td> -->
+                            <td>
+                                @forelse($warehouse->users as $user)
+                                    <div>{{ $user->first_name }} {{ $user->last_name }}</div>
+                                @empty
+                                    -
+                                @endforelse
+                            </td>
+
+                            <td>
+                                @forelse($warehouse->users as $user)
+                                    <div>{{ $user->mobile }}</div>
+                                @empty
+                                    -
+                                @endforelse
+                            </td>
+
+                            <td>
+                                @forelse($warehouse->users as $user)
+                                    <div>{{ $user->email ?? '-' }}</div>
+                                @empty
+                                    -
+                                @endforelse
+                            </td>
+
                             <td>{{$warehouse->status ?? '-'}}</td>
 
                             @if($canView || $canEdit ) {{-- || $canDelete --}}

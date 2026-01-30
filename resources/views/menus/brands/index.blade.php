@@ -21,7 +21,7 @@
                     @if(hasPermission('brands.create'))
                     <a href="{{ route('brands.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Brands
+                        Add Brands
                     </a>
                     @endif
                 </div>

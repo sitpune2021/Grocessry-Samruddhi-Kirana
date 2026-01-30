@@ -14,6 +14,7 @@
                 </div>
             </div>
 
+            
             <!-- Search -->
             <x-datatable-search />
             <div class="table-responsive mt-5 p-3">
@@ -63,18 +64,15 @@
                                         <a href="{{ route('sale.create', ['batch_id' => $batch->id]) }}"
                                             title="Sell Product"
                                             class="text-success">
-                                            🛒 SELL
+                                            🛒 Sale
                                         </a>
-
                                         @else
                                         ❌
                                         @endif
                                     </td>
                                 </tr>
-
                                 @endforeach
                     </tbody>
-
                 </table>
             </div>
             <div class="px-3 py-2">

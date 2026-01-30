@@ -20,7 +20,7 @@
                     @if(hasPermission('supplier.create'))
                     <a href="{{ route('supplier.create') }}"
                         class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        <i class="bx bx-plus"></i> Add Supplier
+                         Add Supplier
                     </a>
                     @endif
                 </div>
