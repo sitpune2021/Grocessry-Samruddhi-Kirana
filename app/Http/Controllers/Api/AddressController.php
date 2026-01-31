@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\UserAddress;
+use Illuminate\Support\Facades\DB;
 
 use Validator;
 
@@ -174,7 +175,6 @@ class AddressController extends Controller
         ]);
     }
 
-
     public function delete(Request $request, $id)
     {
         $user = $request->user();
@@ -196,6 +196,48 @@ class AddressController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Address deleted successfully'
+        ]);
+    }
+    public function setDefault(Request $request)
+    {
+        $user = $request->user();
+        if ($res = $this->checkCustomer($user)) return $res;
+
+        $request->validate([
+            'address_id' => 'required|exists:user_addresses,id'
+        ]);
+
+        // Check address belongs to user
+        $address = UserAddress::where('id', $request->address_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$address) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Address not found or does not belong to this user'
+            ], 400);
+        }
+
+
+        DB::transaction(function () use ($user, $address) {
+
+            // Remove previous default
+            UserAddress::where('user_id', $user->id)
+                ->update(['is_default' => false]);
+
+            // Set new default
+            $address->update([
+                'is_default' => true
+            ]);
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Default address updated successfully',
+            'data' => [
+                'address_id' => $address->id
+            ]
         ]);
     }
 }

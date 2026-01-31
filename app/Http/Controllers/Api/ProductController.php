@@ -16,6 +16,8 @@ use App\Models\WarehouseStock;
 use App\Models\Role;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\DB;
+use App\Models\Coupon;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -105,6 +107,7 @@ class ProductController extends Controller
         }
 
         // 🔹 RECALCULATE CART TOTALS
+        // 🔹 RECALCULATE CART TOTALS
         $subtotal = CartItem::where('cart_id', $cart->id)
             ->sum(DB::raw('price * qty'));
 
@@ -113,14 +116,57 @@ class ProductController extends Controller
 
         $cart->update([
             'subtotal'  => $subtotal,
-            'tax_total' => $taxTotal,
-            'discount'  => 0,
-            'total'     => $subtotal + $taxTotal
+            'tax_total' => $taxTotal
         ]);
+
+        // 🔥 AUTO APPLY OFFER
+        $this->autoApplyOffer($cart);
+
 
         return response()->json([
             'status' => true,
             'message' => 'Product added to cart successfully'
+        ]);
+    }
+
+    private function autoApplyOffer(Cart $cart)
+    {
+        $today = Carbon::today()->toDateString();
+
+        $offer = Offer::where('status', 1)
+            ->whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->where('min_order_amount', '<=', $cart->subtotal)
+            ->orderBy('discount_value', 'desc') // best offer
+            ->first();
+
+        if (!$offer) {
+            // ❌ No offer matched → remove discount
+            $cart->update([
+                'discount' => 0,
+                'total'    => $cart->subtotal + $cart->tax_total
+            ]);
+            return;
+        }
+
+        // 💸 Discount calculation
+        if (in_array($offer->offer_type, ['flat', 'flat_discount'])) {
+            $discount = $offer->discount_value;
+        } else {
+            $discount = ($cart->subtotal * $offer->discount_value) / 100;
+
+            if (!empty($offer->max_discount)) {
+                $discount = min($discount, $offer->max_discount);
+            }
+        }
+
+        $discount = min($discount, $cart->subtotal);
+
+        // ✅ Apply offer
+        $cart->update([
+            'discount' => round($discount, 2),
+            'total'    => max(($cart->subtotal + $cart->tax_total) - $discount, 0),
+            'offer_id' => $offer->id ?? null
         ]);
     }
 
@@ -330,7 +376,7 @@ class ProductController extends Controller
                 'coupon_code'   => $couponCode,
                 'address_id'    => $address->id,
                 'address_type'  => $address->type,
-                'channel'          => 'app',   
+                'channel'          => 'app',
 
             ]);
 
@@ -714,6 +760,43 @@ class ProductController extends Controller
             'tax_total' => $taxTotal,
             'discount' => 0,
             'total' => $subtotal + $taxTotal
+        ]);
+    }
+
+
+    public function getAllCoupons(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        $coupons = Coupon::where('status', 1)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->select(
+                'id',
+                'title',
+                'code',
+                'description',
+                'terms_condition',
+                'discount_type',
+                'discount_value',
+                'min_amount',
+                'max_usage',
+                'start_date',
+                'end_date'
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $coupons
         ]);
     }
 }

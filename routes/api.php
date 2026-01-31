@@ -22,6 +22,10 @@ Route::post('/reset-password', [LoginController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 });
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user/profile', [LoginController::class, 'userprofiledetails']);
+    Route::delete('/user/account', [LoginController::class, 'deleteAccount']);
+});
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
 Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
@@ -34,6 +38,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/brands/{id}/products',          [CategoryProductController::class, 'getProductsByBrand']);
     Route::get('/products/{id}/similar',         [CategoryProductController::class, 'getSimilarProducts']);
     Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
+    Route::get('/brands/{brand_id}/products', [CategoryProductController::class, 'productsByBrand']);
 });
 
 Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
@@ -51,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/history', [ProductController::class, 'pastOrders']);
     Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
+    Route::get('/coupons', [ProductController::class, 'getAllCoupons']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
@@ -71,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('customer/addresses', [AddressController::class, 'add']);
     Route::put('customer/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('customer/addresses/{id}', [AddressController::class, 'delete']);
+    Route::post('/user/address/set-default', [AddressController::class, 'setDefault']);
 });
 
 //---------------------Delivery Agent Api Routes-----------------------------------------------

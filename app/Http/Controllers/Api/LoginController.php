@@ -148,6 +148,71 @@ class LoginController extends Controller
         ], 200);
     }
 
+    public function userprofiledetails(Request $request)
+    {
+        $user = $request->user(); // logged-in user via token
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // Fetch customer role
+        $role = Role::whereRaw('LOWER(name) = ?', ['customer'])->first();
+
+        // Optional: check if user is customer
+        if ($role && $user->role_id != $role->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id'                => $user->id,
+                'first_name'        => $user->first_name,
+                'last_name'         => $user->last_name,
+                'email'             => $user->email,
+                'mobile'            => $user->mobile,
+                'profile_photo'     => $user->profile_photo
+                    ? asset('storage/' . $user->profile_photo)
+                    : null,
+                'status'            => $user->status,
+                // 'is_online'         => $user->is_online,
+                // 'warehouse_id'      => $user->warehouse_id,
+                'role_id'           => $user->role_id,
+                // 'last_login_at'     => $user->last_login_at,
+                'created_at'        => $user->created_at,
+            ]
+        ]);
+    }
+    
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // Logout user (revoke tokens)
+        $user->tokens()->delete();
+
+        // Soft delete account
+        $user->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Account deleted successfully'
+        ]);
+    }
     public function login(Request $request, $type)
     {
         /* ================= TYPE VALIDATION ================= */

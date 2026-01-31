@@ -143,6 +143,7 @@ class CategoryProductController extends Controller
     }
 
 
+
     public function getProductsByBrand($id)
     {
         try {
@@ -166,19 +167,28 @@ class CategoryProductController extends Controller
                     'retailer_price',
                     'mrp',
                     'gst_percentage',
-                    'stock',
                     'product_images'
                 )
                 ->get()
                 ->map(function ($product) {
 
+                    /* 🔹 STOCK SET (REAL STOCK FROM WAREHOUSE) */
+                    $stock = (int) WarehouseStock::where('product_id', $product->id)
+                        ->sum('quantity');
+
+                    /* 🔹 MAX STOCK SET (APP LIMIT) */
+                    $maxStockLimit = 10; // you can change this
+                    $product->stock = $stock;
+                    $product->max_stock = min($stock, $maxStockLimit);
+
+                    /* 🔹 IMAGE URL SET */
                     $images = is_string($product->product_images)
                         ? json_decode($product->product_images, true)
                         : $product->product_images;
 
                     $product->image_urls = collect($images)->map(function ($img) {
                         return asset('storage/products/' . $img);
-                    });
+                    })->values();
 
                     unset($product->product_images);
 
@@ -323,5 +333,67 @@ class CategoryProductController extends Controller
                 'message' => 'Internal server error'
             ], 500);
         }
+    }
+    public function productsByBrand($brand_id)
+    {
+        $brand = Brand::find($brand_id);
+
+        if (!$brand) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Brand not found',
+                'data'    => []
+            ], 404);
+        }
+
+        $products = Product::where('brand_id', $brand_id)
+            ->select(
+                'id',
+                'brand_id',
+                'category_id',
+                'name',
+                'base_price',
+                'retailer_price',
+                'mrp',
+                'gst_percentage',
+                'product_images'
+            )
+            ->get()
+            ->map(function ($product) {
+
+                /* 🔹 STOCK SET (FROM WAREHOUSE) */
+                $stock = (int) WarehouseStock::where('product_id', $product->id)
+                    ->sum('quantity');
+
+                /* 🔹 MAX STOCK SET (APP LIMIT) */
+                $maxStockLimit = 10; // change if needed
+                $product->stock = $stock;
+                $product->max_stock = min($stock, $maxStockLimit);
+
+                /* 🔹 IMAGE URL SET */
+                $images = is_string($product->product_images)
+                    ? json_decode($product->product_images, true)
+                    : $product->product_images;
+
+                $product->image_urls = collect($images)->map(function ($img) {
+                    return asset('storage/products/' . $img);
+                })->values();
+
+                unset($product->product_images);
+
+                return $product;
+            });
+
+        return response()->json([
+            'status'  => true,
+            'message' => $products->isEmpty()
+                ? 'No products found'
+                : 'Products fetched successfully',
+            'brand' => [
+                'id'   => $brand->id,
+                'name' => $brand->name
+            ],
+            'data' => $products
+        ], 200);
     }
 }
