@@ -43,7 +43,7 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-    public function createRazorpayOrder(Request $request)
+   public function createRazorpayOrder(Request $request)
     {
         $api = new Api(
             config('services.razorpay.key'),
