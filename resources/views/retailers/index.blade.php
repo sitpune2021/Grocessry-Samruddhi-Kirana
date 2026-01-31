@@ -14,7 +14,7 @@
                 </div>
                 <div class="col-md-auto ms-auto mt-5">
                     <a href="{{ route('retailers.create') }}" class="btn btn-primary">
-                        <i class="bx bx-plus"></i> Add Retailer
+                         Add Retailer
                     </a>
                 </div>
             </div><br><br>

@@ -18,7 +18,7 @@
                 </div>
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('offers.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Add Offer
+                        Add Offer
                     </a>
                 </div>
             </div>

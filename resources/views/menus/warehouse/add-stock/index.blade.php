@@ -23,7 +23,7 @@
                     <div class="col-md-auto ms-auto">
                         @if (hasPermission('stock.create'))
                             <a href="{{ route('warehouse.addStockForm') }}" class="btn btn-success">
-                                <i class="bx bx-plus"></i> Stock In Warehouse
+                                Stock In Warehouse
                             </a>
                         @endif
                     </div>

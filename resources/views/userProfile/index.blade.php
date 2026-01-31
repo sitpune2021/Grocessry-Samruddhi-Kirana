@@ -24,7 +24,7 @@
 
                         <!-- Add User Button -->
                         <a href="{{ route('user.create') }}" class="btn btn-success">
-                            <i class="bx bx-plus"></i> Add User
+                            Add User
                         </a>
                     </div>
                 </div>

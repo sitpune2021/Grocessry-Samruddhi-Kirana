@@ -13,7 +13,7 @@
                 </div>
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('product.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Add Product
+                        Add Product
                     </a>
                 </div>
             </div>

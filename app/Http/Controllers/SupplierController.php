@@ -16,26 +16,24 @@ use Illuminate\Validation\Rule;
 class SupplierController extends Controller
 {
 
-   public function index(Request $request)
-{
-    try {
-        $suppliers = Supplier::latest()->paginate(20);
+    public function index(Request $request)
+    {
+        try {
+            $suppliers = Supplier::latest()->paginate(20);
 
-        return view('supplier.index', compact('suppliers'));
+            return view('supplier.index', compact('suppliers'));
 
-    } catch (\Throwable $e) {
+        } catch (\Throwable $e) {
 
-        Log::error('Supplier Index Error', [
-            'message' => $e->getMessage(),
-            'line'    => $e->getLine(),
-        ]);
+            Log::error('Supplier Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
 
-        return redirect()->back()
-            ->with('error', 'Unable to load suppliers');
+            return redirect()->back()
+                ->with('error', 'Unable to load suppliers');
+        }
     }
-}
-
-
 
     public function create()
     {
@@ -155,8 +153,6 @@ class SupplierController extends Controller
             ->with('success', 'Supplier updated successfully');
     }
 
-
-
     public function destroy(string $id)
     {
         $supplier = Supplier::find($id);
@@ -179,17 +175,20 @@ class SupplierController extends Controller
                 : redirect()->route('supplier.index')->with('error', 'Failed to delete supplier. Please try again.');
         }
     }
+   
+    // Fetch districts by state
     public function getDistricts($stateId)
     {
-        return District::where('state_id', $stateId)
-            ->select('id', 'name')
-            ->get();
+        $districts = District::where('state_id', $stateId)->get(['id', 'name']);
+        return response()->json($districts);
     }
 
+    // Fetch talukas by district
     public function getTalukas($districtId)
     {
-        return Talukas::where('district_id', $districtId)
-            ->select('id', 'name')
-            ->get();
+        $talukas = Talukas::where('district_id', $districtId)->get(['id', 'name']);
+        return response()->json($talukas);
     }
+
+
 }

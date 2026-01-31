@@ -232,37 +232,56 @@
         }
     });
 </script>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    $(document).ready(function() {
+$(document).ready(function() {
 
-        $('#district_id').on('change', function() {
-            let districtId = $(this).val();
+    // State -> District
+    $('#state_id').on('change', function() {
+        let stateId = $(this).val();
 
-            $('#taluka_id').empty();
-            $('#taluka_id').append('<option value="">Select Taluka</option>');
+        $('#district_id').empty().append('<option value="">Select District</option>');
+        $('#taluka_id').empty().append('<option value="">Select Taluka</option>');
 
-            if (districtId) {
-                $.ajax({
-                    url: '/get-talukas/' + districtId,
-                    type: 'GET',
-                    success: function(data) {
-                        console.log(data); // 👈 YOU ALREADY SEE THIS JSON
-
-                        $.each(data, function(index, taluka) {
-                            $('#taluka_id').append(
-                                '<option value="' + taluka.id + '">' + taluka
-                                .name + '</option>'
-                            );
-                        });
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            }
-        });
-
+        if(stateId) {
+            $.ajax({
+                url: '/get-districts/' + stateId,
+                type: 'GET',
+                success: function(data) {
+                    $.each(data, function(index, district) {
+                        $('#district_id').append('<option value="'+district.id+'">'+district.name+'</option>');
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
     });
+
+    // District -> Taluka (existing)
+    $('#district_id').on('change', function() {
+        let districtId = $(this).val();
+
+        $('#taluka_id').empty().append('<option value="">Select Taluka</option>');
+
+        if(districtId) {
+            $.ajax({
+                url: '/get-talukas/' + districtId,
+                type: 'GET',
+                success: function(data) {
+                    $.each(data, function(index, taluka) {
+                        $('#taluka_id').append('<option value="'+taluka.id+'">'+taluka.name+'</option>');
+                    });
+                },
+                error: function(xhr) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
+
+});
 </script>

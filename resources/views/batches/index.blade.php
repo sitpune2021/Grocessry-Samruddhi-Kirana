@@ -20,7 +20,7 @@
                 @if(hasPermission('batches.create'))
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('batches.create') }}" class="btn btn-success">
-                        <i class="bx bx-plus"></i> Add New Batch
+                        Add New Batch
                     </a>
                 </div>
                 @endif

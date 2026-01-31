@@ -47,6 +47,7 @@
                                             @method('PUT')
                                             @endif
 
+                                            
                                             <div class="row">
 
                                                 <div class="col-md-4 mb-3">
@@ -236,7 +237,7 @@
                                                 {{-- Buttons --}}
                                                 <div class="col-lg-12 text-end">
                                                     <a href="{{ route('user.profile') }}"
-                                                        class="btn btn-success">Cancel</a>
+                                                        class="btn btn-success">Back</a>
 
                                                     @if ($mode !== 'view')
                                                     <button class="btn btn-success">

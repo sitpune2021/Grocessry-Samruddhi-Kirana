@@ -1,311 +1,253 @@
 @include('layouts.header')
 
 <body>
-
-    <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
 
-            <!-- Menu -->
+            {{-- Sidebar --}}
             <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
                 @include('layouts.sidebar')
             </aside>
-            <!-- / Menu -->
 
-            <!-- Layout container -->
+
+
+            {{-- Page --}}
             <div class="layout-page">
-                <!-- Navbar -->
-
                 @include('layouts.navbar')
-                <!-- / Navbar -->
 
-                <!-- Content wrapper -->
                 <div class="content-wrapper">
 
-                    <!-- Content -->
+
+                    @if(session('error'))
+                    <div class="alert alert-danger col-6 ms-6 mt-6">
+                        {{ session('error') }}
+                    </div>
+                    @endif
+
+                    @if($errors->any())
+                    <div class="alert alert-danger col-6 ms-6 mt-6">
+                        {{ $errors->first() }}
+                    </div>
+                    @endif
+
+                    @if(session('success'))
+                    <div class="alert alert-success col-6 ms-6 mt-6">
+                        {{ session('success') }}
+                    </div>
+                    @endif
+
                     <div class="container-xxl flex-grow-1 container-p-y">
+
                         <div class="row justify-content-center">
+                            <div class="col-md-12">
 
-                            <!-- Form card -->
-                            <div>
-                                <div class="card mb-4" style="  margin:auto;">
+                                <div class="card">
                                     <h4 class="card-header">
-                                        Sell Product
+                                        🛒 Near Expiry Online Sale
                                     </h4>
-                                    <div class="card-body">
 
+                                    <div class="card-body">
                                         <form method="POST" action="{{ route('sale.store') }}">
                                             @csrf
 
-                                            <div class="row g-3 mb-3">
-                                                <div class="col-md-4">
-                                                    <label for="warehouse_id" class="form-label">
-                                                        Warehouse <span class="text-danger">*</span>
-                                                    </label>
+                                            {{-- hidden batch --}}
+                                            <input type="hidden" name="product_batch_id" value="{{ $batch->id }}">
 
-                                                    <select name="warehouse_id" id="warehouse_id"
-                                                        class="form-select"
-                                                        {{ $user->role_id != 1 ? 'disabled' : '' }}>
-
-                                                        <option value="">Select Warehouse</option>
-
-                                                        @foreach ($warehouses as $w)
-                                                        <option value="{{ $w->id }}"
-                                                            {{ ($selectedWarehouse ?? $user->warehouse_id) == $w->id ? 'selected' : '' }}>
-                                                            {{ $w->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-
-                                                    {{-- IMPORTANT: disabled fields are not submitted --}}
-                                                    @if ($user->role_id != 1)
-                                                    <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
-                                                    @endif
-
-                                                    @error('warehouse_id')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                            {{-- Product Info --}}
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Product</label>
+                                                    <input type="text" class="form-control"
+                                                        value="{{ $batch->product->name }}"
+                                                        readonly>
                                                 </div>
 
-
-                                                <div class="col-md-4">
-                                                    <label for="category_id" class="form-label">Category <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="category_id" id="category_id" class="form-select">
-                                                        <option value="">Select Category</option>
-
-                                                        @foreach ($categories as $category)
-                                                        <option value="{{ $category->id }}"
-                                                            {{ (isset($selectedCategory) && $selectedCategory == $category->id) ? 'selected' : '' }}>
-                                                            {{ $category->name }}
-                                                        </option>
-                                                        @endforeach
-
-                                                    </select>
-                                                    @error('category_id')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Batch No</label>
+                                                    <input type="text" class="form-control"
+                                                        value="{{ $batch->batch_no }}"
+                                                        readonly>
                                                 </div>
 
-                                                <!-- <div class="col-md-4">
-                                                    <label class="form-label">Sub Category <span class="text-danger">*</span></label>
-                                                    <select name="sub_category_id" id="sub_category_id" class="form-select">
-                                                        <option value="">Select Sub Category</option>
-                                                    </select>
-                                                </div> -->
-
-                                                <div class="col-md-4">
-                                                    <label for="sub_category_id" class="form-label">
-                                                        Sub Category <span class="text-danger">*</span>
-                                                    </label>
-
-                                                    <select name="sub_category_id" id="sub_category_id" class="form-select" required>
-                                                        <option value="">Select Sub Category</option>
-
-                                                        @foreach ($subCategories as $sub)
-                                                        <option value="{{ $sub->id }}"
-                                                            {{ (isset($selectedSubCat) && $selectedSubCat == $sub->id) ? 'selected' : '' }}>
-                                                            {{ $sub->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-
-                                                    @error('sub_category_id')
-                                                    <span class="text-danger mt-1 d-block">{{ $message }}</span>
-                                                    @enderror
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Available Qty</label>
+                                                    <input type="text" class="form-control"
+                                                        value="{{ $batch->quantity }}"
+                                                        readonly>
                                                 </div>
-
-
-                                                <!-- Product Dropdown -->
-
-                                                <div class="col-md-4">
-                                                    <label for="product_id" class="form-label">Product Name <span
-                                                            class="text-danger">*</span></label>
-                                                    <select name="product_id" id="product_id" class="form-select ">
-                                                        <option value="">Select Product</option>
-
-                                                        @foreach ($products as $product)
-                                                        <option value="{{ $product->id }}"
-                                                            {{ (isset($selectedProduct) && $selectedProduct == $product->id) ? 'selected' : '' }}>
-                                                            {{ $product->name }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                    @error('product_id')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <label for="quantity" class="form-label">Product Quantity <span
-                                                            class="text-danger">*</span></label>
-                                                    <input type="number" name="quantity" id="quantity" min="1"
-                                                        max="{{ $availableStock }}"
-                                                        class="form-control @error('quantity') is-invalid @enderror"
-                                                        placeholder="Max available: {{ $availableStock }}">
-                                                    @error('quantity')
-                                                    <span class="text-danger mt-1">{{ $message }}</span>
-                                                    @enderror
-                                                    <small id="stock-info" class="text-muted">
-                                                        Max available in selected warehouse: {{ $availableStock }}
-                                                    </small>
-                                                </div>
-
                                             </div>
 
-                                            <div class="d-flex justify-content-end gap-2 text-success">
-                                                <a href="{{ route('batches.index') }}"
-                                                    class="btn btn-success">
+                                            {{-- Dates --}}
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Expiry Date</label>
+                                                    <input type="text" class="form-control"
+                                                        value="{{ \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') }}"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Days Left</label>
+                                                    <input type="text" class="form-control text-danger fw-bold"
+                                                        value="{{ (int)$daysLeft }} days"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Original Price (₹)</label>
+                                                    <input type="text" class="form-control"
+                                                        id="original_price"
+                                                        value="{{ $batch->product->final_price }}"
+                                                        readonly>
+                                                </div>
+                                            </div>
+
+                                            {{-- Discount --}}
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Discount % <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="number"
+                                                    name="discount_percent"
+                                                    id="discount_percent"
+                                                    class="form-control"
+                                                    min="5" max="80"
+                                                    required>
+                                                @error('discount_percent')
+                                                <small class="text-danger">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+
+                                            <hr>
+
+                                            {{-- Prices --}}
+                                            <div class="row mb-3">
+                                                <div class="col-md-3">
+                                                    <label class="form-label">MRP (₹)</label>
+                                                    <input type="text"
+                                                        class="form-control"
+                                                        id="mrp"
+                                                        value="{{ $batch->product->mrp }}"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Selling Price (₹)</label>
+                                                    <input type="text"
+                                                        class="form-control"
+                                                        id="original_price"
+                                                        value="{{ $batch->product->final_price }}"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label class="form-label text-success">Discount on MRP (₹)</label>
+                                                    <input type="text"
+                                                        class="form-control text-success fw-bold"
+                                                        id="discount_on_mrp"
+                                                        readonly>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <label class="form-label text-danger fw-bold">Final Sale Price (₹)</label>
+                                                    <input type="text"
+                                                        name="sale_price"
+                                                        id="sale_price"
+                                                        class="form-control text-danger fw-bold"
+                                                        readonly>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">
+                                                    Sale End Date <span class="text-danger">*</span>
+                                                </label>
+                                                {{-- Visible (for user) --}}
+                                                <input type="text"
+                                                    class="form-control"
+                                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('d/m/Y') }}"
+                                                    readonly>
+
+                                                {{-- Hidden (for backend) --}}
+                                                <input type="hidden"
+                                                    name="sale_end_date"
+                                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('Y-m-d') }}">
+                                                @error('sale_end_date')
+                                                <small class="text-danger">{{ $message }}</small>
+                                                @enderror
+                                            </div>
+
+
+                                            {{-- Note --}}
+                                            <!-- <div class="alert alert-warning small">
+                                                ⚠ This product will be visible <b>ONLINE ONLY</b> (Website / App).
+                                                It will NOT appear in POS or offline sales.
+                                            </div> -->
+
+                                            {{-- Actions --}}
+                                            <div class="text-end mt-6">
+                                                <a href="{{ route('batches.expiry') }}" class="btn btn-outline-success">
                                                     Back
                                                 </a>
                                                 <button type="submit" class="btn btn-success">
-                                                    PRODUCT SELL
+                                                    Put on Sale
                                                 </button>
                                             </div>
 
                                         </form>
-
                                     </div>
                                 </div>
-                            </div>
 
+                            </div>
                         </div>
+
                     </div>
 
-                    <!-- / Content -->
                     @include('layouts.footer')
                 </div>
-
-
-                <!-- Content wrapper -->
             </div>
-
-            <!-- / Layout page -->
         </div>
-
     </div>
-    <!-- / Layout wrapper -->
 </body>
 
+{{-- Scripts --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
 <script>
-    $(document).ready(function() {
+    $('#discount_percent').on('input', function() {
 
-        $('#category_id').on('change', function() {
-            let categoryId = $(this).val();
-            let warehouseId = $('#warehouse_id').val(); // must exist
-            // console.log('Selected Category ID:', categoryId, warehouseId);
-            $('#sub_category_id').html('<option value="">Loading...</option>');
-            console.log('Selected Category ID:', categoryId, warehouseId);
-            if (!categoryId || !warehouseId) {
-                $('#sub_category_id').html('<option value="">Select Sub Category</option>');
-                return;
-            }
+        let discountPercent = parseFloat($(this).val());
+        let mrp = parseFloat($('#mrp').val());
+        let sellingPrice = parseFloat($('#original_price').val());
+        let basePrice = {{ (float) $batch->product->base_price }};
 
-            $.get(
-                `/sell/ws/subcategories/${warehouseId}/${categoryId}`,
-                function(data) {
-                    let options = '<option value="">Select Sub Category</option>';
-
-                    data.forEach(sub => {
-                        options += `<option value="${sub.id}">${sub.name}</option>`;
-                    });
-
-                    $('#sub_category_id').html(options);
-                }
-            );
-        });
-
-    });
-</script>
-
-<script>
-    /* Sub Category → Product */
-    $('#sub_category_id').change(function() {
-
-        let wid = $('#warehouse_id').val();
-        let sid = $(this).val();
-
-        $('#product_id').html('<option value="">Loading...</option>');
-        $('#quantity').val('');
-        $('#stock-info').text('');
-
-        if (!sid || !wid) {
-            $('#product_id').html('<option value="">Select Product</option>');
+        if (!discountPercent || discountPercent <= 0) {
+            $('#sale_price').val('');
+            $('#discount_on_mrp').val('');
             return;
         }
 
-        $.get('/sell/ws/products/' + wid + '/' + sid, function(data) {
-            let html = '<option value="">Select Product</option>';
-            data.forEach(p => {
-                html += `<option value="${p.id}">${p.name}</option>`;
-            });
-            $('#product_id').html(html);
-        });
+        // ✅ Discount calculated on MRP
+        let discountAmount = mrp * discountPercent / 100;
+
+        // ✅ Sale price derived from MRP
+        let salePrice = mrp - discountAmount;
+
+        // ❌ Prevent below base price
+        if (salePrice < basePrice) {
+            alert(
+                'Discount too high!\n' +
+                'Sale price cannot be less than base price (₹' + basePrice + ')'
+            );
+            $(this).val('');
+            $('#sale_price').val('');
+            $('#discount_on_mrp').val('');
+            return;
+        }
+
+        $('#sale_price').val(salePrice.toFixed(2));
+        $('#discount_on_mrp').val(discountAmount.toFixed(2));
     });
-
-
-    /* Product → Quantity */
-    $('#product_id').change(function() {
-
-        let wid = $('#warehouse_id').val();
-        let pid = $(this).val();
-
-        if (!pid || !wid) return;
-
-        $.get('/sell/ws/quantity/' + wid + '/' + pid, function(qty) {
-            $('#quantity').attr('max', qty);
-            $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
-        });
-    });
-</script>
-
-<script>
-$(document).ready(function () {
-
-    let warehouseId = $('#warehouse_id').val();
-    let categoryId  = $('#category_id').val();
-    let subCatId    = "{{ $selectedSubCat ?? '' }}";
-    let productId   = "{{ $selectedProduct ?? '' }}";
-
-    // 🔁 AUTO LOAD SUB-CATEGORIES
-    if (warehouseId && categoryId) {
-        $.get(`/sell/ws/subcategories/${warehouseId}/${categoryId}`, function (data) {
-
-            let options = '<option value="">Select Sub Category</option>';
-
-            data.forEach(sub => {
-                let selected = (sub.id == subCatId) ? 'selected' : '';
-                options += `<option value="${sub.id}" ${selected}>${sub.name}</option>`;
-            });
-
-            $('#sub_category_id').html(options);
-
-            // 🔁 AUTO LOAD PRODUCTS AFTER SUB-CATEGORY
-            if (subCatId) {
-                $.get(`/sell/ws/products/${warehouseId}/${subCatId}`, function (products) {
-
-                    let html = '<option value="">Select Product</option>';
-
-                    products.forEach(p => {
-                        let selected = (p.id == productId) ? 'selected' : '';
-                        html += `<option value="${p.id}" ${selected}>${p.name}</option>`;
-                    });
-
-                    $('#product_id').html(html);
-
-                    // 🔁 AUTO LOAD QUANTITY
-                    if (productId) {
-                        $.get(`/sell/ws/quantity/${warehouseId}/${productId}`, function (qty) {
-                            $('#quantity').attr('max', qty);
-                            $('#stock-info').text(`Max available in selected warehouse: ${qty}`);
-                        });
-                    }
-                });
-            }
-        });
-    }
-});
 </script>

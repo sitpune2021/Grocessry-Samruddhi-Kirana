@@ -163,10 +163,10 @@
                                     </table>
 
                                     <!-- @if ($mode !== 'view')
-<button type="button" id="addRow" class="btn btn-outline-primary btn-sm">
-                                            + Add Item
-                                        </button>
-@endif -->
+                                    <button type="button" id="addRow" class="btn btn-outline-primary btn-sm">
+                                        + Add Item
+                                    </button>
+                                    @endif -->
 
                                     {{-- Buttons --}}
                                     <div class="mt-4 d-flex justify-content-end gap-2">
