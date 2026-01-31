@@ -21,7 +21,6 @@
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
                         <h4 class="mb-4">Billing Details</h4>
-
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label>First Name *</label>
@@ -81,7 +80,6 @@
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="getLocation(this)">
                             📍 Use Current Location
                         </button>
-
                     </div>
                 </div>
             </div>
@@ -152,6 +150,7 @@
                         </div>
 
                         <button type="button" id="rzp-button" class="btn btn-primary w-100 py-3">Place Order</button>
+                        <small id="order_error" class="text-danger d-block mt-2"></small>
 
                     </div>
                 </div>
@@ -162,145 +161,134 @@
 </div>
 
 <!-- Scripts -->
-<script>
-    function getLocation(btn) {
-        btn.innerText = '📍 Detecting...';
-        btn.disabled = true;
-        if (!navigator.geolocation) {
-            alert('Not supported');
-            btn.disabled = false;
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(pos => {
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
-                .then(res => res.json())
-                .then(data => {
-                    let addr = data.address || {};
-                    document.getElementById('address').value = `${addr.road||''} ${addr.suburb||''}`.trim();
-                    document.getElementById('city').value = addr.city || addr.town || 'Pune';
-                    document.getElementById('pincode').value = addr.postcode || '';
-                    document.getElementById('country').value = addr.country || '';
-                    btn.innerText = '📍 Location Added';
-                    btn.disabled = false;
-                });
-        }, () => {
-            btn.innerText = '📍 Use Current Location';
-            btn.disabled = false;
-            alert('Location denied');
-        });
-    }
-
-    function applyCouponFromDropdown(el) {
-        let code = el.value;
-        if (!code) return;
-        document.getElementById('coupon_code').value = code;
-        applyCoupon();
-    }
-
-    function applyCoupon() {
-        let code = document.getElementById('coupon_code').value;
-        let subtotal = parseFloat(document.getElementById('subtotal').innerText);
-        fetch("{{ route('apply.coupon') }}", {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    coupon_code: code,
-                    subtotal: subtotal
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                let msg = document.getElementById('coupon_msg');
-                if (!data.status) {
-                    msg.classList.remove('d-none', 'text-success');
-                    msg.classList.add('text-danger');
-                    msg.innerText = data.message;
-                    return;
-                }
-                msg.classList.remove('d-none', 'text-danger');
-                msg.classList.add('text-success');
-                msg.innerText = 'Coupon applied successfully';
-                document.getElementById('discountRow').classList.remove('d-none');
-                document.getElementById('discountAmount').innerText = data.discount;
-                document.getElementById('finalTotal').innerText = data.final_total;
-                document.getElementById('applied_coupon').value = code;
-                document.getElementById('coupon_discount').value = data.discount;
-            });
-    }
-
-    // Place Order button
-</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-document.getElementById('rzp-button').addEventListener('click', function () {
-
-    let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-    let form = document.getElementById('checkoutForm');
-
-    if (paymentMethod === 'Cash') {
-        form.submit();
+function getLocation(btn) {
+    btn.innerText = '📍 Detecting...';
+    btn.disabled = true;
+    if (!navigator.geolocation) {
+        alert('Not supported');
+        btn.disabled = false;
         return;
     }
+    navigator.geolocation.getCurrentPosition(pos => {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
+            .then(res => res.json())
+            .then(data => {
+                let addr = data.address || {};
+                document.getElementById('address').value = `${addr.road||''} ${addr.suburb||''}`.trim();
+                document.getElementById('city').value = addr.city || addr.town || 'Pune';
+                document.getElementById('pincode').value = addr.postcode || '';
+                document.getElementById('country').value = addr.country || '';
+                btn.innerText = '📍 Location Added';
+                btn.disabled = false;
+            });
+    }, () => {
+        btn.innerText = '📍 Use Current Location';
+        btn.disabled = false;
+        alert('Location denied');
+    });
+}
 
-    fetch(form.action, {
-        method: "POST",
-        headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-        body: new FormData(form)
+function applyCouponFromDropdown(el) {
+    let code = el.value;
+    if (!code) return;
+    document.getElementById('coupon_code').value = code;
+    applyCoupon();
+}
+
+function applyCoupon() {
+    let code = document.getElementById('coupon_code').value;
+    let subtotal = parseFloat(document.getElementById('subtotal').innerText);
+    fetch("{{ route('apply.coupon') }}", {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({ coupon_code: code, subtotal: subtotal })
     })
     .then(res => res.json())
-    .then(orderRes => {
+    .then(data => {
+        let msg = document.getElementById('coupon_msg');
+        if (!data.status) {
+            msg.classList.remove('d-none', 'text-success');
+            msg.classList.add('text-danger');
+            msg.innerText = data.message;
+            return;
+        }
+        msg.classList.remove('d-none', 'text-danger');
+        msg.classList.add('text-success');
+        msg.innerText = 'Coupon applied successfully';
+        document.getElementById('discountRow').classList.remove('d-none');
+        document.getElementById('discountAmount').innerText = data.discount;
+        document.getElementById('finalTotal').innerText = data.final_total;
+        document.getElementById('applied_coupon').value = code;
+        document.getElementById('coupon_discount').value = data.discount;
+    });
+}
 
-        fetch("/create-razorpay-order", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                amount: orderRes.amount,
-                order_id: orderRes.order_id
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
+// ✅ Clean Place Order button handler
+document.getElementById('rzp-button').addEventListener('click', function(e) {
+    e.preventDefault(); // STOP default form submit
 
-            let options = {
-                key: "{{ config('services.razorpay.key') }}",
-                amount: orderRes.amount * 100,
-                currency: "INR",
-                order_id: data.razorpay_order_id,
+    let form = document.getElementById('checkoutForm');
+    let formData = new FormData(form);
+    let errorBox = document.getElementById('order_error');
+    errorBox.textContent = '';
 
-                handler: function (response) {
-                    fetch("{{ route('payment.success') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                        },
-                        body: JSON.stringify(response)
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.status) {
-                            window.location.href = res.redirect_url;
-                        } else {
-                            alert("Payment verification failed");
-                        }
-                    });
-                }
-            };
+    // AJAX order validation
+    fetch("{{ url('/validate-order') }}", {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'error') {
+            errorBox.textContent = data.message;
+            window.scrollTo({ top: errorBox.offsetTop - 100, behavior: 'smooth' });
+        } else {
+            // Validation passed
+            let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
 
-            new Razorpay(options).open();
-        });
+            if (paymentMethod === 'Cash') {
+                form.submit(); // COD submit
+            } else {
+                // Razorpay online payment
+                let finalAmount = parseFloat(document.getElementById('finalTotal').innerText) * 100;
+                let options = {
+                    key: "{{ env('RAZORPAY_KEY') }}",
+                    amount: finalAmount,
+                    currency: "INR",
+                    name: "Your Shop",
+                    description: "Order Payment",
+                    handler: function(response) {
+                        document.getElementById('razorpay_order_id').value = response.razorpay_payment_id;
+                        document.getElementById('razorpay_amount').value = finalAmount / 100;
+                        form.submit(); // submit after payment
+                    },
+                    prefill: {
+                        name: document.querySelector('input[name="first_name"]').value,
+                        email: document.querySelector('input[name="email"]').value,
+                        contact: document.querySelector('input[name="phone"]').value
+                    },
+                    theme: { color: "#3399cc" }
+                };
+                let rzp = new Razorpay(options);
+                rzp.open();
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        errorBox.textContent = 'Something went wrong. Please try again.';
     });
 });
 </script>
-
-
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 @endsection

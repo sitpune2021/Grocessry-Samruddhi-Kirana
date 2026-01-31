@@ -865,6 +865,8 @@ Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')
     ->middleware('auth:web');
 
+Route::post('/validate-order', [CheckoutController::class, 'validateOrder'])->name('validate-order');
+
 
 Route::get('/enduserlogin', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/enduserlogin', [AuthController::class, 'login']);
