@@ -97,4 +97,15 @@ class Product extends Model
     {
         return $this->hasMany(WarehouseStock::class, 'product_id');
     }
+
+    public function onSale()
+    {
+        return $this->hasOne(OnSaleProduct::class, 'product_id');
+    }
+
+    
+    public function sale()
+    {
+        return $this->hasOne(OnSaleProduct::class, 'product_id');
+    }
 }

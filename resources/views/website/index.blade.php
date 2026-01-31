@@ -79,6 +79,83 @@
         </div>
     </div>
 
+    <!-- sell product  -->
+    <div class="container py-2">
+        <div class="row p-2">
+            <div class="col text-start">
+                <h3 class="fw-bold text-dark"
+                    style="font-family:'Poppins',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.5px;">
+                    Grab On Sale
+                </h3>
+            </div>
+        </div>
+        <div class="position-relative product-slider-wrapper">
+            <button class="slider-arrow left">&#10094;</button>
+
+            <div class="product-slider">
+                @foreach($saleproduct as $product)
+                @php
+                $image = $product->product_images[0] ?? null;
+                $sale = $product->sale; // 🔥 on_sale_products data
+                @endphp
+
+                <div class="product-slide-item">
+                    <div class="product-sm-card">
+
+                        {{-- DISCOUNT BADGE --}}
+                        @if($sale)
+                        <div class="offer-badge">
+                            {{ $sale->discount_percent }}% OFF
+                        </div>
+                        @endif
+
+                        <a href="{{ route('productdetails', $product->id) }}">
+                            <div class="product-sm-img">
+                                <img src="{{ $image
+                                    ? asset('storage/products/'.$image)
+                                    : asset('website/img/no-image.png') }}">
+                            </div>
+
+                            <div class="product-sm-title">
+                                {{ Str::limit(Str::title($product->name), 35) }}
+                            </div>
+
+                            <div class="product-unit">
+                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                {{ Str::title(optional($product->unit)->name) }}
+                            </div>
+                        </a>
+
+                        {{-- PRICE SECTION --}}
+                        <div class="product-sm-footer">
+                            <div>
+                                <span class="price-new">
+                                    ₹{{ number_format($sale->sale_price, 0) }}
+                                </span><br>
+
+                                <span class="price-old">
+                                    ₹{{ number_format($sale->mrp, 0) }}
+                                </span>
+                            </div>
+
+                            {{-- ADD TO CART --}}
+                            <form action="{{ route('add_cart') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button type="submit" class="btn-add-sm">ADD</button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <button class="slider-arrow right">&#10095;</button>
+        </div>
+    </div>
+
+
     <!-- Fruits Shop Start-->
     <div class="container-fluid fruite">
         <div class="container">
@@ -370,6 +447,7 @@
         @endforeach
     </div>
 
+    <!-- latest product  -->
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
@@ -441,6 +519,7 @@
 
     </div>
 
+    <!-- brands -->
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
