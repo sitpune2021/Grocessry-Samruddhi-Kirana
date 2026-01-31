@@ -3,19 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use Razorpay\Api\Api;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Payment;
+use Illuminate\Http\Request;
 use App\Models\UserAddress;
+use Illuminate\Support\Facades\Log;
+use Razorpay\Api\Api;
+use App\Models\Payment;
 
 class CheckoutController extends Controller
 {
-    // Checkout page
     public function index()
     {
         $userId = Auth::id();
@@ -25,7 +24,8 @@ class CheckoutController extends Controller
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart')->with('error', 'Your cart is empty');
+            return redirect()->route('cart')
+                ->with('error', 'Your cart is empty');
         }
 
         $address = UserAddress::where('user_id', $userId)->first();
@@ -38,10 +38,10 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-    // Place Order
     public function placeOrder(Request $request)
     {
         try {
+
             $request->validate([
                 'first_name' => 'required',
                 'address'    => 'required',
@@ -68,15 +68,18 @@ class CheckoutController extends Controller
                 ]) + ['type' => 1]
             );
 
-            $cart = Cart::where('user_id', auth()->id())->with('items.product')->first();
+            $cart = Cart::where('user_id', auth()->id())
+                ->with('items.product')
+                ->first();
 
             if (!$cart || $cart->items->isEmpty()) {
-                return response()->json(['status' => false, 'message' => 'Cart empty']);
+                return redirect()->route('cart')->with('error', 'Cart empty');
             }
 
             // Coupon calculation
             $couponDiscount = 0;
             $couponCode = null;
+
             if ($request->coupon_code) {
                 $coupon = Coupon::where('code', $request->coupon_code)
                     ->where('status', 1)
@@ -86,11 +89,16 @@ class CheckoutController extends Controller
                     ->first();
 
                 if ($coupon) {
-                    $couponDiscount = $coupon->discount_type === 'percentage'
-                        ? ($cart->subtotal * $coupon->discount_value) / 100
-                        : $coupon->discount_value;
+                    if ($coupon->discount_type === 'percentage') {
+                        $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
+                    } else {
+                        $couponDiscount = $coupon->discount_value;
+                    }
 
-                    if ($couponDiscount > $cart->subtotal) $couponDiscount = $cart->subtotal;
+                    if ($couponDiscount > $cart->subtotal) {
+                        $couponDiscount = $cart->subtotal;
+                    }
+
                     $couponCode = $coupon->code;
                 }
             }
@@ -99,67 +107,38 @@ class CheckoutController extends Controller
 
             // Create Order
             $order = Order::create([
-                'user_id'         => auth()->id(),
-                'warehouse_id'    => 0,
-                'order_number'    => 'ORD-' . time(),
-                'channel'         => 'web',
-                'subtotal'        => $cart->subtotal,
-                'discount'        => $couponDiscount,
-                'coupon_discount' => $couponDiscount,
-                'coupon_code'     => $couponCode,
-                'delivery_charge' => 0,
-                'total_amount'    => $finalTotal,
-                'payment_method'  => $request->payment_method,
-                'payment_status'   => 'pending',
-                'status'          => 'pending',
-                'order_type'      => 'delivery',
+                'user_id'          => auth()->id(),
+                'warehouse_id'     => 0,
+                'order_number'     => 'ORD-' . time(),
+                'channel'          => 'web',
+                'subtotal'         => $cart->subtotal,
+                'discount'         => $couponDiscount,
+                'coupon_discount'  => $couponDiscount,
+                'coupon_code'      => $couponCode,
+                'delivery_charge'  => 0,
+                'total_amount'     => $finalTotal,
+                'payment_method'   => $request->payment_method,
+                'payment_status'   => 'pending', // ✅ FIX
+                'status'           => 'pending',
+                'order_type'       => 'delivery',
+                'razorpay_order_id' => $request->razorpay_order_id ?? null,
             ]);
 
-            // Create Payment record
-            $payment = Payment::create([
-                'order_id'        => $order->id,
-                'user_id'         => auth()->id(),
-                'payment_gateway' => $request->payment_method === 'online' ? 'razorpay' : 'cash',
-                'amount'          => $order->total_amount,
-                'status'          => 'pending',
-                'meta'            => json_encode(['order_number' => $order->order_number])
+
+            Payment::create([
+                'order_id' => $order->id,
+                'user_id'  => auth()->id(),
+                'payment_gateway' => $request->payment_method === 'online'
+                    ? 'razorpay'
+                    : 'cash',
+                'razorpay_order_id' => $request->razorpay_order_id ?? null,
+                'amount' => $order->total_amount,
+                'status' => 'pending',
+                'meta' => json_encode([
+                    'order_number' => $order->order_number
+                ])
             ]);
 
-            // If online payment, create Razorpay order
-            if ($request->payment_method === 'online') {
-                $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
-
-                $razorpayOrder = $api->order->create([
-                    'receipt'  => $order->order_number,
-                    'amount'   => $finalTotal * 100, // paise
-                    'currency' => 'INR',
-                ]);
-
-                $razorpayOrderId = $razorpayOrder['id'];
-
-                // Save razorpay order ID in both tables
-                $order->update(['razorpay_order_id' => $razorpayOrderId]);
-                $payment->update(['razorpay_order_id' => $razorpayOrderId]);
-            } else {
-                $razorpayOrderId = null;
-            }
-
-            // Check if this is a Razorpay payment success callback
-            if ($request->has('razorpay_payment_id')) {
-                // Update Payment record
-                $payment->update([
-                    'payment_id' => $request->razorpay_payment_id,
-                    'razorpay_signature' => $request->razorpay_signature,
-                    'status' => 'success',
-                ]);
-
-                $order->update([
-                    'payment_status' => 'paid',
-                    'status' => 'confirmed',
-                ]);
-
-              
-            }
 
             // Create Order Items
             foreach ($cart->items as $item) {
@@ -176,49 +155,26 @@ class CheckoutController extends Controller
             // Clear cart
             $cart->items()->delete();
             $cart->delete();
-            return redirect()->route('website.success', $order->id)
-                ->with('success', 'Payment successful!');
 
-           
+            return redirect()->route('my_orders')
+                ->with('success', 'Order placed successfully!');
         } catch (\Exception $e) {
             Log::error('Order Error', ['error' => $e->getMessage()]);
-            return response()->json(['status' => false, 'message' => 'Something went wrong']);
+            return back()->with('error', 'Something went wrong');
         }
     }
 
-    // Razorpay success callback
-    public function paymentSuccess(Request $request)
+    public function thankYou(Order $order)
     {
-        $request->validate([
-            'order_id' => 'required',
-            'razorpay_payment_id' => 'required',
-            'razorpay_signature' => 'required',
-        ]);
+        // Security: only owner can see
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
 
-        $order = Order::findOrFail($request->order_id);
-
-        // Update Payment
-        Payment::where('order_id', $order->id)->update([
-            'payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature,
-            'status' => 'success',
-        ]);
-
-        // Update Order
-        $order->update([
-            'payment_status' => 'paid',
-            'status' => 'confirmed',
-        ]);
-
-        // ✅ SUCCESS PAGE OPEN
-        return redirect()->route('website.success', $order->id)
-            ->with('success', 'Payment successful!');
+        return view('website.thank-you', compact('order'));
     }
 
 
-
-
-    // Apply Coupon via AJAX
     public function applyCoupon(Request $request)
     {
         $coupon = Coupon::where('code', $request->coupon_code)
@@ -228,11 +184,17 @@ class CheckoutController extends Controller
             ->first();
 
         if (!$coupon) {
-            return response()->json(['status' => false, 'message' => 'Invalid or expired coupon']);
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid or expired coupon'
+            ]);
         }
 
         if ($request->subtotal < $coupon->min_amount) {
-            return response()->json(['status' => false, 'message' => 'Minimum order ₹' . $coupon->min_amount . ' required']);
+            return response()->json([
+                'status' => false,
+                'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
+            ]);
         }
 
         $discount = $coupon->discount_type === 'percentage'

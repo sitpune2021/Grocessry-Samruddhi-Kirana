@@ -11,9 +11,7 @@
         @csrf
         <input type="hidden" name="coupon_code" id="applied_coupon">
         <input type="hidden" name="coupon_discount" id="coupon_discount">
-        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id" value="{{ $razorpay_order_id ?? '' }}">
-        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
-        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
         <input type="hidden" name="razorpay_amount" id="razorpay_amount">
 
         <div class="row g-5">
@@ -235,45 +233,38 @@
 
     // Place Order button
     document.getElementById('rzp-button').addEventListener('click', function() {
-    let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-    let form = document.getElementById('checkoutForm');
+        let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        let form = document.getElementById('checkoutForm');
 
-    if (paymentMethod === 'Cash') {
-        form.submit(); // Direct submit for cash
-    } else {
-        // Online payment → open Razorpay popup
-        let finalAmount = parseFloat(document.getElementById('finalTotal').textContent) * 100;
-        let razorpayOrderId = document.getElementById('razorpay_order_id').value;
-
-        var options = {
-            "key": "{{ env('RAZORPAY_KEY') }}",
-            "amount": finalAmount,
-            "currency": "INR",
-            "name": "Your Shop",
-            "description": "Order Payment",
-            "order_id": razorpayOrderId,
-            "handler": function(response) {
-                // Fill hidden inputs
-                document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
-                document.getElementById('razorpay_signature').value = response.razorpay_signature;
-                document.getElementById('razorpay_amount').value = finalAmount / 100;
-
-                // Submit the form → triggers backend, which redirects to Thank You page
-                form.submit();
-            },
-            "prefill": {
-                "name": document.querySelector('input[name="first_name"]').value,
-                "email": document.querySelector('input[name="email"]').value,
-                "contact": document.querySelector('input[name="phone"]').value
-            },
-            "theme": { "color": "#3399cc" }
-        };
-
-        let rzp = new Razorpay(options);
-        rzp.open();
-    }
-});
-
+        if (paymentMethod === 'Cash') {
+            form.submit();
+        } else {
+            // Razorpay options
+            let finalAmount = parseFloat(document.getElementById('finalTotal').innerText) * 100; // in paise
+            let options = {
+                "key": "{{ env('RAZORPAY_KEY') }}",
+                "amount": finalAmount,
+                "currency": "INR",
+                "name": "Your Shop",
+                "description": "Order Payment",
+                "handler": function(response) {
+                    document.getElementById('razorpay_order_id').value = response.razorpay_payment_id;
+                    document.getElementById('razorpay_amount').value = finalAmount / 100;
+                    form.submit();
+                },
+                "prefill": {
+                    "name": document.querySelector('input[name="first_name"]').value,
+                    "email": document.querySelector('input[name="email"]').value,
+                    "contact": document.querySelector('input[name="phone"]').value
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            let rzp = new Razorpay(options);
+            rzp.open();
+        }
+    });
 </script>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
