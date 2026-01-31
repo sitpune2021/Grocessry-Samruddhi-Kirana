@@ -14,7 +14,7 @@
                 </div>
             </div>
 
-            
+
             <!-- Search -->
             <x-datatable-search />
             <div class="table-responsive mt-5 p-3">
@@ -23,6 +23,9 @@
                     <thead class="table-light">
                         <tr>
                             <th>Sr No</th>
+                            @if(auth()->user()->role_id == 1)
+                            <th>Warehouse</th>
+                            @endif
                             <th>Product</th>
                             <th>Batch</th>
                             <th>Qty</th>
@@ -49,6 +52,13 @@
 
                                 <tr style="{{ $rowStyle }}">
                                     <td style="width: 30px;">{{ $loop->iteration }}</td>
+                                    @if(auth()->user()->role_id == 1)
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ $batch->warehouse->name ?? '-' }}
+                                        </span>
+                                    </td>
+                                    @endif
                                     <td>{{ $batch->product->name ?? '' }}</td>
                                     <td>{{ $batch->batch_no }}</td>
                                     <td>{{ $batch->quantity }}</td>
@@ -62,9 +72,9 @@
                                     <td align="center" class="text-success">
                                         @if($batch->quantity > 0 && $batch->expiry_date >= now())
                                         <a href="{{ route('sale.create', ['batch_id' => $batch->id]) }}"
-                                            title="Sell Product"
-                                            class="text-success">
-                                            🛒 Sale
+                                            title="Sale Product"
+                                            class="btn btn-success btn-sm text-white">
+                                             Sale <i class="bx bx-cart me-1"></i>
                                         </a>
                                         @else
                                         ❌

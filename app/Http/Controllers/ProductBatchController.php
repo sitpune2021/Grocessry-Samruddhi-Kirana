@@ -303,26 +303,28 @@ class ProductBatchController extends Controller
         return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
     }
 
-    public function expiryAlerts()
-    {
-        $user = Auth::user();
+   public function expiryAlerts()
+{
+    $user = Auth::user();
 
-        $query = ProductBatch::with(['product', 'warehouse'])
-            ->where('quantity', '>', 0)
-            ->whereDate('expiry_date', '<=', now()->addDays(30));
+    $query = ProductBatch::with(['product', 'warehouse'])
+        ->where('quantity', '>', 0)
+        ->whereDate('expiry_date', '<=', now()->addDays(30));
 
-        if ($user->role_id != 1) {
-            $query->where('warehouse_id', $user->warehouse_id);
-        }
-
-        // Super Admin → all warehouses (no filter)
-
-        $batches = $query
-            ->orderBy('expiry_date')
-            ->paginate();
-
-        return view('batches.expiry', compact('batches'));
+    // Non-super admin → restrict to own warehouse
+    if ($user->role_id != 1) {
+        $query->where('warehouse_id', $user->warehouse_id);
     }
+
+    // Super admin → sees all warehouses (no filter)
+
+    $batches = $query
+        ->orderBy('expiry_date')
+        ->paginate(15);
+
+    return view('batches.expiry', compact('batches'));
+}
+
 
     public function getCategoriesByWarehouse($warehouseId)
     {
