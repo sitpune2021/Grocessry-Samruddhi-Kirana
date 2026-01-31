@@ -38,138 +38,155 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
+    public function createRazorpayOrder(Request $request)
+    {
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        $razorpayOrder = $api->order->create([
+            'receipt' => 'ORD-' . time(),
+            'amount' => $request->amount * 100,
+            'currency' => 'INR'
+        ]);
+
+        Order::where('id', $request->order_id)->update([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+
+        Payment::where('order_id', $request->order_id)->update([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+
+        return response()->json([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+    }
+
+
     public function placeOrder(Request $request)
     {
-        try {
+        $request->validate([
+            'first_name' => 'required',
+            'address'    => 'required',
+            'city'       => 'required',
+            'country'    => 'required',
+            'postcode'   => 'required',
+            'phone'      => 'required',
+            'email'      => 'required|email',
+            'payment_method' => 'required',
+        ]);
 
-            $request->validate([
-                'first_name' => 'required',
-                'address'    => 'required',
-                'city'       => 'required',
-                'country'    => 'required',
-                'postcode'   => 'required',
-                'phone'      => 'required',
-                'email'      => 'required|email',
-                'payment_method' => 'required',
-            ]);
+        UserAddress::updateOrCreate(
+            ['user_id' => auth()->id(), 'type' => 1],
+            $request->only([
+                'first_name',
+                'last_name',
+                'address',
+                'city',
+                'country',
+                'postcode',
+                'phone',
+                'email'
+            ]) + ['type' => 1]
+        );
 
-            // Save or update user address
-            UserAddress::updateOrCreate(
-                ['user_id' => auth()->id(), 'type' => 1],
-                $request->only([
-                    'first_name',
-                    'last_name',
-                    'address',
-                    'city',
-                    'country',
-                    'postcode',
-                    'phone',
-                    'email'
-                ]) + ['type' => 1]
-            );
+        $cart = Cart::with('items.product')
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
 
-            $cart = Cart::where('user_id', auth()->id())
-                ->with('items.product')
-                ->first();
+        $finalTotal = $cart->subtotal;
 
-            if (!$cart || $cart->items->isEmpty()) {
-                return redirect()->route('cart')->with('error', 'Cart empty');
-            }
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'order_number' => 'ORD-' . time(),
+            'channel' => 'web',
+            'subtotal' => $cart->subtotal,
+            'total_amount' => $finalTotal,
+            'payment_method' => $request->payment_method,
+            'payment_status' => 'pending',
+            'status' => 'pending',
+            'order_type' => 'delivery',
+        ]);
 
-            // Coupon calculation
-            $couponDiscount = 0;
-            $couponCode = null;
+        Payment::create([
+            'order_id' => $order->id,
+            'user_id' => auth()->id(),
+            'payment_gateway' => $request->payment_method === 'online' ? 'razorpay' : 'cash',
+            'amount' => $order->total_amount,
+            'status' => 'pending'
+        ]);
 
-            if ($request->coupon_code) {
-                $coupon = Coupon::where('code', $request->coupon_code)
-                    ->where('status', 1)
-                    ->whereDate('start_date', '<=', now())
-                    ->whereDate('end_date', '>=', now())
-                    ->where('min_amount', '<=', $cart->subtotal)
-                    ->first();
-
-                if ($coupon) {
-                    if ($coupon->discount_type === 'percentage') {
-                        $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
-                    } else {
-                        $couponDiscount = $coupon->discount_value;
-                    }
-
-                    if ($couponDiscount > $cart->subtotal) {
-                        $couponDiscount = $cart->subtotal;
-                    }
-
-                    $couponCode = $coupon->code;
-                }
-            }
-
-            $finalTotal = $cart->subtotal - $couponDiscount;
-
-            // Create Order
-            $order = Order::create([
-                'user_id'          => auth()->id(),
-                'warehouse_id'     => 0,
-                'order_number'     => 'ORD-' . time(),
-                'channel'          => 'web',
-                'subtotal'         => $cart->subtotal,
-                'discount'         => $couponDiscount,
-                'coupon_discount'  => $couponDiscount,
-                'coupon_code'      => $couponCode,
-                'delivery_charge'  => 0,
-                'total_amount'     => $finalTotal,
-                'payment_method'   => $request->payment_method,
-                'payment_status'   => 'pending', // ✅ FIX
-                'status'           => 'pending',
-                'order_type'       => 'delivery',
-                'razorpay_order_id' => $request->razorpay_order_id ?? null,
-            ]);
-
-
-            Payment::create([
+        foreach ($cart->items as $item) {
+            OrderItem::create([
                 'order_id' => $order->id,
-                'user_id'  => auth()->id(),
-                'payment_gateway' => $request->payment_method === 'online'
-                    ? 'razorpay'
-                    : 'cash',
-                'razorpay_order_id' => $request->razorpay_order_id ?? null,
-                'amount' => $order->total_amount,
-                'status' => 'pending',
-                'meta' => json_encode([
-                    'order_number' => $order->order_number
-                ])
+                'product_id' => $item->product_id,
+                'quantity' => $item->qty,
+                'price' => $item->price,
+                'line_total' => $item->line_total,
+                'total' => $item->line_total,
             ]);
+        }
 
-
-            // Create Order Items
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id'   => $order->id,
-                    'product_id' => $item->product_id,
-                    'quantity'   => $item->qty,
-                    'price'      => $item->price,
-                    'line_total' => $item->line_total,
-                    'total'      => $item->line_total,
-                ]);
-            }
-
-            // Clear cart
+        // CASH → normal redirect
+        if ($request->payment_method === 'Cash') {
             $cart->items()->delete();
             $cart->delete();
 
             return redirect()->route('my_orders')
-                ->with('success', 'Order placed successfully!');
-        } catch (\Exception $e) {
-            Log::error('Order Error', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Something went wrong');
+                ->with('success', 'Order placed successfully');
         }
+
+        // ONLINE → JSON response
+        return response()->json([
+            'status' => true,
+            'order_id' => $order->id,
+            'amount' => $order->total_amount
+        ]);
     }
+
+ public function paymentSuccess(Request $request)
+{
+    $api = new Api(
+        config('services.razorpay.key'),
+        config('services.razorpay.secret')
+    );
+
+    try {
+        $api->utility->verifyPaymentSignature([
+            'razorpay_order_id' => $request->razorpay_order_id,
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature
+        ]);
+
+        $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+
+        Payment::where('order_id', $order->id)->update([
+            'payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature,
+            'status' => 'success'
+        ]);
+
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'confirmed'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'redirect_url' => route('thank_you', $order->id)
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Razorpay Error', ['error' => $e->getMessage()]);
+        return response()->json(['status' => false], 400);
+    }
+}
 
     public function thankYou(Order $order)
     {
         // Security: only owner can see
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
-        }
+      
 
         return view('website.thank-you', compact('order'));
     }

@@ -110,7 +110,7 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('razorpay.verify');
 
     Route::post('/razorpay/failure', [PaymentGetwayController::class, 'razorpayFailure'])
-    ->name('razorpay.failure');
+        ->name('razorpay.failure');
 
 
 
@@ -269,7 +269,7 @@ Route::middleware(['auth:admin'])->group(function () {
         [DeliveryAgentController::class, 'updateOrderStatus']
     )->name('admin.status.update');
 
-        Route::post(
+    Route::post(
         '/status-update',
         [DeliveryAgentController::class, 'updateOrderStatus']
     )->name('admin.status.update');
@@ -387,6 +387,12 @@ Route::middleware(['auth:admin'])->group(function () {
             [RetailerPricingController::class, 'getProductsByCategory']
         );
     });
+    Route::post(
+        '/checkout/razorpay/verify',
+        [PaymentGetwayController::class, 'verifyRazorpayPayment']
+    )->name('checkout.razorpay.verify')
+        ->middleware('auth:web');
+
 
     // 🔥 WEBSITE CHECKOUT RAZORPAY (WEB USER)
     Route::post(
@@ -395,18 +401,15 @@ Route::middleware(['auth:admin'])->group(function () {
     )->name('checkout.razorpay.create')
         ->middleware('auth:web');
 
-    Route::post(
-        '/checkout/razorpay/verify',
-        [PaymentGetwayController::class, 'verifyRazorpayPayment']
-    )->name('checkout.razorpay.verify')
-        ->middleware('auth:web');
+    Route::post('/create-razorpay-order', [CheckoutController::class, 'createRazorpayOrder']);
 
-  Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
-    ->name('payment.success');
 
-Route::get('/success/{order}', function (Order $order) {
-    return view('website.success', compact('order'));
-})->name('website.success');
+    Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
+        ->name('payment.success');
+
+    Route::get('/thank-you/{order}', [CheckoutController::class, 'thankYou'])
+        ->name('thank_you')
+        ->middleware('auth');
 
 
 

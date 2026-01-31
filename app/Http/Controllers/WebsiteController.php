@@ -55,11 +55,18 @@ class WebsiteController extends Controller
 
         // ALL PRODUCTS (always)
         $allProducts = Product::whereNull('deleted_at')
+            ->whereDoesntHave('sale', function ($q) {
+                $q->active()->online();
+            })
             ->latest()
             ->paginate(12, ['*'], 'all_page');
 
 
+
         $latestPro = Product::whereNull('deleted_at')
+            ->whereDoesntHave('sale', function ($q) {
+                $q->active()->online();
+            })
             ->orderBy('id', 'DESC')
             ->take(12)
             ->get();
@@ -67,12 +74,16 @@ class WebsiteController extends Controller
 
         // CATEGORY PRODUCTS
         $categoryProducts = Product::whereNull('deleted_at')
+            ->whereDoesntHave('sale', function ($q) {
+                $q->active()->online();
+            })
             ->when($categoryId, function ($q) use ($categoryId) {
                 $q->where('category_id', $categoryId);
             })
             ->latest()
             ->paginate(8, ['*'], 'cat_page')
             ->withQueryString();
+
 
         return view('website.index', compact(
             'banners',

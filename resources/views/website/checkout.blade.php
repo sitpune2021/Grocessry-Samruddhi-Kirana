@@ -232,40 +232,74 @@
     }
 
     // Place Order button
-    document.getElementById('rzp-button').addEventListener('click', function() {
-        let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        let form = document.getElementById('checkoutForm');
+</script>
 
-        if (paymentMethod === 'Cash') {
-            form.submit();
-        } else {
-            // Razorpay options
-            let finalAmount = parseFloat(document.getElementById('finalTotal').innerText) * 100; // in paise
+<script>
+document.getElementById('rzp-button').addEventListener('click', function () {
+
+    let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+    let form = document.getElementById('checkoutForm');
+
+    if (paymentMethod === 'Cash') {
+        form.submit();
+        return;
+    }
+
+    fetch(form.action, {
+        method: "POST",
+        headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" },
+        body: new FormData(form)
+    })
+    .then(res => res.json())
+    .then(orderRes => {
+
+        fetch("/create-razorpay-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                amount: orderRes.amount,
+                order_id: orderRes.order_id
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
             let options = {
-                "key": "{{ env('RAZORPAY_KEY') }}",
-                "amount": finalAmount,
-                "currency": "INR",
-                "name": "Your Shop",
-                "description": "Order Payment",
-                "handler": function(response) {
-                    document.getElementById('razorpay_order_id').value = response.razorpay_payment_id;
-                    document.getElementById('razorpay_amount').value = finalAmount / 100;
-                    form.submit();
-                },
-                "prefill": {
-                    "name": document.querySelector('input[name="first_name"]').value,
-                    "email": document.querySelector('input[name="email"]').value,
-                    "contact": document.querySelector('input[name="phone"]').value
-                },
-                "theme": {
-                    "color": "#3399cc"
+                key: "{{ config('services.razorpay.key') }}",
+                amount: orderRes.amount * 100,
+                currency: "INR",
+                order_id: data.razorpay_order_id,
+
+                handler: function (response) {
+                    fetch("{{ route('payment.success') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify(response)
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status) {
+                            window.location.href = res.redirect_url;
+                        } else {
+                            alert("Payment verification failed");
+                        }
+                    });
                 }
             };
-            let rzp = new Razorpay(options);
-            rzp.open();
-        }
+
+            new Razorpay(options).open();
+        });
     });
+});
 </script>
+
+
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
