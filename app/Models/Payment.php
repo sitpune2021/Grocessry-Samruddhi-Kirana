@@ -16,10 +16,12 @@ class Payment extends Model
         'user_id',
         'payment_gateway',
         'payment_id',
+        'attempt_no',
         'razorpay_order_id',
         'razorpay_signature',
         'amount',
         'status',
+        'failure_reason',
         'meta'
     ];
 

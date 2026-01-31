@@ -109,9 +109,9 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment'])
         ->name('razorpay.verify');
 
-    Route::get('/pos/payment-failed/{order}', function (Order $order) {
-        return view('pos.payment-failed', compact('order'));
-    })->name('pos.payment.failed');
+    Route::post('/razorpay/failure', [PaymentGetwayController::class, 'razorpayFailure'])
+    ->name('razorpay.failure');
+
 
 
 
