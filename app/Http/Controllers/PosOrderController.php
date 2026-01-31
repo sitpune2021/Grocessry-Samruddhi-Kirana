@@ -92,10 +92,12 @@ class PosOrderController extends Controller
 
         if (in_array($request->payment_method, ['online'])) {
             return response()->json([
-                'order_id' => $order->id,
-                'amount'   => $order->total_amount
+                'order_id'     => $order->id,
+                'order_number' => $order->order_number,
+                'amount'       => $order->total_amount
             ]);
         }
+
 
         // CASH FLOW
         if ($isAjax) {
@@ -104,6 +106,7 @@ class PosOrderController extends Controller
                 'redirect' => route('pos.invoice', $order->id)
             ]);
         }
+
 
         return redirect()
             ->route('pos.invoice', $order->id)
