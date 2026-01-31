@@ -43,211 +43,155 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-  
+    public function createRazorpayOrder(Request $request)
+    {
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        $razorpayOrder = $api->order->create([
+            'receipt' => 'ORD-' . time(),
+            'amount' => $request->amount * 100,
+            'currency' => 'INR'
+        ]);
+
+        Order::where('id', $request->order_id)->update([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+
+        Payment::where('order_id', $request->order_id)->update([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+
+        return response()->json([
+            'razorpay_order_id' => $razorpayOrder['id']
+        ]);
+    }
 
 
-
-public function placeOrder(Request $request)
-{
-    DB::beginTransaction();
-
-    try {
-        Log::info('PlaceOrder started', $request->all());
-
-        // 1️⃣ Validation
+    public function placeOrder(Request $request)
+    {
         $request->validate([
-            'first_name'     => 'required',
-            'last_name'      => 'required',
-            'address'        => 'required',
-            'city'           => 'required',
-            'country'        => 'required',
-            'postcode'       => 'required',
-            'phone'          => 'required',
-            'email'          => 'required|email',
+            'first_name' => 'required',
+            'address'    => 'required',
+            'city'       => 'required',
+            'country'    => 'required',
+            'postcode'   => 'required',
+            'phone'      => 'required',
+            'email'      => 'required|email',
             'payment_method' => 'required',
         ]);
 
-        Log::info('Validation passed');
-
-        // 2️⃣ Save or update user address
-        $userAddress = UserAddress::updateOrCreate(
+        UserAddress::updateOrCreate(
             ['user_id' => auth()->id(), 'type' => 1],
             $request->only([
-                'first_name', 'last_name', 'address', 'city', 'country', 'postcode', 'phone', 'email'
+                'first_name',
+                'last_name',
+                'address',
+                'city',
+                'country',
+                'postcode',
+                'phone',
+                'email'
             ]) + ['type' => 1]
         );
 
-        Log::info('User address saved', $userAddress->toArray());
-
-        // 3️⃣ Load cart
         $cart = Cart::with('items.product')
             ->where('user_id', auth()->id())
-            ->first();
+            ->firstOrFail();
 
-        if (!$cart || $cart->items->isEmpty()) {
-            Log::warning('Cart empty for user '.auth()->id());
-            return redirect()->route('cart')->with('error', 'Cart is empty.');
-        }
-
-        Log::info('Cart loaded', $cart->toArray());
-
-        // 4️⃣ Find district by user city
-        $district = District::where('name', $request->city)->first();
-        if (!$district) {
-            Log::error('District not found for city: '.$request->city);
-            return back()->with('error', 'Invalid city selected.');
-        }
-        Log::info('District found', $district->toArray());
-
-        // 5️⃣ Find distribution center in that district
-        $distributionCenter = Warehouse::where('type', 'distribution_center')
-            ->where('district_id', $district->id)
-            ->where('status', 'active')
-            ->first();
-
-        if (!$distributionCenter) {
-            Log::error('No distribution center in district: '.$district->name);
-            return back()->with('error', 'No distribution center available in your area.');
-        }
-        Log::info('Distribution center found', $distributionCenter->toArray());
-
-        // 6️⃣ Stock check
-        foreach ($cart->items as $item) {
-            $stockQty = DB::table('warehouse_stock')
-                ->where('warehouse_id', $distributionCenter->id)
-                ->where('product_id', $item->product_id)
-                ->sum('quantity');
-
-            if ($stockQty < $item->qty) {
-                Log::error("Product out of stock", ['product' => $item->product_id]);
-                return back()->with('error', "Product '{$item->product->name}' is out of stock.");
-            }
-        }
-
-        // 7️⃣ Create order
         $finalTotal = $cart->subtotal;
 
         $order = Order::create([
-            'user_id'          => auth()->id(),
-            'warehouse_id'     => $distributionCenter->id,
-            'order_number'     => 'ORD-' . time(),
-            'channel'          => 'web',
-            'subtotal'         => $cart->subtotal,
-            'discount'         => 0,
-            'coupon_discount'  => 0,
-            'coupon_code'      => null,
-            'delivery_charge'  => 0,
-            'total_amount'     => $finalTotal,
-            'payment_method'   => $request->payment_method,
-            'payment_status'   => 'pending',
-            'status'           => 'pending',
-            'order_type'       => 'delivery',
+            'user_id' => auth()->id(),
+            'order_number' => 'ORD-' . time(),
+            'channel' => 'web',
+            'subtotal' => $cart->subtotal,
+            'total_amount' => $finalTotal,
+            'payment_method' => $request->payment_method,
+            'payment_status' => 'pending',
+            'status' => 'pending',
+            'order_type' => 'delivery',
         ]);
 
-        Log::info('Order created', $order->toArray());
+        Payment::create([
+            'order_id' => $order->id,
+            'user_id' => auth()->id(),
+            'payment_gateway' => $request->payment_method === 'online' ? 'razorpay' : 'cash',
+            'amount' => $order->total_amount,
+            'status' => 'pending'
+        ]);
 
-        // 8️⃣ Create order items
         foreach ($cart->items as $item) {
-            Log::info('Creating OrderItem', $item->toArray());
             OrderItem::create([
-                'order_id'        => $order->id,
-                'product_id'      => $item->product_id,
-                'product_batch_id'=> $item->product_batch_id ?? null,
-                'quantity'        => $item->qty,
-                'price'           => $item->price,
-                'tax_percent'     => $item->tax_percent ?? 0,
-                'tax_amount'      => $item->tax_amount ?? 0,
-                'line_total'      => $item->line_total,
-                'total'           => $item->line_total,
-                'is_picked'       => false,
+                'order_id' => $order->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->qty,
+                'price' => $item->price,
+                'line_total' => $item->line_total,
+                'total' => $item->line_total,
             ]);
         }
 
-        // 9️⃣ Clear cart
-        $cart->items()->delete();
-        $cart->delete();
+        // CASH → normal redirect
+        if ($request->payment_method === 'Cash') {
+            $cart->items()->delete();
+            $cart->delete();
 
-        DB::commit();
+            return redirect()->route('my_orders')
+                ->with('success', 'Order placed successfully');
+        }
 
-        Log::info('Order placed successfully', ['order_id' => $order->id]);
-        return redirect()->route('my_orders')->with('success', 'Order placed successfully!');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Order placement failed', [
-            'message' => $e->getMessage(),
-            'trace'   => $e->getTraceAsString()
+        // ONLINE → JSON response
+        return response()->json([
+            'status' => true,
+            'order_id' => $order->id,
+            'amount' => $order->total_amount
         ]);
-        return back()->with('error', 'Something went wrong while placing the order.');
     }
-}
 
-
-public function validateOrder(Request $request)
+ public function paymentSuccess(Request $request)
 {
-    // 1️⃣ Basic validation
-    $validator = Validator::make($request->all(), [
-        'first_name'     => 'required',
-        'last_name'      => 'required',
-        'address'        => 'required',
-        'city'           => 'required',
-        'country'        => 'required',
-        'postcode'       => 'required',
-        'phone'          => 'required',
-        'email'          => 'required|email',
-        'payment_method' => 'required',
-    ]);
+    $api = new Api(
+        config('services.razorpay.key'),
+        config('services.razorpay.secret')
+    );
 
-    if ($validator->fails()) {
-        return response()->json(['status' => 'error', 'message' => $validator->errors()->first()]);
+    try {
+        $api->utility->verifyPaymentSignature([
+            'razorpay_order_id' => $request->razorpay_order_id,
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature
+        ]);
+
+        $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+
+        Payment::where('order_id', $order->id)->update([
+            'payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature,
+            'status' => 'success'
+        ]);
+
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'confirmed'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'redirect_url' => route('thank_you', $order->id)
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Razorpay Error', ['error' => $e->getMessage()]);
+        return response()->json(['status' => false], 400);
     }
-
-    // 2️⃣ District check
-    $district = District::where('name', $request->city)->first();
-    if (!$district) {
-        return response()->json(['status' => 'error', 'message' => 'We do not deliver to this city.']);
-    }
-
-    // 3️⃣ Distribution center check
-    $distributionCenter = Warehouse::where('type', 'distribution_center')
-        ->where('district_id', $district->id)
-        ->where('status', 'active')
-        ->first();
-
-    if (!$distributionCenter) {
-        return response()->json(['status' => 'error', 'message' => 'No distribution center available in your area.']);
-    }
-
-    // 4️⃣ Stock check
-    $cart = Cart::with('items.product')->where('user_id', auth()->id())->first();
-    if (!$cart || $cart->items->isEmpty()) {
-        return response()->json(['status' => 'error', 'message' => 'Your cart is empty.']);
-    }
-
-    foreach ($cart->items as $item) {
-        $stockQty = DB::table('warehouse_stock')
-            ->where('warehouse_id', $distributionCenter->id)
-            ->where('product_id', $item->product_id)
-            ->sum('quantity');
-
-        if ($stockQty < $item->qty) {
-            return response()->json([
-                'status' => 'error',
-                'message' => "Product '{$item->product->name}' is out of stock or requested quantity exceeds available stock."
-            ]);
-        }
-    }
-
-    return response()->json(['status' => 'success']);
 }
-
 
     public function thankYou(Order $order)
     {
         // Security: only owner can see
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
-        }
+      
 
         return view('website.thank-you', compact('order'));
     }

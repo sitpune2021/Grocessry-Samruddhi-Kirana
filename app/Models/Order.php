@@ -83,4 +83,6 @@ class Order extends Model
                     ->with('user'); // eager load the related user
     }
 
+    
+
 }
