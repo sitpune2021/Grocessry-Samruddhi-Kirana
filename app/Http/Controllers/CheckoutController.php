@@ -12,6 +12,11 @@ use App\Models\UserAddress;
 use Illuminate\Support\Facades\Log;
 use Razorpay\Api\Api;
 use App\Models\Payment;
+use App\Models\Warehouse;
+use App\Models\District;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
 
 class CheckoutController extends Controller
 {
@@ -38,131 +43,204 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-    public function placeOrder(Request $request)
-    {
-        try {
+  
 
-            $request->validate([
-                'first_name' => 'required',
-                'address'    => 'required',
-                'city'       => 'required',
-                'country'    => 'required',
-                'postcode'   => 'required',
-                'phone'      => 'required',
-                'email'      => 'required|email',
-                'payment_method' => 'required',
-            ]);
 
-            // Save or update user address
-            UserAddress::updateOrCreate(
-                ['user_id' => auth()->id(), 'type' => 1],
-                $request->only([
-                    'first_name',
-                    'last_name',
-                    'address',
-                    'city',
-                    'country',
-                    'postcode',
-                    'phone',
-                    'email'
-                ]) + ['type' => 1]
-            );
 
-            $cart = Cart::where('user_id', auth()->id())
-                ->with('items.product')
-                ->first();
+public function placeOrder(Request $request)
+{
+    DB::beginTransaction();
 
-            if (!$cart || $cart->items->isEmpty()) {
-                return redirect()->route('cart')->with('error', 'Cart empty');
+    try {
+        Log::info('PlaceOrder started', $request->all());
+
+        // 1️⃣ Validation
+        $request->validate([
+            'first_name'     => 'required',
+            'last_name'      => 'required',
+            'address'        => 'required',
+            'city'           => 'required',
+            'country'        => 'required',
+            'postcode'       => 'required',
+            'phone'          => 'required',
+            'email'          => 'required|email',
+            'payment_method' => 'required',
+        ]);
+
+        Log::info('Validation passed');
+
+        // 2️⃣ Save or update user address
+        $userAddress = UserAddress::updateOrCreate(
+            ['user_id' => auth()->id(), 'type' => 1],
+            $request->only([
+                'first_name', 'last_name', 'address', 'city', 'country', 'postcode', 'phone', 'email'
+            ]) + ['type' => 1]
+        );
+
+        Log::info('User address saved', $userAddress->toArray());
+
+        // 3️⃣ Load cart
+        $cart = Cart::with('items.product')
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
+            Log::warning('Cart empty for user '.auth()->id());
+            return redirect()->route('cart')->with('error', 'Cart is empty.');
+        }
+
+        Log::info('Cart loaded', $cart->toArray());
+
+        // 4️⃣ Find district by user city
+        $district = District::where('name', $request->city)->first();
+        if (!$district) {
+            Log::error('District not found for city: '.$request->city);
+            return back()->with('error', 'Invalid city selected.');
+        }
+        Log::info('District found', $district->toArray());
+
+        // 5️⃣ Find distribution center in that district
+        $distributionCenter = Warehouse::where('type', 'distribution_center')
+            ->where('district_id', $district->id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$distributionCenter) {
+            Log::error('No distribution center in district: '.$district->name);
+            return back()->with('error', 'No distribution center available in your area.');
+        }
+        Log::info('Distribution center found', $distributionCenter->toArray());
+
+        // 6️⃣ Stock check
+        foreach ($cart->items as $item) {
+            $stockQty = DB::table('warehouse_stock')
+                ->where('warehouse_id', $distributionCenter->id)
+                ->where('product_id', $item->product_id)
+                ->sum('quantity');
+
+            if ($stockQty < $item->qty) {
+                Log::error("Product out of stock", ['product' => $item->product_id]);
+                return back()->with('error', "Product '{$item->product->name}' is out of stock.");
             }
+        }
 
-            // Coupon calculation
-            $couponDiscount = 0;
-            $couponCode = null;
+        // 7️⃣ Create order
+        $finalTotal = $cart->subtotal;
 
-            if ($request->coupon_code) {
-                $coupon = Coupon::where('code', $request->coupon_code)
-                    ->where('status', 1)
-                    ->whereDate('start_date', '<=', now())
-                    ->whereDate('end_date', '>=', now())
-                    ->where('min_amount', '<=', $cart->subtotal)
-                    ->first();
+        $order = Order::create([
+            'user_id'          => auth()->id(),
+            'warehouse_id'     => $distributionCenter->id,
+            'order_number'     => 'ORD-' . time(),
+            'channel'          => 'web',
+            'subtotal'         => $cart->subtotal,
+            'discount'         => 0,
+            'coupon_discount'  => 0,
+            'coupon_code'      => null,
+            'delivery_charge'  => 0,
+            'total_amount'     => $finalTotal,
+            'payment_method'   => $request->payment_method,
+            'payment_status'   => 'pending',
+            'status'           => 'pending',
+            'order_type'       => 'delivery',
+        ]);
 
-                if ($coupon) {
-                    if ($coupon->discount_type === 'percentage') {
-                        $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
-                    } else {
-                        $couponDiscount = $coupon->discount_value;
-                    }
+        Log::info('Order created', $order->toArray());
 
-                    if ($couponDiscount > $cart->subtotal) {
-                        $couponDiscount = $cart->subtotal;
-                    }
-
-                    $couponCode = $coupon->code;
-                }
-            }
-
-            $finalTotal = $cart->subtotal - $couponDiscount;
-
-            // Create Order
-            $order = Order::create([
-                'user_id'          => auth()->id(),
-                'warehouse_id'     => 0,
-                'order_number'     => 'ORD-' . time(),
-                'channel'          => 'web',
-                'subtotal'         => $cart->subtotal,
-                'discount'         => $couponDiscount,
-                'coupon_discount'  => $couponDiscount,
-                'coupon_code'      => $couponCode,
-                'delivery_charge'  => 0,
-                'total_amount'     => $finalTotal,
-                'payment_method'   => $request->payment_method,
-                'payment_status'   => 'pending', // ✅ FIX
-                'status'           => 'pending',
-                'order_type'       => 'delivery',
-                'razorpay_order_id' => $request->razorpay_order_id ?? null,
+        // 8️⃣ Create order items
+        foreach ($cart->items as $item) {
+            Log::info('Creating OrderItem', $item->toArray());
+            OrderItem::create([
+                'order_id'        => $order->id,
+                'product_id'      => $item->product_id,
+                'product_batch_id'=> $item->product_batch_id ?? null,
+                'quantity'        => $item->qty,
+                'price'           => $item->price,
+                'tax_percent'     => $item->tax_percent ?? 0,
+                'tax_amount'      => $item->tax_amount ?? 0,
+                'line_total'      => $item->line_total,
+                'total'           => $item->line_total,
+                'is_picked'       => false,
             ]);
+        }
+
+        // 9️⃣ Clear cart
+        $cart->items()->delete();
+        $cart->delete();
+
+        DB::commit();
+
+        Log::info('Order placed successfully', ['order_id' => $order->id]);
+        return redirect()->route('my_orders')->with('success', 'Order placed successfully!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Order placement failed', [
+            'message' => $e->getMessage(),
+            'trace'   => $e->getTraceAsString()
+        ]);
+        return back()->with('error', 'Something went wrong while placing the order.');
+    }
+}
 
 
-            Payment::create([
-                'order_id' => $order->id,
-                'user_id'  => auth()->id(),
-                'payment_gateway' => $request->payment_method === 'online'
-                    ? 'razorpay'
-                    : 'cash',
-                'razorpay_order_id' => $request->razorpay_order_id ?? null,
-                'amount' => $order->total_amount,
-                'status' => 'pending',
-                'meta' => json_encode([
-                    'order_number' => $order->order_number
-                ])
+public function validateOrder(Request $request)
+{
+    // 1️⃣ Basic validation
+    $validator = Validator::make($request->all(), [
+        'first_name'     => 'required',
+        'last_name'      => 'required',
+        'address'        => 'required',
+        'city'           => 'required',
+        'country'        => 'required',
+        'postcode'       => 'required',
+        'phone'          => 'required',
+        'email'          => 'required|email',
+        'payment_method' => 'required',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['status' => 'error', 'message' => $validator->errors()->first()]);
+    }
+
+    // 2️⃣ District check
+    $district = District::where('name', $request->city)->first();
+    if (!$district) {
+        return response()->json(['status' => 'error', 'message' => 'We do not deliver to this city.']);
+    }
+
+    // 3️⃣ Distribution center check
+    $distributionCenter = Warehouse::where('type', 'distribution_center')
+        ->where('district_id', $district->id)
+        ->where('status', 'active')
+        ->first();
+
+    if (!$distributionCenter) {
+        return response()->json(['status' => 'error', 'message' => 'No distribution center available in your area.']);
+    }
+
+    // 4️⃣ Stock check
+    $cart = Cart::with('items.product')->where('user_id', auth()->id())->first();
+    if (!$cart || $cart->items->isEmpty()) {
+        return response()->json(['status' => 'error', 'message' => 'Your cart is empty.']);
+    }
+
+    foreach ($cart->items as $item) {
+        $stockQty = DB::table('warehouse_stock')
+            ->where('warehouse_id', $distributionCenter->id)
+            ->where('product_id', $item->product_id)
+            ->sum('quantity');
+
+        if ($stockQty < $item->qty) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Product '{$item->product->name}' is out of stock or requested quantity exceeds available stock."
             ]);
-
-
-            // Create Order Items
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id'   => $order->id,
-                    'product_id' => $item->product_id,
-                    'quantity'   => $item->qty,
-                    'price'      => $item->price,
-                    'line_total' => $item->line_total,
-                    'total'      => $item->line_total,
-                ]);
-            }
-
-            // Clear cart
-            $cart->items()->delete();
-            $cart->delete();
-
-            return redirect()->route('my_orders')
-                ->with('success', 'Order placed successfully!');
-        } catch (\Exception $e) {
-            Log::error('Order Error', ['error' => $e->getMessage()]);
-            return back()->with('error', 'Something went wrong');
         }
     }
+
+    return response()->json(['status' => 'success']);
+}
+
 
     public function thankYou(Order $order)
     {
