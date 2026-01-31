@@ -56,6 +56,8 @@
                             <th style="width: 25%;">Quantity</th>
                             <th style="width: 25%;">Price</th>
                             <th style="width: 25%;">total</th>
+                            <th style="width: 25%;">order Site</th>
+                            <th style="width: 15%;">Payment Method</th>
                             <th style="width: 25%;">Status</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
@@ -93,13 +95,20 @@
                             <td>
                                 ₹{{ number_format($item->total, 2) }}
                             </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ ucfirst($order->payment_method) }}
+                                </span>
+                            </td>
 
                             <td>
                                 <span class="badge bg-info">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
-                            
+
+
+
                             <td class="text-center">
                                 @if($order->status === 'pending')
                                 <button class="btn btn-sm btn-success"
