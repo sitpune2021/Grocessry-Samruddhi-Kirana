@@ -52,10 +52,13 @@
                             <th class="text-center" style="width: 80px;">Sr No</th>
                             <th style="width: 25%;">Customer Name</th>
                             <th style="width: 25%;">Order Number</th>
+                            <th style="width: 25%;">Delivery Agent Name</th>
                             <th style="width: 25%;">Product</th>
                             <th style="width: 25%;">Quantity</th>
                             <th style="width: 25%;">Price</th>
                             <th style="width: 25%;">total</th>
+                            <th style="width: 25%;">order type</th>
+                            <th style="width: 15%;">Payment Method</th>
                             <th style="width: 25%;">Status</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
@@ -77,6 +80,15 @@
                             <td>
                                 {{ $order->order_number }}
                             </td>
+                            <td>
+                                @if($order->deliveryAgent && $order->deliveryAgent->user)
+                                {{ $order->deliveryAgent->user->first_name }}
+                                {{ $order->deliveryAgent->user->last_name }}
+                                @else
+                                -
+                                @endif
+                            </td>
+
 
                             <td>
                                 {{ $item->product->name ?? '-' }}
@@ -96,10 +108,24 @@
 
                             <td>
                                 <span class="badge bg-info">
+                                    {{ ucfirst($order->channel) }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ ucfirst($order->payment_method) }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-info">
                                     {{ ucfirst($order->status) }}
                                 </span>
                             </td>
-                            
+
+
+
                             <td class="text-center">
                                 @if($order->status === 'pending')
                                 <button class="btn btn-sm btn-success"

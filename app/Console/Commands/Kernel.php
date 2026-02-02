@@ -36,12 +36,18 @@ class Kernel extends ConsoleKernel
             ->dailyAt('21:00')
             ->withoutOverlapping()
             ->runInBackground();
-        
+            
+        // DAILY DUTY RESET – 12:00 AM IST
+        $schedule->command('duty:reset-daily')
+            ->dailyAt('00:00')
+            ->timezone('Asia/Kolkata')
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
         require base_path('routes/console.php');
     }
 }

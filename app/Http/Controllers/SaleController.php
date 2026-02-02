@@ -100,14 +100,13 @@ class SaleController extends Controller
             }
 
             /* ---------- PRICE CHECK ---------- */
-
             $mrp        = (float) $batch->product->mrp;
             $selling    = (float) $batch->product->final_price;
             $basePrice  = (float) $batch->product->base_price;
 
-            // Discount is ALWAYS on MRP
-            $discountAmount = $mrp * ($request->discount_percent / 100);
-            $salePrice      = $mrp - $discountAmount;
+            // Discount on SELLING PRICE
+            $discountAmount = $selling * ($request->discount_percent / 100);
+            $salePrice      = $selling - $discountAmount;
 
             if ($salePrice < $basePrice) {
                 return back()
@@ -116,6 +115,7 @@ class SaleController extends Controller
                     ])
                     ->withInput();
             }
+
 
             /* ---------- SAVE ---------- */
 
@@ -126,7 +126,7 @@ class SaleController extends Controller
 
                 'mrp'               => $mrp,
                 'original_price'    => $selling, // selling price before sale
-                'sale_price'        => round($salePrice, 2), // on mrp discount
+                'sale_price'        => round($salePrice, 2),
                 'discount_percent'  => $request->discount_percent,
                 'discount_amount'   => round($discountAmount, 2),
 
@@ -136,6 +136,7 @@ class SaleController extends Controller
                 'channel'           => 'online',
                 'status'            => 'active',
             ]);
+
 
 
             Log::info('Near-expiry sale created successfully', [

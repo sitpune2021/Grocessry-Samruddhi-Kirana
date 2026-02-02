@@ -521,19 +521,50 @@
 
                     modal: {
                         ondismiss: function() {
-                            // ❌ USER CLOSED POPUP
+
+                            fetch('/razorpay/failure', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    order_id: orderId,
+                                    reason: 'User closed payment window'
+                                })
+                            });
+
                             showPaymentFailed(orderId, lastOrderNumber);
                         }
                     }
+
                 };
 
                 const rzpInstance = new Razorpay(options);
 
-                // ❌ BANK / CARD FAILURE
+                // BANK / CARD FAILURE
                 rzpInstance.on('payment.failed', function(response) {
+
                     console.error('Payment failed:', response.error);
+
+                    fetch('/razorpay/failure', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                order_id: orderId,
+                                reason: response.error.description
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => console.log('Failure saved:', data))
+                        .catch(err => console.error('Failure API error', err));
+
                     showPaymentFailed(orderId, lastOrderNumber);
                 });
+
 
                 rzpInstance.open();
             })

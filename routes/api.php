@@ -10,9 +10,10 @@ use App\Http\Controllers\Api\CategoryProductController;
 use App\Http\Controllers\Api\DeliveryAgentController;
 use App\Http\Controllers\Api\DeliveryOrderController;
 use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\DeliveryCouponsOffersController;
+use App\Http\Controllers\Api\CustomerCouponsOffersController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\DeliveryAgentDutyController;
 
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
@@ -22,11 +23,17 @@ Route::post('/reset-password', [LoginController::class, 'resetPassword']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 });
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user/profile', [LoginController::class, 'userprofiledetails']);
+    Route::delete('/user/account', [LoginController::class, 'deleteAccount']);
+});
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
 Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::get('/products/search', [ProductController::class, 'search']);
+
     Route::get('/categories',                    [CategoryProductController::class, 'getCategories']);
     Route::get('/categories/{id}/subcategories', [CategoryProductController::class, 'getSubCategoriesByCategory']);
     Route::get('/subcategories/{id}/products',   [CategoryProductController::class, 'getProductsBySubcategory']);
@@ -34,6 +41,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/brands/{id}/products',          [CategoryProductController::class, 'getProductsByBrand']);
     Route::get('/products/{id}/similar',         [CategoryProductController::class, 'getSimilarProducts']);
     Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
+    Route::get('/brands/{brand_id}/products', [CategoryProductController::class, 'productsByBrand']);
 });
 
 Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
@@ -51,17 +59,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/history', [ProductController::class, 'pastOrders']);
     Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
+    Route::get('/coupons', [ProductController::class, 'getAllCoupons']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
     Route::post('/cart/decrement', [ProductController::class, 'decrementCart']);
     Route::delete('/cart/remove', [ProductController::class, 'removeFromCart']);
     Route::get('/cart', [ProductController::class, 'viewCart']);
+    Route::post('cart/brand/add', [ProductController::class, 'addBrandProductToCart']);
+    Route::post('api/cart/increment', [ProductController::class, 'incrementCartItem']);
+    Route::post('api/cart/decrement', [ProductController::class, 'decrementCartItem']);
 });
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/offers', [DeliveryCouponsOffersController::class, 'getOffers']);
-    Route::post('/apply-offer', [DeliveryCouponsOffersController::class, 'applyOffer']);
-    Route::post('/remove-offer', [DeliveryCouponsOffersController::class, 'removeOffer']);
+    Route::get('/offers', [CustomerCouponsOffersController::class, 'getOffers']);
+    Route::post('/apply-offer', [CustomerCouponsOffersController::class, 'applyOffer']);
+    Route::post('/remove-offer', [CustomerCouponsOffersController::class, 'removeOffer']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -71,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('customer/addresses', [AddressController::class, 'add']);
     Route::put('customer/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('customer/addresses/{id}', [AddressController::class, 'delete']);
+    Route::post('/user/address/set-default', [AddressController::class, 'setDefault']);
 });
 
 //---------------------Delivery Agent Api Routes-----------------------------------------------
@@ -83,83 +96,80 @@ Route::prefix('auth')->group(function () {
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [DeliveryAgentController::class, 'logout']);
-    Route::post('partner/status/online', [DeliveryAgentController::class, 'goOnline']);
-    Route::post('partner/status/offline', [DeliveryAgentController::class, 'goOffline']);
+
     Route::get('/partner/profile/image', [DeliveryAgentController::class, 'getProfileImage']);
-    Route::get('/partner/orders/current', [DeliveryAgentController::class, 'getCurrentTask']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/partner/status/online-status', [DeliveryAgentDutyController::class, 'onlineStatus']);
+    Route::get('/partner/stats/login-hours', [DeliveryAgentDutyController::class, 'loginHours']);
+    Route::post('partner/status/online', [DeliveryAgentDutyController::class, 'goOnline']);
+    Route::post('partner/status/offline', [DeliveryAgentDutyController::class, 'goOffline']);
+    Route::get('/partner/orders/current', [DeliveryAgentDutyController::class, 'getCurrentTask']);
+    Route::get('/partner/profile/summary', [DeliveryAgentDutyController::class, 'profileSummary']);
+    Route::get('/partner/performance/graph', [DeliveryAgentDutyController::class, 'performanceGraph']);
+    Route::post('/partner/duty/start', [DeliveryAgentDutyController::class, 'startDuty']);
+    Route::post('/partner/duty/pause', [DeliveryAgentDutyController::class, 'pauseDuty']);
+    Route::post('/partner/duty/resume', [DeliveryAgentDutyController::class, 'resumeDuty']);
+    Route::post('/partner/duty/stop', [DeliveryAgentDutyController::class, 'stopDuty']);
+    Route::get('/partner/profile/summary', [DeliveryAgentDutyController::class, 'partnerSummary']);
+    Route::post('partner/orders/{orderId}/delivery/verify-otp', [DeliveryAgentDutyController::class, 'verifyDeliveryOtp']);
+    Route::post('/partner/orders/{orderId}/delivery/{type}-otp', [DeliveryAgentDutyController::class, 'deliveryOtp']);
+    Route::post('/partner/duty/reset', [DeliveryAgentDutyController::class, 'resetDailyDuty']);
+    Route::get('/partner/performance/day', [DeliveryAgentDutyController::class, 'dayPerformance']);
+    Route::get('/partner/performance/week', [DeliveryAgentDutyController::class, 'weekPerformance']);
+    Route::get('/partner/performance/month', [DeliveryAgentDutyController::class, 'monthPerformance']);
 });
 Route::middleware('auth:sanctum')->group(function () {
 
-    // 🔹 DELIVERY ORDER LISTING
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
     Route::get('/delivery/orders/available', [DeliveryOrderController::class, 'getAvailableOrders']);
     Route::get('/delivery/orders/queue', [DeliveryOrderController::class, 'getDeliveryQueue']);
 
-    // 🔹 CANCELLATION (STATIC FIRST ✅)
     Route::get('/orders/cancellation-reasons', [DeliveryOrderController::class, 'getCancellationReasons']);
 
-    // 🔹 Current Order Flow
-    // Route::post('/orders/{orderId}/start', [DeliveryOrderController::class, 'startOrder']);
     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
     Route::post('/orders/{orderId}/pending', [DeliveryOrderController::class, 'markPending']);
     Route::get('/orders/pending', [DeliveryOrderController::class, 'getPendingOrders']);
     Route::post('/orders/{orderId}/resume', [DeliveryOrderController::class, 'resumeOrder']);
-    // 🔹 ORDER ACTIONS
     Route::post('/delivery/orders/{orderId}/accept', [DeliveryOrderController::class, 'acceptOrder']);
     Route::post('/delivery/orders/{orderId}/reject', [DeliveryOrderController::class, 'rejectOrder']);
     Route::post('/orders/{orderId}/start', [DeliveryOrderController::class, 'startOrder']);
 
-    // 🔹 ORDER ITEMS
     Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
     Route::get('/partner/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
 
-    // 🔹 PICKUP FLOW
     Route::get('/orders/{orderId}/pickup', [DeliveryOrderController::class, 'getPickupDetails']);
     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
 
-    // 🔹 ITEM VERIFICATION
     Route::post('/orders/{orderId}/items/{itemId}/verify', [DeliveryOrderController::class, 'verifyItem']);
     Route::post('/orders/{orderId}/items/{itemId}/issue', [DeliveryOrderController::class, 'reportItemIssue']);
 
-    // 🔹 ORDER CANCEL (DYNAMIC AFTER STATIC ✅)
     Route::post('/orders/{orderId}/cancel', [DeliveryOrderController::class, 'cancelOrder']);
 
-    // 🔹 ORDER DETAILS (KEEP LOWEST)
     Route::get('/orders/{orderId}', [DeliveryOrderController::class, 'getOrderDetails']);
     Route::get('/orders/{orderId}/summary', [DeliveryOrderController::class, 'getOrderSummary']);
     Route::post('/orders/{orderId}/complete', [DeliveryOrderController::class, 'completeOrder']);
     Route::post('/orders/{orderId}/rate-customer', [DeliveryOrderController::class, 'rateCustomer']);
 
-    // 🔹 DELIVERIES
     Route::get('/deliveries', [DeliveryOrderController::class, 'myDeliveries']);
     Route::get('/deliveries/search', [DeliveryOrderController::class, 'search']);
     Route::get('/deliveries/status', [DeliveryOrderController::class, 'status']);
     Route::get('/partner/deliveries/summary', [DeliveryOrderController::class, 'deliverySummary']);
     Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
-    // 🔹 PARTNER STATUS
     Route::get('/partner/status/orders', [DeliveryOrderController::class, 'totalOrders']);
-    Route::get('/partner/status/online-status', [DeliveryAgentController::class, 'onlineStatus']);
-    Route::get('/partner/stats/login-hours', [DeliveryAgentController::class, 'loginHours']);
 
-    // 🔹 NOTIFICATIONS
     Route::get('/notifications', [NotificationController::class, 'get_notifications']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::get('/notifications/settings', [NotificationController::class, 'getSettings']);
     Route::put('/notifications/settings', [NotificationController::class, 'updateSettings']);
 
-    // 🔹 PROFILE
     Route::get('/delivery_boy/profile', [DeliveryAgentController::class, 'profile']);
     Route::put('/delivery_boy/profile/vehicle', [DeliveryAgentController::class, 'updateVehicle']);
     Route::put('/delivery_boy/profile/{type}', [DeliveryAgentController::class, 'updateProfileField']);
-    Route::get('/partner/profile/summary', [DeliveryAgentController::class, 'profileSummary']);
-    Route::get('/partner/performance/graph', [DeliveryAgentController::class, 'performanceGraph']);
-    Route::post('/partner/duty/start', [DeliveryAgentController::class, 'startDuty']);
-    Route::post('/partner/duty/pause', [DeliveryAgentController::class, 'pauseDuty']);
-    Route::post('/partner/duty/resume', [DeliveryAgentController::class, 'resumeDuty']);
-    Route::post('/partner/duty/stop', [DeliveryAgentController::class, 'stopDuty']);
-    Route::get('/partner/profile/summary', [DeliveryAgentController::class, 'partnerSummary']);
 });
 
 // Route::middleware('auth:sanctum')->group(function () {
@@ -204,6 +214,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::put('/partner/profile/address', [DeliveryAgentController::class, 'updateAddress']);
     Route::post('/partner/profile/image', [DeliveryAgentController::class, 'updateProfileImage']);
-    Route::post('partner/orders/{orderId}/delivery/verify-otp', [DeliveryAgentController::class, 'verifyDeliveryOtp']);
-    Route::post('/partner/orders/{orderId}/delivery/{type}-otp', [DeliveryAgentController::class, 'deliveryOtp']);
+
+
+    //////
 });

@@ -46,6 +46,12 @@
                                                 @method('PUT')
                                             @endif
 
+                                            @if ($errors->has('role'))
+                                                <div class="alert alert-danger">
+                                                    {{ $errors->first('role') }}
+                                                </div>
+                                            @endif
+
                                             <div class="row g-3">
 
                                                 {{-- Shop Name --}}
