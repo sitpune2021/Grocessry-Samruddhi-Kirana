@@ -18,10 +18,8 @@ use App\Models\Talukas;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
-
 class CheckoutController extends Controller
 {
-
 
     public function index()
     {
@@ -128,11 +126,6 @@ class CheckoutController extends Controller
 
     Log::info('District resolved from taluka', $district->toArray());
 
-        $razorpayOrder = $api->order->create([
-            'amount' => $request->amount * 100,
-            'currency' => 'INR',
-            'receipt' => 'order_' . $request->order_id
-        ]);
 
             // 5️⃣ Find distribution center in that district
             // $distributionCenter = Warehouse::where('type', 'distribution_center')
@@ -366,57 +359,12 @@ class CheckoutController extends Controller
 
     public function thankYou(Order $order)
     {
-        $api = new Api(
-            config('services.razorpay.key'),
-            config('services.razorpay.secret')
-        );
-        Log::info('Razorpay Incoming Data', $request->all());
-
-        try {
-            // ✅ VERIFY SIGNATURE
-            $api->utility->verifyPaymentSignature([
-                'razorpay_order_id' => $request->razorpay_order_id,
-                'razorpay_payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature' => $request->razorpay_signature
-            ]);
-
-            // ✅ FIND ORDER
-            $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
-
-            Payment::where('order_id', $order->id)->update([
-                'payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature' => $request->razorpay_signature,
-                'status' => 'success'
-            ]);
-
-            // ✅ UPDATE ORDER
-            $order->update([
-                'payment_status' => 'paid',
-                'status' => 'confirmed'
-            ]);
-
-            // 🔥 EMPTY CART
-            $cart = Cart::where('user_id', $order->user_id)->first();
-            if ($cart) {
-                $cart->items()->delete();
-                $cart->delete();
-            }
-
-            return response()->json([
-                'status' => true,
-                'redirect_url' => route('my_orders')
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Razorpay Verify Failed', [
-                'msg' => $e->getMessage(),
-                'data' => $request->all()
-            ]);
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Payment verification failed'
-            ], 400);
+        // Security: only owner can see
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
         }
+
+        return view('website.thank-you', compact('order'));
     }
 
     public function applyCoupon(Request $request)
@@ -434,7 +382,6 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Minimum order validation (₹1000 etc.)
         if ($request->subtotal < $coupon->min_amount) {
             return response()->json([
                 'status' => false,
@@ -442,17 +389,11 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Discount calculation
-        if ($coupon->discount_type === 'percentage') {
-            $discount = ($request->subtotal * $coupon->discount_value) / 100;
-        } else {
-            $discount = $coupon->discount_value;
-        }
+        $discount = $coupon->discount_type === 'percentage'
+            ? ($request->subtotal * $coupon->discount_value) / 100
+            : $coupon->discount_value;
 
-        // safety
-        if ($discount > $request->subtotal) {
-            $discount = $request->subtotal;
-        }
+        if ($discount > $request->subtotal) $discount = $request->subtotal;
 
         $finalTotal = $request->subtotal - $discount;
 
