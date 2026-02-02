@@ -11,7 +11,7 @@
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    </div>           
 
     <!-- slider header Start -->
     <div class="container my-3">
