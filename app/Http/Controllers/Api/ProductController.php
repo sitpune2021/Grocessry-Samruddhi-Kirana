@@ -763,7 +763,6 @@ class ProductController extends Controller
         ]);
     }
 
-
     public function getAllCoupons(Request $request)
     {
         $user = $request->user();
@@ -797,6 +796,167 @@ class ProductController extends Controller
         return response()->json([
             'status' => true,
             'data' => $coupons
+        ]);
+    }
+    public function search(Request $request)
+    {
+        // dd($request->all());
+        $search = trim($request->query('search'));
+
+        $products = Product::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where('name', 'LIKE', '%' . $search . '%');
+            })
+            ->paginate(10);
+
+        return response()->json([
+            'status' => true,
+            'count'  => $products->total(),
+            'data'   => $products
+        ]);
+    }
+    public function addBrandProductToCart(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'qty'        => 'nullable|integer|min:1'
+        ]);
+
+        $userId = auth()->id();
+        $qty = $request->qty ?? 1;
+
+        $product = Product::findOrFail($request->product_id);
+
+        // 1️⃣ Get or create cart
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $userId],
+            ['total' => 0]
+        );
+
+        // 2️⃣ Find product in cart
+        $item = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($item) {
+            // Increment qty
+            $item->qty += $qty;
+        } else {
+            // Create new row
+            $item = new CartItem();
+            $item->cart_id   = $cart->id;
+            $item->product_id = $product->id;
+            $item->qty       = $qty;
+            $item->price     = $product->final_price;
+        }
+
+        // 3️⃣ Calculations
+        $item->line_total = $item->qty * $item->price;
+        $item->tax_total  = 0; // GST already included
+        $item->item_total = $item->line_total;
+        $item->save();
+
+        // 4️⃣ Update cart totals
+        $cart->subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+        $cart->total    = $cart->subtotal - ($cart->discount ?? 0);
+        $cart->save();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Product added to cart',
+            'cart_id' => $cart->id
+        ]);
+    }
+    public function incrementCartItem(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $userId = auth()->id();
+
+        $cart = Cart::where('user_id', $userId)->first();
+        if (!$cart) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart not found'
+            ]);
+        }
+
+        $item = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if (!$item) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Item not found in cart'
+            ]);
+        }
+
+        // ➕ Increment
+        $item->qty += 1;
+        $item->line_total = $item->qty * $item->price;
+        $item->item_total = $item->line_total;
+        $item->save();
+
+        // Update cart totals
+        $cart->subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+        $cart->total    = $cart->subtotal - ($cart->discount ?? 0);
+        $cart->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quantity incremented'
+        ]);
+    }
+    public function decrementCartItem(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $userId = auth()->id();
+
+        $cart = Cart::where('user_id', $userId)->first();
+        if (!$cart) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart not found'
+            ]);
+        }
+
+        $item = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if (!$item) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Item not found in cart'
+            ]);
+        }
+
+        // ➖ Decrement
+        $item->qty -= 1;
+
+        if ($item->qty <= 0) {
+            // Remove item completely
+            $item->delete();
+        } else {
+            $item->line_total = $item->qty * $item->price;
+            $item->item_total = $item->line_total;
+            $item->save();
+        }
+
+        // Update cart totals
+        $cart->subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
+        $cart->total    = $cart->subtotal - ($cart->discount ?? 0);
+        $cart->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Quantity decremented'
         ]);
     }
 }

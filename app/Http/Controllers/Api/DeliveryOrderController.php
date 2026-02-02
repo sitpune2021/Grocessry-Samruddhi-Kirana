@@ -52,39 +52,39 @@ class DeliveryOrderController extends Controller
                 ], 404);
             }
 
-            // 🔹 Check if agent already has active order
+            // check active order
             $hasActiveOrder = Order::where('delivery_agent_id', $user->id)
-                ->whereIn('status', ['accepted', 'in_progress'])
+                ->whereIn('status', ['accepted', 'in_progress', 'on_the_way'])
                 ->exists();
 
             if ($hasActiveOrder) {
-                // 👉 BUSY → ADD TO QUEUE
                 $order->update([
                     'delivery_agent_id' => $user->id,
                     'status' => 'queued'
                 ]);
+
+                $message = 'Order added to delivery queue';
             } else {
-                // 👉 FREE → SET AS CURRENT ORDER
                 $order->update([
                     'delivery_agent_id' => $user->id,
                     'status' => 'accepted'
                 ]);
+
+                $message = 'Order accepted successfully';
             }
 
             DB::commit();
 
             return response()->json([
                 'status' => true,
-                'message' => $hasActiveOrder
-                    ? 'Order added to queue'
-                    : 'Order accepted successfully',
+                'message' => $message,
                 'data' => $order
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage()
+                'message' => 'Something went wrong'
             ], 500);
         }
     }
@@ -103,7 +103,9 @@ class DeliveryOrderController extends Controller
             ], 404);
         }
 
-        $order->update(['status' => 'rejected']);
+        $order->update([
+            'status' => 'rejected'
+        ]);
 
         return response()->json([
             'status' => true,
@@ -121,13 +123,16 @@ class DeliveryOrderController extends Controller
         ])
             ->where('status', 'pending')
             ->whereNull('delivery_agent_id')
+            ->orderBy('created_at', 'asc') // FIFO
             ->paginate($perPage);
 
         return response()->json([
-            'status' => true,
-            'data' => $orders
+            'status'  => true,
+            'message' => 'Partner gets list of available orders (queue)',
+            'data'    => $orders
         ]);
     }
+
 
     public function getDeliveryQueue(Request $request)
     {
@@ -146,30 +151,97 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
-    public function markPending($orderId)
+    public function markPending(Request $request, $orderId)
     {
-        Order::where('id', $orderId)->update(['status' => 'pending']);
+        $user = $request->user();
+
+        $order = Order::where('id', $orderId)
+            ->where('delivery_agent_id', $user->id)
+            ->whereIn('status', ['in_progress', 'accepted'])
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found or cannot be marked pending'
+            ], 404);
+        }
+
+        $order->update([
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order marked as pending',
+            'data' => $order
+        ]);
     }
 
-    public function resumeOrder($orderId)
+
+    public function resumeOrder(Request $request, $orderId)
     {
-        Order::where('id', $orderId)->update(['status' => 'accepted']);
+        $user = $request->user();
+
+        $order = Order::where('id', $orderId)
+            ->where('delivery_agent_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pending order not found'
+            ], 404);
+        }
+
+        $hasActiveOrder = Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'in_progress')
+            ->exists();
+
+        if ($hasActiveOrder) {
+            $order->update([
+                'status' => 'queued'
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order moved to queue (another order in progress)',
+                'data' => $order
+            ]);
+        }
+
+        $order->update([
+            'status' => 'in_progress'
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order resumed successfully',
+            'data' => $order
+        ]);
     }
+
     public function startOrder(Request $request, $orderId)
     {
         $user = $request->user();
 
         $order = Order::where('id', $orderId)
             ->where('delivery_agent_id', $user->id)
-            ->whereIn('status', ['accepted', 'queued']) // ✅ FIX
+            ->whereIn('status', ['accepted', 'queued'])
             ->first();
 
         if (!$order) {
             return response()->json([
                 'status' => false,
-                'message' => 'Order not found, not assigned, or invalid status'
+                'message' => 'Order not found or invalid status'
             ], 404);
         }
+
+        // optional: auto-finish previous in_progress order
+        Order::where('delivery_agent_id', $user->id)
+            ->where('status', 'in_progress')
+            ->update(['status' => 'completed']);
 
         $order->update([
             'status' => 'in_progress'
@@ -182,6 +254,7 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
+
     public function getPendingOrders(Request $request)
     {
         $user = $request->user();
@@ -189,15 +262,17 @@ class DeliveryOrderController extends Controller
 
         $orders = Order::with('orderItems.product')
             ->where('delivery_agent_id', $user->id)
-            ->whereIn('status', ['queued', 'pending'])
-            ->orderBy('created_at', 'asc')
+            ->where('status', 'pending')
+            ->orderBy('updated_at', 'asc')
             ->paginate($perPage);
 
         return response()->json([
             'status' => true,
+            'message' => 'Pending orders fetched successfully',
             'data' => $orders
         ]);
     }
+
     public function getOrderDetails(Request $request, $orderId)
     {
         $user = $request->user();
@@ -707,12 +782,19 @@ class DeliveryOrderController extends Controller
         }
 
         $items = $order->orderItems->map(function ($item) {
+
+            $image = null;
+
+            if (!empty($item->product->product_images[0])) {
+                $image = asset('storage/products/' . $item->product->product_images[0]);
+            }
+
             return [
                 'id'       => $item->id,
                 'name'     => $item->product->name ?? null,
                 'quantity' => $item->qty,
-                'image'    => $item->product->product_images[0] ?? null,
-                'isPicked' => (bool) $item->is_picked, // column in order_items
+                'image'    => $image, // ✅ FULL IMAGE URL
+                'isPicked' => (bool) $item->is_picked,
             ];
         });
 
@@ -724,6 +806,7 @@ class DeliveryOrderController extends Controller
             ]
         ]);
     }
+
     public function deliverySummary(Request $request)
     {
         $user = $request->user();
