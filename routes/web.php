@@ -407,13 +407,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
         ->name('payment.success');
 
-    Route::get('/thank-you/{order}', [CheckoutController::class, 'thankYou'])
-        ->name('thank_you')
-        ->middleware('auth');
-
-
-
-
 
     // RETAILER ORDER
     Route::prefix('retailer-orders')->name('retailer-orders.')->group(function () {

@@ -43,7 +43,7 @@ class CheckoutController extends Controller
         return view('website.checkout', compact('cart', 'address', 'coupons'));
     }
 
-   public function createRazorpayOrder(Request $request)
+    public function createRazorpayOrder(Request $request)
     {
         $api = new Api(
             config('services.razorpay.key'),
@@ -51,16 +51,13 @@ class CheckoutController extends Controller
         );
 
         $razorpayOrder = $api->order->create([
-            'receipt' => 'ORD-' . time(),
             'amount' => $request->amount * 100,
-            'currency' => 'INR'
+            'currency' => 'INR',
+            'receipt' => 'order_' . $request->order_id
         ]);
 
+        // 🔥 SAVE razorpay_order_id in orders table
         Order::where('id', $request->order_id)->update([
-            'razorpay_order_id' => $razorpayOrder['id']
-        ]);
-
-        Payment::where('order_id', $request->order_id)->update([
             'razorpay_order_id' => $razorpayOrder['id']
         ]);
 
@@ -68,7 +65,6 @@ class CheckoutController extends Controller
             'razorpay_order_id' => $razorpayOrder['id']
         ]);
     }
-
 
     public function placeOrder(Request $request)
     {
@@ -83,6 +79,7 @@ class CheckoutController extends Controller
             'payment_method' => 'required',
         ]);
 
+        // Save address
         UserAddress::updateOrCreate(
             ['user_id' => auth()->id(), 'type' => 1],
             $request->only([
@@ -97,17 +94,53 @@ class CheckoutController extends Controller
             ]) + ['type' => 1]
         );
 
-        $cart = Cart::with('items.product')
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $cart = Cart::where('user_id', auth()->id())
+            ->with('items')
+            ->first();
 
-        $finalTotal = $cart->subtotal;
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart')->with('error', 'Cart empty');
+        }
+
+        // 🔥 COUPON CALCULATION (FINAL)
+        $couponDiscount = 0;
+        $couponCode = null;
+
+        if ($request->coupon_code) {
+
+            $coupon = Coupon::where('code', $request->coupon_code)
+                ->where('status', 1)
+                ->whereDate('start_date', '<=', now())
+                ->whereDate('end_date', '>=', now())
+                ->where('min_amount', '<=', $cart->subtotal)
+                ->first();
+
+            if ($coupon) {
+
+                if ($coupon->discount_type === 'percentage') {
+                    $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
+                } else {
+                    $couponDiscount = $coupon->discount_value;
+                }
+
+                if ($couponDiscount > $cart->subtotal) {
+                    $couponDiscount = $cart->subtotal;
+                }
+
+                $couponCode = $coupon->code;
+            }
+        }
+
+        $finalTotal = $cart->subtotal - $couponDiscount;
 
         $order = Order::create([
             'user_id' => auth()->id(),
             'order_number' => 'ORD-' . time(),
             'channel' => 'web',
             'subtotal' => $cart->subtotal,
+            'discount'         => $couponDiscount,        // 🔥 IMPORTANT
+            'coupon_discount'  => $couponDiscount,        // 🔥 IMPORTANT
+            'coupon_code'      => $couponCode,
             'total_amount' => $finalTotal,
             'payment_method' => $request->payment_method,
             'payment_status' => 'pending',
@@ -151,51 +184,60 @@ class CheckoutController extends Controller
         ]);
     }
 
- public function paymentSuccess(Request $request)
-{
-    $api = new Api(
-        config('services.razorpay.key'),
-        config('services.razorpay.secret')
-    );
-
-    try {
-        $api->utility->verifyPaymentSignature([
-            'razorpay_order_id' => $request->razorpay_order_id,
-            'razorpay_payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature
-        ]);
-
-        $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
-
-        Payment::where('order_id', $order->id)->update([
-            'payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature,
-            'status' => 'success'
-        ]);
-
-        $order->update([
-            'payment_status' => 'paid',
-            'status' => 'confirmed'
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'redirect_url' => route('thank_you', $order->id)
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Razorpay Error', ['error' => $e->getMessage()]);
-        return response()->json(['status' => false], 400);
-    }
-}
-
-    public function thankYou(Order $order)
+    public function paymentSuccess(Request $request)
     {
-        // Security: only owner can see
-      
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+        Log::info('Razorpay Incoming Data', $request->all());
 
-        return view('website.thank-you', compact('order'));
+        try {
+            // ✅ VERIFY SIGNATURE
+            $api->utility->verifyPaymentSignature([
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature
+            ]);
+
+            // ✅ FIND ORDER
+            $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+
+            Payment::where('order_id', $order->id)->update([
+                'payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature,
+                'status' => 'success'
+            ]);
+
+            // ✅ UPDATE ORDER
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'confirmed'
+            ]);
+
+            // 🔥 EMPTY CART
+            $cart = Cart::where('user_id', $order->user_id)->first();
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
+
+            return response()->json([
+                'status' => true,
+                'redirect_url' => route('my_orders')
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Razorpay Verify Failed', [
+                'msg' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Payment verification failed'
+            ], 400);
+        }
     }
-
 
     public function applyCoupon(Request $request)
     {
@@ -212,6 +254,7 @@ class CheckoutController extends Controller
             ]);
         }
 
+        // Minimum order validation (₹1000 etc.)
         if ($request->subtotal < $coupon->min_amount) {
             return response()->json([
                 'status' => false,
@@ -219,11 +262,17 @@ class CheckoutController extends Controller
             ]);
         }
 
-        $discount = $coupon->discount_type === 'percentage'
-            ? ($request->subtotal * $coupon->discount_value) / 100
-            : $coupon->discount_value;
+        // Discount calculation
+        if ($coupon->discount_type === 'percentage') {
+            $discount = ($request->subtotal * $coupon->discount_value) / 100;
+        } else {
+            $discount = $coupon->discount_value;
+        }
 
-        if ($discount > $request->subtotal) $discount = $request->subtotal;
+        // safety
+        if ($discount > $request->subtotal) {
+            $discount = $request->subtotal;
+        }
 
         $finalTotal = $request->subtotal - $discount;
 

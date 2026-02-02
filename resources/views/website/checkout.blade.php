@@ -13,6 +13,7 @@
         <input type="hidden" name="coupon_discount" id="coupon_discount">
         <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
         <input type="hidden" name="razorpay_amount" id="razorpay_amount">
+        <input type="hidden" id="placed_order_id">
 
         <div class="row g-5">
 
@@ -95,48 +96,85 @@
                                 @if($cart && $cart->items->count())
                                 @foreach($cart->items as $item)
                                 <tr>
-                                    <td><img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}" width="60" class="rounded"></td>
+                                    <td>
+                                        <img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}"
+                                            width="60" class="rounded">
+                                    </td>
                                     <td>{{ $item->product->name }} × {{ $item->qty }}</td>
                                     <td class="text-end">₹{{ $item->line_total }}</td>
                                 </tr>
                                 @endforeach
                                 @else
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Your cart is empty</td>
+                                    <td colspan="3" class="text-center text-muted">
+                                        Your cart is empty
+                                    </td>
                                 </tr>
                                 @endif
                                 <tr>
                                     <th colspan="2">Subtotal</th>
-                                    <th class="text-end">₹<span id="subtotal">{{ $cart->subtotal }}</span></th>
+                                    <th class="text-end">
+                                        ₹<span id="subtotal">{{ $cart->subtotal }}</span>
+                                    </th>
                                 </tr>
+
                                 <tr id="discountRow" class="d-none">
                                     <th colspan="2">Coupon Discount</th>
-                                    <th class="text-end text-danger">- ₹<span id="discountAmount">0</span></th>
+                                    <th class="text-end text-danger">
+                                        - ₹<span id="discountAmount">0</span>
+                                    </th>
                                 </tr>
+
                                 <tr>
                                     <th colspan="2">Total</th>
-                                    <th class="text-end text-success fw-bold">₹<span id="finalTotal">{{ $cart->subtotal }}</span></th>
+                                    <th class="text-end text-success fw-bold">
+                                        ₹<span id="finalTotal">{{ $cart->total }}</span>
+                                    </th>
                                 </tr>
+
                             </tbody>
                         </table>
 
-                        <!-- Coupon -->
+                        <!-- Coupon Apply -->
                         <div class="mb-3">
-                            <select class="form-select" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
-                                <option value="">Select Offer Code</option>
-                                @foreach($coupons as $coupon)
-                                @php
-                                $used = \App\Models\Order::where('user_id', auth()->id())->where('coupon_code', $coupon->code)->exists();
-                                @endphp
-                                @if(!$used)
-                                <option value="{{ $coupon->code }}">{{ $coupon->code }}
-                                    @if($coupon->discount_type=='flat') (₹{{ $coupon->discount_value }} OFF)
-                                    @else ({{ $coupon->discount_value }}% OFF) @endif
-                                </option>
-                                @endif
-                                @endforeach
-                            </select>
+                            <div class="input-group">
+                                <input type="text" id="coupon_code" class="form-control" placeholder="Enter coupon code">
+                                <button type="button" class="btn btn-outline-primary d-none">
+                                    Apply
+                                </button>
+                            </div>
+
                             <small id="coupon_msg" class="text-danger d-none"></small>
+
+                            <!-- Offer Codes -->
+                            <div class="mt-2">
+                                <small class="text-muted">Available Offers:</small>
+
+                                <select class="form-select mt-1" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
+                                    <option value="">Select Offer Code</option>
+
+                                    @foreach($coupons as $coupon)
+                                    @php
+                                    // Check if user already used this coupon
+                                    $used = \App\Models\Order::where('user_id', auth()->id())
+                                    ->where('coupon_code', $coupon->code)
+                                    ->exists();
+                                    @endphp
+
+                                    @if(!$used)
+                                    <option value="{{ $coupon->code }}">
+                                        {{ $coupon->code }}
+                                        @if($coupon->discount_type == 'flat')
+                                        (₹{{ $coupon->discount_value }} OFF)
+                                        @else
+                                        ({{ $coupon->discount_value }}% OFF)
+                                        @endif
+                                    </option>
+                                    @endif
+                                    @endforeach
+                                </select>
+
+                            </div>
                         </div>
 
                         <!-- Payment -->
@@ -163,46 +201,83 @@
 <!-- Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<!-- Location Script -->
 <script>
     function getLocation(btn) {
         btn.innerText = '📍 Detecting...';
         btn.disabled = true;
-        if (!navigator.geolocation) {
-            alert('Not supported');
-            btn.disabled = false;
-            return;
-        }
+
         navigator.geolocation.getCurrentPosition(pos => {
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
-                .then(res => res.json())
-                .then(data => {
-                    let addr = data.address || {};
-                    document.getElementById('address').value = `${addr.road||''} ${addr.suburb||''}`.trim();
-                    document.getElementById('city').value = addr.city || addr.town || 'Pune';
-                    document.getElementById('pincode').value = addr.postcode || '';
-                    document.getElementById('country').value = addr.country || '';
-                    btn.innerText = '📍 Location Added';
-                    btn.disabled = false;
-                });
+            showPosition(pos);
+            btn.innerText = '📍 Location Added';
+            btn.disabled = false;
         }, () => {
             btn.innerText = '📍 Use Current Location';
             btn.disabled = false;
-            alert('Location denied');
+            alert('Location access denied');
+        });
+    }
+</script>
+
+<script>
+    function getLocation(btn) {
+        btn.innerText = '📍 Detecting...';
+        btn.disabled = true;
+
+        if (!navigator.geolocation) {
+            alert("Geolocation not supported");
+            btn.disabled = false;
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(showPosition, () => {
+            btn.innerText = '📍 Use Current Location';
+            btn.disabled = false;
+            alert('Location access denied');
         });
     }
 
+    function showPosition(position) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
+            .then(res => res.json())
+            .then(data => {
+                let addr = data.address || {};
+
+                document.getElementById('address').value =
+                    `${addr.road || ''} ${addr.suburb || ''}`.trim();
+
+                document.getElementById('city').value =
+                    addr.city || addr.town || addr.municipality || 'Pune';
+
+                document.getElementById('pincode').value =
+                    addr.postcode || '';
+
+                document.getElementById('country').value =
+                    addr.country || '';
+
+                // button text update
+                document.querySelector('[onclick^="getLocation"]').innerText = '📍 Location Added';
+                document.querySelector('[onclick^="getLocation"]').disabled = false;
+            });
+    }
+</script>
+
+<script>
     function applyCouponFromDropdown(el) {
         let code = el.value;
         if (!code) return;
+
         document.getElementById('coupon_code').value = code;
         applyCoupon();
     }
 
     function applyCoupon() {
+
         let code = document.getElementById('coupon_code').value;
         let subtotal = parseFloat(document.getElementById('subtotal').innerText);
+
         fetch("{{ route('apply.coupon') }}", {
-                method: 'POST',
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
@@ -214,25 +289,31 @@
             })
             .then(res => res.json())
             .then(data => {
+
                 let msg = document.getElementById('coupon_msg');
+
                 if (!data.status) {
                     msg.classList.remove('d-none', 'text-success');
                     msg.classList.add('text-danger');
                     msg.innerText = data.message;
                     return;
                 }
+
+                // ✅ UI UPDATE
                 msg.classList.remove('d-none', 'text-danger');
                 msg.classList.add('text-success');
                 msg.innerText = 'Coupon applied successfully';
+
                 document.getElementById('discountRow').classList.remove('d-none');
                 document.getElementById('discountAmount').innerText = data.discount;
                 document.getElementById('finalTotal').innerText = data.final_total;
+
+                // ✅🔥 VERY IMPORTANT (PLACE ORDER SATHI)
                 document.getElementById('applied_coupon').value = code;
                 document.getElementById('coupon_discount').value = data.discount;
             });
     }
 </script>
-
 
 <script>
     document.getElementById('rzp-button').addEventListener('click', function() {
@@ -276,13 +357,18 @@
                             order_id: data.razorpay_order_id,
 
                             handler: function(response) {
+                                console.log("Razorpay Response:", response);
                                 fetch("{{ route('payment.success') }}", {
                                         method: "POST",
                                         headers: {
                                             "Content-Type": "application/json",
                                             "X-CSRF-TOKEN": "{{ csrf_token() }}"
                                         },
-                                        body: JSON.stringify(response)
+                                        body: JSON.stringify({
+                                            razorpay_payment_id: response.razorpay_payment_id,
+                                            razorpay_order_id: response.razorpay_order_id,
+                                            razorpay_signature: response.razorpay_signature
+                                        })
                                     })
                                     .then(res => res.json())
                                     .then(res => {
@@ -293,6 +379,7 @@
                                         }
                                     });
                             }
+
                         };
 
                         new Razorpay(options).open();
