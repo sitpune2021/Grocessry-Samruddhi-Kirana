@@ -13,7 +13,12 @@ class CustomerOrderController extends Controller
 
     public function index()
     {
-        $orders = Order::with(['items', 'user', 'orderItems'])
+        $orders = Order::with([
+            'items',
+            'user',
+            'orderItems',
+            'deliveryAgent.user'
+        ])
             ->latest()
             ->paginate(10);
 
@@ -24,6 +29,7 @@ class CustomerOrderController extends Controller
             compact('orders', 'deliveryAgents')
         );
     }
+
 
     public function show($id)
     {

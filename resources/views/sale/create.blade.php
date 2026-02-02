@@ -93,13 +93,13 @@
                                                         readonly>
                                                 </div>
 
-                                                <div class="col-md-4">
+                                                <!-- <div class="col-md-4">
                                                     <label class="form-label">Original Price (₹)</label>
                                                     <input type="text" class="form-control"
                                                         id="original_price"
                                                         value="{{ $batch->product->final_price }}"
                                                         readonly>
-                                                </div>
+                                                </div> -->
                                             </div>
 
                                             {{-- Discount --}}
@@ -219,9 +219,12 @@
     $('#discount_percent').on('input', function() {
 
         let discountPercent = parseFloat($(this).val());
-        let mrp = parseFloat($('#mrp').val());
         let sellingPrice = parseFloat($('#original_price').val());
-        let basePrice = {{ (float) $batch->product->base_price }};
+        let basePrice = {
+            {
+                (float) $batch - > product - > base_price
+            }
+        };
 
         if (!discountPercent || discountPercent <= 0) {
             $('#sale_price').val('');
@@ -229,11 +232,9 @@
             return;
         }
 
-        // ✅ Discount calculated on MRP
-        let discountAmount = mrp * discountPercent / 100;
-
-        // ✅ Sale price derived from MRP
-        let salePrice = mrp - discountAmount;
+        // ✅ Discount on SELLING PRICE
+        let discountAmount = sellingPrice * discountPercent / 100;
+        let salePrice = sellingPrice - discountAmount;
 
         // ❌ Prevent below base price
         if (salePrice < basePrice) {
