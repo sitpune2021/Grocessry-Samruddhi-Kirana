@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\FifoStockService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\Coupon;
@@ -14,6 +15,7 @@ use Razorpay\Api\Api;
 use App\Models\Payment;
 use App\Models\Warehouse;
 use App\Models\District;
+use App\Models\ProductBatch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -103,8 +105,31 @@ class CheckoutController extends Controller
 
         $finalTotal = $cart->subtotal;
 
+        $dcId = session('dc_warehouse_id');
+
+        if (!$dcId) {
+            return redirect()->route('cart')
+                ->with('error', 'Delivery location not selected');
+        }
+
+        // FINAL STOCK CHECK
+        foreach ($cart->items as $item) {
+
+            $availableQty = ProductBatch::where('product_id', $item->product_id)
+                ->where('warehouse_id', $dcId)
+                ->sum('quantity');
+
+            if ($item->qty > $availableQty) {
+                return redirect()->route('cart')->with(
+                    'error',
+                    "{$item->product->name} stock has changed. Only {$availableQty} left."
+                );
+            }
+        }
+
         $order = Order::create([
             'user_id' => auth()->id(),
+            'warehouse_id'   => $dcId,
             'order_number' => 'ORD-' . time(),
             'channel' => 'web',
             'subtotal' => $cart->subtotal,
@@ -134,8 +159,35 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // CASH → normal redirect
-        if ($request->payment_method === 'Cash') {
+        if (strtolower($request->payment_method) === 'cash') {
+            
+            $dcId = session('dc_warehouse_id');
+            $userId = auth()->id();
+
+            $order->load('items');
+
+            DB::transaction(function () use ($order, $dcId, $userId) {
+
+                $fifo = new FifoStockService();
+
+                foreach ($order->items as $item) {
+                    $fifo->consume(
+                        $item->product_id,
+                        $dcId,
+                        $item->quantity,
+                        $order->id,
+                        $userId
+                    );
+                }
+
+                // Mark order confirmed
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'confirmed'
+                ]);
+            });
+
+            // Clear cart AFTER FIFO success
             $cart->items()->delete();
             $cart->delete();
 
@@ -151,47 +203,71 @@ class CheckoutController extends Controller
         ]);
     }
 
- public function paymentSuccess(Request $request)
-{
-    $api = new Api(
-        config('services.razorpay.key'),
-        config('services.razorpay.secret')
-    );
+    public function paymentSuccess(Request $request)
+    {
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
 
-    try {
-        $api->utility->verifyPaymentSignature([
-            'razorpay_order_id' => $request->razorpay_order_id,
-            'razorpay_payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature
-        ]);
+        try {
+            $api->utility->verifyPaymentSignature([
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature
+            ]);
 
-        $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
+            $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
 
-        Payment::where('order_id', $order->id)->update([
-            'payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature,
-            'status' => 'success'
-        ]);
+            $order->load('items');
 
-        $order->update([
-            'payment_status' => 'paid',
-            'status' => 'confirmed'
-        ]);
+            Payment::where('order_id', $order->id)->update([
+                'payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature,
+                'status' => 'success'
+            ]);
 
-        return response()->json([
-            'status' => true,
-            'redirect_url' => route('thank_you', $order->id)
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Razorpay Error', ['error' => $e->getMessage()]);
-        return response()->json(['status' => false], 400);
+
+            $dcId = $order->warehouse_id; // 🔥 from order
+            $userId = $order->user_id;
+
+            DB::transaction(function () use ($order, $dcId, $userId) {
+
+                $fifo = new FifoStockService();
+
+                foreach ($order->items as $item) {
+                    $fifo->consume(
+                        $item->product_id,
+                        $dcId,
+                        $item->quantity,
+                        $order->id,
+                        $userId
+                    );
+                }
+
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'confirmed'
+                ]);
+            });
+
+            Cart::where('user_id', $order->user_id)->delete();
+
+
+            return response()->json([
+                'status' => true,
+                'redirect_url' => route('thank_you', $order->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Razorpay Error', ['error' => $e->getMessage()]);
+            return response()->json(['status' => false], 400);
+        }
     }
-}
 
     public function thankYou(Order $order)
     {
         // Security: only owner can see
-      
+
 
         return view('website.thank-you', compact('order'));
     }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\WarehouseServicePincodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\BrandController;
@@ -157,6 +158,23 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::resource('/units', UnitController::class);
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
+    Route::post('/reverse-geocode', [MasterWarehouseController::class, 'reverseGeocode']);
+
+    Route::prefix('warehouses/')
+    ->middleware(['auth'])
+    ->group(function () {
+
+        // Service Area (Pincode) Management
+        Route::get('service-areas', [WarehouseServicePincodeController::class, 'index'])
+            ->name('warehouse.service-areas.index');
+
+        Route::post('service-areas', [WarehouseServicePincodeController::class, 'store'])
+            ->name('warehouse.service-areas.store');
+
+        Route::delete('service-areas/{pincode}', [WarehouseServicePincodeController::class, 'destroy'])
+            ->name('warehouse.service-areas.destroy');
+    });
+
     Route::resource('brands', BrandController::class);
     Route::get(
         'get-brands-by-sub-category/{subCategory}',
