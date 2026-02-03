@@ -344,7 +344,9 @@
 
                                                 {{-- Images --}}
                                                 <div class="col-md-6 mb-3">
-                                                    <label class="form-label">Product Images <span class="text-danger">*</span></label>
+                                                    <label class="form-label">
+                                                        Product Images <span class="text-danger">*</span>
+                                                    </label>
 
                                                     @if ($mode !== 'view')
                                                     <input type="file" name="product_images[]" multiple
@@ -371,6 +373,7 @@
                                                     <span class="text-muted">No Image</span>
                                                     @endif
                                                 </div>
+
 
                                                 {{-- Buttons --}}
                                                 <div class="mt-4 d-flex justify-content-end gap-2 text-end">

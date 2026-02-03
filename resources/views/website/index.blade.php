@@ -4,6 +4,20 @@
 @section('title', 'Home')
 
 @section('content')
+<style>
+    .fruite-img {
+        height: 200px;
+        width: 100%;
+    }
+
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* 🔥 KEY LINE */
+        transition: transform 0.3s ease;
+    }
+</style>
 
 
 <body>
@@ -162,13 +176,24 @@
                         </div>
 
                     </div>
+
                 </div>
                 @endforeach
             </div>
 
             <button class="slider-arrow right">&#10095;</button>
         </div>
-    </div>
+
+        <!-- Featurs Section End -->
+
+        <style>
+            /* FORCE pagination to horizontal row */
+            .pagination {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between;
+                gap: 6px;
+            }
 
 
     <!-- Fruits Shop Start-->
@@ -227,17 +252,15 @@
                                     <div class="fruite-img">
                                         <a href="{{ route('productdetails', $product->id) }}">
                                             @if($image)
-                                            <img
-                                                src="{{ asset('storage/products/'.$image) }}"
-                                                class="img-fluid w-100 rounded-top"
+                                            <img src="{{ asset('storage/products/' . $image) }}"
                                                 alt="{{ $product->name }}"
-                                                style="height: 200px; object-fit: cover;">
+                                                class="img-fluid w-100 h-100 rounded-top"
+                                                style="object-fit:cover; transition: transform 0.3s;">
                                             @else
-                                            <img
-                                                src="{{ asset('website/img/no-image.png') }}"
-                                                class="img-fluid w-100 rounded-top"
+                                            <img src="{{ asset('website/img/no-image.png') }}"
                                                 alt="No Image"
-                                                style="height: 200px; object-fit: cover;">
+                                                class="img-fluid w-100 h-100 rounded-top"
+                                                style="object-fit:cover; transition: transform 0.3s;">
                                             @endif
                                         </a>
                                     </div>
@@ -323,17 +346,15 @@
                                     <div class="fruite-img">
                                         <a href="{{ route('productdetails', $product->id) }}">
                                             @if($image)
-                                            <img
-                                                src="{{ asset('storage/products/'.$image) }}"
-                                                class="img-fluid w-100 rounded-top"
+                                            <img src="{{ asset('storage/products/'.$image) }}"
+                                                class="img-fluid w-100 h-100 rounded-top"
                                                 alt="{{ $product->name }}"
-                                                style="height: 200px; object-fit: cover;">
+                                                style="object-fit: cover;">
                                             @else
-                                            <img
-                                                src="{{ asset('website/img/no-image.png') }}"
-                                                class="img-fluid w-100 rounded-top"
+                                            <img src="{{ asset('website/img/no-image.png') }}"
+                                                class="img-fluid w-100 h-100 rounded-top"
                                                 alt="No Image"
-                                                style="height: 200px; object-fit: cover;">
+                                                style="object-fit: cover;">
                                             @endif
                                         </a>
                                     </div>

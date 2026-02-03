@@ -19,19 +19,31 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
-
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
+
         Log::info('Product Index Page Loaded');
 
         try {
             $products = Product::with(['category', 'tax'])
                 ->latest()
-                ->paginate(20);
-
+                ->paginate(10);
+            // dd($products);
             return view('menus.product.index', compact('products'));
         } catch (\Throwable $e) {
+
+            Log::error('Product Index Error', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Unable to load products');
+        }
+    }
 
             Log::error('Product Index Error', [
                 'message' => $e->getMessage(),
@@ -168,16 +180,18 @@ class ProductController extends Controller
         try {
             Log::info('Product View Request', ['id' => $id]);
 
+            // findOrFail already throws exception, so extra if not needed
             $product = Product::with('tax')->findOrFail($id);
 
-            if (!$product) {
-                Log::warning('Product Not Found', ['id' => $id]);
-                return redirect()->route('product.index')
-                    ->with('error', 'Product not found');
-            }
+            // JSON images handle (string or array)
+            $productImages = is_string($product->product_images)
+                ? json_decode($product->product_images, true)
+                : $product->product_images;
 
             $mode = 'view'; // important for form disabling
+
             $categories = Category::select('id', 'name')->get();
+
             $brands = Brand::where('status', 1)
                 ->orderBy('name')
                 ->get();
@@ -187,7 +201,9 @@ class ProductController extends Controller
 
             return view('menus.product.add-product', compact('product', 'mode', 'categories', 'brands', 'subCategories', 'units'));
         } catch (\Throwable $e) {
+
             Log::error('Product View Error', ['message' => $e->getMessage()]);
+
             return redirect()->route('product.index')
                 ->with('error', 'Unable to view product');
         }
