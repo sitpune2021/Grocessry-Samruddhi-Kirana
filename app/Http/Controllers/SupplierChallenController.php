@@ -42,13 +42,14 @@ class SupplierChallenController extends Controller
 
     public function create()
     { 
+        
         $warehouse = Warehouse::where('type', 'master')
             ->where('status', 1)
             ->first();
 
-        if (!$warehouse) {
-            abort(500, 'Master warehouse not configured');
-        }
+        //     if (!$warehouse) {
+        //     abort(500, 'Master warehouse not configured');
+        // }
 
         return view('supplier_challan.create', [
             'mode' => 'add',
