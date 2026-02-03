@@ -13,6 +13,7 @@ use App\Models\ContactDetail;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\ProductBatch;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,21 +23,27 @@ class WebsiteController extends Controller
 
     public function index(Request $request)
     {
+        $dcId = session('dc_warehouse_id');
         // banners
         $banners = Banner::latest()->get();
 
         // categories
         $categories = Category::orderBy('name')->get();
         $cate = Category::whereNull('deleted_at')
-            ->whereHas('products', function ($q) {
-                $q->whereNull('deleted_at');
-            })
-            ->with(['products' => function ($q) {
-                $q->whereNull('deleted_at');
+            ->whereHas('products', fn($q) => $q->whereNull('deleted_at'))
+            ->with(['products' => function ($q) use ($dcId) {
+                $q->whereNull('deleted_at')
+                    ->withSum(['batches as available_stock' => function ($b) use ($dcId) {
+                        if ($dcId) {
+                            $b->where('warehouse_id', $dcId)
+                                ->where('quantity', '>', 0);
+                        }
+                    }], 'quantity');
             }])
             ->orderBy('name')
             ->take(5)
             ->get();
+
 
         $saleproduct = Product::whereNull('deleted_at')
             ->whereHas('sale', function ($q) {
@@ -58,8 +65,15 @@ class WebsiteController extends Controller
             ->whereDoesntHave('sale', function ($q) {
                 $q->active()->online();
             })
+            ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId)
+                        ->where('quantity', '>', 0);
+                }
+            }], 'quantity')
             ->latest()
             ->paginate(12, ['*'], 'all_page');
+
 
 
 
@@ -197,51 +211,74 @@ class WebsiteController extends Controller
 
         return view('website.partials.product-list', compact('products'))->render();
     }
-
     public function addToCart(Request $request)
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
-        $qty = $request->qty ?? 1;
+        // DC must be selected
+        $dcId = session('dc_warehouse_id');
+        if (!$dcId) {
+            return back()->with('error', 'Please select delivery location first');
+        }
 
+        $productId = $request->product_id;
+        $qty       = $request->qty ?? 1;
+
+        // Identify user (login or guest)
         $userId = Auth::id() ?? session()->getId();
 
-        // Get or create cart
+        // Get or create cart FIRST
         $cart = Cart::firstOrCreate([
             'user_id' => $userId,
         ]);
 
-        // Use FINAL PRICE always
-        $price = $product->final_price;
-
-        // Check if product already exists
+        // Check existing cart quantity
         $item = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
+            ->where('product_id', $productId)
             ->first();
 
+        $currentQty = $item ? $item->qty : 0;
+
+        // REAL STOCK CHECK (DC-specific)
+        $availableQty = ProductBatch::where('product_id', $productId)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
+
+        if (($currentQty + $qty) > $availableQty) {
+            return back()->with(
+                'error',
+                $availableQty > 0
+                    ? "Only {$availableQty} items available at your location"
+                    : "Product is out of stock at your location"
+            );
+        }
+
+        // Load product & price
+        $product = Product::findOrFail($productId);
+        $price   = $product->final_price;
+
+        // Add or update cart item
         if ($item) {
             $item->qty += $qty;
-            $item->price = $price; // 🔥 ensure updated price
+            $item->price = $price;
             $item->line_total = $item->qty * $price;
             $item->save();
         } else {
             CartItem::create([
                 'cart_id'    => $cart->id,
-                'product_id' => $product->id,
+                'product_id' => $productId,
                 'qty'        => $qty,
-                'price'      => $price,              // ✅ final_price
-                'line_total' => $price * $qty,        // ✅ final_price * qty
+                'price'      => $price,
+                'line_total' => $price * $qty,
             ]);
         }
 
-        // Recalculate totals
+        // Recalculate cart totals
         $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
         $cartQty  = CartItem::where('cart_id', $cart->id)->sum('qty');
 
-        // Update cart
         $cart->update([
             'quantity' => $cartQty,
             'subtotal' => $subtotal,
@@ -288,6 +325,15 @@ class WebsiteController extends Controller
             'qty' => 'required|integer|min:1'
         ]);
 
+        $dcId = session('dc_warehouse_id');
+
+        if (!$dcId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Delivery location not selected'
+            ], 422);
+        }
+
         $userId = Auth::id() ?? session()->getId();
 
         $item = CartItem::where('id', $itemId)
@@ -296,6 +342,21 @@ class WebsiteController extends Controller
             })
             ->firstOrFail();
 
+        //REAL STOCK CHECK (AGAIN)
+        $availableQty = ProductBatch::where('product_id', $item->product_id)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
+
+        if ($request->qty > $availableQty) {
+            return response()->json([
+                'success' => false,
+                'out_of_stock' => true,
+                'available_qty' => $availableQty,
+                'message' => "Only {$availableQty} items available"
+            ], 422);
+        }
+
+        // safe to update
         $item->qty = $request->qty;
         $item->line_total = $item->qty * $item->price;
         $item->save();

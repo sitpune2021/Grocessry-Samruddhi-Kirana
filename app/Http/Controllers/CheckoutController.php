@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\FifoStockService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\Coupon;
@@ -14,7 +15,7 @@ use Razorpay\Api\Api;
 use App\Models\Payment;
 use App\Models\Warehouse;
 use App\Models\District;
-use App\Models\Talukas;
+use App\Models\ProductBatch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -116,8 +117,40 @@ class CheckoutController extends Controller
 
     Log::info('Taluka found', $taluka->toArray());
 
-    // 5️⃣ Get district from taluka
-    $district = District::find($taluka->district_id);
+        $dcId = session('dc_warehouse_id');
+
+        if (!$dcId) {
+            return redirect()->route('cart')
+                ->with('error', 'Delivery location not selected');
+        }
+
+        // FINAL STOCK CHECK
+        foreach ($cart->items as $item) {
+
+            $availableQty = ProductBatch::where('product_id', $item->product_id)
+                ->where('warehouse_id', $dcId)
+                ->sum('quantity');
+
+            if ($item->qty > $availableQty) {
+                return redirect()->route('cart')->with(
+                    'error',
+                    "{$item->product->name} stock has changed. Only {$availableQty} left."
+                );
+            }
+        }
+
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'warehouse_id'   => $dcId,
+            'order_number' => 'ORD-' . time(),
+            'channel' => 'web',
+            'subtotal' => $cart->subtotal,
+            'total_amount' => $finalTotal,
+            'payment_method' => $request->payment_method,
+            'payment_status' => 'pending',
+            'status' => 'pending',
+            'order_type' => 'delivery',
+        ]);
 
     if (!$district) {
         Log::error('District not found for taluka: ' . $taluka->id);
@@ -170,74 +203,35 @@ class CheckoutController extends Controller
             }
         }
 
-        if ($canFulfill) {
-            $selectedWarehouse = $warehouse;
-            break; // ✅ first nearest/available warehouse
-        }
-    }
+        if (strtolower($request->payment_method) === 'cash') {
+            
+            $dcId = session('dc_warehouse_id');
+            $userId = auth()->id();
 
-    if (!$selectedWarehouse) {
-        return back()->with(
-            'error',
-            'Products are not available together in nearby warehouses.'
-        );
-    }
+            $order->load('items');
 
-        
-            // // 6️⃣ Stock check
-            // foreach ($cart->items as $item) {
-            //     $stockQty = DB::table('warehouse_stock')
-            //         ->where('warehouse_id', $distributionCenter->id)
-            //         ->where('product_id', $item->product_id)
-            //         ->sum('quantity');
+            DB::transaction(function () use ($order, $dcId, $userId) {
 
-            //     if ($stockQty < $item->qty) {
-            //         Log::error("Product out of stock", ['product' => $item->product_id]);
-            //         return back()->with('error', "Product '{$item->product->name}' is out of stock.");
-            //     }
-            // }
+                $fifo = new FifoStockService();
 
-            // 7️⃣ Create order
-            $finalTotal = $cart->subtotal;
+                foreach ($order->items as $item) {
+                    $fifo->consume(
+                        $item->product_id,
+                        $dcId,
+                        $item->quantity,
+                        $order->id,
+                        $userId
+                    );
+                }
 
-            $order = Order::create([
-                'user_id'          => auth()->id(),
-                //'warehouse_id'     => $distributionCenter->id,
-                'warehouse_id'     => $selectedWarehouse->id,
-                'order_number'     => 'ORD-' . time(),
-                'channel'          => 'web',
-                'subtotal'         => $cart->subtotal,
-                'discount'         => 0,
-                'coupon_discount'  => 0,
-                'coupon_code'      => null,
-                'delivery_charge'  => 0,
-                'total_amount'     => $finalTotal,
-                'payment_method'   => $request->payment_method,
-                'payment_status'   => 'pending',
-                'status'           => 'pending',
-                'order_type'       => 'delivery',
-            ]);
-
-            Log::info('Order created', $order->toArray());
-
-            // 8️⃣ Create order items
-            foreach ($cart->items as $item) {
-                Log::info('Creating OrderItem', $item->toArray());
-                OrderItem::create([
-                    'order_id'        => $order->id,
-                    'product_id'      => $item->product_id,
-                    'product_batch_id'=> $item->product_batch_id ?? null,
-                    'quantity'        => $item->qty,
-                    'price'           => $item->price,
-                    'tax_percent'     => $item->tax_percent ?? 0,
-                    'tax_amount'      => $item->tax_amount ?? 0,
-                    'line_total'      => $item->line_total,
-                    'total'           => $item->line_total,
-                    'is_picked'       => false,
+                // Mark order confirmed
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'confirmed'
                 ]);
-            }
+            });
 
-            // 9️⃣ Clear cart
+            // Clear cart AFTER FIFO success
             $cart->items()->delete();
             $cart->delete();
 
@@ -281,88 +275,70 @@ class CheckoutController extends Controller
         // 2️⃣ Find taluka by city
         $city = trim($request->city);
 
-        $taluka = Talukas::whereRaw(
-            'LOWER(name) = ?',
-            [strtolower($city)]
-        )->first();
+    public function paymentSuccess(Request $request)
+    {
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
 
-        if (!$taluka) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'We do not deliver to this city.'
+        try {
+            $api->utility->verifyPaymentSignature([
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature
             ]);
-        }
 
-        // 3️⃣ Get district from taluka
-        $district = District::find($taluka->district_id);
+            $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
 
-        if (!$district) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'We do not deliver to this city.'
+            $order->load('items');
+
+            Payment::where('order_id', $order->id)->update([
+                'payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature,
+                'status' => 'success'
             ]);
-        }
 
-        // 4️⃣ Find distribution centers
-        $warehouses = Warehouse::where('type', 'distribution_center')
-            ->where('district_id', $district->id)
-            ->where('taluka_id', $taluka->id)
-            ->where('status', 'active')
-            ->get();
 
-        if ($warehouses->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'No distribution center available in your area.'
-            ]);
-        }
+            $dcId = $order->warehouse_id; // 🔥 from order
+            $userId = $order->user_id;
 
-        // 5️⃣ Cart check
-        $cart = Cart::with('items.product')
-            ->where('user_id', auth()->id())
-            ->first();
+            DB::transaction(function () use ($order, $dcId, $userId) {
 
-        if (!$cart || $cart->items->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Your cart is empty.'
-            ]);
-        }
+                $fifo = new FifoStockService();
 
-        // 6️⃣ Stock check (ANY warehouse that can fulfill full cart)
-        foreach ($warehouses as $warehouse) {
-
-            $canFulfill = true;
-
-            foreach ($cart->items as $item) {
-                $stockQty = DB::table('warehouse_stock')
-                    ->where('warehouse_id', $warehouse->id)
-                    ->where('product_id', $item->product_id)
-                    ->sum('quantity');
-
-                if ($stockQty < $item->qty) {
-                    $canFulfill = false;
-                    break;
+                foreach ($order->items as $item) {
+                    $fifo->consume(
+                        $item->product_id,
+                        $dcId,
+                        $item->quantity,
+                        $order->id,
+                        $userId
+                    );
                 }
-            }
 
-            if ($canFulfill) {
-                return response()->json(['status' => 'success']);
-            }
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status' => 'confirmed'
+                ]);
+            });
+
+            Cart::where('user_id', $order->user_id)->delete();
+
+
+            return response()->json([
+                'status' => true,
+                'redirect_url' => route('thank_you', $order->id)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Razorpay Error', ['error' => $e->getMessage()]);
+            return response()->json(['status' => false], 400);
         }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Products are not available together in nearby warehouses.'
-        ]);
     }
 
     public function thankYou(Order $order)
     {
         // Security: only owner can see
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
-        }
 
         return view('website.thank-you', compact('order'));
     }
