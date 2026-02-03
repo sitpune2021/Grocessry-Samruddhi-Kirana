@@ -175,7 +175,8 @@
                                                 </div>
 
                                                 {{-- Pincode --}}
-                                                <div class="col-md-3 mb-3">
+                                                {{-- Pincode (ONLY for Distribution Center) --}}
+                                                <div class="col-md-3 mb-3" id="pincodeDiv">
                                                     <label class="form-label">
                                                         Pincode <span class="text-danger">*</span>
                                                     </label>
@@ -185,9 +186,10 @@
                                                         maxlength="6"
                                                         class="form-control"
                                                         placeholder="Enter pincode"
-                                                        value="{{ old('pincode', $warehouse->pincode ?? '') }}"
+                                                        value="{{ old('pincode', $servicePincode->pincode ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
                                                 </div>
+
 
                                                 {{-- Service Radius --}}
                                                 <div class="col-md-3 mb-3" id="radiusDiv">
@@ -369,6 +371,28 @@
             const talukaSelect = document.getElementById('taluka_id');
             const savedDistrictId = document.getElementById('savedDistrictId').value;
             const savedTalukaId = document.getElementById('savedTalukaId').value;
+            const pincodeDiv = document.getElementById('pincodeDiv');
+
+            function togglePincode() {
+                if (typeSelect.value === 'distribution_center') {
+                    pincodeDiv.style.display = 'block';
+                } else {
+                    pincodeDiv.style.display = 'none';
+
+                    // Optional: clear value when hidden
+                    const pincodeInput = document.getElementById('pincode');
+                    if (pincodeInput && "{{ $mode }}" === 'add') {
+                        pincodeInput.value = '';
+                    }
+                }
+            }
+
+            // On type change
+            typeSelect.addEventListener('change', togglePincode);
+
+            // On page load (edit/view/add)
+            togglePincode();
+
 
             if (savedDistrictId) {
                 districtSelect.value = savedDistrictId;
@@ -494,8 +518,9 @@
 
 
             /* ==================================
-           Auto Fill Distric And Taluka ON Paret selection 
-            ===================================== */
+   Auto Fill District & Taluka
+   ONLY for Taluka & Distribution Center
+=================================== */
 
             function resetSelect(select, placeholder) {
                 select.value = '';
@@ -503,32 +528,36 @@
                     select.innerHTML = `<option value="">${placeholder}</option>`;
                 }
             }
+
             parentSelect.addEventListener('change', function() {
 
                 const opt = this.options[this.selectedIndex];
+                if (!opt) return;
+
                 const districtId = opt.dataset.districtId;
                 const talukaId = opt.dataset.talukaId;
-                const parentType = opt.dataset.type;
+
+                const selectedType = typeSelect.value;
+
+
+                // Apply ONLY for taluka & distribution_center
+                if (!['taluka', 'distribution_center'].includes(selectedType)) {
+                    return;
+                }
 
                 // Auto-select district
                 if (districtId) {
                     districtSelect.value = districtId;
 
-                    // IMPORTANT: load talukas AFTER district is set
-                    const savedTalukaId = document.getElementById('savedTalukaId').value;
+                    // Load talukas AFTER district set
+                    const savedTalukaId =
+                        document.getElementById('savedTalukaId')?.value || talukaId;
 
-                    if (districtId) {
-                        districtSelect.value = districtId;
-                        loadTalukas(districtId, savedTalukaId);
-                    }
-
+                    loadTalukas(districtId, savedTalukaId);
                 }
             });
 
-            // Trigger on edit page load
-            if (parentSelect.value) {
-                parentSelect.dispatchEvent(new Event('change'));
-            }
+
         });
     </script>
 
