@@ -133,7 +133,6 @@ class DeliveryOrderController extends Controller
         ]);
     }
 
-
     public function getDeliveryQueue(Request $request)
     {
         $user = $request->user();
@@ -253,7 +252,6 @@ class DeliveryOrderController extends Controller
             'data' => $order
         ]);
     }
-
 
     public function getPendingOrders(Request $request)
     {
