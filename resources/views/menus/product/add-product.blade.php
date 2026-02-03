@@ -510,7 +510,12 @@ function calculateFinalPrice() {
 
     const gstPercent = parseFloat($('[name="tax_id"] option:selected').data('gst')) || 0;
 
-    if (!sellingPrice || !gstPercent) return;
+    // Only block if selling price is missing
+    if (!sellingPrice) {
+        $('#gst_amount').val('0.00');
+        $('#final_price').val('0.00');
+        return;
+    }
 
     const gstAmount  = (sellingPrice * gstPercent) / 100;
     const finalPrice = sellingPrice + gstAmount;

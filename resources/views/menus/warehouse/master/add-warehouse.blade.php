@@ -678,11 +678,11 @@
             toggleByType();
         });
 
-        function validateLocation() {
-            if (!locationConfirmed) {
-                alert('Please select warehouse location on the map');
-                return false;
-            }
-            return true;
-        }
+        // function validateLocation() {
+        //     if (!locationConfirmed) {
+        //         alert('Please select warehouse location on the map');
+        //         return false;
+        //     }
+        //     return true;
+        // }
     </script>
