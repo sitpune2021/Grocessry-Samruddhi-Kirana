@@ -84,7 +84,6 @@ class CategoryProductController extends Controller
         }
     }
 
-
     public function getProductsBySubcategory($id)
     {
         $subcategory = SubCategory::find($id);
@@ -104,10 +103,22 @@ class CategoryProductController extends Controller
                 // ✅ REAL STOCK from warehouse_stock
                 $availableStock = WarehouseStock::where('product_id', $product->id)
                     ->sum('quantity');
+                $discountPercent = 0;
+                if ($product->mrp > 0 && $product->final_price < $product->mrp) {
+                    $discountPercent = round(
+                        (($product->mrp - $product->final_price) / $product->mrp) * 100
+                    );
+                }
 
                 $images = is_string($product->product_images)
                     ? json_decode($product->product_images, true)
                     : $product->product_images;
+                $discountPercent = 0;
+                if ($product->mrp > $product->final_price) {
+                    $discountPercent = round(
+                        (($product->mrp - $product->final_price) / $product->mrp) * 100
+                    );
+                }
 
                 return [
                     'id' => $product->id,
@@ -117,8 +128,11 @@ class CategoryProductController extends Controller
                     'base_price' => $product->base_price,
                     'retailer_price' => $product->retailer_price,
                     'mrp' => $product->mrp,
-                    'gst_percentage' => $product->gst_percentage,
+                    'final_price' => $product->final_price,
 
+                    'gst_percentage' => $product->gst_percentage,
+                    'discount_percentage' => $discountPercent,
+                    'discount_label' => $discountPercent > 0 ? $discountPercent . '% OFF' : null,
                     // ✅ FIX HERE
                     'stock' => $availableStock,
                     'quantity' => 1,
@@ -141,8 +155,6 @@ class CategoryProductController extends Controller
             'data' => $products
         ]);
     }
-
-
 
     public function getProductsByBrand($id)
     {
@@ -167,6 +179,7 @@ class CategoryProductController extends Controller
                     'retailer_price',
                     'mrp',
                     'gst_percentage',
+                    'final_price',
                     'product_images'
                 )
                 ->get()
@@ -180,6 +193,17 @@ class CategoryProductController extends Controller
                     $maxStockLimit = 10; // you can change this
                     $product->stock = $stock;
                     $product->max_stock = min($stock, $maxStockLimit);
+                    $discountPercent = 0;
+                    if ($product->mrp > $product->final_price) {
+                        $discountPercent = round(
+                            (($product->mrp - $product->final_price) / $product->mrp) * 100
+                        );
+                    }
+
+                    $product->discount_percentage = $discountPercent;
+                    $product->discount_label = $discountPercent > 0
+                        ? $discountPercent . '% OFF'
+                        : null;
 
                     /* 🔹 IMAGE URL SET */
                     $images = is_string($product->product_images)
@@ -249,6 +273,17 @@ class CategoryProductController extends Controller
                     $images = is_string($item->product_images)
                         ? json_decode($item->product_images, true)
                         : $item->product_images;
+
+
+                    $item->final_price = $item->final_price;
+
+                    $item->discount_percentage = ($item->mrp > 0 && $item->final_price < $item->mrp)
+                        ? round((($item->mrp - $item->final_price) / $item->mrp) * 100)
+                        : 0;
+
+                    $item->discount_label = $item->discount_percentage > 0
+                        ? $item->discount_percentage . '% OFF'
+                        : null;
 
                     $item->image_urls = collect($images)->map(function ($img) {
                         return asset('storage/products/' . $img);

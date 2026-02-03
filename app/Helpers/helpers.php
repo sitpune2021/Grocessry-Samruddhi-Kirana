@@ -23,5 +23,14 @@ if (!function_exists('hasPermission')) {
 
         return in_array($permission, $rolePermission->permissions, true);
     }
-    
+
+    function getDiscountPercentage($mrp, $finalPrice)
+{
+    if ($mrp <= 0 || $finalPrice >= $mrp) {
+        return 0;
+    }
+
+    return round((($mrp - $finalPrice) / $mrp) * 100);
+}
+
 }

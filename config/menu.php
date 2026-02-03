@@ -63,6 +63,13 @@ return [
             'route'   => 'warehouse.index',
         ],
 
+        [
+            'type'  => 'single',
+            'title' => 'DC Service Area',
+            'icon'  => 'bx bx-location',
+            'route'   => 'warehouse.service-areas.index',
+        ],
+       
         /* ================= Supplier Management ================= */
         [
             'type'  => 'dropdown',
