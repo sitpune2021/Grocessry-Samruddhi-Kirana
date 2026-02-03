@@ -19,12 +19,26 @@ class Warehouse extends Model
         'name',
         'code',
         'address',
+        'pincode',
+        'latitude',
+        'longitude',
+        'service_radius_km',
         'contact_person',
         'email',
         'contact_number',
         'status',
         'grocery_shop_id'
     ];
+
+    protected $casts = [
+    'latitude' => 'decimal:7',
+    'longitude' => 'decimal:7',
+];
+
+    public function servicePincodes()
+    {
+        return $this->hasMany(WarehouseServicePincode::class);
+    }
 
     public function product()
     {
@@ -87,6 +101,4 @@ class Warehouse extends Model
     {
         return $this->belongsTo(GroceryShop::class, 'grocery_shop_id');
     }
-
-
 }

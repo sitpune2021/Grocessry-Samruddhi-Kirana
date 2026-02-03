@@ -95,48 +95,85 @@
                                 @if($cart && $cart->items->count())
                                 @foreach($cart->items as $item)
                                 <tr>
-                                    <td><img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}" width="60" class="rounded"></td>
+                                    <td>
+                                        <img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}"
+                                            width="60" class="rounded">
+                                    </td>
                                     <td>{{ $item->product->name }} × {{ $item->qty }}</td>
                                     <td class="text-end">₹{{ $item->line_total }}</td>
                                 </tr>
                                 @endforeach
                                 @else
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Your cart is empty</td>
+                                    <td colspan="3" class="text-center text-muted">
+                                        Your cart is empty
+                                    </td>
                                 </tr>
                                 @endif
                                 <tr>
                                     <th colspan="2">Subtotal</th>
-                                    <th class="text-end">₹<span id="subtotal">{{ $cart->subtotal }}</span></th>
+                                    <th class="text-end">
+                                        ₹<span id="subtotal">{{ $cart->subtotal }}</span>
+                                    </th>
                                 </tr>
+
                                 <tr id="discountRow" class="d-none">
                                     <th colspan="2">Coupon Discount</th>
-                                    <th class="text-end text-danger">- ₹<span id="discountAmount">0</span></th>
+                                    <th class="text-end text-danger">
+                                        - ₹<span id="discountAmount">0</span>
+                                    </th>
                                 </tr>
+
                                 <tr>
                                     <th colspan="2">Total</th>
-                                    <th class="text-end text-success fw-bold">₹<span id="finalTotal">{{ $cart->subtotal }}</span></th>
+                                    <th class="text-end text-success fw-bold">
+                                        ₹<span id="finalTotal">{{ $cart->total }}</span>
+                                    </th>
                                 </tr>
+
                             </tbody>
                         </table>
 
-                        <!-- Coupon -->
+                        <!-- Coupon Apply -->
                         <div class="mb-3">
-                            <select class="form-select" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
-                                <option value="">Select Offer Code</option>
-                                @foreach($coupons as $coupon)
-                                @php
-                                $used = \App\Models\Order::where('user_id', auth()->id())->where('coupon_code', $coupon->code)->exists();
-                                @endphp
-                                @if(!$used)
-                                <option value="{{ $coupon->code }}">{{ $coupon->code }}
-                                    @if($coupon->discount_type=='flat') (₹{{ $coupon->discount_value }} OFF)
-                                    @else ({{ $coupon->discount_value }}% OFF) @endif
-                                </option>
-                                @endif
-                                @endforeach
-                            </select>
+                            <div class="input-group">
+                                <input type="text" id="coupon_code" class="form-control" placeholder="Enter coupon code">
+                                <button type="button" class="btn btn-outline-primary d-none">
+                                    Apply
+                                </button>
+                            </div>
+
                             <small id="coupon_msg" class="text-danger d-none"></small>
+
+                            <!-- Offer Codes -->
+                            <div class="mt-2">
+                                <small class="text-muted">Available Offers:</small>
+
+                                <select class="form-select mt-1" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
+                                    <option value="">Select Offer Code</option>
+
+                                    @foreach($coupons as $coupon)
+                                    @php
+                                    // Check if user already used this coupon
+                                    $used = \App\Models\Order::where('user_id', auth()->id())
+                                    ->where('coupon_code', $coupon->code)
+                                    ->exists();
+                                    @endphp
+
+                                    @if(!$used)
+                                    <option value="{{ $coupon->code }}">
+                                        {{ $coupon->code }}
+                                        @if($coupon->discount_type == 'flat')
+                                        (₹{{ $coupon->discount_value }} OFF)
+                                        @else
+                                        ({{ $coupon->discount_value }}% OFF)
+                                        @endif
+                                    </option>
+                                    @endif
+                                    @endforeach
+                                </select>
+
+                            </div>
                         </div>
 
                         <!-- Payment -->
@@ -148,6 +185,19 @@
                             <input class="form-check-input" type="radio" name="payment_method" value="online">
                             <label class="form-check-label">Online Payment</label>
                         </div>
+                        {{-- CASH FLOW ERROR --}}
+                        @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                        @endif
+
+                        {{-- CASH FLOW SUCCESS --}}
+                        @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                        @endif
 
                         <button type="button" id="rzp-button" class="btn btn-primary w-100 py-3">Place Order</button>
                         <small id="order_error" class="text-danger d-block mt-2"></small>
@@ -163,132 +213,220 @@
 <!-- Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<!-- Location Script -->
 <script>
-function getLocation(btn) {
-    btn.innerText = '📍 Detecting...';
-    btn.disabled = true;
-    if (!navigator.geolocation) {
-        alert('Not supported');
-        btn.disabled = false;
-        return;
+    function getLocation(btn) {
+        btn.innerText = '📍 Detecting...';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            showPosition(pos);
+            btn.innerText = '📍 Location Added';
+            btn.disabled = false;
+        }, () => {
+            btn.innerText = '📍 Use Current Location';
+            btn.disabled = false;
+            alert('Location access denied');
+        });
     }
-    navigator.geolocation.getCurrentPosition(pos => {
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
+</script>
+
+<script>
+    function getLocation(btn) {
+        btn.innerText = '📍 Detecting...';
+        btn.disabled = true;
+
+        if (!navigator.geolocation) {
+            alert("Geolocation not supported");
+            btn.disabled = false;
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(showPosition, () => {
+            btn.innerText = '📍 Use Current Location';
+            btn.disabled = false;
+            alert('Location access denied');
+        });
+    }
+
+    function showPosition(position) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
             .then(res => res.json())
             .then(data => {
                 let addr = data.address || {};
-                document.getElementById('address').value = `${addr.road||''} ${addr.suburb||''}`.trim();
-                document.getElementById('city').value = addr.city || addr.town || 'Pune';
-                document.getElementById('pincode').value = addr.postcode || '';
-                document.getElementById('country').value = addr.country || '';
-                btn.innerText = '📍 Location Added';
-                btn.disabled = false;
+
+                document.getElementById('address').value =
+                    `${addr.road || ''} ${addr.suburb || ''}`.trim();
+
+                document.getElementById('city').value =
+                    addr.city || addr.town || addr.municipality || 'Pune';
+
+                document.getElementById('pincode').value =
+                    addr.postcode || '';
+
+                document.getElementById('country').value =
+                    addr.country || '';
+
+                // button text update
+                document.querySelector('[onclick^="getLocation"]').innerText = '📍 Location Added';
+                document.querySelector('[onclick^="getLocation"]').disabled = false;
             });
-    }, () => {
-        btn.innerText = '📍 Use Current Location';
-        btn.disabled = false;
-        alert('Location denied');
-    });
-}
+    }
+</script>
 
-function applyCouponFromDropdown(el) {
-    let code = el.value;
-    if (!code) return;
-    document.getElementById('coupon_code').value = code;
-    applyCoupon();
-}
+<script>
+    function applyCouponFromDropdown(el) {
+        let code = el.value;
+        if (!code) return;
 
-function applyCoupon() {
-    let code = document.getElementById('coupon_code').value;
-    let subtotal = parseFloat(document.getElementById('subtotal').innerText);
-    fetch("{{ route('apply.coupon') }}", {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-        },
-        body: JSON.stringify({ coupon_code: code, subtotal: subtotal })
-    })
-    .then(res => res.json())
-    .then(data => {
-        let msg = document.getElementById('coupon_msg');
-        if (!data.status) {
-            msg.classList.remove('d-none', 'text-success');
-            msg.classList.add('text-danger');
-            msg.innerText = data.message;
+        document.getElementById('coupon_code').value = code;
+        applyCoupon();
+    }
+
+    function applyCoupon() {
+
+        let code = document.getElementById('coupon_code').value;
+        let subtotal = parseFloat(document.getElementById('subtotal').innerText);
+
+        fetch("{{ route('apply.coupon') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    coupon_code: code,
+                    subtotal: subtotal
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                let msg = document.getElementById('coupon_msg');
+
+                if (!data.status) {
+                    msg.classList.remove('d-none', 'text-success');
+                    msg.classList.add('text-danger');
+                    msg.innerText = data.message;
+                    return;
+                }
+
+                // ✅ UI UPDATE
+                msg.classList.remove('d-none', 'text-danger');
+                msg.classList.add('text-success');
+                msg.innerText = 'Coupon applied successfully';
+
+                document.getElementById('discountRow').classList.remove('d-none');
+                document.getElementById('discountAmount').innerText = data.discount;
+                document.getElementById('finalTotal').innerText = data.final_total;
+
+                // ✅🔥 VERY IMPORTANT (PLACE ORDER SATHI)
+                document.getElementById('applied_coupon').value = code;
+                document.getElementById('coupon_discount').value = data.discount;
+            });
+    }
+</script>
+
+<script>
+    document.getElementById('rzp-button').addEventListener('click', function() {
+
+        let paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+        let form = document.getElementById('checkoutForm');
+        let errorBox = document.getElementById('order_error');
+
+        errorBox.innerText = '';
+
+        if (!paymentMethod) {
+            errorBox.innerText = 'Please select payment method';
             return;
         }
-        msg.classList.remove('d-none', 'text-danger');
-        msg.classList.add('text-success');
-        msg.innerText = 'Coupon applied successfully';
-        document.getElementById('discountRow').classList.remove('d-none');
-        document.getElementById('discountAmount').innerText = data.discount;
-        document.getElementById('finalTotal').innerText = data.final_total;
-        document.getElementById('applied_coupon').value = code;
-        document.getElementById('coupon_discount').value = data.discount;
-    });
-}
 
-// ✅ Clean Place Order button handler
-document.getElementById('rzp-button').addEventListener('click', function(e) {
-    e.preventDefault(); // STOP default form submit
-
-    let form = document.getElementById('checkoutForm');
-    let formData = new FormData(form);
-    let errorBox = document.getElementById('order_error');
-    errorBox.textContent = '';
-
-    // AJAX order validation
-    fetch("{{ url('/validate-order') }}", {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'error') {
-            errorBox.textContent = data.message;
-            window.scrollTo({ top: errorBox.offsetTop - 100, behavior: 'smooth' });
-        } else {
-            // Validation passed
-            let paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-
-            if (paymentMethod === 'Cash') {
-                form.submit(); // COD submit
-            } else {
-                // Razorpay online payment
-                let finalAmount = parseFloat(document.getElementById('finalTotal').innerText) * 100;
-                let options = {
-                    key: "{{ env('RAZORPAY_KEY') }}",
-                    amount: finalAmount,
-                    currency: "INR",
-                    name: "Your Shop",
-                    description: "Order Payment",
-                    handler: function(response) {
-                        document.getElementById('razorpay_order_id').value = response.razorpay_payment_id;
-                        document.getElementById('razorpay_amount').value = finalAmount / 100;
-                        form.submit(); // submit after payment
-                    },
-                    prefill: {
-                        name: document.querySelector('input[name="first_name"]').value,
-                        email: document.querySelector('input[name="email"]').value,
-                        contact: document.querySelector('input[name="phone"]').value
-                    },
-                    theme: { color: "#3399cc" }
-                };
-                let rzp = new Razorpay(options);
-                rzp.open();
-            }
+        // CASH
+        if (paymentMethod === 'Cash') {
+            form.submit();
+            return;
         }
-    })
-    .catch(err => {
-        console.error(err);
-        errorBox.textContent = 'Something went wrong. Please try again.';
+
+        // ONLINE
+        fetch(form.action, {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: new FormData(form)
+            })
+            .then(async res => {
+                let data = await res.json();
+
+                if (!res.ok || data.status === false) {
+                    throw data;
+                }
+
+                return data;
+            })
+            .then(orderRes => {
+
+                // ✅ Razorpay order create
+                return fetch("/create-razorpay-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify({
+                            amount: orderRes.amount,
+                            order_id: orderRes.order_id
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => ({
+                        orderRes,
+                        data
+                    }));
+            })
+            .then(({
+                orderRes,
+                data
+            }) => {
+
+                let options = {
+                    key: "{{ config('services.razorpay.key') }}",
+                    amount: orderRes.amount,
+                    currency: "INR",
+                    order_id: data.razorpay_order_id,
+
+                    handler: function(response) {
+
+                        fetch("{{ route('payment.success') }}", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                },
+                                body: JSON.stringify(response)
+                            })
+                            .then(res => res.json())
+                            .then(res => {
+                                if (res.status) {
+                                    window.location.href = res.redirect_url;
+                                } else {
+                                    errorBox.innerText = 'Payment verification failed';
+                                }
+                            });
+                    }
+                };
+
+                new Razorpay(options).open();
+            })
+            .catch(err => {
+                errorBox.innerText =
+                    err.error ??
+                    err.message ??
+                    'This product is currently out of stock in your area.';
+            });
+
     });
-});
 </script>
 
 @endsection

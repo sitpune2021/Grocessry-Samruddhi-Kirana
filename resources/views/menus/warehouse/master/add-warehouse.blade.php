@@ -37,7 +37,8 @@
                                     <div class="card-body">
                                         <form
                                             action="{{ $mode === 'edit' ? route('warehouse.update', $warehouse->id) : route('warehouse.store') }}"
-                                            method="POST">
+                                            method="POST"
+                                            onsubmit="return validateLocation()">
                                             @csrf
                                             @if ($mode === 'edit')
                                             @method('PUT')
@@ -173,6 +174,35 @@
                                                     @enderror
                                                 </div>
 
+                                                {{-- Pincode --}}
+                                                <div class="col-md-3 mb-3">
+                                                    <label class="form-label">
+                                                        Pincode <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        name="pincode"
+                                                        id="pincode"
+                                                        maxlength="6"
+                                                        class="form-control"
+                                                        placeholder="Enter pincode"
+                                                        value="{{ old('pincode', $warehouse->pincode ?? '') }}"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                </div>
+
+                                                {{-- Service Radius --}}
+                                                <div class="col-md-3 mb-3" id="radiusDiv">
+                                                    <label class="form-label">
+                                                        Service Radius (KM)
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number"
+                                                        min="1"
+                                                        name="service_radius_km"
+                                                        id="service_radius_km"
+                                                        class="form-control"
+                                                        value="{{ old('service_radius_km', $warehouse->service_radius_km ?? 10) }}"
+                                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                                </div>
 
                                                 {{-- Address --}}
                                                 <div class="col-md-12 mb-3">
@@ -183,6 +213,27 @@
                                                     @error('address')
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
+                                                </div>
+
+                                                {{-- Latitude / Longitude (hidden) --}}
+                                                <input type="hidden" name="latitude" id="latitude"
+                                                    value="{{ old('latitude', $warehouse->latitude ?? '') }}">
+
+                                                <input type="hidden" name="longitude" id="longitude"
+                                                    value="{{ old('longitude', $warehouse->longitude ?? '') }}">
+
+                                                {{-- Location Picker --}}
+                                                <div class="col-md-12 mb-3" id="locationPicker">
+                                                    <label class="form-label">
+                                                        Warehouse Location (Drag pin to exact location)
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div id="map" style="height: 400px; border-radius: 8px;"></div>
+
+                                                    <small class="text-muted d-block mt-1">
+                                                        Selected Location:
+                                                        <strong id="coordText"></strong>
+                                                    </small>
                                                 </div>
 
                                                 @if($mode !== 'add' && $mode !== 'edit')
@@ -264,6 +315,8 @@
     </div>
     <!-- / Layout wrapper -->
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     {{-- //************Do Not Remove Advance TO Do Later  ********************** --}}
@@ -472,12 +525,164 @@
                 }
             });
 
-
             // Trigger on edit page load
             if (parentSelect.value) {
                 parentSelect.dispatchEvent(new Event('change'));
             }
-
-
         });
+    </script>
+
+    <script>
+        let locationConfirmed = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const typeSelect = document.getElementById('warehouseType');
+            const mapDiv = document.getElementById('locationPicker');
+            const radiusDiv = document.getElementById('radiusDiv');
+
+            const latInput = document.getElementById('latitude');
+            const lngInput = document.getElementById('longitude');
+            const radiusInput = document.getElementById('service_radius_km');
+
+            const pincodeInput = document.getElementById('pincode');
+            const coordText = document.getElementById('coordText');
+
+            /* ===============================
+               INITIAL COORDINATES
+            =============================== */
+            let lat = latInput.value ? parseFloat(latInput.value) : 18.5204;
+            let lng = lngInput.value ? parseFloat(lngInput.value) : 73.8567;
+
+            // Force write initial values (VERY IMPORTANT)
+            latInput.value = lat;
+            lngInput.value = lng;
+            updateCoordText(lat, lng);
+
+            /* ===============================
+               MAP INIT
+            =============================== */
+            const map = L.map('map').setView([lat, lng], 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            const marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(map);
+
+            let circle = null;
+
+            /* ===============================
+               HELPERS
+            =============================== */
+            function updateCoordText(lat, lng) {
+                if (coordText) {
+                    coordText.innerText = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                }
+            }
+
+            function syncLatLng() {
+                const pos = marker.getLatLng();
+                latInput.value = pos.lat;
+                lngInput.value = pos.lng;
+                updateCoordText(pos.lat, pos.lng);
+                locationConfirmed = true;
+                fetchPincode(pos.lat, pos.lng);
+                updateRadiusCircle();
+            }
+
+            /* ===============================
+               MARKER EVENTS
+            =============================== */
+            marker.on('dragend', syncLatLng);
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                syncLatLng();
+            });
+
+            /* ===============================
+               SERVICE RADIUS CIRCLE
+            =============================== */
+            function updateRadiusCircle() {
+                if (circle) {
+                    map.removeLayer(circle);
+                    circle = null;
+                }
+
+                if (typeSelect.value === 'distribution_center') {
+                    circle = L.circle(marker.getLatLng(), {
+                        radius: (radiusInput.value || 10) * 1000,
+                        color: 'green',
+                        fillColor: '#28a745',
+                        fillOpacity: 0.25
+                    }).addTo(map);
+                }
+            }
+
+            /* ===============================
+               TOGGLE MAP / RADIUS BY TYPE
+            =============================== */
+            function toggleByType() {
+                const type = typeSelect.value;
+
+                if (type === 'distribution_center') {
+                    mapDiv.style.display = 'block';
+                    radiusDiv.style.display = 'block';
+                    updateRadiusCircle();
+                } else {
+                    mapDiv.style.display = 'none';
+                    radiusDiv.style.display = 'none';
+                    if (circle) map.removeLayer(circle);
+                }
+
+                setTimeout(() => map.invalidateSize(), 200);
+            }
+
+            /* ===============================
+               FREE PINCODE AUTO-FILL (OSM)
+            =============================== */
+            function fetchPincode(lat, lng) {
+                fetch('/reverse-geocode', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            lat,
+                            lng
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.pincode && pincodeInput) {
+                            pincodeInput.value = data.pincode;
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+
+            /* ===============================
+               EVENTS
+            =============================== */
+            radiusInput?.addEventListener('input', updateRadiusCircle);
+            typeSelect.addEventListener('change', toggleByType);
+
+            /* ===============================
+               INITIAL LOAD
+            =============================== */
+            toggleByType();
+        });
+
+        function validateLocation() {
+            if (!locationConfirmed) {
+                alert('Please select warehouse location on the map');
+                return false;
+            }
+            return true;
+        }
     </script>

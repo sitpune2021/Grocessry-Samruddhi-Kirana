@@ -11,7 +11,7 @@
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    </div>           
 
     <!-- slider header Start -->
     <div class="container my-3">
@@ -142,7 +142,22 @@
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <button type="submit" class="btn-add-sm">ADD</button>
+                                @if(!session('dc_warehouse_id'))
+                                <button type="button" class="btn-add-sm disabled">
+                                    Check Availability
+                                </button>
+
+                                @elseif(($product->available_stock ?? 0) > 0)
+                                <button type="submit" class="btn-add-sm">
+                                    ADD
+                                </button>
+
+                                @else
+                                <button type="button" class="btn-add-sm disabled">
+                                    Out of Stock
+                                </button>
+                                @endif
+
                             </form>
                         </div>
 
