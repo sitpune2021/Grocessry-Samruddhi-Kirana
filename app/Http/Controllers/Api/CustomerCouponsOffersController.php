@@ -107,7 +107,6 @@ class CustomerCouponsOffersController extends Controller
         ], 200);
     }
 
-
     public function removeOffer()
     {
         return response()->json([
