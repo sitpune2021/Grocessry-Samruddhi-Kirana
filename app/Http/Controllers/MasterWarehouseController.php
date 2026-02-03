@@ -278,9 +278,12 @@ class MasterWarehouseController extends Controller
             $districts = District::all();
             $talukas = Talukas::all();
 
+            $servicePincode = WarehouseServicePincode::where('warehouse_id', $warehouse->id)->first();
+
             return view('menus.warehouse.master.add-warehouse', [
                 'mode' => 'view', // view mode
                 'warehouse' => $warehouse,
+                'servicePincode' =>  $servicePincode,
                 'countries' => $countries,
                 'warehouses' => Warehouse::all(),
                 'districts' => $districts,
