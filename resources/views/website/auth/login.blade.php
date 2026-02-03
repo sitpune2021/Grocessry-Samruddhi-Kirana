@@ -10,6 +10,12 @@
             <div class="card shadow border-0 rounded-4 mt-5">
                 <div class="card-body">
 
+                    @if(session('error'))
+                        <div id="loginError" class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     <h4 class="text-center mb-4">Welcome Back</h4>
 
                     <form method="POST" action="{{ route('login') }}">
@@ -70,5 +76,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    setTimeout(function () {
+        let errorBox = document.getElementById('loginError');
+        if (errorBox) {
+            errorBox.style.display = 'none';
+        }
+    }, 10000); // 10 seconds
+</script>
 
 @endsection
