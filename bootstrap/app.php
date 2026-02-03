@@ -2,10 +2,15 @@
 
 use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\ApiAuthenticate;
+use App\Http\Middleware\ResolveDistributionCenter;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
+
+
+use App\Http\Middleware\VerifyCsrfToken;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -28,13 +33,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
     ->withMiddleware(function ($middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\VerifyCsrfToken::class,
+            ResolveDistributionCenter::class,
+            VerifyCsrfToken::class,
         ]);
     })
 
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(false);
     })
+
+
 
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (

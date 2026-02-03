@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\District;
 use App\Models\Talukas;
+use App\Models\WarehouseServicePincode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 
 class MasterWarehouseController extends Controller
@@ -32,17 +34,17 @@ class MasterWarehouseController extends Controller
     //         $warehouses = Warehouse::orderBy('id', 'desc')
     //             ->paginate(20);
     //     }
-      
+
     //     elseif ($user->warehouse->type === 'master') {
 
     //         $masterWarehouseId = $user->warehouse_id;
 
-          
+
     //         $districtIds = Warehouse::where('type', 'district')
     //             ->where('parent_id', $masterWarehouseId)
     //             ->pluck('id');
 
-          
+
     //         $talukaIds = Warehouse::where('type', 'taluka')
     //             ->whereIn('parent_id', $districtIds)
     //             ->pluck('id');
@@ -51,7 +53,7 @@ class MasterWarehouseController extends Controller
     //             ->whereIn('parent_id',$talukaIds)
     //             ->pluck('id');
 
-            
+
     //         $allowedWarehouseIds = collect([$masterWarehouseId])
     //             ->merge($districtIds)
     //             ->merge($talukaIds)
@@ -61,7 +63,7 @@ class MasterWarehouseController extends Controller
     //             ->orderBy('id', 'desc')
     //             ->paginate(20);
     //     }
-    
+
     //     elseif ($user->warehouse->type === 'district') {
 
     //         $districtWarehouseId = $user->warehouse_id;
@@ -98,9 +100,7 @@ class MasterWarehouseController extends Controller
             $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
                 ->orderBy('id', 'desc')
                 ->paginate(20);
-        }
-
-        elseif ($user->warehouse->type === 'master') {
+        } elseif ($user->warehouse->type === 'master') {
 
             $masterWarehouseId = $user->warehouse_id;
 
@@ -112,8 +112,8 @@ class MasterWarehouseController extends Controller
                 ->whereIn('parent_id', $districtIds)
                 ->pluck('id');
 
-            $shopIds = Warehouse::where('type','distribution_center')
-                ->whereIn('parent_id',$talukaIds)
+            $shopIds = Warehouse::where('type', 'distribution_center')
+                ->whereIn('parent_id', $talukaIds)
                 ->pluck('id');
 
             $allowedWarehouseIds = collect([$masterWarehouseId])
@@ -125,9 +125,7 @@ class MasterWarehouseController extends Controller
                 ->whereIn('id', $allowedWarehouseIds)
                 ->orderBy('id', 'desc')
                 ->paginate(20);
-        }
-
-        elseif ($user->warehouse->type === 'district') {
+        } elseif ($user->warehouse->type === 'district') {
 
             $districtWarehouseId = $user->warehouse_id;
 
@@ -142,8 +140,7 @@ class MasterWarehouseController extends Controller
                 ->whereIn('id', $allowedWarehouseIds)
                 ->orderBy('id', 'desc')
                 ->paginate(20);
-        }
-        else {
+        } else {
 
             $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
                 ->where('id', $user->warehouse_id)
@@ -159,19 +156,43 @@ class MasterWarehouseController extends Controller
     public function create()
     {
         $mode = 'add';
-        $warehouses = Warehouse::with(['district','taluka'])->get();
+        $warehouses = Warehouse::with(['district', 'taluka'])->get();
         $categories = Category::all();
         $countries = Country::all();
         $districts = District::orderBy('name')->get();
         $talukas = Talukas::all();
 
 
-        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts','talukas'));
+        return view('menus.warehouse.master.add-warehouse', compact('mode', 'warehouses', 'categories', 'countries', 'districts', 'talukas'));
+    }
+
+    public function reverseGeocode(Request $request)
+    {
+        $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        $response = Http::withHeaders([
+            'User-Agent' => 'SamruddhiKirana/1.0 (admin@gmail.com)'
+        ])->get('https://nominatim.openstreetmap.org/reverse', [
+            'format' => 'json',
+            'lat'    => $request->lat,
+            'lon'    => $request->lng,
+        ]);
+
+        if ($response->failed()) {
+            return response()->json(['pincode' => null]);
+        }
+
+        return response()->json([
+            'pincode' => $response->json('address.postcode')
+        ]);
     }
 
     public function store(Request $request)
     {
-       
+
         DB::beginTransaction();
         $request->validate([
             'name' => 'required|string|max:255|unique:warehouses,name',
@@ -187,6 +208,11 @@ class MasterWarehouseController extends Controller
             'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
             'taluka_id'   => 'required_if:type,taluka|integer',
             'address'     => 'required|string|max:500',
+            'pincode'    => 'required_if:type,distribution_center|digits:6',
+            'latitude'  => 'required_if:type,distribution_center|numeric',
+            'longitude' => 'required_if:type,distribution_center|numeric',
+            'service_radius_km' => 'required_if:type,distribution_center|integer|min:1',
+
         ], [
             'contact_number.regex'  => 'Please enter a valid 10-digit mobile number starting with 6-9',
             'contact_number.unique' => 'This mobile number is already registered.',
@@ -206,23 +232,18 @@ class MasterWarehouseController extends Controller
                 'contact_number' => $request->contact_number,
                 'email'          => $request->email,
                 'address'        => $request->address,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'service_radius_km' => $request->service_radius_km,
             ]);
 
-            /* 👤 SPLIT NAME */
-            // $nameParts = preg_split('/\s+/', trim($request->contact_person));
-            // $firstName = $nameParts[0];
-            // $lastName  = count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null;
+            if ($request->type === 'distribution_center') {
+            WarehouseServicePincode::create([
+                'warehouse_id' => $warehouse->id,
+                'pincode'      => $request->pincode,
+            ]);
+        }
 
-            // /* 👤 CREATE USER */
-            // $user = User::create([
-            //     'first_name'  => $firstName,
-            //     'last_name'   => $lastName,
-            //     'email'       => $request->email,
-            //     'password'    => Hash::make('Warehouse@123'),
-            //     'mobile'      => $request->contact_number,
-            //     // 'warehouse_id'=> $warehouse->id,
-            //     'status'      => 1,
-            // ]);
 
             DB::commit();
 
@@ -430,6 +451,4 @@ class MasterWarehouseController extends Controller
                 ->with('error', 'Something went wrong while deleting warehouse.');
         }
     }
-
-
 }
