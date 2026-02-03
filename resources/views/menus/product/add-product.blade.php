@@ -173,8 +173,9 @@
                                                         <input type="text" name="barcode" class="form-control "
                                                             placeholder="Enter Barcode"
                                                             value="{{ old('barcode', $product->barcode ?? '') }}"
-                                                            {{ $mode === 'view' ? 'readonly' : '' }}
-                                                            placeholder="Enter Barcode">
+                                                            {{ $mode === 'view' ? 'readonly' : '' }} 
+                                                             maxlength="20"
+                                                            >
                                                         {{-- @error('Barcode')
                                                         <span class="text-danger">{{ $message }}</span>
                                                         @enderror --}}
@@ -220,13 +221,13 @@
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
-                                                            Quantity <span class="text-danger">*</span>
+                                                            Unit Value <span class="text-danger">*</span>
                                                         </label>
-                                                        <input type="number"
+                                                        <input type="text"
                                                             step="0.01"
                                                             name="unit_value"
                                                             class="form-control"
-                                                            placeholder="e.g. 500, 1, 12"
+                                                            placeholder="e.g. 500, 250, 1, 5"
                                                             value="{{ old('unit_value', $product->unit_value ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
                                                         @error('unit_value')
@@ -239,7 +240,7 @@
                                                 <div class="col-md-3">
                                                     <div class="mb-3">
                                                         <label class="form-label">
-                                                            Base Price <span class="text-danger">*</span>
+                                                            Base Price / unit<span class="text-danger">*</span>
                                                         </label>
                                                         <input type="number" step="0.01" name="base_price"
                                                             class="form-control" placeholder="Enter base price"
@@ -509,7 +510,12 @@ function calculateFinalPrice() {
 
     const gstPercent = parseFloat($('[name="tax_id"] option:selected').data('gst')) || 0;
 
-    if (!sellingPrice || !gstPercent) return;
+    // Only block if selling price is missing
+    if (!sellingPrice) {
+        $('#gst_amount').val('0.00');
+        $('#final_price').val('0.00');
+        return;
+    }
 
     const gstAmount  = (sellingPrice * gstPercent) / 100;
     const finalPrice = sellingPrice + gstAmount;
