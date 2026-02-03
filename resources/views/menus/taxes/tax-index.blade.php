@@ -53,6 +53,7 @@
                             <th>CGST</th>
                             <th>SGST</th>
                             <th>GST</th>
+                            <th>IGST</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -65,6 +66,7 @@
                             <td>{{ $tax->cgst }}%</td>
                             <td>{{ $tax->sgst }}%</td>
                             <td>{{ $tax->gst }}%</td>
+                            <td>{{ $tax->igst }}%</td>
                             <td>
                                 @if($tax->is_active)
                                 <span class="badge bg-success">Active</span>

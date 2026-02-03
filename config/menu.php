@@ -46,6 +46,20 @@ return [
             ],
         ],
 
+         /* ================= Supplier Management ================= */
+        [
+            'type'  => 'dropdown',
+            'key'   => 'suppplierMenu',
+            'title' => 'Supplier Management',
+            'icon'  => 'bx bx-package',
+            'roles' => [1, 2], // allowed roles
+            'children' => [
+                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
+                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
+
+            ],
+        ],
+
         /* ================= Warehouse Management ================= */
         // [
         //     'type'  => 'dropdown',
@@ -66,23 +80,10 @@ return [
         [
             'type'  => 'single',
             'title' => 'DC Service Area',
-            'icon'  => 'bx bx-location',
+            'icon'  => 'bx bx-map-pin',
             'route'   => 'warehouse.service-areas.index',
         ],
-       
-        /* ================= Supplier Management ================= */
-        [
-            'type'  => 'dropdown',
-            'key'   => 'suppplierMenu',
-            'title' => 'Supplier Management',
-            'icon'  => 'bx bx-package',
-            'roles' => [1, 2], // allowed roles
-            'children' => [
-                ['title' => 'Supplier Details', 'route' => 'supplier.index'],
-                ['title' => 'Supplier Challan', 'route' => 'supplier_challan.index'],
-
-            ],
-        ],
+    
 
         /* ================= Inventory Management ================= */
         [
