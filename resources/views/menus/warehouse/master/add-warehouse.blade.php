@@ -494,8 +494,9 @@
 
 
             /* ==================================
-           Auto Fill Distric And Taluka ON Paret selection 
-            ===================================== */
+   Auto Fill District & Taluka
+   ONLY for Taluka & Distribution Center
+=================================== */
 
             function resetSelect(select, placeholder) {
                 select.value = '';
@@ -503,32 +504,36 @@
                     select.innerHTML = `<option value="">${placeholder}</option>`;
                 }
             }
+
             parentSelect.addEventListener('change', function() {
 
                 const opt = this.options[this.selectedIndex];
+                if (!opt) return;
+
                 const districtId = opt.dataset.districtId;
                 const talukaId = opt.dataset.talukaId;
-                const parentType = opt.dataset.type;
+
+                const selectedType = typeSelect.value; 
+
+                
+                // Apply ONLY for taluka & distribution_center
+                if (!['taluka', 'distribution_center'].includes(selectedType)) {
+                    return;
+                }
 
                 // Auto-select district
                 if (districtId) {
                     districtSelect.value = districtId;
 
-                    // IMPORTANT: load talukas AFTER district is set
-                    const savedTalukaId = document.getElementById('savedTalukaId').value;
+                    // Load talukas AFTER district set
+                    const savedTalukaId =
+                        document.getElementById('savedTalukaId')?.value || talukaId;
 
-                    if (districtId) {
-                        districtSelect.value = districtId;
-                        loadTalukas(districtId, savedTalukaId);
-                    }
-
+                    loadTalukas(districtId, savedTalukaId);
                 }
             });
 
-            // Trigger on edit page load
-            if (parentSelect.value) {
-                parentSelect.dispatchEvent(new Event('change'));
-            }
+     
         });
     </script>
 
