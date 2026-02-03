@@ -875,6 +875,11 @@ Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
 
+Route::post(
+    '/location/check-pincode',
+    [LocationController::class, 'checkByPincode'])->name('location.check');
+
+
 
 Route::get('/orders', [CustomerOrderController::class, 'userorder'])
     ->name('userorder');
