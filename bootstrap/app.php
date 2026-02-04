@@ -31,18 +31,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
 
-    ->withMiddleware(function ($middleware) {
+    ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            ResolveDistributionCenter::class,
-            VerifyCsrfToken::class,
+            \App\Http\Middleware\ResolveDistributionCenter::class,
         ]);
     })
 
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(false);
     })
-
-
 
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (
@@ -58,6 +55,5 @@ return Application::configure(basePath: dirname(__DIR__))
             return redirect()->route('login');
         });
     })
-
 
     ->create();

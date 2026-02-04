@@ -178,11 +178,11 @@
 
                         <!-- Payment -->
                         <div class="form-check my-3">
-                            <input class="form-check-input" type="radio" name="payment_method" value="Cash" checked>
+                            <input type="radio" name="payment_method" value="cash" checked>
                             <label class="form-check-label">Cash On Delivery</label>
                         </div>
                         <div class="form-check mb-4">
-                            <input class="form-check-input" type="radio" name="payment_method" value="online">
+                            <input type="radio" name="payment_method" value="online">
                             <label class="form-check-label">Online Payment</label>
                         </div>
                         {{-- CASH FLOW ERROR --}}
@@ -342,10 +342,12 @@
         }
 
         // CASH
-        if (paymentMethod === 'Cash') {
+        // ✅ CORRECT
+        if (paymentMethod === 'cash') {
             form.submit();
             return;
         }
+
 
         // ONLINE
         fetch(form.action, {
@@ -356,6 +358,8 @@
                 },
                 body: new FormData(form)
             })
+            .then(res => res.json()) // ❌ इथे JSON expect
+
             .then(async res => {
                 let data = await res.json();
 

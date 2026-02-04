@@ -222,7 +222,7 @@
 
 
 
-        const isOpenTime = hour >= 6 && hour < 19;
+        // const isOpenTime = hour >= 6 && hour < 19;
 
         if (isOpenTime) {
             // 🟢 OPEN

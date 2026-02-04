@@ -185,7 +185,7 @@
                                                             </td>
 
                                                             <td>
-                                                                <input type="number"
+                                                                <input type="text"
                                                                     name="items[0][return_qty]"
                                                                     class="form-control return-qty"
                                                                     min="1"
