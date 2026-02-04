@@ -46,7 +46,7 @@
                             <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
                         </div>
 
-                        <button type="submit" class="btn-add-sm">ADD</button>
+                        @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </div>
                 </form>
             </div>
