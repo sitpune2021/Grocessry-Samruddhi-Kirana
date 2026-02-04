@@ -228,12 +228,7 @@
                                         </a>
                                     </div>
 
-                                    <!-- <div class="p-4 border border-top-0">
-                                        @if(session('dc_warehouse_id'))
-                                        <small class="text-muted">
-                                            {{ $product->available_stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                                        </small>
-                                        @endif -->
+                                    <div class="p-4 border border-top-0">
 
                                         <!-- <div class="delivery-time mb-1">Free delivery</div> -->
 
