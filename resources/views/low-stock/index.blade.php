@@ -26,7 +26,7 @@
                             <th>Product</th>
                             <th>Category</th>
                             <th>Qty</th>
-                            <th>Status</th>
+                            <!-- <th>Status</th> -->
                         </tr>
                     </thead>
 
@@ -40,11 +40,11 @@
                                 <td class="fw-bold text-danger">
                                     {{ $stock->quantity }}
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <span class="badge bg-danger">
                                         LOW STOCK
                                     </span>
-                                </td>
+                                </td> -->
                             </tr>
                         @empty
                             <tr>

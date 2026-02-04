@@ -157,8 +157,8 @@ class ReportsController extends Controller
 
         // 🔒 DO NOT CHANGE ORDER (needed for running balance)
         $query = DB::table('stock_movements')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc');
+            ->orderBy('created_at', 'asc')
+            ->orderBy('id', 'asc');
 
         if ($warehouseId) {
             $query->where('warehouse_id', $warehouseId);
