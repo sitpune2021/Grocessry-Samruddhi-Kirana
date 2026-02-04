@@ -248,7 +248,7 @@ class WarehouseStockReturnController extends Controller
                     'challan_qty' => $challanQty,
                 ]);
 
-                if ($item['return_qty'] > $challanQty) {
+                if ($item['return_qty'] >= $challanQty) {
                     Log::warning('Return qty exceeds challan qty', [
                         'product_id' => $item['product_id'],
                         'batch_id' => $item['batch_no'],

@@ -83,8 +83,8 @@ class ProductController extends Controller
 
                 'name'            => 'required|string|max:255',
 
-                'sku'             => 'nullable|string|max:255|unique:products,sku',
-                'barcode'         => 'nullable|string|max:12',
+                'sku'             => 'nullable|string|max:255',
+                'barcode'         => 'nullable|string|max:20',
 
                 'sub_category_id' => 'required|exists:sub_categories,id',
                 'description'     => 'nullable|string',
@@ -94,11 +94,9 @@ class ProductController extends Controller
 
                 'base_price'      => 'required|numeric|min:1',
 
-                // ✅ FULL VALIDATION HERE
+                // FULL VALIDATION HERE
                'retailer_price' => 'required|numeric|gte:base_price',
-
                 'mrp'             => 'required|numeric|min:1',
-
                 'tax_id'          => 'required|exists:taxes,id',
 
                 'product_images'   => 'required|array',

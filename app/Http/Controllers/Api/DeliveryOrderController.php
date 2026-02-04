@@ -15,19 +15,19 @@ class DeliveryOrderController extends Controller
 {
     public function getNewOrders(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-
         $orders = Order::with([
             'orderItems.product',
             'deliveryAddress:id,user_id,latitude,longitude'
         ])
             ->where('status', 'pending')
             ->whereNull('delivery_agent_id')
-            ->latest()
-            ->paginate($perPage);
+            ->latest()              // latest orders first
+            ->take(2)               // ONLY 2 orders
+            ->get();
 
         return response()->json([
             'status' => true,
+            'message' => 'Latest 2 new orders',
             'data' => $orders
         ]);
     }
@@ -117,18 +117,27 @@ class DeliveryOrderController extends Controller
     {
         $perPage = $request->get('per_page', 10);
 
+        // Get IDs of latest 2 orders (New Orders)
+        $newOrderIds = Order::where('status', 'pending')
+            ->whereNull('delivery_agent_id')
+            ->latest()
+            ->take(2)
+            ->pluck('id');
+
+        // Remaining orders → Available Orders
         $orders = Order::with([
             'orderItems.product',
             'customerAddress:id,user_id,latitude,longitude'
         ])
             ->where('status', 'pending')
             ->whereNull('delivery_agent_id')
-            ->orderBy('created_at', 'asc') // FIFO
+            ->whereNotIn('id', $newOrderIds) // 👈 important
+            ->orderBy('created_at', 'asc')   // FIFO
             ->paginate($perPage);
 
         return response()->json([
             'status'  => true,
-            'message' => 'Partner gets list of available orders (queue)',
+            'message' => 'Available orders queue',
             'data'    => $orders
         ]);
     }

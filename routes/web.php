@@ -161,19 +161,19 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/reverse-geocode', [MasterWarehouseController::class, 'reverseGeocode']);
 
     Route::prefix('warehouses/')
-    ->middleware(['auth'])
-    ->group(function () {
+        ->middleware(['auth'])
+        ->group(function () {
 
-        // Service Area (Pincode) Management
-        Route::get('service-areas', [WarehouseServicePincodeController::class, 'index'])
-            ->name('warehouse.service-areas.index');
+            // Service Area (Pincode) Management
+            Route::get('service-areas', [WarehouseServicePincodeController::class, 'index'])
+                ->name('warehouse.service-areas.index');
 
-        Route::post('service-areas', [WarehouseServicePincodeController::class, 'store'])
-            ->name('warehouse.service-areas.store');
+            Route::post('service-areas', [WarehouseServicePincodeController::class, 'store'])
+                ->name('warehouse.service-areas.store');
 
-        Route::delete('service-areas/{pincode}', [WarehouseServicePincodeController::class, 'destroy'])
-            ->name('warehouse.service-areas.destroy');
-    });
+            Route::delete('service-areas/{pincode}', [WarehouseServicePincodeController::class, 'destroy'])
+                ->name('warehouse.service-areas.destroy');
+        });
 
     Route::resource('brands', BrandController::class);
     Route::get(
@@ -892,6 +892,19 @@ Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
 
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
+
+Route::post('/location/check', [LocationController::class, 'checkByPincode'])
+    ->name('location.check');
+
+Route::post('/set-pincode', [LocationController::class, 'setPincode'])
+    ->name('set.pincode');
+
+Route::post('/check-pincode', [LocationController::class, 'checkByPincode'])->name('check.pincode');
+
+Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
+    ->name('check.pincode');
+
+
 
 
 Route::get('/orders', [CustomerOrderController::class, 'userorder'])
