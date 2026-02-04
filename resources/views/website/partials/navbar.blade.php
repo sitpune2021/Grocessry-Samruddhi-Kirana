@@ -103,29 +103,80 @@
     .user-dropdown i {
         width: 20px;
     }
+
+    .blink {
+        animation: blink 1.4s infinite;
+    }
+
+    @keyframes blink {
+        50% {
+            opacity: .6;
+        }
+    }
+
+    .nav-link.active {
+        color: #0d6efd !important;
+    }
 </style>
 <!-- Navbar start -->
 <div class="container-fluid fixed-top">
 
-    <div class="container topbar bg-primary d-none d-lg-block">
-        <div class="d-flex justify-content-between">
-            <span class="text-white" style="cursor:pointer"
-                data-bs-toggle="modal" data-bs-target="#blinkitLocationModal">
-                <i class="fas fa-map-marker-alt me-1"></i> Select Location
-            </span>
+    <!-- TOP LOCATION BAR -->
+    <div class="container-fluid bg-primary text-white  " style="z-index:1050;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center py-1">
 
+                <!-- Location -->
+                <div class="d-flex align-items-center gap-2"
+                    style="cursor:pointer"
+                    data-bs-toggle="modal"
+                    data-bs-target="#pincodeModal">
 
+                    <i class="fas fa-map-marker-alt"></i>
 
-            <!-- Alert Message -->
-            <div class="alert text-center m-0 py-1 blink" id="order-alert"
-                style="font-size: 13px; font-weight: bold; cursor:pointer;"
-                data-bs-toggle="modal" data-bs-target="#orderPopup">
-                Online orders <span id="order-status"></span> |
-                <span id="timer-text"></span>
+                    @if(session('delivery_pincode'))
+                    <span class="fw-semibold">
+                        Delivering to {{ session('delivery_pincode') }}
+                    </span>
+                    <!-- <small class="opacity-75">(Change)</small> -->
+                    @else
+                    <span class="fw-semibold">Select delivery location</span>
+                    @endif
+                </div>
+
+                <!-- Alert Message -->
+                <div class="alert text-center m-0 py-1 blink" id="order-alert"
+                    style="font-size: 13px; font-weight: bold; cursor:pointer;"
+                    data-bs-toggle="modal" data-bs-target="#orderPopup">
+                    Online orders <span id="order-status"></span> |
+                    <span id="timer-text"></span>
+                </div>
+
             </div>
         </div>
     </div>
 
+    @if(!session('delivery_pincode'))
+    <div class="modal" id="pincodeModal" style="display:block;background:rgba(0,0,0,.6)">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Delivery Location</h6>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="pincodeInput" class="form-control"
+                        placeholder="Enter 6 digit pincode" maxlength="6">
+                    <small class="text-danger d-none mt-2" id="pinError"></small>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary w-100" onclick="checkPincode()">
+                        Check Availability
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
 
     <div class="container px-0">
@@ -250,39 +301,6 @@
 
 </div>
 
-<!-- Location Modal -->
-<div class="modal fade" id="blinkitLocationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4">
-
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Change Location</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body pt-0">
-
-                <!-- Search Input -->
-                <input type="text"
-                    id="locationInput"
-                    class="form-control form-control-lg"
-                    placeholder="Search area or pincode"
-                    autocomplete="off">
-
-                <!-- Suggestions -->
-                <ul class="list-group mt-2 d-none" id="locationList"></ul>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.getElementById('blinkitLocationModal')
-        .addEventListener('shown.bs.modal', () => {
-            document.getElementById('locationInput').focus();
-        });
-</script>
 
 
 <script>
@@ -350,6 +368,39 @@
     });
 </script>
 
+<script>
+    function checkPincode() {
+        let pin = document.getElementById('pincodeInput').value;
+        let err = document.getElementById('pinError');
+
+        if (pin.length !== 6) {
+            err.classList.remove('d-none');
+            err.innerText = 'Valid pincode enter kara';
+            return;
+        }
+
+        fetch("{{ route('check.pincode') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    pincode: pin
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.status) {
+                    err.classList.remove('d-none');
+                    err.innerText = data.message;
+                    return;
+                }
+
+                location.reload(); // 🔥 warehouse session set
+            });
+    }
+</script>
 
 
 <!-- Navbar End -->

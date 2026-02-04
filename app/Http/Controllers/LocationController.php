@@ -2,150 +2,66 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\District;
-use App\Models\State;
-use App\Models\Talukas;
 use Illuminate\Http\Request;
+use App\Models\Talukas;
 use App\Models\UserAddress;
+use App\Models\Warehouse;
+use App\Models\WarehouseServicePincode;
 use Illuminate\Support\Facades\Auth;
 
 class LocationController extends Controller
 {
-    public function checkByPincode(Request $request)
+    public function checkPincode(Request $request)
     {
         $request->validate([
-            'postcode' => 'required|digits:6'
+            'pincode' => 'required|digits:6'
         ]);
 
-        $pincode = $request->postcode;
+        $service = WarehouseServicePincode::where('pincode', $request->pincode)->first();
 
-        // 🔹 Taluka find by pincode (example logic)
-        $taluka = Talukas::where('pincode', $pincode)->first();
-
-        if (!$taluka) {
+        if (!$service) {
             return response()->json([
                 'status' => false,
-                'message' => 'We do not deliver to this pincode'
+                'message' => 'Sorry, delivery not available at this location'
             ]);
         }
 
-        // 🔹 Warehouses check
-        $warehouses = Warehouse::where('type', 'distribution_center')
-            ->where('taluka_id', $taluka->id)
-            ->where('status', 'active')
-            ->exists();
-
-        if (!$warehouses) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Currently not serviceable'
-            ]);
-        }
-
-        // 🔥 SESSION save (guest + user)
         session([
-            'selected_pincode' => $pincode,
-            'selected_taluka'  => $taluka->name,
-            'taluka_id'        => $taluka->id
+            'delivery_pincode' => $request->pincode,
+            'dc_warehouse_id' => $service->warehouse_id
         ]);
-
-        // 🔥 LOGIN asel tar DB madhe save
-        if (Auth::check()) {
-            UserAddress::updateOrCreate(
-                [
-                    'user_id' => Auth::id(),
-                    'type' => 1
-                ],
-                [
-                    'postcode' => $pincode,
-                    'city'     => $taluka->name,
-                    'country'  => 'India'
-                ]
-            );
-        }
 
         return response()->json([
-            'status' => true,
-            'pincode' => $pincode,
-            'taluka' => $taluka->name
+            'status' => true
         ]);
     }
 
-    public function getStates($countryId)
+    public function setPincode(Request $request)
     {
+        $request->validate([
+            'pincode' => 'required|digits:6'
+        ]);
 
-        return response()->json(
-            State::where('country_id', $countryId)->get()
-        );
-    }
+        $pincode = $request->pincode;
 
-    public function getDistricts($stateId)
-    {
-        return response()->json(
-            District::where('state_id', $stateId)->get()
-        );
-    }
+        // Set both DC and pincode in session
+        $dc = Warehouse::where('type', 'distribution_center')
+            ->where('status', 'active')
+            ->whereHas('servicePincodes', fn($q) => $q->where('pincode', $pincode))
+            ->first();
+        session()->all();
 
-    public function getTalukas($districtId)
-    {
-        return response()->json(
-            Talukas::where('district_id', $districtId)->get()
-        );
-    }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+        if ($dc) {
+            session([
+                'user_pincode' => $pincode,
+                'dc_warehouse_id' => $dc->id
+            ]);
+        } else {
+            // If no DC, just set pincode
+            session(['user_pincode' => $pincode]);
+            session()->forget('dc_warehouse_id');
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back();
     }
 }

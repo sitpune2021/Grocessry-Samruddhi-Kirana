@@ -101,13 +101,27 @@ class CheckoutController extends Controller
 
         $cart = Cart::with('items.product')
             ->where('user_id', auth()->id())
-            ->firstOrFail();
+            ->first();
 
-        $finalTotal = $cart->subtotal;
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart')
+                ->with('error', 'Your cart is empty or already processed.');
+        }
+
+
+        $finalTotal = $request->final_total ?? $cart->subtotal;
+
 
         $dcId = session('dc_warehouse_id');
 
         if (!$dcId) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Something went wrong'
+                ], 422);
+            }
+
             return redirect()->route('cart')
                 ->with('error', 'Delivery location not selected');
         }
@@ -129,16 +143,21 @@ class CheckoutController extends Controller
 
         $order = Order::create([
             'user_id' => auth()->id(),
-            'warehouse_id'   => $dcId,
+            'warehouse_id' => $dcId,
             'order_number' => 'ORD-' . time(),
             'channel' => 'web',
+
             'subtotal' => $cart->subtotal,
+            'discount' => $request->coupon_discount ?? 0,
+            'coupon_code' => $request->coupon_code ?? null,
+
             'total_amount' => $finalTotal,
             'payment_method' => $request->payment_method,
             'payment_status' => 'pending',
             'status' => 'pending',
             'order_type' => 'delivery',
         ]);
+
 
         Payment::create([
             'order_id' => $order->id,
@@ -160,7 +179,7 @@ class CheckoutController extends Controller
         }
 
         if (strtolower($request->payment_method) === 'cash') {
-            
+
             $dcId = session('dc_warehouse_id');
             $userId = auth()->id();
 
@@ -251,9 +270,12 @@ class CheckoutController extends Controller
                 ]);
             });
 
-            Cart::where('user_id', $order->user_id)->delete();
+            $cart = Cart::where('user_id', $order->user_id)->first();
 
-
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
             return response()->json([
                 'status' => true,
                 'redirect_url' => route('thank_you', $order->id)
