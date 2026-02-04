@@ -109,10 +109,12 @@
 
     <div class="container topbar bg-primary d-none d-lg-block">
         <div class="d-flex justify-content-between">
-            <div class="top-info ps-2">
-                <!-- <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a class="text-white">123 Street, New York</a></small> -->
-                <!-- <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a class="text-white">Email@Example.com</a></small> -->
-            </div>
+            <span class="text-white" style="cursor:pointer"
+                data-bs-toggle="modal" data-bs-target="#blinkitLocationModal">
+                <i class="fas fa-map-marker-alt me-1"></i> Select Location
+            </span>
+
+
 
             <!-- Alert Message -->
             <div class="alert text-center m-0 py-1 blink" id="order-alert"
@@ -123,6 +125,7 @@
             </div>
         </div>
     </div>
+
 
 
     <div class="container px-0">
@@ -246,6 +249,40 @@
     </div>
 
 </div>
+
+<!-- Location Modal -->
+<div class="modal fade" id="blinkitLocationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Change Location</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body pt-0">
+
+                <!-- Search Input -->
+                <input type="text"
+                    id="locationInput"
+                    class="form-control form-control-lg"
+                    placeholder="Search area or pincode"
+                    autocomplete="off">
+
+                <!-- Suggestions -->
+                <ul class="list-group mt-2 d-none" id="locationList"></ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('blinkitLocationModal')
+        .addEventListener('shown.bs.modal', () => {
+            document.getElementById('locationInput').focus();
+        });
+</script>
 
 
 <script>
