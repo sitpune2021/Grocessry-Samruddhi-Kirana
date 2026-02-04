@@ -220,8 +220,15 @@ class WebsiteController extends Controller
         // DC must be selected
         $dcId = session('dc_warehouse_id');
         if (!$dcId) {
-            return back()->with('error', 'Please select delivery location first');
+            return back()->with('error', 'Select delivery location first');
         }
+
+        if (Auth::check()) {
+            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
+        } else {
+            $cart = Cart::firstOrCreate(['session_id' => session()->getId()]);
+        }
+
 
         $productId = $request->product_id;
         $qty       = $request->qty ?? 1;
