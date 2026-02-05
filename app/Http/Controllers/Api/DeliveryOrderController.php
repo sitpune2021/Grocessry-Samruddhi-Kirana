@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\DeliveryNotification;
 use App\Models\DeliveryNotificationSetting;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class DeliveryOrderController extends Controller
@@ -282,10 +283,10 @@ class DeliveryOrderController extends Controller
 
     public function getOrderDetails(Request $request, $orderId)
     {
-        $user = $request->user();
-        $order = Order::with('user')
-            ->where('id', $orderId)
-            ->first();
+        $order = Order::with([
+            'user:id,first_name,last_name,mobile',
+            'customerAddress'
+        ])->find($orderId);
 
         if (!$order) {
             return response()->json([
@@ -294,31 +295,115 @@ class DeliveryOrderController extends Controller
             ], 404);
         }
 
-        return response()->json([
-            'status' => true,
-            'data' => $order
-        ]);
-    }
-    public function getOrderItems(Request $request, $orderId)
-    {
-        $user = $request->user();
-
-        $items = OrderItem::with('product')
-            ->where('order_id', $orderId)
-            ->get();
-
-        if ($items->isEmpty()) {
+        // ✅ FIX HERE
+        if (!$order->customerAddress) {
             return response()->json([
                 'status' => false,
-                'message' => 'No items found for this order'
-            ], 404);
+                'message' => 'Delivery address is mandatory for this order'
+            ], 422);
         }
+
+        $address = $order->customerAddress;
 
         return response()->json([
             'status' => true,
-            'data' => $items
+            'data' => [
+                'order_id' => $order->id,
+                'customer' => $order->user,
+                'delivery_address' => [
+                    'name'     => $address->first_name,
+                    'phone'    => $address->phone,
+                    'address'  => $address->address,
+                    'landmark' => $address->landmark,
+                    'city'     => $address->city,
+                    'state'    => $address->country,
+                    'postcode' => $address->postcode,
+                    'lat'      => $address->latitude,
+                    'lng'      => $address->longitude,
+                    'type'     => $address->type,
+                ]
+            ]
         ]);
     }
+    public function getOrderItems($orderId)
+    {
+        Log::info('getOrderItems API called', [
+            'order_id' => $orderId
+        ]);
+
+        try {
+
+            $items = OrderItem::with('product:id,name')
+                ->where('order_id', $orderId)
+                ->get();
+
+            Log::info('Order items fetched', [
+                'count' => $items->count()
+            ]);
+
+            if ($items->isEmpty()) {
+                Log::warning('No order items found', [
+                    'order_id' => $orderId
+                ]);
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No items found for this order',
+                    'data' => []
+                ], 200);
+            }
+
+            $data = [];
+            $grandTotal = 0;
+            foreach ($items as $item) {
+
+                $finalPrice = $item->total ?? $item->price;
+                $grandTotal += $finalPrice;
+
+                $data[] = [
+                    'order_item_id' => $item->id,
+                    'product_id'    => $item->product_id,
+
+                    // ✅ PRODUCT NAME
+                    'product_name'  => optional($item->product)->name,
+
+                    'price'         => $item->price,
+                    'quantity'      => $item->quantity,
+                    // 'line_total'    => $item->line_total,
+                    'tax_percent'   => $item->tax_percent,
+                    'tax_amount'    => $item->tax_amount,
+                    'final_price'   => $finalPrice
+                ];
+            }
+
+
+            Log::info('Order items response ready', [
+                'order_id'    => $orderId,
+                'grand_total' => $grandTotal
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order items fetched successfully',
+                'grand_total' => $grandTotal,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+
+            Log::error('getOrderItems API failed', [
+                'order_id' => $orderId,
+                'error'    => $e->getMessage(),
+                'file'     => $e->getFile(),
+                'line'     => $e->getLine()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong'
+            ], 500);
+        }
+    }
+
     public function confirmInstructionsRead(Request $request, $orderId)
     {
         $user = $request->user();

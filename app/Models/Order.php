@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'address_id',
         'order_number',
         'razorpay_order_id',
         'order_type',
@@ -50,18 +51,18 @@ class Order extends Model
     }
 
     public function createdBy()
-{
-    return $this->belongsTo(User::class, 'created_by');
-}
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
-    public function customerAddress()
-    {
-        return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
-    }
+    // public function customerAddress()
+    // {
+    //     return $this->hasOne(UserAddress::class, 'user_id', 'user_id');
+    // }
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -76,13 +77,15 @@ class Order extends Model
         return $this->hasOne(Payment::class);
     }
 
-    // App\Models\Order.php
     public function deliveryAgent()
     {
         return $this->belongsTo(\App\Models\DeliveryAgent::class, 'delivery_agent_id', 'id')
-                    ->with('user'); // eager load the related user
+            ->with('user');
     }
 
-    
-
+    public function customerAddress()
+    {
+        return $this->belongsTo(UserAddress::class, 'user_id', 'user_id')
+            ->where('is_default', 1);
+    }
 }
