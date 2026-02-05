@@ -11,7 +11,7 @@
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>           
+    </div>
 
     <!-- slider header Start -->
     <div class="container my-3">
@@ -85,7 +85,7 @@
             <div class="col text-start">
                 <h3 class="fw-bold text-dark"
                     style="font-family:'Poppins',sans-serif;font-weight:700;font-size:28px;letter-spacing:0.5px;">
-                    Grab On Sale
+                    Grab Or Gone
                 </h3>
             </div>
         </div>
@@ -142,21 +142,7 @@
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                @if(!session('dc_warehouse_id'))
-                                <button type="button" class="btn-add-sm disabled">
-                                    Check Availability
-                                </button>
-
-                                @elseif(($product->available_stock ?? 0) > 0)
-                                <button type="submit" class="btn-add-sm">
-                                    ADD
-                                </button>
-
-                                @else
-                                <button type="button" class="btn-add-sm disabled">
-                                    Out of Stock
-                                </button>
-                                @endif
+                                @include('website.partials.add-to-cart-btn', ['product' => $product])
 
                             </form>
                         </div>
@@ -244,7 +230,7 @@
 
                                     <div class="p-4 border border-top-0">
 
-                                        <div class="delivery-time mb-1">Free delivery</div>
+                                        <!-- <div class="delivery-time mb-1">Free delivery</div> -->
 
                                         <form action="{{ route('add_cart') }}" method="POST">
                                             @csrf
@@ -265,7 +251,7 @@
                                                     <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
                                                 </div>
 
-                                                <button type="submit" class="btn-add-sm">ADD</button>
+                                                @include('website.partials.add-to-cart-btn', ['product' => $product])
                                             </div>
 
                                         </form>
@@ -361,7 +347,7 @@
                                                     <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
                                                 </div>
 
-                                                <button type="submit" class="btn-add-sm">ADD</button>
+                                                @include('website.partials.add-to-cart-btn', ['product' => $product])
                                             </div>
 
                                         </form>
@@ -440,7 +426,7 @@
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <button type="submit" class="btn-add-sm">ADD</button>
+                                @include('website.partials.add-to-cart-btn', ['product' => $product])
                             </form>
                         </div>
 
@@ -516,7 +502,7 @@
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <button type="submit" class="btn-add-sm">ADD</button>
+                                @include('website.partials.add-to-cart-btn', ['product' => $product])
                             </form>
                         </div>
 
