@@ -97,11 +97,15 @@
         </div>
     </div>
 
-    <div class="row g-3 mt-3">
+    <div class="row g-4 mt-3">
         <h3 class="fw-bold mb-3">Similar products</h3>
 
         @foreach($relatedProducts as $related)
-        <div class="col-6 col-sm-4 col-md-2"> <!-- 6 cards per row on large screens -->
+        @php
+        $image = $related->product_images[0] ?? null;
+        @endphp
+
+        <div class="col-6 col-sm-4 col-md-2">
 
             <div class="rounded position-relative fruite-item">
 
@@ -113,46 +117,39 @@
                 <div class="offer-badge">{{ $discount }}% OFF</div>
                 @endif
 
-                @php
-                $images = $related->product_images;
-                $image = $images[0] ?? null;
-                @endphp
-
                 <div class="fruite-img">
                     <a href="{{ route('productdetails', $related->id) }}">
-                        <img src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
+                        <img
+                            src="{{ $image
+                            ? asset('storage/products/'.$image)
+                            : asset('website/img/no-image.png') }}"
                             class="img-fluid w-100 rounded-top"
-                            alt="{{ $related->name }}"
-                            style="height: 150px; object-fit: cover;">
+                            style="height:200px;object-fit:cover;">
                     </a>
                 </div>
 
-                <div class="p-3 border border-top-0">
-
-                    <div class="delivery-time mb-1 text-muted" style="font-size:12px;">Free delivery</div>
+                <div class="p-4 border border-top-0">
 
                     <form action="{{ route('add_cart') }}" method="POST">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <h6 class="product-title" style="font-size:14px; margin-bottom:4px;">
+                        <h6 class="product-title">
                             {{ Str::limit(Str::title($related->name), 40) }}
                         </h6>
 
-                        <p class="product-unit" style="font-size:12px; margin-bottom:6px;">
+                        <p class="product-unit">
                             {{ rtrim(rtrim(number_format($related->unit_value, 2), '0'), '.') }}
                             {{ Str::title(optional($related->unit)->name) }}
                         </p>
 
-                        <div class="price-row d-flex justify-content-between align-items-center">
-                            <div class="price-box" style="font-size:14px;">
-                                <span class="price-new fw-bold">₹{{ number_format($related->final_price, 0) }}</span><br>
-                                <span class="price-old text-muted" style="text-decoration:line-through; font-size:12px;">
-                                    ₹{{ number_format($related->mrp, 0) }}
-                                </span>
+                        <div class="price-row">
+                            <div class="price-box">
+                                <span class="price-new">₹{{ number_format($related->final_price, 0) }}</span><br>
+                                <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
                             </div>
 
-                            <button type="submit" class="btn btn-sm btn-primary">ADD</button>
+                            @include('website.partials.add-to-cart-btn', ['product' => $related])
                         </div>
 
                     </form>
@@ -161,6 +158,7 @@
         </div>
         @endforeach
     </div>
+
 
 
 </div>

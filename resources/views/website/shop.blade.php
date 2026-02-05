@@ -79,11 +79,12 @@
                         </div>
 
                         <!-- RIGHT PRODUCTS -->
-                        <div class="col-lg-9 col-md-8">
+                        <div class="col-lg-9">
                             <div id="product-container">
                                 @include('website.partials.product-list', ['products' => $products])
                             </div>
                         </div>
+
 
                     </div>
 
@@ -95,31 +96,31 @@
     <!-- Fruits Shop End-->
 
 
-<script>
-    // Category change
-    document.getElementById('categoryFilter').addEventListener('change', function () {
-        loadProducts(1);
-    });
+    <script>
+        // Category change
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            loadProducts(1);
+        });
 
-    function loadProducts(page = 1) {
-        let categoryId = document.getElementById('categoryFilter').value;
-        let minPrice   = document.getElementById('minPrice').value;
-        let maxPrice   = document.getElementById('maxPrice').value;
+        function loadProducts(page = 1) {
+            let categoryId = document.getElementById('categoryFilter').value;
+            let minPrice = document.getElementById('minPrice').value;
+            let maxPrice = document.getElementById('maxPrice').value;
 
-        fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
-            .then(res => res.text())
-            .then(html => {
-                document.getElementById('product-container').innerHTML = html;
-            });
-    }
+            fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('product-container').innerHTML = html;
+                });
+        }
 
-    // Pagination AJAX
-    document.addEventListener('click', function (e) {
-        let link = e.target.closest('.pagination a');
-        if (!link) return;
+        // Pagination AJAX
+        document.addEventListener('click', function(e) {
+            let link = e.target.closest('.pagination a');
+            if (!link) return;
 
-        e.preventDefault();
-        let page = new URL(link.href).searchParams.get('page');
-        loadProducts(page);
-    });
-</script>
+            e.preventDefault();
+            let page = new URL(link.href).searchParams.get('page');
+            loadProducts(page);
+        });
+    </script>

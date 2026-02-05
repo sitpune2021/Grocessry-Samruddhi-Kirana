@@ -34,6 +34,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart')
                 ->with('error', 'Your cart is empty');
         }
+        $userAddresses = UserAddress::where('user_id', auth()->id())->get();
 
         $address = UserAddress::where('user_id', $userId)->first();
 
@@ -42,7 +43,7 @@ class CheckoutController extends Controller
             ->whereDate('end_date', '>=', now())
             ->get();
 
-        return view('website.checkout', compact('cart', 'address', 'coupons'));
+        return view('website.checkout', compact('cart', 'address', 'coupons', 'userAddresses'));
     }
 
     public function createRazorpayOrder(Request $request)
@@ -83,21 +84,25 @@ class CheckoutController extends Controller
             'phone'      => 'required',
             'email'      => 'required|email',
             'payment_method' => 'required',
+            'address_id' => 'required|exists:user_addresses,id',
         ]);
 
-        UserAddress::updateOrCreate(
-            ['user_id' => auth()->id(), 'type' => 1],
-            $request->only([
-                'first_name',
-                'last_name',
-                'address',
-                'city',
-                'country',
-                'postcode',
-                'phone',
-                'email'
-            ]) + ['type' => 1]
-        );
+        // UserAddress::updateOrCreate(
+        //     ['user_id' => auth()->id(), 'type' => 1],
+        //     $request->only([
+        //         'first_name',
+        //         'last_name',
+        //         'address',
+        //         'city',
+        //         'country',
+        //         'postcode',
+        //         'phone',
+        //         'email',
+        //         'address_id' => 'required|exists:user_addresses,id',
+
+
+        //     ]) + ['type' => 1]
+        // );
 
         $cart = Cart::with('items.product')
             ->where('user_id', auth()->id())
@@ -156,6 +161,7 @@ class CheckoutController extends Controller
             'payment_status' => 'pending',
             'status' => 'pending',
             'order_type' => 'delivery',
+            'address_id' => $request->address_id,
         ]);
 
 
