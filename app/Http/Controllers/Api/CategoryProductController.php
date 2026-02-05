@@ -9,6 +9,7 @@ use App\Models\Brand;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
+use App\Models\Banner;
 
 class CategoryProductController extends Controller
 {
@@ -16,23 +17,44 @@ class CategoryProductController extends Controller
     public function getCategories()
     {
         try {
-            $categories = Category::select('id', 'name', 'slug')
+            $categories = Category::select(
+                'id',
+                'name',
+                'slug',
+                'category_images'
+            )
                 ->orderBy('id')
                 ->get();
 
+            $data = [];
+
+            foreach ($categories as $category) {
+
+                $images = [];
+
+                if (is_array($category->category_images)) {
+                    foreach ($category->category_images as $img) {
+                        $images[] = asset('storage/categories/' . $img);
+                    }
+                }
+
+                $data[] = [
+                    'id'     => $category->id,
+                    'name'   => $category->name,
+                    'slug'   => $category->slug,
+                    'images' => $images   // array of URLs
+                ];
+            }
 
             return response()->json([
                 'status'  => true,
-                'message' => $categories->isEmpty()
-                    ? 'No categories found'
-                    : 'Categories fetched successfully',
-                'data'    => $categories
-            ], 200);
+                'message' => 'Categories fetched successfully',
+                'data'    => $data
+            ]);
         } catch (\Exception $e) {
-
             return response()->json([
-                'status'  => false,
-                'message' => 'Internal server error'
+                'status' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -42,39 +64,52 @@ class CategoryProductController extends Controller
         try {
             $subcategories = SubCategory::where('category_id', $id)
                 ->select('id', 'name')
+                ->withCount('products')
                 ->orderBy('id')
                 ->get();
 
-
             return response()->json([
-                'status'  => true,
-                'message' => $subcategories->isEmpty()
+                'status'      => true,
+                'message'     => $subcategories->isEmpty()
                     ? 'No subcategories found'
                     : 'Subcategories fetched successfully',
                 'category_id' => (int) $id,
-                'data'    => $subcategories
+                'data'        => $subcategories
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status'  => false,
-                'message' => 'Internal server error'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
+
     public function getBrands()
     {
         try {
-            $brands = Brand::select('id', 'name')
+            $brands = Brand::select('id', 'name', 'logo')
                 ->orderBy('id')
                 ->get();
+
+            $data = [];
+
+            foreach ($brands as $brand) {
+                $data[] = [
+                    'id'    => $brand->id,
+                    'name'  => $brand->name,
+                    'image' => $brand->logo
+                        ? asset('storage/brands/' . $brand->logo)
+                        : null
+                ];
+            }
 
             return response()->json([
                 'status'  => true,
                 'message' => $brands->isEmpty()
                     ? 'No brands found'
                     : 'Brands fetched successfully',
-                'data'    => $brands
+                'data'    => $data   // ✅ RETURN THIS
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -242,133 +277,181 @@ class CategoryProductController extends Controller
     public function getSimilarProducts($id)
     {
         try {
+            // 1️⃣ Get current product
             $product = Product::find($id);
 
             if (!$product) {
                 return response()->json([
-                    'status' => true,
+                    'status'  => true,
                     'message' => 'Product not found',
-                    'data' => []
+                    'data'    => []
                 ], 200);
             }
 
+            // 2️⃣ Fetch similar products
             $similarProducts = Product::where('id', '!=', $product->id)
-                ->where('stock', '>', 0)
                 ->where(function ($query) use ($product) {
                     $query->where('sub_category_id', $product->sub_category_id)
                         ->orWhere('category_id', $product->category_id);
                 })
+
+                // 🔥 Stock priority (in-stock first, but don’t block results)
+                ->orderByRaw('stock > 0 DESC')
+
+                // 🔥 Sub-category priority first
                 ->orderByRaw(
-                    "CASE 
-                WHEN sub_category_id = ? THEN 1
-                WHEN category_id = ? THEN 2
-                ELSE 3
-            END",
+                    "CASE
+                    WHEN sub_category_id = ? THEN 1
+                    WHEN category_id = ? THEN 2
+                    ELSE 3
+                END",
                     [$product->sub_category_id, $product->category_id]
                 )
+
                 ->limit(12)
                 ->get()
+
+                // 3️⃣ Transform response
                 ->map(function ($item) {
 
+                    // 🖼 Handle images safely
                     $images = is_string($item->product_images)
-                        ? json_decode($item->product_images, true)
-                        : $item->product_images;
+                        ? json_decode($item->product_images, true) ?? []
+                        : ($item->product_images ?? []);
 
-
-                    $item->final_price = $item->final_price;
-
-                    $item->discount_percentage = ($item->mrp > 0 && $item->final_price < $item->mrp)
+                    // 💰 Discount calculation
+                    $discountPercentage = ($item->mrp > 0 && $item->final_price < $item->mrp)
                         ? round((($item->mrp - $item->final_price) / $item->mrp) * 100)
                         : 0;
 
-                    $item->discount_label = $item->discount_percentage > 0
-                        ? $item->discount_percentage . '% OFF'
-                        : null;
+                    return [
+                        'id'                    => $item->id,
+                        'name'                  => $item->name,
+                        'category_id'           => $item->category_id,
+                        'sub_category_id'       => $item->sub_category_id,
+                        'brand_id'              => $item->brand_id,
 
-                    $item->image_urls = collect($images)->map(function ($img) {
-                        return asset('storage/products/' . $img);
-                    });
+                        'unit_id'               => $item->unit_id,
+                        'unit_value'            => $item->unit_value,
 
-                    unset($item->product_images);
+                        'mrp'                   => (float) $item->mrp,
+                        'final_price'           => (float) $item->final_price,
 
-                    return $item;
+                        'discount_percentage'   => $discountPercentage,
+                        'discount_label'        => $discountPercentage > 0
+                            ? $discountPercentage . '% OFF'
+                            : null,
+
+                        'stock'                 => (int) $item->stock,
+                        'in_stock'              => $item->stock > 0,
+
+                        'image_urls'            => collect($images)->map(function ($img) {
+                            return asset('storage/products/' . $img);
+                        })->values(),
+                    ];
                 });
 
+            // 4️⃣ Final response
             return response()->json([
-                'status'  => true,
-                'message' => $similarProducts->isEmpty()
+                'status'     => true,
+                'message'    => $similarProducts->isEmpty()
                     ? 'No similar products found'
                     : 'Similar products fetched successfully',
                 'product_id' => $id,
-                'data'    => $similarProducts
+                'data'       => $similarProducts
             ], 200);
         } catch (\Exception $e) {
 
             return response()->json([
                 'status'  => false,
-                'message' => 'Internal server error'
+                'message' => 'Internal server error',
+                'error'   => $e->getMessage() // optional (remove in production)
             ], 500);
         }
     }
+
 
     public function getProductDetails($id)
     {
         try {
             $product = Product::with([
                 'category:id,name',
-                'subCategory:id,name,category_id',
+                'subCategory:id,name',
                 'brand:id,name'
             ])->find($id);
 
             if (!$product) {
                 return response()->json([
-                    'status'  => true,
+                    'status' => true,
                     'message' => 'Product not found',
-                    'data'    => null
+                    'data' => null
                 ], 200);
             }
 
+            /* 🔹 REAL STOCK FROM WAREHOUSE */
+            $availableStock = (int) WarehouseStock::where('product_id', $product->id)
+                ->sum('quantity');
+
+            /* 🔹 DISCOUNT CALCULATION */
+            $discountPercent = 0;
+            if ($product->mrp > 0 && $product->final_price < $product->mrp) {
+                $discountPercent = round(
+                    (($product->mrp - $product->final_price) / $product->mrp) * 100
+                );
+            }
+
+            /* 🔹 IMAGE HANDLING */
             $images = is_string($product->product_images)
                 ? json_decode($product->product_images, true)
-                : $product->product_images;
-
-            $imageUrls = collect($images)->map(function ($img) {
-                return asset('storage/products/' . $img);
-            });
+                : ($product->product_images ?? []);
 
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Product fetched successfully',
-                'data'    => [
-                    'id'          => $product->id,
-                    'name'        => $product->name,
+                'data' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
                     'description' => $product->description,
-                    'sku'         => $product->sku,
+                    'sku' => $product->sku,
 
                     'pricing' => [
-                        'base_price'     => $product->base_price,
-                        'retailer_price' => $product->retailer_price,
-                        'mrp'            => $product->mrp,
-                        'gst_percentage' => $product->gst_percentage,
+                        'base_price' => (float) $product->base_price,
+                        'retailer_price' => (float) $product->retailer_price,
+                        'final_price' => (float) $product->final_price,
+                        'mrp' => (float) $product->mrp,
+                        'gst_percentage' => (float) $product->gst_percentage,
                     ],
 
-                    'stock'        => $product->stock,
-                    'expiry_date'  => $product->expiry_date,
-                    'images'       => $imageUrls,
+                    'discount_percentage' => $discountPercent,
+                    'discount_label' => $discountPercent > 0
+                        ? $discountPercent . '% OFF'
+                        : null,
 
-                    'category'     => $product->category,
+                    'stock' => $availableStock,
+                    'max_quantity' => $availableStock,
+                    'quantity' => 1,
+
+                    'expiry_date' => optional($product->expiry_date)->format('Y-m-d'),
+
+                    'images' => collect($images)->map(
+                        fn($img) =>
+                        asset('storage/products/' . $img)
+                    )->values(),
+
+                    'category' => $product->category,
                     'sub_category' => $product->subCategory,
-                    'brand'        => $product->brand,
+                    'brand' => $product->brand,
                 ]
             ], 200);
         } catch (\Exception $e) {
-
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Internal server error'
             ], 500);
         }
     }
+
+
     public function productsByBrand($brand_id)
     {
         $brand = Brand::find($brand_id);
@@ -430,5 +513,34 @@ class CategoryProductController extends Controller
             ],
             'data' => $products
         ], 200);
+    }
+    public function getBanners()
+    {
+        try {
+            $banners = Banner::orderBy('id')->get();
+
+            $data = $banners->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'name' => $banner->name,
+                    'image' => $banner->image
+                        ? asset('storage/banners/' . $banner->image)
+                        : null
+                ];
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => $data->isEmpty()
+                    ? 'No banners found'
+                    : 'Banners fetched successfully',
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Internal server error'
+            ], 500);
+        }
     }
 }
