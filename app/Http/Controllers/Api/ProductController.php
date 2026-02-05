@@ -376,6 +376,8 @@ class ProductController extends Controller
                 'coupon_code'   => $couponCode,
                 'address_id'    => $address->id,
                 'address_type'  => $address->type,
+                'address_id'      => $address->id,
+
                 'channel'          => 'app',
 
             ]);

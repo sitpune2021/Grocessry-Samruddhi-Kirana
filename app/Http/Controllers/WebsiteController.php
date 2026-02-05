@@ -46,13 +46,17 @@ class WebsiteController extends Controller
 
 
         $saleproduct = Product::whereNull('deleted_at')
-            ->whereHas('sale', function ($q) {
-                $q->active()->online();
-            })
-            ->with('sale')
-            ->latest()
-            ->take(12)
-            ->get();
+    ->whereHas('sale', fn($q) => $q->active()->online())
+    ->with('sale')
+    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+        if ($dcId) {
+            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+        }
+    }], 'quantity')
+    ->latest()
+    ->take(12)
+    ->get();
+
         $brands = Brand::where('status', 1)->get();
 
         $categoriestop = Category::orderBy('id', 'DESC')->get();
@@ -78,25 +82,31 @@ class WebsiteController extends Controller
 
 
         $latestPro = Product::whereNull('deleted_at')
-            ->whereDoesntHave('sale', function ($q) {
-                $q->active()->online();
-            })
-            ->orderBy('id', 'DESC')
-            ->take(12)
-            ->get();
+    ->whereDoesntHave('sale', fn($q) => $q->active()->online())
+    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+        if ($dcId) {
+            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+        }
+    }], 'quantity')
+    ->latest()
+    ->take(12)
+    ->get();
+
 
 
         // CATEGORY PRODUCTS
-        $categoryProducts = Product::whereNull('deleted_at')
-            ->whereDoesntHave('sale', function ($q) {
-                $q->active()->online();
-            })
-            ->when($categoryId, function ($q) use ($categoryId) {
-                $q->where('category_id', $categoryId);
-            })
-            ->latest()
-            ->paginate(8, ['*'], 'cat_page')
-            ->withQueryString();
+       $categoryProducts = Product::whereNull('deleted_at')
+    ->whereDoesntHave('sale', fn($q) => $q->active()->online())
+    ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+        if ($dcId) {
+            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+        }
+    }], 'quantity')
+    ->latest()
+    ->paginate(8, ['*'], 'cat_page')
+    ->withQueryString();
+
 
 
         return view('website.index', compact(

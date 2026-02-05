@@ -1,7 +1,7 @@
 <div class="row g-4">
     @forelse($products as $product)
-    <div class="col-6 col-md-4 col-lg-3">
-        <div class="rounded position-relative fruite-item h-100">
+    <div class="col-md-6 col-lg-3">
+        <div class="rounded position-relative fruite-item">
 
             {{-- DISCOUNT --}}
             @if($product->mrp > $product->final_price)
@@ -12,50 +12,66 @@
             @endif
 
             @php
-            $image = $product->product_images[0] ?? null;
+            $images = $product->product_images;
+            $image = $images[0] ?? null;
             @endphp
 
             <div class="fruite-img">
                 <a href="{{ route('productdetails', $product->id) }}">
+                    @if($image)
                     <img
-                        src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
-                        class="img-fluid w-100"
-                        style="height:160px; object-fit:contain;">
+                        src="{{ asset('storage/products/'.$image) }}"
+                        class="img-fluid w-100 rounded-top"
+                        alt="{{ $product->name }}"
+                        style="height: 200px; object-fit: cover;">
+                    @else
+                    <img
+                        src="{{ asset('website/img/no-image.png') }}"
+                        class="img-fluid w-100 rounded-top"
+                        alt="No Image"
+                        style="height: 200px; object-fit: cover;">
+                    @endif
                 </a>
             </div>
 
-            <div class="p-3 border border-top-0">
-                <div class="delivery-time mb-1">Free delivery</div>
+            <div class="p-4 border border-top-0">
+
+                <!-- <div class="delivery-time mb-1">Free delivery</div> -->
 
                 <form action="{{ route('add_cart') }}" method="POST">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                    <h6 class="product-title mb-1">
-                        {{ Str::limit($product->name, 40) }}
+                    <h6 class="product-title">
+                        {{ Str::limit(Str::title($product->name), 40) }}
                     </h6>
 
-                    <p class="product-unit mb-2">
+                    <p class="product-unit">
                         {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
-                        {{ optional($product->unit)->name }}
+                        {{ Str::title(optional($product->unit)->name) }}
                     </p>
 
-                    <div class="price-row d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="price-row">
+                        <div class="price-box">
                             <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
                             <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
                         </div>
 
-                        <button type="submit" class="btn-add-sm">ADD</button>
+                        @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </div>
+
                 </form>
             </div>
-
         </div>
     </div>
     @empty
     <p class="text-center">No products found</p>
     @endforelse
+</div>
+
+<div class="mt-4 d-flex justify-content-end">
+    {{ $products->links() }}
+</div>
 </div>
 
 <div class="mt-4 d-flex flex-column align-items-end">
