@@ -412,12 +412,14 @@ Route::middleware(['auth:admin'])->group(function () {
         ->middleware('auth:web');
 
 
-    // 🔥 WEBSITE CHECKOUT RAZORPAY (WEB USER)
-    Route::post(
-        '/checkout/razorpay/create-order',
-        [CheckoutController::class, 'createOrder']
-    )->name('checkout.razorpay.create')
-        ->middleware('auth:web');
+    //  WEBSITE CHECKOUT RAZORPAY (WEB USER)
+  
+   Route::post(
+    '/checkout/razorpay/create-order',
+    [CheckoutController::class, 'createRazorpayOrder']
+)->name('checkout.razorpay.create')
+ ->middleware('auth');
+
 
     Route::post('/create-razorpay-order', [CheckoutController::class, 'createRazorpayOrder']);
 
@@ -901,8 +903,6 @@ Route::post('/set-pincode', [LocationController::class, 'setPincode'])
 
 Route::post('/check-pincode', [LocationController::class, 'checkByPincode'])->name('check.pincode');
 
-Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
-    ->name('check.pincode');
 
 
 

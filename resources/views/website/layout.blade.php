@@ -417,13 +417,7 @@
             height: auto;
         }
 
-        .product-slider {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            padding-bottom: 10px;
-        }
+
 
         /* hide scrollbar */
         .product-slider::-webkit-scrollbar {
@@ -436,8 +430,32 @@
 
         /* 6 cards per row */
         .product-slide-item {
-            flex: 0 0 calc(100% / 6 - 10px);
+            flex: 0 0 calc((100% - (16px * 5)) / 6);
+            /* 6 cards, 5 gaps */
         }
+
+        .product-scroll .fruite-item {
+            min-width: 200px;
+            /* 👈 width कमी */
+            max-width: 200px;
+            flex-shrink: 0;
+        }
+
+        .product-slider-wrapper {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .product-slider {
+            display: flex;
+            gap: 16px;
+            /* 👈 card-to-card gap */
+            padding: 16px;
+            /* 👈 top = left = right = bottom */
+            overflow-x: auto;
+            scroll-behavior: smooth;
+        }
+
 
         .slider-arrow {
             position: absolute;
@@ -996,6 +1014,9 @@
         }
     </style>
 
+<style>
+    
+</style>
 </head>
 
 <body>

@@ -170,7 +170,7 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-primary w-100" onclick="checkPincode()">
-                        Check Availability
+                        Next
                     </button>
                 </div>
             </div>

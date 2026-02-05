@@ -5,7 +5,7 @@
 
 @section('content')
 
-
+ 
 <body>
 
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -369,15 +369,17 @@
     </div>
 
     <!-- slide product  -->
-    <div class="container p-0 ">
+    <div class="container p-0">
         @foreach($cate as $category)
         @if($category->products->count())
 
         <div class="row p-2">
             <div class="col text-start">
-                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">{{ $category->name }}</h3>
+                <h3 class="fw-bold text-dark"
+                    style="font-family:'Poppins',sans-serif;font-weight:700;font-size:28px;">
+                    {{ $category->name }}
+                </h3>
             </div>
-
         </div>
 
         <div class="position-relative product-slider-wrapper">
@@ -389,8 +391,8 @@
                 $image = $product->product_images[0] ?? null;
                 @endphp
 
-                <div class="product-slide-item">
-                    <div class="product-sm-card">
+                <div class="col-md-6 col-lg-3 product-slide-item">
+                    <div class="rounded position-relative fruite-item">
 
                         {{-- DISCOUNT --}}
                         @if($product->mrp > $product->final_price)
@@ -400,59 +402,61 @@
                         <div class="offer-badge">{{ $discount }}% OFF</div>
                         @endif
 
-                        <a href="{{ route('productdetails', $product->id) }}">
-                            <div class="product-sm-img">
-                                <img src="{{ $image 
-                                ? asset('storage/products/'.$image) 
-                                : asset('website/img/no-image.png') }}">
-                            </div>
+                        <div class="fruite-img">
+                            <a href="{{ route('productdetails', $product->id) }}">
+                                <img src="{{ $image
+                                ? asset('storage/products/'.$image)
+                                : asset('website/img/no-image.png') }}"
+                                    class="img-fluid w-100 rounded-top"
+                                    style="height:200px;object-fit:cover;">
+                            </a>
+                        </div>
 
-                            <div class="product-sm-title">
-                                {{ Str::limit(Str::title($product->name), 35) }}
-                            </div>
-
-                            <div class="product-unit">
-                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
-                                {{ Str::title(optional($product->unit)->name) }}
-                            </div>
-                        </a>
-
-                        <div class="product-sm-footer">
-                            <div>
-                                <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
-                                <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
-                            </div>
-
+                        <div class="p-4 border border-top-0">
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                @include('website.partials.add-to-cart-btn', ['product' => $product])
+
+                                <h6 class="product-title">
+                                    {{ Str::limit(Str::title($product->name), 40) }}
+                                </h6>
+
+                                <p class="product-unit">
+                                    {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                    {{ Str::title(optional($product->unit)->name) }}
+                                </p>
+
+                                <div class="price-row">
+                                    <div class="price-box">
+                                        <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                        <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                                    </div>
+
+                                    @include('website.partials.add-to-cart-btn', ['product' => $product])
+                                </div>
                             </form>
                         </div>
-
                     </div>
                 </div>
-
                 @endforeach
             </div>
-            <div class="slider-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-green active"></span>
-                <span class="dot dot-blue"></span>
-            </div>
+
             <button class="slider-arrow right">&#10095;</button>
-            <div class="slider-dots text-center mt-3"></div>
         </div>
 
         @endif
         @endforeach
     </div>
 
-    <!-- latest product  -->
+
+    <!-- latest product -->
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
-                <h3 class="fw-bold text-dark" style="font-family: 'Poppins', sans-serif; font-weight:700; font-size:28px; letter-spacing:0.5px;">Latest Products</h3>
+                <h3 class="fw-bold text-dark"
+                    style="font-family:'Poppins',sans-serif;font-weight:700;font-size:28px;">
+                    Latest Products
+                </h3>
             </div>
         </div>
 
@@ -466,7 +470,7 @@
                 @endphp
 
                 <div class="product-slide-item">
-                    <div class="product-sm-card">
+                    <div class="rounded position-relative fruite-item">
 
                         {{-- DISCOUNT --}}
                         @if($product->mrp > $product->final_price)
@@ -476,33 +480,39 @@
                         <div class="offer-badge">{{ $discount }}% OFF</div>
                         @endif
 
-                        <a href="{{ route('productdetails', $product->id) }}">
-                            <div class="product-sm-img">
-                                <img src="{{ $image 
-                        ? asset('storage/products/'.$image) 
-                        : asset('website/img/no-image.png') }}">
-                            </div>
+                        <div class="fruite-img">
+                            <a href="{{ route('productdetails', $product->id) }}">
+                                <img
+                                    src="{{ $image
+                                    ? asset('storage/products/'.$image)
+                                    : asset('website/img/no-image.png') }}"
+                                    class="img-fluid w-100 rounded-top"
+                                    style="height:200px;object-fit:cover;">
+                            </a>
+                        </div>
 
-                            <div class="product-sm-title">
-                                {{ Str::limit(Str::title($product->name), 35) }}
-                            </div>
-
-                            <div class="product-unit">
-                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
-                                {{ Str::title(optional($product->unit)->name) }}
-                            </div>
-                        </a>
-
-                        <div class="product-sm-footer">
-                            <div>
-                                <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
-                                <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
-                            </div>
-
+                        <div class="p-4 border border-top-0">
                             <form action="{{ route('add_cart') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                @include('website.partials.add-to-cart-btn', ['product' => $product])
+
+                                <h6 class="product-title">
+                                    {{ Str::limit(Str::title($product->name), 40) }}
+                                </h6>
+
+                                <p class="product-unit">
+                                    {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                    {{ Str::title(optional($product->unit)->name) }}
+                                </p>
+
+                                <div class="price-row">
+                                    <div class="price-box">
+                                        <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
+                                        <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+                                    </div>
+
+                                    @include('website.partials.add-to-cart-btn', ['product' => $product])
+                                </div>
                             </form>
                         </div>
 
@@ -510,15 +520,11 @@
                 </div>
                 @endforeach
             </div>
-            <div class="slider-dots">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-green active"></span>
-                <span class="dot dot-blue"></span>
-            </div>
+
             <button class="slider-arrow right">&#10095;</button>
         </div>
-
     </div>
+
 
     <!-- brands -->
     <div class="container py-2">
