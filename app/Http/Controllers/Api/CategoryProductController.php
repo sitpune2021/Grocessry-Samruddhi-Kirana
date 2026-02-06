@@ -521,24 +521,26 @@ class CategoryProductController extends Controller
 
             $data = $banners->map(function ($banner) {
                 return [
-                    'id' => $banner->id,
-                    'name' => $banner->name,
-                    'image' => $banner->image
-                        ? asset('storage/banners/' . $banner->image)
+                    'id'         => $banner->id,
+                    'name'       => $banner->name,
+                    'product_id' => $banner->product_id,
+                    'image'      => $banner->image
+                        ? asset('storage/' . $banner->image)
                         : null
                 ];
             });
 
+
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => $data->isEmpty()
                     ? 'No banners found'
                     : 'Banners fetched successfully',
-                'data' => $data
+                'data'    => $data
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Internal server error'
             ], 500);
         }

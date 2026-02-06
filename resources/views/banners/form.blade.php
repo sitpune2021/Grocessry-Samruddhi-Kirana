@@ -25,40 +25,46 @@
                             <div class="card mb-4">
 
                                 <h4 class="card-header text-center">
-                                   {{ $banner ? 'Edit Banner' : 'Create Banner' }}
+                                    {{ $banner ? 'Edit Banner' : 'Create Banner' }}
                                 </h4>
 
                                 <div class="card-body">
 
-                                    <form 
-                                        action="{{ $banner ? route('banners.update', $banner->id) : route('banners.store') }}" 
-                                        method="POST" 
-                                        enctype="multipart/form-data"
-                                    >
+                                    <form
+                                        action="{{ $banner ? route('banners.update', $banner->id) : route('banners.store') }}"
+                                        method="POST" enctype="multipart/form-data">
                                         @csrf
 
                                         <div class="mb-3">
                                             <label>Banner Name</label>
-                                            <input 
-                                                type="text" 
-                                                name="name" 
-                                                class="form-control"
-                                                value="{{ old('name', $banner->name ?? '') }}"
-                                                required
-                                            >
+                                            <input type="text" name="name" class="form-control"
+                                                value="{{ old('name', $banner->name ?? '') }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label>Redirect Product (Optional)</label>
+                                            <select name="product_id" class="form-control">
+                                                <option value="">-- Select Product --</option>
+                                                @foreach ($products as $product)
+                                                    <option value="{{ $product->id }}"
+                                                        {{ old('product_id', $banner->product_id ?? '') == $product->id ? 'selected' : '' }}>
+                                                        {{ $product->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
 
                                         <div class="mb-3">
                                             <label>Banner Image</label>
-                                            <input type="file" name="image" class="form-control" {{ $banner ? '' : 'required' }}>
+                                            <input type="file" name="image" class="form-control"
+                                                {{ $banner ? '' : 'required' }}>
                                         </div>
 
-                                        @if($banner)
+                                        @if ($banner)
                                             <div class="mb-3">
-                                                <img src="{{ asset('storage/'.$banner->image) }}" width="200">
+                                                <img src="{{ asset('storage/' . $banner->image) }}" width="200">
                                             </div>
                                         @endif
-                                        
+
                                         <a href="{{ route('banners.index') }}" class="btn btn-success">Back</a>
 
                                         <button type="submit" class="btn btn-success">
