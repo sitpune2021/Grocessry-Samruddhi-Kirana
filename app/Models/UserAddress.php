@@ -10,17 +10,17 @@ class UserAddress extends Model
         'user_id',
         'first_name',
         'last_name',
-        'address',
+         
         'area',
         'flat_house',
         'floor',
         'city',
-        'country',
+      
         'postcode',
         'landmark',     
         'is_default',
         'phone',
-        'email',
+       
         'latitude',
         'longitude',
         'type',

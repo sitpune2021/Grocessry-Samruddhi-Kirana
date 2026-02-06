@@ -66,9 +66,9 @@
         <input type="hidden" name="coupon_discount" id="coupon_discount">
         <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
         <input type="hidden" name="razorpay_amount" id="razorpay_amount">
-        <input type="hidden" name="address_id" id="address_id">
+      
         <input type="hidden" name="final_total" id="final_total_input">
-        <input type="hidden" name="type" id="address_type">
+      
 
         <div class="row g-5">
             <!-- Billing Details -->
@@ -89,6 +89,8 @@
                                 📍 Other
                             </button>
                         </div>
+                        <input type="hidden" name="address_id" id="address_id">
+                        <input type="hidden" name="type" id="address_type">
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -161,7 +163,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <div class="floating-group">
-                                    <input type="text" name="postcode" class="floating-input"
+                                    <input type="text" name="postcode" id="pincode" class="floating-input"
                                         placeholder=" "
                                         maxlength="6"
                                         value="{{ old('postcode', $address->postcode ?? '') }}" required>
@@ -479,13 +481,22 @@
         document.querySelector('[name=email]').value = a.email ?? '';
     }
 
+
     function clearAddressForm(type) {
         document.getElementById('address_type').value = type;
         document.getElementById('address_id').value = '';
 
         document.querySelectorAll('#checkoutForm input[type=text], #checkoutForm input[type=email]')
             .forEach(i => i.value = '');
+
+        // Optional: reset IDs like address, pincode, country
+        document.getElementById('address').value = '';
+        document.getElementById('pincode').value = '';
+        document.getElementById('country').value = '';
     }
 </script>
 
 @endsection
+
+
+

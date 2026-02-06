@@ -413,12 +413,12 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     //  WEBSITE CHECKOUT RAZORPAY (WEB USER)
-  
-   Route::post(
-    '/checkout/razorpay/create-order',
-    [CheckoutController::class, 'createRazorpayOrder']
-)->name('checkout.razorpay.create')
- ->middleware('auth');
+
+    Route::post(
+        '/checkout/razorpay/create-order',
+        [CheckoutController::class, 'createRazorpayOrder']
+    )->name('checkout.razorpay.create')
+        ->middleware('auth');
 
 
     Route::post('/create-razorpay-order', [CheckoutController::class, 'createRazorpayOrder']);
@@ -895,17 +895,9 @@ Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
 
-Route::post('/location/check', [LocationController::class, 'checkByPincode'])
-    ->name('location.check');
 
-Route::post('/set-pincode', [LocationController::class, 'setPincode'])
-    ->name('set.pincode');
-
-Route::post('/check-pincode', [LocationController::class, 'checkByPincode'])->name('check.pincode');
-
-
-
-
+Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
+    ->name('check.pincode');
 
 Route::get('/orders', [CustomerOrderController::class, 'userorder'])
     ->name('userorder');

@@ -28,13 +28,14 @@ class LocationController extends Controller
 
         session([
             'delivery_pincode' => $request->pincode,
-            'dc_warehouse_id' => $service->warehouse_id
+            'dc_warehouse_id'  => $service->warehouse_id
         ]);
 
         return response()->json([
             'status' => true
         ]);
     }
+
 
     public function setPincode(Request $request)
     {
