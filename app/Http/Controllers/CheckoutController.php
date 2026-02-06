@@ -80,12 +80,12 @@ class CheckoutController extends Controller
             'last_name'       => 'required',
             'flat_house'      => 'required',
             'area'            => 'required',
-            'address'         => 'required',
+
             'city'            => 'required',
-            // 'country'         => 'required',
+            'country'         => 'nullable',
             'postcode'        => 'required',
             'phone'           => 'required',
-            // 'email'           => 'required|email',
+
             'payment_method'  => 'required|in:cash,online',
             'type'            => 'required|in:1,2,3',
             'address_id'      => 'nullable|exists:user_addresses,id',
@@ -94,27 +94,23 @@ class CheckoutController extends Controller
         if ($request->address_id) {
             $addressId = $request->address_id;
         } else {
-            $address = UserAddress::updateOrCreate(
-                [
-                    'user_id' => auth()->id(),
-                    'type'    => $request->type
-                ],
-                [
-                    'first_name' => $request->first_name,
-                    'last_name'  => $request->last_name,
-                    'flat_house' => $request->flat_house,
-                    'floor'      => $request->floor,
-                    'area'       => $request->area,
-                    'landmark'   => $request->landmark,
-                    'address'    => $request->address,
-                    'city'       => $request->city,
-                    // 'country'    => $request->country,
-                    'postcode'   => $request->postcode,
-                    'phone'      => $request->phone,
-                    // 'email'      => $request->email,
-                    'is_default' => 1
-                ]
-            );
+            $address = UserAddress::create([
+                'user_id'    => auth()->id(),
+                'type'       => $request->type,
+                'first_name' => $request->first_name,
+                'last_name'  => $request->last_name,
+                'flat_house' => $request->flat_house,
+                'floor'      => $request->floor,
+                'area'       => $request->area,
+                'landmark'   => $request->landmark,
+                'address'    => $request->address,
+                'city'       => $request->city,
+                'country'    => $request->country,
+                'postcode'   => $request->postcode,
+                'phone'      => $request->phone,
+                'email'      => $request->email,
+                'is_default' => 1
+            ]);
 
             $addressId = $address->id;
         }
