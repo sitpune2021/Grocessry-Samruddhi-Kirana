@@ -18,7 +18,7 @@ use App\Models\District;
 use App\Models\ProductBatch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Validation\Rule;
 
 class CheckoutController extends Controller
 {
@@ -34,8 +34,18 @@ class CheckoutController extends Controller
             return redirect()->route('cart')
                 ->with('error', 'Your cart is empty');
         }
+
+        if (!session()->has('delivery_pincode')) {
+            return redirect()->route('home')
+                ->with('error', 'Please select delivery location');
+        }
         $userAddresses = UserAddress::where('user_id', auth()->id())->get();
 
+        $defaultAddress = UserAddress::where('user_id', $userId)
+            ->where('is_default', 1)
+            ->first();
+
+        $deliveryPincode = session('delivery_pincode');
 
         $address = UserAddress::where('user_id', $userId)->first();
 
@@ -44,7 +54,7 @@ class CheckoutController extends Controller
             ->whereDate('end_date', '>=', now())
             ->get();
 
-        return view('website.checkout', compact('cart', 'address', 'coupons', 'userAddresses'));
+        return view('website.checkout', compact('cart', 'address', 'coupons', 'userAddresses', 'deliveryPincode', 'defaultAddress'));
     }
 
     public function createRazorpayOrder(Request $request)
@@ -55,16 +65,13 @@ class CheckoutController extends Controller
         );
 
         $razorpayOrder = $api->order->create([
-            'receipt' => 'ORD-' . time(),
             'amount' => $request->amount * 100,
-            'currency' => 'INR'
+            'currency' => 'INR',
+            'receipt' => 'order_' . $request->order_id
         ]);
 
+        // 🔥 SAVE razorpay_order_id in orders table
         Order::where('id', $request->order_id)->update([
-            'razorpay_order_id' => $razorpayOrder['id']
-        ]);
-
-        Payment::where('order_id', $request->order_id)->update([
             'razorpay_order_id' => $razorpayOrder['id']
         ]);
 
@@ -72,48 +79,63 @@ class CheckoutController extends Controller
             'razorpay_order_id' => $razorpayOrder['id']
         ]);
     }
+
     public function placeOrder(Request $request)
     {
+        Log::info('Checkout Request:', $request->all());
+        $rules = [
+            'selected_address' => [
+                'nullable',
+                Rule::exists('user_addresses', 'id')
+                    ->where('user_id', auth()->id()),
+            ],
+        ];
 
-        $request->validate([
-            'first_name'      => 'required',
-            'last_name'       => 'required',
-            'flat_house'      => 'required',
-            'area'            => 'required',
+        if (!$request->filled('selected_address')) {
+            $rules = array_merge($rules, [
+                'type'       => 'required|in:1,2,3',
+                'first_name' => 'required',
+                'last_name'  => 'required',
+                'flat_house' => 'required',
+                'area'       => 'required',
+                'city'       => 'required',
+                'postcode'   => 'required|digits:6',
+                'phone'      => 'required|digits:10',
+            ]);
+        }
 
-            'city'            => 'required',
-            'country'         => 'nullable',
-            'postcode'        => 'required',
-            'phone'           => 'required',
+        $request->validate($rules);
+        if ($request->filled('selected_address')) {
 
-            'payment_method'  => 'required|in:cash,online',
-            'type'            => 'required|in:1,2,3',
-            'address_id'      => 'nullable|exists:user_addresses,id',
-        ]);
+            $existingAddress = UserAddress::where('id', $request->selected_address)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
 
-        if ($request->address_id) {
-            $addressId = $request->address_id;
+            $addressId   = $existingAddress->id;
+            $addressType = $existingAddress->type;
         } else {
+
+            // ONLY when user explicitly adds a NEW address
+            $addressType = $request->type;
+
             $address = UserAddress::create([
                 'user_id'    => auth()->id(),
-                'type'       => $request->type,
+                'type'       => $addressType,
                 'first_name' => $request->first_name,
                 'last_name'  => $request->last_name,
                 'flat_house' => $request->flat_house,
                 'floor'      => $request->floor,
                 'area'       => $request->area,
                 'landmark'   => $request->landmark,
-                'address'    => $request->address,
                 'city'       => $request->city,
-                'country'    => $request->country,
                 'postcode'   => $request->postcode,
                 'phone'      => $request->phone,
-                'email'      => $request->email,
                 'is_default' => 1
             ]);
 
             $addressId = $address->id;
         }
+
 
         $cart = Cart::with('items.product')
             ->where('user_id', auth()->id())
@@ -152,6 +174,7 @@ class CheckoutController extends Controller
         $couponCode = null;
 
         if ($request->coupon_code) {
+
             $coupon = Coupon::where('code', $request->coupon_code)
                 ->where('status', 1)
                 ->whereDate('start_date', '<=', now())
@@ -160,6 +183,7 @@ class CheckoutController extends Controller
                 ->first();
 
             if ($coupon) {
+
                 if ($coupon->discount_type === 'percentage') {
                     $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
                 } else {
@@ -195,7 +219,7 @@ class CheckoutController extends Controller
             'order_id'        => $order->id,
             'user_id'         => auth()->id(),
             'payment_gateway' => $request->payment_method === 'online' ? 'razorpay' : 'cash',
-            'amount'          => $order->total_amount, // ✅ rupees only
+            'amount'          => $order->total_amount,
             'status'          => 'pending'
         ]);
 
@@ -231,14 +255,17 @@ class CheckoutController extends Controller
             config('services.razorpay.key'),
             config('services.razorpay.secret')
         );
+        Log::info('Razorpay Incoming Data', $request->all());
 
         try {
+            // ✅ VERIFY SIGNATURE
             $api->utility->verifyPaymentSignature([
                 'razorpay_order_id' => $request->razorpay_order_id,
                 'razorpay_payment_id' => $request->razorpay_payment_id,
                 'razorpay_signature' => $request->razorpay_signature
             ]);
 
+            // ✅ FIND ORDER
             $order = Order::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
 
             Payment::where('order_id', $order->id)->update([
@@ -247,14 +274,22 @@ class CheckoutController extends Controller
                 'status' => 'success'
             ]);
 
+            // ✅ UPDATE ORDER
             $order->update([
                 'payment_status' => 'paid',
                 'status' => 'confirmed'
             ]);
 
+            // 🔥 EMPTY CART
+            $cart = Cart::where('user_id', $order->user_id)->first();
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
+
             return response()->json([
                 'status' => true,
-                'redirect_url' => route('my_orders', $order->id)
+                'redirect_url' => route('my_orders')
             ]);
         } catch (\Exception $e) {
             Log::error('Razorpay Verify Failed', [
@@ -271,6 +306,7 @@ class CheckoutController extends Controller
 
     public function applyCoupon(Request $request)
     {
+        Log::info($request->all());
         $coupon = Coupon::where('code', $request->coupon_code)
             ->where('status', 1)
             ->whereDate('start_date', '<=', now())

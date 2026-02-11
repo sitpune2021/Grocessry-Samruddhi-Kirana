@@ -413,7 +413,6 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     //  WEBSITE CHECKOUT RAZORPAY (WEB USER)
-
     Route::post(
         '/checkout/razorpay/create-order',
         [CheckoutController::class, 'createRazorpayOrder']
@@ -426,6 +425,10 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
         ->name('payment.success');
+
+    Route::post('/save-address', [LocationController::class, 'saveAddress'])
+        ->name('address.save');
+
 
 
     // RETAILER ORDER
@@ -895,6 +898,8 @@ Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
 
+Route::post('/save-address', [LocationController::class, 'saveAddress'])
+    ->name('save.address');
 
 Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
     ->name('check.pincode');

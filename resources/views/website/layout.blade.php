@@ -1014,9 +1014,89 @@
         }
     </style>
 
-<style>
-    
-</style>
+    <style>
+        .address-card {
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .address-card:hover {
+            border-color: #198754;
+            background: #f6fffa;
+        }
+
+        .address-card input {
+            margin-top: 4px;
+        }
+
+        .floating-group {
+            position: relative;
+        }
+
+        .floating-input {
+            width: 100%;
+            padding: 14px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .floating-placeholder {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            padding: 0 6px;
+            color: #6c757d;
+            font-size: 14px;
+            pointer-events: none;
+            transition: 0.2s ease;
+        }
+
+        .floating-input:focus {
+            border-color: #198754;
+        }
+
+        .floating-input:focus+.floating-placeholder,
+        .floating-input:not(:placeholder-shown)+.floating-placeholder {
+            top: -6px;
+            font-size: 12px;
+            color: #198754;
+        }
+    </style>
+
+    <style>
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #333232;
+            color: #fff;
+            padding: 14px 25px;
+            border-radius: 8px;
+            z-index: 99999;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 25px rgba(92, 92, 92, 0.3);
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -1051,6 +1131,28 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+
+    <div id="custom-alert" class="custom-alert d-none">
+        <span id="custom-alert-msg"></span>
+    </div>
 </body>
+
+
+
+<script>
+    function showCustomAlert(message) {
+
+        const alertBox = document.getElementById('custom-alert');
+        const msg = document.getElementById('custom-alert-msg');
+
+        msg.innerText = message;
+
+        alertBox.classList.remove('d-none');
+
+        setTimeout(() => {
+            alertBox.classList.add('d-none');
+        }, 2500);
+    }
+</script>
 
 </html>

@@ -5,7 +5,7 @@
 
 @section('content')
 
- 
+
 <body>
 
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -116,37 +116,36 @@
                                     : asset('website/img/no-image.png') }}">
                             </div>
 
-                            <div class="product-sm-title">
-                                {{ Str::limit(Str::title($product->name), 35) }}
+
+                            <div class="p-4 border border-top-0">
+                                <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                    <h6 class="product-title">
+                                        {{ Str::limit(Str::title($product->name), 35) }}
+                                    </h6>
+
+                                    <div class="product-unit">
+                                        {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                        {{ Str::title(optional($product->unit)->name) }}
+                                    </div>
+
+                                    <div class="price-row">
+                                        <div>
+                                            <span class="price-new">
+                                                ₹{{ number_format($sale->sale_price, 0) }}
+                                            </span><br>
+
+                                            <span class="price-old">
+                                                ₹{{ number_format($sale->mrp, 0) }}
+                                            </span>
+                                        </div>
+
+                                        @include('website.partials.add-to-cart-btn', ['product' => $product])
+                                    </div>
+                                </form>
                             </div>
-
-                            <div class="product-unit">
-                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
-                                {{ Str::title(optional($product->unit)->name) }}
-                            </div>
-                        </a>
-
-                        {{-- PRICE SECTION --}}
-                        <div class="product-sm-footer">
-                            <div>
-                                <span class="price-new">
-                                    ₹{{ number_format($sale->sale_price, 0) }}
-                                </span><br>
-
-                                <span class="price-old">
-                                    ₹{{ number_format($sale->mrp, 0) }}
-                                </span>
-                            </div>
-
-                            {{-- ADD TO CART --}}
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                @include('website.partials.add-to-cart-btn', ['product' => $product])
-
-                            </form>
-                        </div>
-
                     </div>
                 </div>
                 @endforeach
@@ -232,7 +231,7 @@
 
                                         <!-- <div class="delivery-time mb-1">Free delivery</div> -->
 
-                                        <form action="{{ route('add_cart') }}" method="POST">
+                                        <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -253,8 +252,8 @@
 
                                                 @include('website.partials.add-to-cart-btn', ['product' => $product])
                                             </div>
-
                                         </form>
+
                                     </div>
                                 </div>
                             </div>
@@ -413,7 +412,7 @@
                         </div>
 
                         <div class="p-4 border border-top-0">
-                            <form action="{{ route('add_cart') }}" method="POST">
+                            <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -492,7 +491,7 @@
                         </div>
 
                         <div class="p-4 border border-top-0">
-                            <form action="{{ route('add_cart') }}" method="POST">
+                            <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -681,6 +680,7 @@
         infiniteScroll();
     });
 </script>
+
 
 
 

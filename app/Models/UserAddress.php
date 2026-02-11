@@ -10,19 +10,16 @@ class UserAddress extends Model
         'user_id',
         'first_name',
         'last_name',
-         
-        'area',
         'flat_house',
         'floor',
+        'area',
+        'landmark',
         'city',
-      
         'postcode',
-        'landmark',     
-        'is_default',
         'phone',
-       
         'latitude',
         'longitude',
         'type',
+        'is_default',
     ];
 }
