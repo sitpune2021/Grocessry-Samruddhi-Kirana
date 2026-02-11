@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('checkout');
+        return redirect()->route('home');
     }
 
     public function login(Request $request)
@@ -76,7 +76,7 @@ class AuthController extends Controller
             'status'   => 1,
         ])) {
             $request->session()->regenerate();
-            return redirect()->route('shop');
+            return redirect()->route('home');
         }
 
         return back()->with('error', 'Invalid credentials & Customer account Not Found');

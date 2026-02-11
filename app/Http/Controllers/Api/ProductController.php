@@ -235,7 +235,6 @@ class ProductController extends Controller
             ]
         ]);
     }
-
     public function checkout(Request $request)
     {
         $user = $request->user();
@@ -270,7 +269,7 @@ class ProductController extends Controller
 
         try {
 
-            // 🔹 Get cart
+            // 🛒 Get cart
             $cart = Cart::where('user_id', $user->id)->first();
 
             if (!$cart) {
@@ -297,57 +296,18 @@ class ProductController extends Controller
                 $subtotal += ($item->price * $item->qty);
             }
 
-            // 🔹 Delivery & coupon
+            // 🔹 Cart based values (IMPORTANT 🔥)
+            $taxTotal        = $cart->tax_total ?? 0;
+            $couponDiscount = $cart->discount ?? 0;
+            $couponCode     = $cart->coupon_code;
+            $couponId       = $cart->coupon_id;
+            $offerId        = $cart->offer_id;
+
             $deliveryCharge = 50;
-            $couponDiscount = 0;
-            $offerId = null;
-            $couponCode = null;
 
-            // 🔹 APPLY OFFER
-            if ($request->filled('coupon_code')) {
-
-                $offer = Offer::where('code', $request->coupon_code)
-                    ->where('status', 1)
-                    ->whereDate('start_date', '<=', now())
-                    ->whereDate('end_date', '>=', now())
-                    ->first();
-
-                if (!$offer) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Invalid coupon'
-                    ], 400);
-                }
-
-                if ($subtotal < $offer->min_amount) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Minimum order amount should be ₹' . $offer->min_amount
-                    ], 400);
-                }
-
-
-                // 💸 Discount calculation
-                if ($offer->discount_type === 'flat') {
-
-                    // Flat ₹ discount
-                    $couponDiscount = $offer->discount_value;
-                } elseif ($offer->discount_type === 'percentage') {
-
-                    // % discount
-                    $couponDiscount = ($subtotal * $offer->discount_value) / 100;
-                }
-
-
-                // 🛑 Discount cannot exceed subtotal
-                $couponDiscount = min($couponDiscount, $subtotal);
-
-                $offerId = $offer->id;
-                $couponCode = $offer->title;
-            }
-
-            // 🔹 Total
-            $totalAmount = ($subtotal + $deliveryCharge) - $couponDiscount;
+            // 🔹 Final total (DO NOT RECALCULATE COUPON)
+            $totalAmount = ($subtotal + $taxTotal + $deliveryCharge) - $couponDiscount;
+            $totalAmount = max($totalAmount, 0);
 
             // 🔹 STOCK CHECK
             foreach ($cartItems as $item) {
@@ -363,41 +323,44 @@ class ProductController extends Controller
                 }
             }
 
-            // 🔹 Create Order
+            // 🔹 Create Order (COPY FROM CART)
             $order = Order::create([
-                'user_id'       => $user->id,
-                'order_number'  => 'ORD-' . time(),
-                'subtotal'      => $subtotal,
-                'delivery_charge' => $deliveryCharge,
-                'coupon_discount' => $couponDiscount,
-                'total_amount'  => $totalAmount,
-                'status'        => 'pending',
-                'offer_id'      => $offerId,
-                'coupon_code'   => $couponCode,
-                'address_id'    => $address->id,
-                'address_type'  => $address->type,
-                'address_id'      => $address->id,
+                'user_id'          => $user->id,
+                'order_number'     => 'ORD-' . time(),
 
+                'subtotal'         => $subtotal,
+                'tax_total'        => $taxTotal,
+                'delivery_charge'  => $deliveryCharge,
+
+                'coupon_discount'  => $couponDiscount,
+                'coupon_code'      => $couponCode,
+                'coupon_id'        => $couponId,
+                'offer_id'         => $offerId,
+
+                'total_amount'     => $totalAmount,
+                'status'           => 'pending',
+
+                'address_id'       => $address->id,
+                'address_type'     => $address->type,
                 'channel'          => 'app',
-
             ]);
 
-            // 🔹 Order Items + FIFO stock deduction
+            // 🔹 Order Items + FIFO Stock Deduction
             foreach ($cartItems as $item) {
 
                 OrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id'   => $order->id,
                     'product_id' => $item->product_id,
-                    'quantity' => $item->qty,
-                    'price' => $item->price,
-                    'total' => $item->qty * $item->price
+                    'quantity'   => $item->qty,
+                    'price'      => $item->price,
+                    'total'      => $item->qty * $item->price
                 ]);
 
                 $remainingQty = $item->qty;
 
                 $stocks = WarehouseStock::where('product_id', $item->product_id)
                     ->where('quantity', '>', 0)
-                    ->orderBy('created_at')
+                    ->orderBy('created_at') // FIFO
                     ->get();
 
                 foreach ($stocks as $stock) {
@@ -405,17 +368,17 @@ class ProductController extends Controller
 
                     if ($stock->quantity >= $remainingQty) {
                         $stock->quantity -= $remainingQty;
-                        $stock->save();
                         $remainingQty = 0;
                     } else {
                         $remainingQty -= $stock->quantity;
                         $stock->quantity = 0;
-                        $stock->save();
                     }
+
+                    $stock->save();
                 }
             }
 
-            // 🔹 Clear cart
+            // 🔹 Clear Cart
             CartItem::where('cart_id', $cart->id)->delete();
             $cart->delete();
 
@@ -425,13 +388,13 @@ class ProductController extends Controller
                 'status' => true,
                 'message' => 'Order placed successfully',
                 'data' => [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'subtotal' => $subtotal,
+                    'order_id'        => $order->id,
+                    'order_number'    => $order->order_number,
+                    'subtotal'        => $subtotal,
                     'delivery_charge' => $deliveryCharge,
                     'coupon_discount' => $couponDiscount,
-                    'total_amount' => $totalAmount,
-                    'address_type' => $address->type
+                    'total_amount'    => $totalAmount,
+                    'address_type'    => $address->type
                 ]
             ]);
         } catch (\Exception $e) {
@@ -445,6 +408,216 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    // public function checkout(Request $request)
+    // {
+    //     $user = $request->user();
+    //     if ($res = $this->checkCustomer($user)) return $res;
+
+    //     // 🔐 Validate address
+    //     $request->validate([
+    //         'address_id' => 'required|exists:user_addresses,id'
+    //     ]);
+
+    //     // 🔎 Fetch address (must belong to user)
+    //     $address = UserAddress::where('id', $request->address_id)
+    //         ->where('user_id', $user->id)
+    //         ->first();
+
+    //     if (!$address) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid address'
+    //         ], 400);
+    //     }
+
+    //     // 🚫 Example rule: Work address not allowed after 8 PM
+    //     if ($address->type == 2 && now()->hour >= 20) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Work address delivery not available after 8 PM'
+    //         ], 400);
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // 🔹 Get cart
+    //         $cart = Cart::where('user_id', $user->id)->first();
+
+    //         if (!$cart) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Cart is empty'
+    //             ], 400);
+    //         }
+
+    //         $cartItems = CartItem::with('product')
+    //             ->where('cart_id', $cart->id)
+    //             ->get();
+
+    //         if ($cartItems->isEmpty()) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Cart is empty'
+    //             ], 400);
+    //         }
+
+    //         // 🔹 Subtotal
+    //         $subtotal = 0;
+    //         foreach ($cartItems as $item) {
+    //             $subtotal += ($item->price * $item->qty);
+    //         }
+
+    //         // 🔹 Delivery & coupon
+    //         $deliveryCharge = 50;
+    //         $couponDiscount = 0;
+    //         $offerId = null;
+    //         $couponCode = null;
+
+    //         // 🔹 APPLY OFFER
+    //         if ($request->filled('coupon_code')) {
+
+    //             $offer = Offer::where('code', $request->coupon_code)
+    //                 ->where('status', 1)
+    //                 ->whereDate('start_date', '<=', now())
+    //                 ->whereDate('end_date', '>=', now())
+    //                 ->first();
+
+    //             if (!$offer) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Invalid coupon'
+    //                 ], 400);
+    //             }
+
+    //             if ($subtotal < $offer->min_amount) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Minimum order amount should be ₹' . $offer->min_amount
+    //                 ], 400);
+    //             }
+
+
+    //             // 💸 Discount calculation
+    //             if ($offer->discount_type === 'flat') {
+
+    //                 // Flat ₹ discount
+    //                 $couponDiscount = $offer->discount_value;
+    //             } elseif ($offer->discount_type === 'percentage') {
+
+    //                 // % discount
+    //                 $couponDiscount = ($subtotal * $offer->discount_value) / 100;
+    //             }
+
+
+    //             // 🛑 Discount cannot exceed subtotal
+    //             $couponDiscount = min($couponDiscount, $subtotal);
+
+    //             $offerId = $offer->id;
+    //             $couponCode = $offer->title;
+    //         }
+
+    //         // 🔹 Total
+    //         $totalAmount = ($subtotal + $deliveryCharge) - $couponDiscount;
+
+    //         // 🔹 STOCK CHECK
+    //         foreach ($cartItems as $item) {
+
+    //             $availableStock = (int) WarehouseStock::where('product_id', $item->product_id)
+    //                 ->sum('quantity');
+
+    //             if ($item->qty > $availableStock) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Insufficient stock for ' . $item->product->name
+    //                 ], 400);
+    //             }
+    //         }
+
+    //         // 🔹 Create Order
+    //         $order = Order::create([
+    //             'user_id'       => $user->id,
+    //             'order_number'  => 'ORD-' . time(),
+    //             'subtotal'      => $subtotal,
+    //             'delivery_charge' => $deliveryCharge,
+    //             'coupon_discount' => $couponDiscount,
+    //             'total_amount'  => $totalAmount,
+    //             'status'        => 'pending',
+    //             'offer_id'      => $offerId,
+    //             'coupon_code'   => $couponCode,
+    //             'address_id'    => $address->id,
+    //             'address_type'  => $address->type,
+    //             'address_id'      => $address->id,
+
+    //             'channel'          => 'app',
+
+    //         ]);
+
+    //         // 🔹 Order Items + FIFO stock deduction
+    //         foreach ($cartItems as $item) {
+
+    //             OrderItem::create([
+    //                 'order_id' => $order->id,
+    //                 'product_id' => $item->product_id,
+    //                 'quantity' => $item->qty,
+    //                 'price' => $item->price,
+    //                 'total' => $item->qty * $item->price
+    //             ]);
+
+    //             $remainingQty = $item->qty;
+
+    //             $stocks = WarehouseStock::where('product_id', $item->product_id)
+    //                 ->where('quantity', '>', 0)
+    //                 ->orderBy('created_at')
+    //                 ->get();
+
+    //             foreach ($stocks as $stock) {
+    //                 if ($remainingQty <= 0) break;
+
+    //                 if ($stock->quantity >= $remainingQty) {
+    //                     $stock->quantity -= $remainingQty;
+    //                     $stock->save();
+    //                     $remainingQty = 0;
+    //                 } else {
+    //                     $remainingQty -= $stock->quantity;
+    //                     $stock->quantity = 0;
+    //                     $stock->save();
+    //                 }
+    //             }
+    //         }
+
+    //         // 🔹 Clear cart
+    //         CartItem::where('cart_id', $cart->id)->delete();
+    //         $cart->delete();
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Order placed successfully',
+    //             'data' => [
+    //                 'order_id' => $order->id,
+    //                 'order_number' => $order->order_number,
+    //                 'subtotal' => $subtotal,
+    //                 'delivery_charge' => $deliveryCharge,
+    //                 'coupon_discount' => $couponDiscount,
+    //                 'total_amount' => $totalAmount,
+    //                 'address_type' => $address->type
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Checkout failed',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     protected function checkCustomer($user)
     {
@@ -765,41 +938,6 @@ class ProductController extends Controller
         ]);
     }
 
-    public function getAllCoupons(Request $request)
-    {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-
-        $coupons = Coupon::where('status', 1)
-            ->whereDate('start_date', '<=', now())
-            ->whereDate('end_date', '>=', now())
-            ->select(
-                'id',
-                'title',
-                'code',
-                'description',
-                'terms_condition',
-                'discount_type',
-                'discount_value',
-                'min_amount',
-                'max_usage',
-                'start_date',
-                'end_date'
-            )
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'status' => true,
-            'data' => $coupons
-        ]);
-    }
     public function search(Request $request)
     {
         // dd($request->all());

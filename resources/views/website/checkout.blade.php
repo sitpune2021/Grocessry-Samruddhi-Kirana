@@ -1,200 +1,97 @@
-@extends('website.layout')
+`@extends('website.layout')
 @section('title','Checkout')
 @section('content')
-<style>
-    .address-card {
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
 
-    .address-card:hover {
-        border-color: #198754;
-        background: #f6fffa;
-    }
-
-    .address-card input {
-        margin-top: 4px;
-    }
-
-    .floating-group {
-        position: relative;
-    }
-
-    .floating-input {
-        width: 100%;
-        padding: 14px 12px;
-        font-size: 14px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        outline: none;
-    }
-
-    .floating-placeholder {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #fff;
-        padding: 0 6px;
-        color: #6c757d;
-        font-size: 14px;
-        pointer-events: none;
-        transition: 0.2s ease;
-    }
-
-    .floating-input:focus {
-        border-color: #198754;
-    }
-
-    .floating-input:focus+.floating-placeholder,
-    .floating-input:not(:placeholder-shown)+.floating-placeholder {
-        top: -6px;
-        font-size: 12px;
-        color: #198754;
-    }
-</style>
 <div class="container-fluid page-header py-5 bg-dark">
     <h1 class="text-center text-white display-6">Checkout</h1>
 </div>
 
-
-
 <div class="container py-5">
     <form id="checkoutForm" action="{{ url('/place-order') }}" method="POST">
         @csrf
-        <input type="hidden" name="coupon_code" id="applied_coupon">
-        <input type="hidden" name="coupon_discount" id="coupon_discount">
-        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
-        <input type="hidden" name="razorpay_amount" id="razorpay_amount">
-        <input type="hidden" name="address_id" id="address_id">
-        <input type="hidden" name="final_total" id="final_total_input">
-        <input type="hidden" name="type" id="address_type">
+        <input type="hidden" id="address_id" name="address_id">
+        <input type="hidden" id="address_type" name="type">
+        <input type="hidden" id="selected_address" name="selected_address">
+        <input type="hidden" id="payment_method" name="payment_method">
+        <input type="hidden" id="coupon_code" name="coupon_code">
+        <input type="hidden" id="applied_coupon" name="applied_coupon">
+        <input type="hidden" id="coupon_discount" name="coupon_discount">
+        <input type="hidden" id="razorpay_payment_id" name="razorpay_payment_id">
+        <input type="hidden" id="razorpay_order_id" name="razorpay_order_id">
+        <input type="hidden" id="razorpay_signature" name="razorpay_signature">
 
         <div class="row g-5">
             <!-- Billing Details -->
             <div class="col-lg-7">
-                <div class="card shadow-sm border-0 rounded-4">
-                    <div class="card-body p-4">
-                        <h4 class="mb-4">Billing Details</h4>
-                        <label class="fw-semibold d-block mb-2">Saved Addresses *</label>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Delivery Address</h4>
 
-                        <div class="d-flex gap-2 mb-3" id="addressTabs">
-                            <button type="button" class="btn btn-outline-success address-tab" data-type="1">
-                                🏠 Home
-                            </button>
-                            <button type="button" class="btn btn-outline-primary address-tab" data-type="2">
-                                🏢 Work
-                            </button>
-                            <button type="button" class="btn btn-outline-warning address-tab" data-type="3">
-                                📍 Other
-                            </button>
-                        </div>
+                    <button type="button"
+                        class="btn btn-success btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#billingAddressModal">
+                        Add Address
+                    </button>
+                </div>
+                <p class="text-muted small">
+                    Select or add delivery address to continue
+                </p>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="floating-group">
-                                    <input type="text" name="first_name" class="floating-input"
-                                        placeholder=" "
-                                        value="{{ old('first_name', $address->first_name ?? '') }}" required>
-                                    <span class="floating-placeholder">First Name *</span>
+                <div id="addressBoxList" class="mb-4">
+
+                    @foreach($userAddresses as $address)
+                    <div class="card rounded-4 shadow-sm mb-2 address-box">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="form-check">
+
+                                    <input class="form-check-input"
+                                        type="radio"
+                                        id="address_{{ $address->id }}"
+                                        @checked($defaultAddress && $defaultAddress->id == $address->id)
+                                    onclick="selectAddress({{ $address->id }}, {{ $address->type }})">
+
+                                    <label class="form-check-label w-100" for="address_{{ $address->id }}">
+
+                                        @if($address->type == 1)
+                                        <span class="badge bg-success mb-1">HOME</span>
+                                        @elseif($address->type == 2)
+                                        <span class="badge bg-primary mb-1">WORK</span>
+                                        @else
+                                        <span class="badge bg-warning mb-1">OTHER</span>
+                                        @endif
+
+                                        <p class="mb-1 fw-semibold">
+                                            {{ $address->first_name }} {{ $address->last_name }}
+                                        </p>
+
+                                        <p class="mb-0 text-muted small">
+                                            {{ $address->flat_house }},
+                                            {{ $address->area }},
+                                            {{ $address->city }} - {{ $address->postcode }}
+                                        </p>
+
+                                        <p class="mb-0 text-muted small">
+                                            📞 {{ $address->phone }}
+                                        </p>
+
+                                    </label>
                                 </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <div class="floating-group">
-                                    <input type="text" name="last_name" class="floating-input"
-                                        placeholder=" "
-                                        value="{{ old('last_name', $address->last_name ?? '') }}" required>
-                                    <span class="floating-placeholder">Last Name *</span>
-                                </div>
+                                <i class="bi bi-pencil text-primary fs-5"
+                                    onclick="editAddress(event, {{ $address->id }})"></i>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <div class="floating-group">
-                                <input type="text" name="flat_house" class="floating-input"
-                                    placeholder=" "
-                                    value="{{ old('flat_house', $address->flat_house ?? '') }}" required>
-                                <span class="floating-placeholder">Flat / House no / Building *</span>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="floating-group">
-                                <input type="text" name="floor" class="floating-input"
-                                    placeholder=" "
-                                    value="{{ old('floor', $address->floor ?? '') }}">
-                                <span class="floating-placeholder">Floor (optional)</span>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="floating-group">
-                                <input type="text" name="area" class="floating-input"
-                                    placeholder=" "
-                                    value="{{ old('area', $address->area ?? '') }}" required>
-                                <span class="floating-placeholder">Area / Sector / Locality *</span>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="floating-group">
-                                <input type="text" name="landmark" class="floating-input"
-                                    placeholder=" "
-                                    value="{{ old('landmark', $address->landmark ?? '') }}">
-                                <span class="floating-placeholder">Nearby Landmark</span>
-                            </div>
-                        </div>
-                        <!-- <div class="mb-3">
-                            <label>Address *</label>
-                            <input type="text" id="address" placeholder="Flat" name="address"
-                                class="form-control @error('address') is-invalid @enderror"
-                                value="{{ old('address', $address->address ?? '') }}" required>
-                        </div> -->
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="floating-group">
-                                    <input type="text" name="city" class="floating-input"
-                                        placeholder=" "
-                                        value="{{ old('city', $address->city ?? '') }}" required>
-                                    <span class="floating-placeholder">City *</span>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <div class="floating-group">
-                                    <input type="text" name="postcode" class="floating-input"
-                                        placeholder=" "
-                                        maxlength="6"
-                                        value="{{ old('postcode', $address->postcode ?? '') }}" required>
-                                    <span class="floating-placeholder">Pincode *</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="floating-group">
-                                <input type="text" name="phone" class="floating-input"
-                                    placeholder=" "
-                                    maxlength="10"
-                                    value="{{ old('phone', $address->phone ?? '') }}" required>
-                                <span class="floating-placeholder">Mobile *</span>
-                            </div>
-                        </div>
-                        <!-- <div class="mb-3">
-                            <label>Email *</label>
-                            <input type="email" name="email" class="form-control"
-                                value="{{ old('email', $address->email ?? '') }}" required>
-                        </div> -->
-
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="getLocation(this)">
-                            📍 Use Current Location
-                        </button>
                     </div>
+                    @endforeach
                 </div>
             </div>
-
             <!-- Order Summary -->
             <div class="col-lg-5">
+
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
+                        <!-- Saved Address List -->
+
 
                         <h4 class="mb-4">Your Order</h4>
                         <table class="table align-middle">
@@ -263,73 +160,137 @@
             </div>
 
         </div>
+        <div class="modal fade" id="billingAddressModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content rounded-4">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Billing Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="card shadow-sm border-0 rounded-4">
+                            <div class="card-body p-4">
+
+                                <label class="fw-semibold d-block mb-2">Saved Addresses *</label>
+
+                                <div class="d-flex gap-2 mb-3" id="addressTabs">
+                                    <button type="button" class="btn btn-outline-success address-tab" data-type="1">🏠 Home</button>
+                                    <button type="button" class="btn btn-outline-primary address-tab" data-type="2">🏢 Work</button>
+                                    <button type="button" class="btn btn-outline-warning address-tab" data-type="3">📍 Other</button>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="floating-group">
+                                            <input type="text" name="first_name" class="floating-input"
+                                                placeholder=" "
+                                                value="{{ old('first_name', $address->first_name ?? '') }}" required>
+                                            <span class="floating-placeholder">First Name *</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <div class="floating-group">
+                                            <input type="text" name="last_name" class="floating-input"
+                                                placeholder=" "
+                                                value="{{ old('last_name', $address->last_name ?? '') }}" required>
+                                            <span class="floating-placeholder">Last Name *</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="floating-group">
+                                        <input type="text" name="flat_house" class="floating-input"
+                                            placeholder=" "
+                                            value="{{ old('flat_house', $address->flat_house ?? '') }}" required>
+                                        <span class="floating-placeholder">Flat / House no / Building *</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="floating-group">
+                                        <input type="text" name="floor" class="floating-input"
+                                            placeholder=" "
+                                            value="{{ old('floor', $address->floor ?? '') }}">
+                                        <span class="floating-placeholder">Floor (optional)</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="floating-group">
+                                        <input type="text" name="area" class="floating-input"
+                                            placeholder=" "
+                                            value="{{ old('area', $address->area ?? '') }}" required>
+                                        <span class="floating-placeholder">Area / Sector / Locality *</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="floating-group">
+                                        <input type="text" name="landmark" class="floating-input"
+                                            placeholder=" "
+                                            value="{{ old('landmark', $address->landmark ?? '') }}">
+                                        <span class="floating-placeholder">Nearby Landmark</span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="floating-group">
+                                            <input type="text" name="city" class="floating-input"
+                                                placeholder=" "
+                                                value="{{ old('city', $address->city ?? '') }}" required>
+                                            <span class="floating-placeholder">City *</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label>Postcode *</label>
+                                        <input type="text" id="pincode" name="postcode" maxlength="6" pattern="[0-9]{6}"
+                                            class="form-control" value="{{ old('postcode', $address->postcode ?? '') }}" required>
+                                        <span class="floating-placeholder">Pincode *</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="floating-group">
+                                        <input type="text" name="phone" class="floating-input"
+                                            placeholder=" "
+                                            maxlength="10"
+                                            value="{{ old('phone', $address->phone ?? '') }}" required>
+                                        <span class="floating-placeholder">Mobile *</span>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="getLocation(this)">
+                                    📍 Use Current Location
+                                </button>
+
+                                <div class="modal-footer">
+                                    <button type="button"
+                                        class="btn btn-success w-100"
+                                        onclick="saveAddress()">
+                                        Save Address
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
     </form>
+</div>
+</div>
+</div>
 </div>
 
 <!-- Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-<!-- Location Script -->
-<script>
-    function getLocation(btn) {
-        btn.innerText = '📍 Detecting...';
-        btn.disabled = true;
-
-        navigator.geolocation.getCurrentPosition(pos => {
-            showPosition(pos);
-            btn.innerText = '📍 Location Added';
-            btn.disabled = false;
-        }, () => {
-            btn.innerText = '📍 Use Current Location';
-            btn.disabled = false;
-            alert('Location access denied');
-        });
-    }
-</script>
-
-<script>
-    function getLocation(btn) {
-        btn.innerText = '📍 Detecting...';
-        btn.disabled = true;
-
-        if (!navigator.geolocation) {
-            alert("Geolocation not supported");
-            btn.disabled = false;
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(showPosition, () => {
-            btn.innerText = '📍 Use Current Location';
-            btn.disabled = false;
-            alert('Location access denied');
-        });
-    }
-
-    function showPosition(position) {
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
-            .then(res => res.json())
-            .then(data => {
-                let addr = data.address || {};
-
-                document.getElementById('address').value =
-                    `${addr.road || ''} ${addr.suburb || ''}`.trim();
-
-                document.getElementById('city').value =
-                    addr.city || addr.town || addr.municipality || 'Pune';
-
-                document.getElementById('pincode').value =
-                    addr.postcode || '';
-
-                document.getElementById('country').value =
-                    addr.country || '';
-
-                // button text update
-                document.querySelector('[onclick^="getLocation"]').innerText = '📍 Location Added';
-                document.querySelector('[onclick^="getLocation"]').disabled = false;
-            });
-    }
-</script>
-
+<!-- rezore pay -->
 <script>
     let rzpProcessing = false;
 
@@ -432,13 +393,36 @@
 
 <script>
     const addresses = @json($userAddresses);
-</script>
 
-<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const selected = @json($defaultAddress);
+        if (!selected) return;
+        selectAddress(selected.id, selected.type);
+
+        // set hidden inputs (MOST IMPORTANT)
+        document.getElementById('address_id').value = selected.id;
+        document.getElementById('address_type').value = selected.type;
+        document.getElementById('selected_address').value = selected.id;
+
+        if (addressIdInput && addressTypeInput) {
+            addressIdInput.value = selected.id;
+            addressTypeInput.value = selected.type;
+        }
+
+        // auto-check radio
+        const radio = document.getElementById('address_' + selected.id);
+        if (radio) {
+            radio.checked = true;
+        }
+
+    });
+
+
     document.querySelectorAll('.address-tab').forEach(btn => {
         btn.addEventListener('click', function() {
 
-            // reset all buttons
+            // reset buttons
             document.querySelectorAll('.address-tab').forEach(b => {
                 b.classList.remove('btn-success', 'btn-primary', 'btn-warning', 'active');
                 if (b.dataset.type == 1) b.classList.add('btn-outline-success');
@@ -454,7 +438,6 @@
             if (type === 2) this.classList.replace('btn-outline-primary', 'btn-primary');
             if (type === 3) this.classList.replace('btn-outline-warning', 'btn-warning');
 
-            // find address by type
             let addr = addresses.find(a => parseInt(a.type) === type);
 
             if (addr) {
@@ -471,21 +454,157 @@
 
         document.querySelector('[name=first_name]').value = a.first_name ?? '';
         document.querySelector('[name=last_name]').value = a.last_name ?? '';
-        document.getElementById('address').value = a.address ?? '';
-        document.getElementById('city').value = a.city ?? '';
-        document.getElementById('country').value = a.country ?? '';
-        document.getElementById('pincode').value = a.postcode ?? '';
+        document.querySelector('[name=flat_house]').value = a.flat_house ?? '';
+        document.querySelector('[name=floor]').value = a.floor ?? '';
+        document.querySelector('[name=area]').value = a.area ?? '';
+        document.querySelector('[name=landmark]').value = a.landmark ?? '';
+        document.querySelector('[name=city]').value = a.city ?? '';
+        if (!pincodeManuallyChanged) {
+            document.getElementById('pincode').value =
+                a.postcode && a.postcode.trim() !== '' ?
+                a.postcode :
+                deliveryPincode;
+        }
+
+
         document.querySelector('[name=phone]').value = a.phone ?? '';
-        document.querySelector('[name=email]').value = a.email ?? '';
     }
 
     function clearAddressForm(type) {
         document.getElementById('address_type').value = type;
-        document.getElementById('address_id').value = '';
 
-        document.querySelectorAll('#checkoutForm input[type=text], #checkoutForm input[type=email]')
-            .forEach(i => i.value = '');
+
+        ['first_name', 'last_name', 'flat_house', 'floor', 'area', 'landmark', 'city', 'phone']
+        .forEach(name => {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (el) el.value = '';
+        });
+
+
+        if (!pincodeManuallyChanged) {
+            document.getElementById('pincode').value = deliveryPincode;
+        }
+    }
+
+    function saveAddress() {
+        const type = document.getElementById('address_type').value || 1;
+
+        let data = {
+            type: type,
+            first_name: document.querySelector('[name="first_name"]').value,
+            last_name: document.querySelector('[name="last_name"]').value,
+            flat_house: document.querySelector('[name="flat_house"]').value,
+            floor: document.querySelector('[name="floor"]').value,
+            area: document.querySelector('[name="area"]').value,
+            landmark: document.querySelector('[name="landmark"]').value,
+            city: document.querySelector('[name="city"]').value,
+            postcode: document.querySelector('[name="postcode"]').value,
+            phone: document.querySelector('[name="phone"]').value,
+        };
+
+        fetch('/save-address', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json' // 🔥 REQUIRED
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    alert('Address saved successfully!');
+
+                    // Close modal
+                    let modalEl = document.getElementById('billingAddressModal');
+                    let modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+                    modalInstance.hide();
+
+                    // Optionally reload page to see new address
+                    window.location.href = "{{ url('/checkout') }}";
+                } else {
+                    alert('Failed to save address');
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    function editAddress(event, type) {
+        event.stopPropagation();
+
+        // address type set (home/work)
+        document.getElementById('address_type').value = type;
+
+        // Bootstrap 5 modal open
+        let modal = new bootstrap.Modal(
+            document.getElementById('billingAddressModal')
+        );
+        modal.show();
+    }
+
+    function selectAddress(addressId, addressType) {
+
+        document.getElementById('address_id').value = addressId;
+        document.getElementById('address_type').value = addressType;
+        document.getElementById('selected_address').value = addressId;
+
+        // uncheck all radios
+        document.querySelectorAll('.address-radio').forEach(r => r.checked = false);
+
+        // check selected radio
+        const radio = document.getElementById('address_' + addressId);
+        if (radio) radio.checked = true;
+    }
+
+    function applyCouponFromDropdown(el) {
+        let code = el.value;
+        if (!code) return;
+        document.getElementById('coupon_code').value = code;
+        applyCoupon();
+    }
+
+    function applyCoupon() {
+        let code = document.getElementById('coupon_code').value;
+        let subtotal = parseFloat(document.getElementById('subtotal').innerText);
+
+        fetch("{{ route('apply.coupon') }}", {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    coupon_code: code,
+                    subtotal: subtotal
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                let msg = document.getElementById('coupon_msg');
+
+                if (!data.status) {
+                    msg.classList.remove('d-none', 'text-success');
+                    msg.classList.add('text-danger');
+                    msg.innerText = data.message;
+                    return;
+                }
+
+                msg.classList.remove('d-none', 'text-danger');
+                msg.classList.add('text-success');
+                msg.innerText = 'Coupon applied successfully';
+
+                document.getElementById('discountRow').classList.remove('d-none');
+                document.getElementById('discountAmount').innerText = data.discount;
+                document.getElementById('finalTotal').innerText = data.final_total;
+
+                // ✅ store for order
+                document.getElementById('applied_coupon').value = code;
+                document.getElementById('coupon_discount').value = data.discount;
+            });
     }
 </script>
+
 
 @endsection
