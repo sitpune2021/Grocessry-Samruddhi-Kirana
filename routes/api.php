@@ -8,7 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\Api\CategoryProductController;
 use App\Http\Controllers\Api\DeliveryAgentController;
-// use App\Http\Controllers\Api\DeliveryOrderController;
+use App\Http\Controllers\Api\CustomerProductReturnController;
 use App\Http\Controllers\Api\DeliveryOrderController;
 
 
@@ -64,7 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/history', [ProductController::class, 'pastOrders']);
     Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
-    Route::get('/coupons', [ProductController::class, 'getAllCoupons']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
@@ -79,6 +78,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [CustomerCouponsOffersController::class, 'getOffers']);
     Route::post('/apply-offer', [CustomerCouponsOffersController::class, 'applyOffer']);
     Route::post('/remove-offer', [CustomerCouponsOffersController::class, 'removeOffer']);
+    Route::get('/coupons', [CustomerCouponsOffersController::class, 'getAllCoupons']);
+    Route::post('/cart/apply-coupon', [CustomerCouponsOffersController::class, 'applyCoupon']);
+    Route::post('/cart/remove-coupon', [CustomerCouponsOffersController::class, 'removeCoupon']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -89,6 +91,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('customer/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('customer/addresses/{id}', [AddressController::class, 'delete']);
     Route::post('/user/address/set-default', [AddressController::class, 'setDefault']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('return/reasons', [CustomerProductReturnController::class, 'returnReasons']);
+    Route::post('order/return', [CustomerProductReturnController::class, 'createReturn']);
+    // Route::get(
+    //     'order/{order_id}/product-stock',
+    //     [CustomerProductReturnController::class, 'orderProductStock']
+    // );
+    Route::get(
+        '/orders/{order_id}/return-products',
+        [CustomerProductReturnController::class, 'getOrderReturnProducts']
+    );
 });
 
 //---------------------Delivery Agent Api Routes-----------------------------------------------

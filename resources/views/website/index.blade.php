@@ -5,7 +5,7 @@
 
 @section('content')
 
- 
+
 <body>
 
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -116,37 +116,36 @@
                                     : asset('website/img/no-image.png') }}">
                             </div>
 
-                            <div class="product-sm-title">
-                                {{ Str::limit(Str::title($product->name), 35) }}
+
+                            <div class="p-4 border border-top-0">
+                                <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                                    <h6 class="product-title">
+                                        {{ Str::limit(Str::title($product->name), 35) }}
+                                    </h6>
+
+                                    <div class="product-unit">
+                                        {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+                                        {{ Str::title(optional($product->unit)->name) }}
+                                    </div>
+
+                                    <div class="price-row">
+                                        <div>
+                                            <span class="price-new">
+                                                ₹{{ number_format($sale->sale_price, 0) }}
+                                            </span><br>
+
+                                            <span class="price-old">
+                                                ₹{{ number_format($sale->mrp, 0) }}
+                                            </span>
+                                        </div>
+
+                                        @include('website.partials.add-to-cart-btn', ['product' => $product])
+                                    </div>
+                                </form>
                             </div>
-
-                            <div class="product-unit">
-                                {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
-                                {{ Str::title(optional($product->unit)->name) }}
-                            </div>
-                        </a>
-
-                        {{-- PRICE SECTION --}}
-                        <div class="product-sm-footer">
-                            <div>
-                                <span class="price-new">
-                                    ₹{{ number_format($sale->sale_price, 0) }}
-                                </span><br>
-
-                                <span class="price-old">
-                                    ₹{{ number_format($sale->mrp, 0) }}
-                                </span>
-                            </div>
-
-                            {{-- ADD TO CART --}}
-                            <form action="{{ route('add_cart') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                @include('website.partials.add-to-cart-btn', ['product' => $product])
-
-                            </form>
-                        </div>
-
                     </div>
                 </div>
                 @endforeach
@@ -158,7 +157,7 @@
 
 
     <!-- Fruits Shop Start-->
-    <div class="container-fluid fruite">
+    <!-- <div class="container-fluid fruite">
         <div class="container">
             <div class="tab-class text-center">
 
@@ -190,14 +189,12 @@
 
                 <div class="tab-content">
 
-                    <!-- TAB 1 : ALL PRODUCTS -->
                     <div id="tab-1" class="tab-pane fade show {{ empty($categoryId) ? 'active' : '' }}">
                         <div class="row g-4">
                             @foreach($allProducts as $product)
                             <div class="col-md-6 col-lg-3">
                                 <div class="rounded position-relative fruite-item">
 
-                                    {{-- DISCOUNT --}}
                                     @if($product->mrp > $product->final_price)
                                     @php
                                     $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
@@ -230,9 +227,8 @@
 
                                     <div class="p-4 border border-top-0">
 
-                                        <!-- <div class="delivery-time mb-1">Free delivery</div> -->
 
-                                        <form action="{{ route('add_cart') }}" method="POST">
+                                        <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -253,8 +249,8 @@
 
                                                 @include('website.partials.add-to-cart-btn', ['product' => $product])
                                             </div>
-
                                         </form>
+
                                     </div>
                                 </div>
                             </div>
@@ -263,13 +259,11 @@
                         </div>
 
                         <div class="mt-4 d-flex flex-column align-items-end">
-                            {{-- Pagination --}}
                             {{ $allProducts->onEachSide(0)->links() }}
                         </div>
 
                     </div>
 
-                    <!-- TAB 2 : CATEGORY SEARCH -->
                     <div id="tab-2" class="tab-pane fade show {{ !empty($categoryId) ? 'active' : '' }}">
 
                         <form method="GET" action="{{ route('home') }}" class="mb-4">
@@ -359,14 +353,13 @@
                             @endforelse
                         </div>
                         <div class="mt-4 d-flex flex-column align-items-end">
-                            {{-- Pagination --}}
                             {{ $categoryProducts->onEachSide(0)->links() }}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- slide product  -->
     <div class="container p-0">
@@ -392,7 +385,7 @@
                 @endphp
 
                 <div class="col-md-6 col-lg-3 product-slide-item">
-                    <div class="rounded position-relative fruite-item">
+                    <div class="rounded position-relative fruite-item display: inline-block;">
 
                         {{-- DISCOUNT --}}
                         @if($product->mrp > $product->final_price)
@@ -413,11 +406,11 @@
                         </div>
 
                         <div class="p-4 border border-top-0">
-                            <form action="{{ route('add_cart') }}" method="POST">
+                            <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <h6 class="product-title">
+                                <h6 class="product-title text-center">
                                     {{ Str::limit(Str::title($product->name), 40) }}
                                 </h6>
 
@@ -492,11 +485,11 @@
                         </div>
 
                         <div class="p-4 border border-top-0">
-                            <form action="{{ route('add_cart') }}" method="POST">
+                            <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                                <h6 class="product-title">
+                                <h6 class="product-title text-center">
                                     {{ Str::limit(Str::title($product->name), 40) }}
                                 </h6>
 
@@ -681,6 +674,7 @@
         infiniteScroll();
     });
 </script>
+
 
 
 

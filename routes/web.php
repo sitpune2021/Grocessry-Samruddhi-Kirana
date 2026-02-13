@@ -413,12 +413,11 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     //  WEBSITE CHECKOUT RAZORPAY (WEB USER)
-  
-   Route::post(
-    '/checkout/razorpay/create-order',
-    [CheckoutController::class, 'createRazorpayOrder']
-)->name('checkout.razorpay.create')
- ->middleware('auth');
+    Route::post(
+        '/checkout/razorpay/create-order',
+        [CheckoutController::class, 'createRazorpayOrder']
+    )->name('checkout.razorpay.create')
+        ->middleware('auth');
 
 
     Route::post('/create-razorpay-order', [CheckoutController::class, 'createRazorpayOrder']);
@@ -426,6 +425,10 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
         ->name('payment.success');
+
+    Route::post('/save-address', [LocationController::class, 'saveAddress'])
+        ->name('address.save');
+
 
 
     // RETAILER ORDER
@@ -873,6 +876,8 @@ Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
 
+    Route::get('/live-search', [WebsiteController::class, 'liveSearch']);
+
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')
@@ -895,17 +900,11 @@ Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
 
-Route::post('/location/check', [LocationController::class, 'checkByPincode'])
-    ->name('location.check');
+Route::post('/save-address', [LocationController::class, 'saveAddress'])
+    ->name('save.address');
 
-Route::post('/set-pincode', [LocationController::class, 'setPincode'])
-    ->name('set.pincode');
-
-Route::post('/check-pincode', [LocationController::class, 'checkByPincode'])->name('check.pincode');
-
-
-
-
+Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
+    ->name('check.pincode');
 
 Route::get('/orders', [CustomerOrderController::class, 'userorder'])
     ->name('userorder');

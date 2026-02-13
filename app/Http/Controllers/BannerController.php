@@ -8,6 +8,7 @@ use App\Models\Banner;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ContactDetail;
 use App\Models\AboutPage;
+use App\Models\Product;
 
 
 class BannerController extends Controller
@@ -21,30 +22,58 @@ class BannerController extends Controller
 
     public function create()
     {
-        return view('banners.form', ['banner' => null]);
-    }
 
+        return view('banners.form', [
+            'banner' => null,
+            'products' => Product::select('id', 'name')->orderBy('name')->get()
+        ]);
+    }
     public function store(Request $request)
     {
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'name'       => 'required|string|max:255',
+            'product_id' => 'nullable|exists:products,id', // 👈 added
+            'image'      => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         $imagePath = $request->file('image')->store('banner', 'public');
 
         Banner::create([
-            'name'  => $request->name,
-            'image' => $imagePath,
+            'name'       => $request->name,
+            'product_id' => $request->product_id, // 👈 added
+            'image'      => $imagePath,
         ]);
 
-        return redirect()->route('banners.index')->with('success', 'Banner added successfully');
+        return redirect()
+            ->route('banners.index')
+            ->with('success', 'Banner added successfully');
     }
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'name'  => 'required|string|max:255',
+    //         'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //     ]);
+
+    //     $imagePath = $request->file('image')->store('banner', 'public');
+
+    //     Banner::create([
+    //         'name'  => $request->name,
+    //         'image' => $imagePath,
+    //     ]);
+
+    //     return redirect()->route('banners.index')->with('success', 'Banner added successfully');
+    // }
 
     public function edit($id)
     {
         $banner = Banner::findOrFail($id);
-        return view('banners.form', compact('banner'));
+        $products = Product::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('banners.form', compact('banner', 'products'));
     }
 
     public function update(Request $request, $id)
@@ -52,12 +81,15 @@ class BannerController extends Controller
         $banner = Banner::findOrFail($id);
 
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'name'       => 'required|string|max:255',
+            'product_id' => 'nullable|exists:products,id', // 👈 added
+            'image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        // image update
         if ($request->hasFile('image')) {
-            // old image delete
+
+            // delete old image
             if ($banner->image && Storage::disk('public')->exists($banner->image)) {
                 Storage::disk('public')->delete($banner->image);
             }
@@ -65,10 +97,14 @@ class BannerController extends Controller
             $banner->image = $request->file('image')->store('banner', 'public');
         }
 
-        $banner->name = $request->name;
+        // update fields
+        $banner->name       = $request->name;
+        $banner->product_id = $request->product_id; // 👈 added
         $banner->save();
 
-        return redirect()->route('banners.index')->with('success', 'Banner updated successfully');
+        return redirect()
+            ->route('banners.index')
+            ->with('success', 'Banner updated successfully');
     }
 
     public function destroy($id)
@@ -109,5 +145,4 @@ class BannerController extends Controller
 
         return back()->with('success', 'About Us updated successfully');
     }
-
 }

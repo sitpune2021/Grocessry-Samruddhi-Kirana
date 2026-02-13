@@ -55,18 +55,36 @@
             transform: translateY(-4px);
         }
 
-        /* OFFER BADGE */
+        /* Corner discount badge */
         .offer-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #2563eb;
+            top: 0;
+            left: 0;
+            background-color: #059669;
+            /* Green color */
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
-            padding: 4px 6px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            /* Slightly wider for better fit */
+            border-top-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            z-index: 10;
+            text-align: center;
+            transform: rotate(-0deg);
+            /* keeps it straight */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            /* subtle shadow for depth */
         }
+
+        /* Optional: make it responsive */
+        @media (max-width: 768px) {
+            .offer-badge {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+        }
+
 
         /* IMAGE */
         .product-img {
@@ -91,21 +109,6 @@
             font-size: 12px;
             font-weight: 600;
             margin-bottom: 6px;
-        }
-
-        .product-title {
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1.3;
-            height: 36px;
-            /* 2 lines fixed */
-            overflow: hidden;
-        }
-
-        .product-unit {
-            font-size: 13px;
-            color: #777;
-            /* margin-top: 4px; */
         }
 
         /* PRICE ROW */
@@ -519,7 +522,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* 🔥 FULL FIT */
+            /* FULL FIT */
             border-radius: 50%;
         }
 
@@ -575,7 +578,7 @@
             width: 100%;
             position: relative;
             overflow: hidden;
-            /* 🔴 KEY LINE */
+            /*  KEY LINE */
             border-radius: 16px;
             background: #000;
 
@@ -879,19 +882,6 @@
             padding: 6px 10px;
         }
 
-        .offer-badge {
-            background: #253bdf;
-            color: #fff;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 600;
-            display: inline-block;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-
-
 
         .qty-box button {
             width: 32px;
@@ -1014,9 +1004,89 @@
         }
     </style>
 
-<style>
-    
-</style>
+    <style>
+        .address-card {
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .address-card:hover {
+            border-color: #198754;
+            background: #f6fffa;
+        }
+
+        .address-card input {
+            margin-top: 4px;
+        }
+
+        .floating-group {
+            position: relative;
+        }
+
+        .floating-input {
+            width: 100%;
+            padding: 14px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .floating-placeholder {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #fff;
+            padding: 0 6px;
+            color: #6c757d;
+            font-size: 14px;
+            pointer-events: none;
+            transition: 0.2s ease;
+        }
+
+        .floating-input:focus {
+            border-color: #198754;
+        }
+
+        .floating-input:focus+.floating-placeholder,
+        .floating-input:not(:placeholder-shown)+.floating-placeholder {
+            top: -6px;
+            font-size: 12px;
+            color: #198754;
+        }
+    </style>
+
+    <style>
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #333232;
+            color: #fff;
+            padding: 14px 25px;
+            border-radius: 8px;
+            z-index: 99999;
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 8px 25px rgba(92, 92, 92, 0.3);
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -1051,6 +1121,49 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+
+    <div id="custom-alert" class="custom-alert d-none">
+        <span id="custom-alert-msg"></span>
+    </div>
 </body>
+
+<script>
+    let timer;
+
+    $('#searchInput').on('keyup', function() {
+
+        clearTimeout(timer);
+
+        let searchValue = $(this).val();
+
+        timer = setTimeout(function() {
+
+            if (searchValue.length > 0) {
+                window.location.href = "{{ route('shop') }}?search=" + searchValue;
+            } else {
+                window.location.href = "{{ route('shop') }}";
+            }
+
+        }, 500); // 500ms delay
+    });
+</script>
+
+
+
+<script>
+    function showCustomAlert(message) {
+
+        const alertBox = document.getElementById('custom-alert');
+        const msg = document.getElementById('custom-alert-msg');
+
+        msg.innerText = message;
+
+        alertBox.classList.remove('d-none');
+
+        setTimeout(() => {
+            alertBox.classList.add('d-none');
+        }, 2500);
+    }
+</script>
 
 </html>

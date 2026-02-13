@@ -44,18 +44,25 @@ class WebsiteController extends Controller
             ->take(5)
             ->get();
 
+        $userId = Auth::id() ?? session()->getId();
+
+        $cart = Cart::where('user_id', $userId)
+            ->with('items')
+            ->first();
+
+        $cartItems = $cart ? $cart->items->keyBy('product_id') : collect();
 
         $saleproduct = Product::whereNull('deleted_at')
-    ->whereHas('sale', fn($q) => $q->active()->online())
-    ->with('sale')
-    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-        if ($dcId) {
-            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
-        }
-    }], 'quantity')
-    ->latest()
-    ->take(12)
-    ->get();
+            ->whereHas('sale', fn($q) => $q->active()->online())
+            ->with('sale')
+            ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                }
+            }], 'quantity')
+            ->latest()
+            ->take(12)
+            ->get();
 
         $brands = Brand::where('status', 1)->get();
 
@@ -79,35 +86,38 @@ class WebsiteController extends Controller
             ->paginate(12, ['*'], 'all_page');
 
 
-
-
         $latestPro = Product::whereNull('deleted_at')
-    ->whereDoesntHave('sale', fn($q) => $q->active()->online())
-    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-        if ($dcId) {
-            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
-        }
-    }], 'quantity')
-    ->latest()
-    ->take(12)
-    ->get();
+            ->whereDoesntHave('sale', fn($q) => $q->active()->online())
+            ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                }
+            }], 'quantity')
+            ->latest()
+            ->take(12)
+            ->get();
 
 
 
         // CATEGORY PRODUCTS
-       $categoryProducts = Product::whereNull('deleted_at')
-    ->whereDoesntHave('sale', fn($q) => $q->active()->online())
-    ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
-    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-        if ($dcId) {
-            $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+        $categoryProducts = Product::whereNull('deleted_at')
+            ->whereDoesntHave('sale', fn($q) => $q->active()->online())
+            ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+            ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                }
+            }], 'quantity')
+            ->latest()
+            ->paginate(8, ['*'], 'cat_page')
+            ->withQueryString();
+
+
+        $selectedCategory = null;
+
+        if ($categoryId) {
+            $selectedCategory = Category::find($categoryId);
         }
-    }], 'quantity')
-    ->latest()
-    ->paginate(8, ['*'], 'cat_page')
-    ->withQueryString();
-
-
 
         return view('website.index', compact(
             'banners',
@@ -119,7 +129,10 @@ class WebsiteController extends Controller
             'categoryProducts',
             'latestPro',
             'brands',
-            'saleproduct'
+            'saleproduct',
+            'cartItems',
+            'selectedCategory'
+
         ));
     }
 
@@ -174,29 +187,67 @@ class WebsiteController extends Controller
         $categoryId = $request->category_id;
         $minPrice  = $request->min_price;
         $maxPrice  = $request->max_price;
+        $search    = $request->search;
 
         $categories = Category::orderBy('name')->get();
 
+        $userId = Auth::id() ?? session()->getId();
+
+        $cart = Cart::where('user_id', $userId)
+            ->with('items')
+            ->first();
+
+        $cartItems = $cart ? $cart->items->keyBy('product_id') : collect();
+
         $query = Product::whereNull('deleted_at');
 
+        // Category filter
         if ($categoryId) {
             $query->where('category_id', $categoryId);
         }
 
+        // Price filter
         if ($minPrice !== null && $maxPrice !== null) {
             $query->whereBetween('mrp', [$minPrice, $maxPrice]);
         }
 
-        $products = $query->latest()->paginate(40)->withQueryString();
+        // Search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->latest()->paginate(40);
+
+        // 🔥 IMPORTANT: If AJAX request → return only product list
+        if ($request->ajax()) {
+            return view('website.partials.product-list', compact('products', 'cartItems'))->render();
+        }
 
         return view('website.shop', compact(
             'products',
             'categories',
             'categoryId',
             'minPrice',
-            'maxPrice'
+            'maxPrice',
+            'search',
+            'cartItems'
         ));
     }
+
+
+
+    public function liveSearch(Request $request)
+    {
+        $products = Product::where('name', 'like', '%' . $request->search . '%')
+            ->limit(10)
+            ->get();
+
+        return response()->json($products);
+    }
+
 
     public function shopFilter(Request $request)
     {
@@ -225,85 +276,69 @@ class WebsiteController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
+            'qty' => 'required|integer|min:1'
         ]);
 
-        // DC must be selected
+        $product = Product::findOrFail($request->product_id);
+        $qty = $request->qty;
         $dcId = session('dc_warehouse_id');
+
         if (!$dcId) {
-            return back()->with('error', 'Select delivery location first');
+            return response()->json([
+                'success' => false,
+                'message' => 'Delivery location not selected'
+            ], 422);
         }
 
-        if (Auth::check()) {
-            $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
-        } else {
-            $cart = Cart::firstOrCreate(['session_id' => session()->getId()]);
+        $availableQty = ProductBatch::where('product_id', $product->id)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
+
+        if ($availableQty < $qty) {
+            return response()->json([
+                'success' => false,
+                'message' => "Sorry! Only {$availableQty} items are currently available."
+
+            ], 422);
         }
 
-
-        $productId = $request->product_id;
-        $qty       = $request->qty ?? 1;
-
-        // Identify user (login or guest)
         $userId = Auth::id() ?? session()->getId();
 
-        // Get or create cart FIRST
         $cart = Cart::firstOrCreate([
             'user_id' => $userId,
         ]);
 
-        // Check existing cart quantity
+        $price = $product->final_price;
+
         $item = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $productId)
+            ->where('product_id', $product->id)
             ->first();
 
-        $currentQty = $item ? $item->qty : 0;
-
-        // REAL STOCK CHECK (DC-specific)
-        $availableQty = ProductBatch::where('product_id', $productId)
-            ->where('warehouse_id', $dcId)
-            ->sum('quantity');
-
-        if (($currentQty + $qty) > $availableQty) {
-            return back()->with(
-                'error',
-                $availableQty > 0
-                    ? "Only {$availableQty} items available at your location"
-                    : "Product is out of stock at your location"
-            );
-        }
-
-        // Load product & price
-        $product = Product::findOrFail($productId);
-        $price   = $product->final_price;
-
-        // Add or update cart item
         if ($item) {
-            $item->qty += $qty;
-            $item->price = $price;
-            $item->line_total = $item->qty * $price;
+            $item->qty = $qty;   // ✅ overwrite
+            $item->line_total = $qty * $price;
             $item->save();
         } else {
-            CartItem::create([
-                'cart_id'    => $cart->id,
-                'product_id' => $productId,
-                'qty'        => $qty,
-                'price'      => $price,
+            $item = CartItem::create([
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+                'qty' => $qty,
+                'price' => $price,
                 'line_total' => $price * $qty,
             ]);
         }
 
-        // Recalculate cart totals
-        $subtotal = CartItem::where('cart_id', $cart->id)->sum('line_total');
-        $cartQty  = CartItem::where('cart_id', $cart->id)->sum('qty');
+        $cart->subtotal = $cart->items()->sum('line_total');
+        $cart->quantity = $cart->items()->sum('qty');
+        $cart->total = $cart->subtotal;
+        $cart->save();
 
-        $cart->update([
-            'quantity' => $cartQty,
-            'subtotal' => $subtotal,
-            'total'    => $subtotal,
+        return response()->json([
+            'success' => true,
+            'item_id' => $item->id,
+            'qty' => $item->qty,
+            'cart_count' => $cart->quantity
         ]);
-
-        return redirect()->route('cart')
-            ->with('success', 'Product added to cart');
     }
 
     public function cart()
@@ -396,18 +431,37 @@ class WebsiteController extends Controller
 
     public function productdetails($id)
     {
+        $dcId = session('dc_warehouse_id');
+
         $product = Product::findOrFail($id);
 
-        // Same category ke related products (current product ko chhod kar)
+        $availableStock = ProductBatch::where('product_id', $id)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
+
+        $userId = Auth::id() ?? session()->getId();
+
+        $cart = Cart::where('user_id', $userId)->first();
+
+        $cartItem = $cart
+            ? CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $id)
+            ->first()
+            : null;
+
+        $cartQty = $cartItem ? $cartItem->qty : 0;
+
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->latest()
-            ->take(8)   // jitne chaho utne
+            ->take(8)
             ->get();
 
-        return view('website.shop_detail', compact('product', 'relatedProducts'));
+        return view(
+            'website.shop_detail',
+            compact('product', 'relatedProducts', 'availableStock', 'cartQty')
+        );
     }
-
     public function categoryProducts($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();

@@ -5,12 +5,12 @@
 @section('content')
 
 <!-- Page Header -->
-<div class="container-fluid page-header py-5">
+<!-- <div class="container-fluid page-header py-5">
     <h1 class="text-center text-white display-6">Cart</h1>
-</div>
+</div> -->
 
 <!-- Cart Page -->
-<div class="container-fluid py-5">
+<div class="container-fluid py-5" style="margin-top:160px;">
     <div class="container">
 
         <div class="row g-4">
@@ -34,7 +34,7 @@
                             <!-- Details -->
                             <div class="col-9 col-md-5">
                                 <h6 class="fw-semibold mb-1">{{ $item->product->name }}</h6>
-                                <p class="text-muted small mb-1">Seller: Store</p>
+                                <!-- <p class="text-muted small mb-1">Seller: Store</p> -->
                                 <p class="text-success small mb-0">In Stock</p>
                             </div>
 
@@ -43,10 +43,6 @@
                                 <strong>₹ {{ $item->price }}</strong>
                             </div>
 
-                            <!-- Quantity -->
-                            <!-- <div class="col-4 col-md-2 text-md-center">
-                                <span class="badge  text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
-                            </div> -->
 
                             <!-- Quantity -->
                             <div class="col-4 col-md-2 text-md-center">
@@ -90,6 +86,8 @@
                             </strong>
                         </div>
 
+
+
                     </div>
                 </div>
                 @endforeach
@@ -106,22 +104,27 @@
                 <div class="card shadow-sm sticky-top " id="price-details " style="top:90px;">
                     <div class="card-body">
 
-                        <h6 class="fw-bold text-uppercase text-muted mb-3">Price Details</h6>
+                        <h6 class="fw-bold text-uppercase text-muted mb-3">Bill details</h6>
 
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
+                            <span>Items total</span>
                             <span id="cart-subtotal">₹ {{ $cart ? number_format($cart->subtotal,2) : '0.00' }}</span>
                         </div>
 
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Delivery</span>
+                            <span>Delivery charge</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Handling charge</span>
                             <span class="text-success">FREE</span>
                         </div>
 
                         <hr>
 
                         <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Total</span>
+                            <span>Grand total</span>
                             <span id="cart-total">
                                 ₹ {{ $cart ? number_format($cart->total,2) : '0.00' }}
                             </span>
@@ -141,10 +144,6 @@
                             Online orders are currently closed.<br>
                             Orders will resume tomorrow at <strong>6:00 AM</strong>.
                         </p>
-                        <p class="text-success small mt-3 mb-0">
-                            You will save more on this order
-                        </p>
-
                     </div>
                 </div>
             </div>
@@ -153,6 +152,10 @@
     </div>
 </div>
 
+<!-- Center Alert -->
+<div id="center-alert" class="center-alert d-none">
+    <span id="center-alert-text"></span>
+</div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -162,6 +165,9 @@
         let itemId = box.data('id');
         let qtyText = box.find('.qty-text');
         let currentQty = parseInt(qtyText.text());
+
+        // hide old message
+        $('#stock-msg-' + itemId).addClass('d-none');
 
         let newQty = $(this).hasClass('qty-plus') ?
             currentQty + 1 :
@@ -180,20 +186,12 @@
             success: function(res) {
 
                 if (res.success) {
-
-                    // Qty update
                     qtyText.text(res.qty);
 
-                    // Item total update
                     $('#item-total-' + itemId).text('₹ ' + res.line_total);
-
-                    // Cart total update
                     $('#cart-total').text('₹ ' + res.cart_total);
-
-                    // 🔥 Subtotal live update
                     $('#cart-subtotal').text('₹ ' + res.subtotal);
 
-                    // 🔥 Header cart count update
                     if (res.cart_count > 0) {
                         $('#cart-count').text(res.cart_count).show();
                     } else {
@@ -201,12 +199,33 @@
                     }
                 }
             },
-            error: function() {
-                alert('Something went wrong!');
+            error: function(xhr) {
+
+                if (xhr.status === 422 && xhr.responseJSON?.out_of_stock) {
+
+                    // 🔥 Show inline message
+                    let alertBox = $('#center-alert');
+                    let alertText = $('#center-alert-text');
+
+                    alertText.text(xhr.responseJSON.message);
+                    alertBox.removeClass('d-none').hide().fadeIn(200);
+
+                    // Auto hide after 2 seconds
+                    setTimeout(function() {
+                        alertBox.fadeOut(300);
+                    }, 2000);
+
+
+                    // qty reset to available stock
+                    if (xhr.responseJSON.available_qty > 0) {
+                        qtyText.text(xhr.responseJSON.available_qty);
+                    }
+                }
             }
         });
     });
 </script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -264,5 +283,23 @@
     });
 </script>
 
+<style>
+    .center-alert {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* background-color: #dc3545; */
+        background: linear-gradient(135deg, #9d9d9d, #656565);
+        color: #fff;
+        padding: 14px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        text-align: center;
+        min-width: 250px;
+    }
+</style>
 
 @endsection

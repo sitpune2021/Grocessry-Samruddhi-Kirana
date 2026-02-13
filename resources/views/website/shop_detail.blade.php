@@ -4,16 +4,13 @@
 
 @section('content')
 
-
-
-
 <!-- Similar products -->
-<div class="container-fluid page-header py-4 mb-5 bg-dark">
+<!-- <div class="container-fluid page-header py-4 mb-5 bg-dark">
     <h1 class="text-center text-white display-6">Product Details</h1>
-</div>
+</div> -->
 
 <!-- Product Detail -->
-<div class="container mb-5">
+<div class="container mb-5" style="margin-top:140px;">
     <div class="row g-4">
 
         <!-- Product Images -->
@@ -29,18 +26,19 @@
                 <div class="card-body">
 
                     <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
-                    <p class="text-muted mb-2">Category: {{ $product->category->name ?? 'N/A' }}</p>
+                    <p class="text-muted mb-2">{{ $product->category->name ?? 'N/A' }}</p>
 
                     <div class="mb-2">
-                        <span class="fs-4 fw-bold text-success">
-                            ₹{{ number_format($product->final_price, 0) }}
-                        </span>
 
                         @if($product->mrp > $product->final_price)
                         <span class="text-muted text-decoration-line-through ms-2">
                             ₹{{ number_format($product->mrp, 0) }}
                         </span>
+
                         @endif
+                        <span class="fs-4 ms-2 fw-bold text-success">
+                            ₹{{ number_format($product->final_price, 0) }}
+                        </span>
                     </div>
                     {{-- DISCOUNT --}}
                     @if($product->mrp > $product->final_price)
@@ -56,19 +54,34 @@
                     <form action="{{ route('add_cart') }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                        <div class="qty-box d-inline-flex align-items-center gap-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-minus">-</button>
-
-                            <input type="number" name="qty" value="1" min="1"
-                                class="form-control text-center qty-input" style="width:60px">
-
-                            <button type="button" class="btn btn-sm btn-outline-secondary qty-plus">+</button>
-                        </div>
-
-                        <button class="btn btn-primary rounded-pill px-4">
-                            <i class="fa fa-shopping-bag me-2"></i>Add to Cart
+                        <input type="hidden" id="available-stock" value="{{ $availableStock }}">
+                        @php
+                        $cartQty = $cartItems[$product->id]->qty ?? 0;
+                        @endphp
+                        {{-- Warehouse not selected --}}
+                        @if(!session('dc_warehouse_id'))
+                        <button type="button" class="btn btn-secondary" disabled>
+                            Check Availability
                         </button>
+                        <div class="qty-wrapper">
+                            {{-- QTY CONTROLS --}}
+                            <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
+                                <button type="button" onclick="changeQty(this, -1)">−</button>
+
+                                <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
+
+                                <button type="button" onclick="changeQty(this, 1)">+</button>
+                            </div>
+
+                        </div>
+                        @endif
+                    </form>
+
+                    <!-- <button class="btn btn-primary rounded-pill px-4">
+                            <i class="fa fa-shopping-bag me-2"></i>Add to Cart
+                        </button> -->
+
+                    @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </form>
 
                     <hr>
@@ -97,17 +110,12 @@
         </div>
     </div>
 
-    <div class="row g-4 mt-3">
+    <div class="row g-3 mt-3">
         <h3 class="fw-bold mb-3">Similar products</h3>
 
         @foreach($relatedProducts as $related)
-        @php
-        $image = $related->product_images[0] ?? null;
-        @endphp
-
-        <div class="col-6 col-sm-4 col-md-2">
-
-            <div class="rounded position-relative fruite-item">
+        <div class="col-md-6 col-lg-3 product-slide-item">
+            <div class="rounded position-relative fruite-item display: inline-block;">
 
                 {{-- DISCOUNT --}}
                 @if($related->mrp > $related->final_price)
@@ -117,24 +125,26 @@
                 <div class="offer-badge">{{ $discount }}% OFF</div>
                 @endif
 
+                @php
+                $images = $related->product_images;
+                $image = $images[0] ?? null;
+                @endphp
+
                 <div class="fruite-img">
                     <a href="{{ route('productdetails', $related->id) }}">
-                        <img
-                            src="{{ $image
-                            ? asset('storage/products/'.$image)
-                            : asset('website/img/no-image.png') }}"
+                        <img src="{{ $image ? asset('storage/products/'.$image) : asset('website/img/no-image.png') }}"
                             class="img-fluid w-100 rounded-top"
-                            style="height:200px;object-fit:cover;">
+                            alt="{{ $related->name }}"
+                            style="height: 150px; object-fit: cover;">
                     </a>
                 </div>
 
                 <div class="p-4 border border-top-0">
-
-                    <form action="{{ route('add_cart') }}" method="POST">
+                    <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <h6 class="product-title">
+                        <h6 class="product-title text-center">
                             {{ Str::limit(Str::title($related->name), 40) }}
                         </h6>
 
@@ -149,73 +159,136 @@
                                 <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
                             </div>
 
-                            @include('website.partials.add-to-cart-btn', ['product' => $related])
+                            @include('website.partials.add-to-cart-btn', ['product' => $product])
                         </div>
-
                     </form>
                 </div>
             </div>
         </div>
+
         @endforeach
     </div>
 
 
 
-</div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+<div id="custom-alert-container"></div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
     $(document).ready(function() {
 
-        // Quantity increment
+        let availableStock = parseInt($('#available-stock').val()) || 0;
+
+        // Quantity +
         $(document).on('click', '.qty-plus', function() {
-            let input = $(this).siblings('.qty-input');
+
+            let input = $('.qty-input');
+            let stockMsg = $('.stock-msg');
             let current = parseInt(input.val()) || 1;
+
+            if (current >= availableStock) {
+                stockMsg.removeClass('d-none');
+                return;
+            }
+
+            stockMsg.addClass('d-none');
             input.val(current + 1);
         });
 
-        // Quantity decrement
+        // Quantity -
         $(document).on('click', '.qty-minus', function() {
-            let input = $(this).siblings('.qty-input');
+
+            let input = $('.qty-input');
+            let stockMsg = $('.stock-msg');
             let current = parseInt(input.val()) || 1;
+
             if (current > 1) {
                 input.val(current - 1);
+                stockMsg.addClass('d-none');
             }
         });
 
-        // Add to cart AJAX for all forms
+        // Manual typing validation
+        $(document).on('input', '.qty-input', function() {
+
+            let stockMsg = $('.stock-msg');
+            let val = parseInt($(this).val()) || 1;
+
+            if (val > availableStock) {
+                $(this).val(availableStock);
+                stockMsg.removeClass('d-none');
+            } else if (val < 1) {
+                $(this).val(1);
+            } else {
+                stockMsg.addClass('d-none');
+            }
+        });
+
+        // Add to cart AJAX
         $(document).on('submit', '.add-to-cart-form', function(e) {
+
             e.preventDefault();
 
             let form = $(this);
-            let productId = form.find('input[name="product_id"]').val();
             let qty = parseInt(form.find('input[name="qty"]').val()) || 1;
+            let stockMsg = $('.stock-msg');
+
+            if (qty > availableStock) {
+                stockMsg.removeClass('d-none');
+                return;
+            }
 
             $.ajax({
                 url: form.attr('action'),
                 type: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    product_id: productId,
-                    qty: qty
-                },
+                data: form.serialize(),
                 success: function(res) {
-                    // Update cart count dynamically
+
+                    stockMsg.addClass('d-none');
+
                     if (res.cart_count > 0) {
                         $('#cart-count').text(res.cart_count).show();
                     } else {
                         $('#cart-count').hide();
                     }
+
                     alert('Product added to cart!');
                 },
-                error: function() {
-                    alert('Something went wrong!');
+                error: function(xhr) {
+
+                    if (xhr.status === 422 && xhr.responseJSON?.message) {
+                        stockMsg.text(xhr.responseJSON.message)
+                            .removeClass('d-none');
+                    } else {
+                        alert('Something went wrong!');
+                    }
                 }
             });
         });
 
     });
 </script>
+
+
 
 @endsection

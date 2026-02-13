@@ -13,9 +13,11 @@ class CustomerOrderReturn extends Model
         'order_item_id',
         'product_id',
         'product_images',
-        'customer_id ',
+        'customer_id',
         'quantity',
+        'reason_id',
         'reason',
+        'return_type',
         'status',
         'qc_status',
         'received_at'
@@ -43,5 +45,26 @@ class CustomerOrderReturn extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+    public function getProductImagesAttribute($value)
+    {
+        // ✅ Normalize value to array
+        if (empty($value)) {
+            return [];
+        }
+
+        // If value is JSON string, decode it
+        if (is_string($value)) {
+            $value = json_decode($value, true) ?? [];
+        }
+
+        // If still not array, force empty array
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_map(function ($img) {
+            return asset('storage/' . $img);
+        }, $value);
     }
 }
