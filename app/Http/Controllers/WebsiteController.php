@@ -86,8 +86,6 @@ class WebsiteController extends Controller
             ->paginate(12, ['*'], 'all_page');
 
 
-
-
         $latestPro = Product::whereNull('deleted_at')
             ->whereDoesntHave('sale', fn($q) => $q->active()->online())
             ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
@@ -115,6 +113,11 @@ class WebsiteController extends Controller
             ->withQueryString();
 
 
+        $selectedCategory = null;
+
+        if ($categoryId) {
+            $selectedCategory = Category::find($categoryId);
+        }
 
         return view('website.index', compact(
             'banners',
@@ -127,7 +130,9 @@ class WebsiteController extends Controller
             'latestPro',
             'brands',
             'saleproduct',
-            'cartItems'
+            'cartItems',
+            'selectedCategory'
+
         ));
     }
 
@@ -182,6 +187,7 @@ class WebsiteController extends Controller
         $categoryId = $request->category_id;
         $minPrice  = $request->min_price;
         $maxPrice  = $request->max_price;
+        $search    = $request->search;
 
         $categories = Category::orderBy('name')->get();
 
@@ -195,15 +201,30 @@ class WebsiteController extends Controller
 
         $query = Product::whereNull('deleted_at');
 
+        // Category filter
         if ($categoryId) {
             $query->where('category_id', $categoryId);
         }
 
+        // Price filter
         if ($minPrice !== null && $maxPrice !== null) {
             $query->whereBetween('mrp', [$minPrice, $maxPrice]);
         }
 
-        $products = $query->latest()->paginate(40)->withQueryString();
+        // Search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->latest()->paginate(40);
+
+        // 🔥 IMPORTANT: If AJAX request → return only product list
+        if ($request->ajax()) {
+            return view('website.partials.product-list', compact('products', 'cartItems'))->render();
+        }
 
         return view('website.shop', compact(
             'products',
@@ -211,9 +232,22 @@ class WebsiteController extends Controller
             'categoryId',
             'minPrice',
             'maxPrice',
+            'search',
             'cartItems'
         ));
     }
+
+
+
+    public function liveSearch(Request $request)
+    {
+        $products = Product::where('name', 'like', '%' . $request->search . '%')
+            ->limit(10)
+            ->get();
+
+        return response()->json($products);
+    }
+
 
     public function shopFilter(Request $request)
     {
@@ -395,41 +429,39 @@ class WebsiteController extends Controller
         ]);
     }
 
- public function productdetails($id)
-{
-    $dcId = session('dc_warehouse_id');
+    public function productdetails($id)
+    {
+        $dcId = session('dc_warehouse_id');
 
-    $product = Product::findOrFail($id);
+        $product = Product::findOrFail($id);
 
-    $availableStock = ProductBatch::where('product_id', $id)
-        ->where('warehouse_id', $dcId)
-        ->sum('quantity');
+        $availableStock = ProductBatch::where('product_id', $id)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
 
-    $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id() ?? session()->getId();
 
-    $cart = Cart::where('user_id', $userId)
-        ->with('items')
-        ->first();
+        $cart = Cart::where('user_id', $userId)->first();
 
-    $cartItems = $cart ? $cart->items->keyBy('product_id') : collect();
+        $cartItem = $cart
+            ? CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $id)
+            ->first()
+            : null;
 
-    $relatedProducts = Product::where('category_id', $product->category_id)
-        ->where('id', '!=', $product->id)
-        ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-            if ($dcId) {
-                $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
-            }
-        }], 'quantity')
-        ->latest()
-        ->take(8)
-        ->get();
+        $cartQty = $cartItem ? $cartItem->qty : 0;
 
-    return view(
-        'website.shop_detail',
-        compact('product', 'relatedProducts', 'availableStock', 'cartItems')
-    );
-}
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->latest()
+            ->take(8)
+            ->get();
 
+        return view(
+            'website.shop_detail',
+            compact('product', 'relatedProducts', 'availableStock', 'cartQty')
+        );
+    }
     public function categoryProducts($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();

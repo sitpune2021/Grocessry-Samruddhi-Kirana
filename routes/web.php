@@ -876,6 +876,8 @@ Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
     ->name('remove_cart_item')
     ->middleware('auth:web');
 
+    Route::get('/live-search', [WebsiteController::class, 'liveSearch']);
+
 
 Route::get('/checkout', [CheckoutController::class, 'index'])
     ->name('checkout')

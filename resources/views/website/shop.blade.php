@@ -7,18 +7,11 @@
 
 <body>
 
-    <!-- Single Page Header start -->
-    <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6">Shop</h1>
-        <!-- <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Pages</a></li>
-                <li class="breadcrumb-item active text-white">Shop</li>
-            </ol> -->
-    </div>
+ 
+
     <!-- Single Page Header End -->
     <!-- Fruits Shop Start-->
-    <div class="container-fluid fruite py-5">
+    <div class="container-fluid fruite py-5" style="margin-top:130px;">
         <div class="container  ">
             <!-- <h1 class="mb-4">All Products</h1> -->
             <div class="row g-4">
@@ -34,7 +27,7 @@
                         </div>
 
                         <div class="col-6"></div>
-                        <div class="col-xl-3">
+                        <!-- <div class="col-xl-3">
                             <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
                                 <select id="categoryFilter" class="form-select">
                                     <option value="all">All Products</option>
@@ -45,14 +38,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
+                        </div> -->
 
                     </div>
 
-                    <div class="row g-4">
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
+
 
                         <!-- LEFT SIDEBAR -->
-                        <div class="col-lg-3 col-md-4">
+                        <!-- <div class="col-lg-3 col-md-4">
                             <div class="card shadow-sm p-3">
                                 <h4 class="mb-3">Price Range</h4>
 
@@ -76,10 +70,10 @@
                                     </button>
                                 </form>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- RIGHT PRODUCTS -->
-                        <div class="col-lg-9">
+                        <div class="col-lg-12">
                             <div id="product-container">
                                 @include('website.partials.product-list', ['products' => $products])
                             </div>
@@ -93,34 +87,37 @@
             </div>
         </div>
     </div>
-    <!-- Fruits Shop End-->
+
+</body>
+
+<!-- Fruits Shop End-->
 
 
-    <script>
-        // Category change
-        document.getElementById('categoryFilter').addEventListener('change', function() {
-            loadProducts(1);
-        });
+<script>
+    // Category change
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        loadProducts(1);
+    });
 
-        function loadProducts(page = 1) {
-            let categoryId = document.getElementById('categoryFilter').value;
-            let minPrice = document.getElementById('minPrice').value;
-            let maxPrice = document.getElementById('maxPrice').value;
+    function loadProducts(page = 1) {
+        let categoryId = document.getElementById('categoryFilter').value;
+        let minPrice = document.getElementById('minPrice').value;
+        let maxPrice = document.getElementById('maxPrice').value;
 
-            fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById('product-container').innerHTML = html;
-                });
-        }
+        fetch(`{{ route('shop.filter') }}?category_id=${categoryId}&min_price=${minPrice}&max_price=${maxPrice}&page=${page}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('product-container').innerHTML = html;
+            });
+    }
 
-        // Pagination AJAX
-        document.addEventListener('click', function(e) {
-            let link = e.target.closest('.pagination a');
-            if (!link) return;
+    // Pagination AJAX
+    document.addEventListener('click', function(e) {
+        let link = e.target.closest('.pagination a');
+        if (!link) return;
 
-            e.preventDefault();
-            let page = new URL(link.href).searchParams.get('page');
-            loadProducts(page);
-        });
-    </script>
+        e.preventDefault();
+        let page = new URL(link.href).searchParams.get('page');
+        loadProducts(page);
+    });
+</script>

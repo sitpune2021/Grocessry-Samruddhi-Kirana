@@ -4,16 +4,13 @@
 
 @section('content')
 
-
-
-
 <!-- Similar products -->
-<div class="container-fluid page-header py-4 mb-5 bg-dark">
+<!-- <div class="container-fluid page-header py-4 mb-5 bg-dark">
     <h1 class="text-center text-white display-6">Product Details</h1>
-</div>
+</div> -->
 
 <!-- Product Detail -->
-<div class="container mb-5">
+<div class="container mb-5" style="margin-top:140px;">
     <div class="row g-4">
 
         <!-- Product Images -->
@@ -29,12 +26,9 @@
                 <div class="card-body">
 
                     <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
-                    <p class="text-muted mb-2">Category: {{ $product->category->name ?? 'N/A' }}</p>
+                    <p class="text-muted mb-2">{{ $product->category->name ?? 'N/A' }}</p>
 
                     <div class="mb-2">
-                        <span class="fs-4 fw-bold text-success">
-                            ₹{{ number_format($product->final_price, 0) }}
-                        </span>
 
                         @if($product->mrp > $product->final_price)
                         <span class="text-muted text-decoration-line-through ms-2">
@@ -42,6 +36,9 @@
                         </span>
 
                         @endif
+                        <span class="fs-4 ms-2 fw-bold text-success">
+                            ₹{{ number_format($product->final_price, 0) }}
+                        </span>
                     </div>
                     {{-- DISCOUNT --}}
                     @if($product->mrp > $product->final_price)
@@ -58,62 +55,33 @@
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" id="available-stock" value="{{ $availableStock }}">
-
-
                         @php
                         $cartQty = $cartItems[$product->id]->qty ?? 0;
                         @endphp
+                        {{-- Warehouse not selected --}}
+                        @if(!session('dc_warehouse_id'))
+                        <button type="button" class="btn btn-secondary" disabled>
+                            Check Availability
+                        </button>
+                        <div class="qty-wrapper">
+                            {{-- QTY CONTROLS --}}
+                            <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
+                                <button type="button" onclick="changeQty(this, -1)">−</button>
 
-                        <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <input type="hidden" name="qty" value="{{ $cartQty > 0 ? $cartQty : 1 }}">
+                                <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
 
-                            {{-- Warehouse not selected --}}
-                            @if(!session('dc_warehouse_id'))
-                            <button type="button" class="btn btn-secondary" disabled>
-                                Check Availability
-                            </button>
+                                <button type="button" onclick="changeQty(this, 1)">+</button>
+                            </div>
 
-                            {{-- Out Of Stock --}}
-                            @elseif($availableStock <= 0)
-                                <button type="button" class="btn btn-danger" disabled>
-                                Out Of Stock
-                                </button>
+                        </div>
+                        @endif
+                    </form>
 
-                                {{-- In Stock --}}
-                                @else
-                                <div class="qty-wrapper">
-
-                                    {{-- ADD BUTTON --}}
-                                    <button type="button"
-                                        class="btn btn-success add-btn {{ $cartQty > 0 ? 'd-none' : '' }}"
-                                        onclick="addToCartUI(this)">
-                                        ADD To Cart
-                                    </button>
-
-                                    {{-- QTY CONTROLS --}}
-                                    <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
-                                        <button type="button" onclick="changeQty(this, -1)">−</button>
-
-                                        <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
-
-                                        <button type="button" onclick="changeQty(this, 1)">+</button>
-                                    </div>
-
-                                </div>
-                                @endif
-                        </form>
-
-
-                        <!-- <button class="btn btn-primary rounded-pill px-4">
+                    <!-- <button class="btn btn-primary rounded-pill px-4">
                             <i class="fa fa-shopping-bag me-2"></i>Add to Cart
                         </button> -->
 
-                        @include('website.partials.add-to-cart-btn', ['product' => $product])
-
-
-
+                    @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </form>
 
                     <hr>
@@ -146,9 +114,8 @@
         <h3 class="fw-bold mb-3">Similar products</h3>
 
         @foreach($relatedProducts as $related)
-        <div class="col-6 col-sm-4 col-md-2"> <!-- 6 cards per row on large screens -->
-
-            <div class="rounded position-relative fruite-item">
+        <div class="col-md-6 col-lg-3 product-slide-item">
+            <div class="rounded position-relative fruite-item display: inline-block;">
 
                 {{-- DISCOUNT --}}
                 @if($related->mrp > $related->final_price)
@@ -172,40 +139,55 @@
                     </a>
                 </div>
 
-                <div class="p-3 border border-top-0">
-
-                    <div class="delivery-time mb-1 text-muted" style="font-size:12px;">Free delivery</div>
-
-                    <form action="{{ route('add_cart') }}" method="POST">
+                <div class="p-4 border border-top-0">
+                    <form action="{{ route('add_cart') }}" method="POST" class="add-cart-form" onsubmit="return false;">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $related->id }}">
 
-                        <h6 class="product-title" style="font-size:14px; margin-bottom:4px;">
+                        <h6 class="product-title text-center">
                             {{ Str::limit(Str::title($related->name), 40) }}
                         </h6>
 
-                        <p class="product-unit" style="font-size:12px; margin-bottom:6px;">
+                        <p class="product-unit">
                             {{ rtrim(rtrim(number_format($related->unit_value, 2), '0'), '.') }}
                             {{ Str::title(optional($related->unit)->name) }}
                         </p>
 
-                        <div class="price-row d-flex justify-content-between align-items-center">
-                            <div class="price-box" style="font-size:14px;">
-                                <span class="price-new fw-bold">₹{{ number_format($related->final_price, 0) }}</span><br>
-                                <span class="price-old text-muted" style="text-decoration:line-through; font-size:12px;">
-                                    ₹{{ number_format($related->mrp, 0) }}
-                                </span>
+                        <div class="price-row">
+                            <div class="price-box">
+                                <span class="price-new">₹{{ number_format($related->final_price, 0) }}</span><br>
+                                <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
                             </div>
 
-                            <button type="submit" class="btn btn-sm btn-primary">ADD</button>
+                            @include('website.partials.add-to-cart-btn', ['product' => $product])
                         </div>
-
                     </form>
                 </div>
             </div>
         </div>
+
         @endforeach
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 </div>

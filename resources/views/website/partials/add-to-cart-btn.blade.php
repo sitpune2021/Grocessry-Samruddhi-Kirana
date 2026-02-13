@@ -40,7 +40,7 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
     {{-- Out of stock --}}
     @else
-    <button type="button" class="btn btn-out-stock" disabled>
+    <button type="button" class="btn btn-danger  btn-out-stock" disabled>
         Out of Stock
     </button>
     @endif

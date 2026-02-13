@@ -87,6 +87,100 @@
          border-color: #198754;
          background: #f6fffa;
      }
+
+     /* navbar dropdown  */
+     /* User button */
+     .user-btn {
+         display: flex;
+         align-items: center;
+         color: #111;
+         font-weight: 500;
+         padding: 4px 8px;
+         border-radius: 8px;
+         transition: all 0.3s ease;
+     }
+
+     .user-btn:hover {
+         background-color: #f1f1f1;
+         color: #059669;
+     }
+
+     /* Avatar */
+     .user-avatar i {
+         font-size: 2rem;
+         color: #059669;
+     }
+
+     /* Dropdown styling */
+     .user-dropdown {
+         min-width: 180px;
+         border-radius: 12px;
+         transition: all 0.3s ease;
+     }
+
+     .user-dropdown .dropdown-item {
+         padding: 8px 12px;
+         border-radius: 8px;
+         transition: background 0.3s;
+     }
+
+     .user-dropdown .dropdown-item:hover {
+         background-color: #f0fdf4;
+     }
+
+     /* Cart badge */
+     .cart-wrapper {
+         cursor: pointer;
+         transition: transform 0.2s;
+     }
+
+     .cart-wrapper:hover {
+         transform: scale(1.1);
+     }
+
+     .cart-count {
+         top: -8px;
+         right: -8px;
+         background-color: #059669;
+         color: #fff;
+         font-size: 0.75rem;
+         font-weight: 700;
+         width: 20px;
+         height: 20px;
+         min-width: 20px;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+         transition: all 0.3s;
+     }
+
+     /* Pulse effect when cart updated */
+     .cart-count.animate {
+         animation: pulse 0.5s;
+     }
+
+     @keyframes pulse {
+         0% {
+             transform: scale(1);
+         }
+
+         50% {
+             transform: scale(1.4);
+         }
+
+         100% {
+             transform: scale(1);
+         }
+     }
+
+     /* Responsive tweaks */
+     @media (max-width: 768px) {
+         .user-name {
+             display: none;
+         }
+     }
  </style>
  <!-- Modal Search Start -->
  <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -111,7 +205,7 @@
  <div class="container-fluid fixed-top">
 
      <!-- TOP LOCATION BAR -->
-     <div class="container-fluid bg-primary text-white  " style="z-index:1050;">
+     <div class="container-fluid text-white  " style="z-index:1050; background-color: #1b764c;">
          <div class="container">
              <div class="d-flex justify-content-between align-items-center py-1">
 
@@ -196,100 +290,94 @@
                          Home
                      </a>
 
-                     <a href="{{ route('shop') }}"
+                     <!-- <a href="{{ route('shop') }}"
                          class="nav-item nav-link {{ request()->routeIs('shop') ? 'active' : '' }}">
                          Shop
-                     </a>
+                     </a> -->
 
-                     <a href="{{ route('contact') }}"
+                     <!-- <a href="{{ route('contact') }}"
                          class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">
                          Contact
-                     </a>
+                     </a> -->
+
+                     <form id="searchForm" class="ms-3 position-relative" style="width:500px;">
+
+                         <i class="fa fa-search position-absolute"
+                             style="top:50%; left:15px; transform:translateY(-50%); color:#666;">
+                         </i>
+
+                         <input type="text"
+                             id="searchInput"
+                             name="search"
+                             class="form-control border border-dark"
+                             placeholder="Search products..."
+                             value="{{ request('search') }}"
+                             autocomplete="off"
+                             style="padding-left:40px; border-radius:7px; height:45px;">
+                     </form>
                  </div>
 
-                 <div class="d-flex m-3 me-0">
-
-                     <!-- Cart -->
-                     <!-- <a href="{{ route('cart') }}" class="position-relative me-4 my-auto">
-                        <i class="fa fa-shopping-cart fa-2x"></i>
-
-                        <span id="cart-count"
-                            class="position-absolute bg-secondary rounded-circle d-flex align-items-center 
-                            justify-content-center text-dark px-1"
-                                            style="top:-5px; left:15px; height:20px; min-width:20px;
-                            {{ $cartCount > 0 ? '' : 'display:none;' }}">
-                            {{ $cartCount }}
-                        </span>
-                    </a> -->
-
-                     <a href="{{ route('cart') }}" class="position-relative me-4 my-auto">
-                         <i class="fa fa-shopping-cart fa-2x"></i>
-
-                         <span id="cart-count"
-                             class="position-absolute bg-secondary rounded-circle d-flex align-items-center 
-                            justify-content-center text-dark px-1"
-                             style="top:-5px; left:15px; height:20px; min-width:20px;
-                            {{ $cartCount > 0 ? '' : 'display:none;' }}">
-                             {{ $cartCount }}
-                         </span>
-                     </a>
+                 <div class="d-flex m-3 me-0 align-items-center">
 
                      <!-- User Account -->
                      @auth
-                     <div class="dropdown">
+                     <div class="dropdown user-wrapper">
                          <a href="#"
-                             class="my-auto dropdown-toggle d-flex align-items-center user-btn"
+                             class=" d-flex align-items-center user-btn"
                              data-bs-toggle="dropdown"
                              aria-expanded="false">
 
-                             <i class="fas fa-user-circle fs-3"></i>
+                             <div class="user-avatar me-2">
+                                 <i class="fas fa-user-circle"></i>
+                             </div>
 
-                             <!-- Desktop name only -->
-                             <span class="ms-2 d-none d-md-inline">
-                                 {{ Auth::user()->first_name }}
-                             </span>
+                             <span class="user-name d-none d-md-inline">{{ Auth::user()->first_name }}</span>
+                             <i class="fas fa-chevron-down ms-1 small"></i>
                          </a>
 
-                         <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown">
-
+                         <ul class="dropdown-menu dropdown-menu-end shadow user-dropdown p-2">
                              <li>
-                                 <a href="{{ route('my_orders', ['tab' => 'profile']) }}"
-                                     class="dropdown-item d-flex align-items-center">
-                                     <i class="fas fa-id-card me-2 text-primary"></i>
-                                     My Profile
+                                 <a href="{{ route('my_orders', ['tab' => 'profile']) }}" class="dropdown-item">
+                                     <i class="fas fa-id-card text-primary me-2"></i> My Profile
                                  </a>
                              </li>
-
                              <li>
-                                 <a href="{{ route('my_orders') }}"
-                                     class="dropdown-item d-flex align-items-center">
-                                     <i class="fas fa-box me-2 text-success"></i>
-                                     My Orders
+                                 <a href="{{ route('my_orders') }}" class="dropdown-item">
+                                     <i class="fas fa-box text-success me-2"></i> My Orders
                                  </a>
                              </li>
-
                              <li>
                                  <hr class="dropdown-divider">
                              </li>
-
                              <li>
                                  <form method="POST" action="{{ route('websitelogout') }}">
                                      @csrf
-                                     <button class="dropdown-item d-flex align-items-center text-danger">
-                                         <i class="fas fa-sign-out-alt me-2"></i>
-                                         Logout
+                                     <button class="dropdown-item text-danger">
+                                         <i class="fas fa-sign-out-alt me-2"></i> Logout
                                      </button>
                                  </form>
                              </li>
                          </ul>
                      </div>
                      @else
-                     <a href="{{ route('login') }}" class="my-auto d-flex align-items-center user-btn">
-                         <i class="fas fa-user-circle fs-3"></i>
+                     <a href="{{ route('login') }}" class="user-btn d-flex align-items-center">
+                         <div class="user-avatar">
+                             <i class="fas fa-user-circle"></i>
+                         </div>
                      </a>
                      @endauth
 
+                     <!-- Cart -->
+                     <a href="{{ route('cart') }}" class="position-relative me-4 cart-wrapper">
+                         <i class="fa fa-shopping-cart fa-2x"></i>
+                         <span id="cart-count"
+                             class="cart-count position-absolute d-flex align-items-center justify-content-center">
+                             {{ $cartCount }}
+                         </span>
+                     </a>
+
                  </div>
+
 
              </div>
 
@@ -570,9 +658,6 @@
          setInterval(updateStatus, 1000);
      });
  </script>
-
-
-
 
  <script>
      function saveAddress() {
