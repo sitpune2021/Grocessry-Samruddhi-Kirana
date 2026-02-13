@@ -2,11 +2,11 @@
 @section('title','Checkout')
 @section('content')
 
-<div class="container-fluid page-header py-5 bg-dark">
+<!-- <div class="container-fluid page-header py-5 bg-dark">
     <h1 class="text-center text-white display-6">Checkout</h1>
-</div>
+</div> -->
 
-<div class="container py-5">
+<div class="container py-5" style="margin-top:150px;">
     <form id="checkoutForm" action="{{ url('/place-order') }}" method="POST">
         @csrf
         <input type="hidden" id="address_id" name="address_id">

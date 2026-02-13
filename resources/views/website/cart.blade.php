@@ -5,12 +5,12 @@
 @section('content')
 
 <!-- Page Header -->
-<div class="container-fluid page-header py-5">
+<!-- <div class="container-fluid page-header py-5">
     <h1 class="text-center text-white display-6">Cart</h1>
-</div>
+</div> -->
 
 <!-- Cart Page -->
-<div class="container-fluid py-5">
+<div class="container-fluid py-5" style="margin-top:160px;">
     <div class="container">
 
         <div class="row g-4">
@@ -43,10 +43,6 @@
                                 <strong>₹ {{ $item->price }}</strong>
                             </div>
 
-                            <!-- Quantity -->
-                            <!-- <div class="col-4 col-md-2 text-md-center">
-                                <span class="badge  text-dark px-3 py-2">Qty: {{ $item->qty }}</span>
-                            </div> -->
 
                             <!-- Quantity -->
                             <div class="col-4 col-md-2 text-md-center">
@@ -108,22 +104,27 @@
                 <div class="card shadow-sm sticky-top " id="price-details " style="top:90px;">
                     <div class="card-body">
 
-                        <h6 class="fw-bold text-uppercase text-muted mb-3">Price Details</h6>
+                        <h6 class="fw-bold text-uppercase text-muted mb-3">Bill details</h6>
 
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
+                            <span>Items total</span>
                             <span id="cart-subtotal">₹ {{ $cart ? number_format($cart->subtotal,2) : '0.00' }}</span>
                         </div>
 
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Delivery</span>
+                            <span>Delivery charge</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Handling charge</span>
                             <span class="text-success">FREE</span>
                         </div>
 
                         <hr>
 
                         <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Total</span>
+                            <span>Grand total</span>
                             <span id="cart-total">
                                 ₹ {{ $cart ? number_format($cart->total,2) : '0.00' }}
                             </span>
@@ -143,10 +144,6 @@
                             Online orders are currently closed.<br>
                             Orders will resume tomorrow at <strong>6:00 AM</strong>.
                         </p>
-                        <p class="text-success small mt-3 mb-0">
-                            You will save more on this order
-                        </p>
-
                     </div>
                 </div>
             </div>

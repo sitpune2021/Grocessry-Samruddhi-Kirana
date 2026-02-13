@@ -55,18 +55,36 @@
             transform: translateY(-4px);
         }
 
-        /* OFFER BADGE */
+        /* Corner discount badge */
         .offer-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #2563eb;
+            top: 0;
+            left: 0;
+            background-color: #059669;
+            /* Green color */
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
-            padding: 4px 6px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            /* Slightly wider for better fit */
+            border-top-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            z-index: 10;
+            text-align: center;
+            transform: rotate(-0deg);
+            /* keeps it straight */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            /* subtle shadow for depth */
         }
+
+        /* Optional: make it responsive */
+        @media (max-width: 768px) {
+            .offer-badge {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+        }
+
 
         /* IMAGE */
         .product-img {
@@ -91,21 +109,6 @@
             font-size: 12px;
             font-weight: 600;
             margin-bottom: 6px;
-        }
-
-        .product-title {
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1.3;
-            height: 36px;
-            /* 2 lines fixed */
-            overflow: hidden;
-        }
-
-        .product-unit {
-            font-size: 13px;
-            color: #777;
-            /* margin-top: 4px; */
         }
 
         /* PRICE ROW */
@@ -519,7 +522,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* 🔥 FULL FIT */
+            /* FULL FIT */
             border-radius: 50%;
         }
 
@@ -575,7 +578,7 @@
             width: 100%;
             position: relative;
             overflow: hidden;
-            /* 🔴 KEY LINE */
+            /*  KEY LINE */
             border-radius: 16px;
             background: #000;
 
@@ -879,19 +882,6 @@
             padding: 6px 10px;
         }
 
-        .offer-badge {
-            background: #253bdf;
-            color: #fff;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-weight: 600;
-            display: inline-block;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-
-
 
         .qty-box button {
             width: 32px;
@@ -1136,6 +1126,27 @@
         <span id="custom-alert-msg"></span>
     </div>
 </body>
+
+<script>
+    let timer;
+
+    $('#searchInput').on('keyup', function() {
+
+        clearTimeout(timer);
+
+        let searchValue = $(this).val();
+
+        timer = setTimeout(function() {
+
+            if (searchValue.length > 0) {
+                window.location.href = "{{ route('shop') }}?search=" + searchValue;
+            } else {
+                window.location.href = "{{ route('shop') }}";
+            }
+
+        }, 500); // 500ms delay
+    });
+</script>
 
 
 
