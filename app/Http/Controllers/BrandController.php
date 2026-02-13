@@ -9,11 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
 {
-   
+
 
     public function index()
     {
@@ -108,16 +108,36 @@ class BrandController extends Controller
     public function update(Request $request, Brand $brand)
     {
 
+
         $validated = $request->validate([
             'category_id'     => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
 
-            'name'            => 'required|string|max:255|unique:brands,name,' . $brand->id,
-            'slug'            => 'nullable|string|max:255|unique:brands,slug,' . $brand->id,
-            'description'     => 'nullable|string',
-            'logo'            => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'          => 'required|boolean',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('brands', 'name')
+                    ->where('category_id', $request->category_id)
+                    ->whereNull('deleted_at')
+                    ->ignore($brand->id),
+            ],
+
+
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('brands', 'slug')
+                    ->ignore($brand->id)
+                    ->whereNull('deleted_at'),
+            ],
+
+            'description' => 'nullable|string',
+            'logo'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status'      => 'required|boolean',
         ]);
+
 
 
         if (empty($validated['slug'])) {
@@ -178,6 +198,4 @@ class BrandController extends Controller
         // Return JSON if called via AJAX, or back() if standard
         return back();
     }
-
-    
 }

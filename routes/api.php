@@ -8,7 +8,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\Api\CategoryProductController;
 use App\Http\Controllers\Api\DeliveryAgentController;
+use App\Http\Controllers\Api\CustomerProductReturnController;
 use App\Http\Controllers\Api\DeliveryOrderController;
+
+
+
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CustomerCouponsOffersController;
 use App\Http\Controllers\Api\AddressController;
@@ -34,7 +38,6 @@ Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeChec
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/search', [ProductController::class, 'search']);
-
     Route::get('/categories',                    [CategoryProductController::class, 'getCategories']);
     Route::get('/categories/{id}/subcategories', [CategoryProductController::class, 'getSubCategoriesByCategory']);
     Route::get('/subcategories/{id}/products',   [CategoryProductController::class, 'getProductsBySubcategory']);
@@ -43,6 +46,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/{id}/similar',         [CategoryProductController::class, 'getSimilarProducts']);
     Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
     Route::get('/brands/{brand_id}/products', [CategoryProductController::class, 'productsByBrand']);
+    Route::get('/banners', [CategoryProductController::class, 'getBanners']);
 });
 
 Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
@@ -60,7 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/history', [ProductController::class, 'pastOrders']);
     Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
-    Route::get('/coupons', [ProductController::class, 'getAllCoupons']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
@@ -75,6 +78,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [CustomerCouponsOffersController::class, 'getOffers']);
     Route::post('/apply-offer', [CustomerCouponsOffersController::class, 'applyOffer']);
     Route::post('/remove-offer', [CustomerCouponsOffersController::class, 'removeOffer']);
+    Route::get('/coupons', [CustomerCouponsOffersController::class, 'getAllCoupons']);
+    Route::post('/cart/apply-coupon', [CustomerCouponsOffersController::class, 'applyCoupon']);
+    Route::post('/cart/remove-coupon', [CustomerCouponsOffersController::class, 'removeCoupon']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -87,6 +93,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/address/set-default', [AddressController::class, 'setDefault']);
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('return/reasons', [CustomerProductReturnController::class, 'returnReasons']);
+    Route::post('order/return', [CustomerProductReturnController::class, 'createReturn']);
+    // Route::get(
+    //     'order/{order_id}/product-stock',
+    //     [CustomerProductReturnController::class, 'orderProductStock']
+    // );
+    Route::get(
+        '/orders/{order_id}/return-products',
+        [CustomerProductReturnController::class, 'getOrderReturnProducts']
+    );
+});
+
 //---------------------Delivery Agent Api Routes-----------------------------------------------
 Route::prefix('auth')->group(function () {
     Route::post('mobile/verify-otp/{type}', [DeliveryAgentController::class, 'verifyOtp']);
@@ -97,7 +116,6 @@ Route::prefix('auth')->group(function () {
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [DeliveryAgentController::class, 'logout']);
-
     Route::get('/partner/profile/image', [DeliveryAgentController::class, 'getProfileImage']);
 });
 
@@ -137,10 +155,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/delivery/orders/{orderId}/accept', [DeliveryOrderController::class, 'acceptOrder']);
     Route::post('/delivery/orders/{orderId}/reject', [DeliveryOrderController::class, 'rejectOrder']);
     Route::post('/orders/{orderId}/start', [DeliveryOrderController::class, 'startOrder']);
-
-    Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
+    // Route::get('/orders/{orderId}/items', [DeliveryOrderController::class, 'getOrderItems']);
     Route::get('/partner/orders/{orderId}/items', [DeliveryOrderController::class, 'getPickupItems']);
-
+    Route::get(
+        '/partner/orders/{orderId}/items',
+        [DeliveryOrderController::class, 'getOrderItems']
+    );
     Route::get('/orders/{orderId}/pickup', [DeliveryOrderController::class, 'getPickupDetails']);
     Route::post('/orders/{orderId}/pickup-proof', [DeliveryOrderController::class, 'uploadPickupProof']);
     Route::post('/orders/{orderId}/pickup/complete', [DeliveryOrderController::class, 'confirmPickup']);
@@ -182,6 +202,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/partner/returns/{returnId}/start', [DeliveryPartnerReturnController::class, 'startReturn']);
     Route::post('/v1/partner/returns/{returnId}/arrive', [DeliveryPartnerReturnController::class, 'arriveAtStore']);
     Route::get('/v1/partner/returns/{returnId}/receipt', [DeliveryPartnerReturnController::class, 'printReceipt']);
-    Route::post('/v1/partner/returns/{returnId}/handover', [DeliveryPartnerReturnController::class,'confirmHandover']);
-    Route::get('/v1/partner/returns/{returnId}', [DeliveryPartnerReturnController::class,'getHandoverDetails']);
+    Route::post('/v1/partner/returns/{returnId}/handover', [DeliveryPartnerReturnController::class, 'confirmHandover']);
+    Route::get('/v1/partner/returns/{returnId}', [DeliveryPartnerReturnController::class, 'getHandoverDetails']);
 });
