@@ -1,52 +1,3 @@
-@php
-$cartQty = $cartItems[$product->id]->qty ?? 0;
-@endphp
-
-<form action="{{ route('add_cart') }}" method="POST" class="add-cart-form">
-    @csrf
-    <input type="hidden" name="product_id" value="{{ $product->id }}">
-    <input type="hidden" name="qty" value="1">
-
-    {{--Warehouse not selected --}}
-    @if(!session('dc_warehouse_id'))
-    <button type="button" class="btn btn-availability" disabled>
-        Check Availability
-    </button>
-
-    {{-- In Stock --}}
-    @elseif(($product->available_stock ?? 0) > 0)
-
-    <div class="qty-wrapper"
-        data-product-id="{{ $product->id }}">
-
-        {{-- ADD BUTTON --}}
-        <button type="button"
-            class="btn btn-add-active add-btn {{ $cartQty > 0 ? 'd-none' : '' }}"
-            onclick="addToCartUI(this)">
-            ADD
-        </button>
-
-        {{-- QTY CONTROLS --}}
-        <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
-            <button type="button" onclick="changeQty(this, -1)">−</button>
-
-            <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
-
-            <button type="button" onclick="changeQty(this, 1)">+</button>
-        </div>
-
-
-    </div>
-
-    {{-- Out of stock --}}
-    @else
-    <button type="button" class="btn btn-danger  btn-out-stock" disabled>
-        Out of Stock
-    </button>
-    @endif
-</form>
-
-
 <style>
     .custom-alert {
         position: fixed;
@@ -150,6 +101,54 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
     }
 </style>
 
+@php
+$cartQty = $cartItems[$product->id]->qty ?? 0;
+@endphp
+
+<form action="{{ route('add_cart') }}" method="POST" class="add-cart-form">
+    @csrf
+    <input type="hidden" name="product_id" value="{{ $product->id }}">
+    <input type="hidden" name="qty" value="1">
+
+    {{--Warehouse not selected --}}
+    @if(!session('dc_warehouse_id'))
+    <button type="button" class="btn btn-availability" disabled>
+        Check Availability
+    </button>
+
+    {{-- In Stock --}}
+    @elseif(($product->available_stock ?? 0) > 0)
+
+    <div class="qty-wrapper"
+        data-product-id="{{ $product->id }}">
+
+        {{-- ADD BUTTON --}}
+        <button type="button"
+            class="btn btn-add-active add-btn {{ $cartQty > 0 ? 'd-none' : '' }}"
+            onclick="addToCartUI(this)">
+            ADD
+        </button>
+
+        {{-- QTY CONTROLS --}}
+        <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
+            <button type="button" onclick="changeQty(this, -1)">−</button>
+
+            <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
+
+            <button type="button" onclick="changeQty(this, 1)">+</button>
+        </div>
+
+
+    </div>
+
+    {{-- Out of stock --}}
+    @else
+    <button type="button" class="btn btn-danger  btn-out-stock" disabled>
+        Out of Stock
+    </button>
+    @endif
+</form>
+
 <script>
     function addToCartUI(btn) {
 
@@ -181,6 +180,8 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
                     updateCartIcon(data.cart_count);
 
+                    refreshCartDrawer();
+                     // ADD THIS
                 } else {
                     alert(data.message);
                 }
@@ -201,9 +202,30 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         let qty = parseInt(qtySpan.innerText);
         qty += delta;
 
+        // 🔥 IF QTY BECOMES 0 → REMOVE FROM CART
         if (qty <= 0) {
-            wrapper.querySelector('.add-btn').classList.remove('d-none');
-            wrapper.querySelector('.qty-box').classList.add('d-none');
+
+            fetch("/cart/remove/" + wrapper.dataset.productId, {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.success) {
+
+                        wrapper.querySelector('.add-btn').classList.remove('d-none');
+                        wrapper.querySelector('.qty-box').classList.add('d-none');
+
+                        updateCartIcon(data.cart_count);
+                        refreshCartDrawer();
+                    }
+
+                });
+
             return;
         }
 
@@ -225,6 +247,7 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
                     qtySpan.innerText = data.qty;
                     updateCartIcon(data.cart_count);
+                    refreshCartDrawer();
 
                 } else {
                     showCustomAlert(data.message);

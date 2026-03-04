@@ -1,25 +1,59 @@
 `@extends('website.layout')
 @section('title','Checkout')
 @section('content')
+<style>
+    .payment-option {
+        padding: 14px;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: 0.3s;
+        font-weight: 500;
+    }
+
+    .payment-option:hover {
+        background: #f8f9fa;
+    }
+
+    .payment-option.active {
+        border-color: #198754;
+        background: #e9f7ef;
+    }
+
+    .address-box {
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .address-box:hover {
+        transform: translateY(-2px);
+        border-color: #198754 !important;
+    }
+
+    .address-box.active {
+        border: 2px solid #198754 !important;
+        background: #f8fff9;
+    }
+</style>
 
 <!-- <div class="container-fluid page-header py-5 bg-dark">
     <h1 class="text-center text-white display-6">Checkout</h1>
 </div> -->
-
 <div class="container py-5" style="margin-top:150px;">
     <form id="checkoutForm" action="{{ url('/place-order') }}" method="POST">
         @csrf
+
         <input type="hidden" id="address_id" name="address_id">
         <input type="hidden" id="address_type" name="type">
         <input type="hidden" id="selected_address" name="selected_address">
-        <input type="hidden" id="payment_method" name="payment_method">
+        <input type="hidden" id="payment_method" name="payment_method" value="cash">
         <input type="hidden" id="coupon_code" name="coupon_code">
-        <input type="hidden" id="applied_coupon" name="applied_coupon">
+        <!-- <input type="hidden" id="applied_coupon" name="applied_coupon"> -->
         <input type="hidden" id="coupon_discount" name="coupon_discount">
         <input type="hidden" id="razorpay_payment_id" name="razorpay_payment_id">
         <input type="hidden" id="razorpay_order_id" name="razorpay_order_id">
         <input type="hidden" id="razorpay_signature" name="razorpay_signature">
-
         <div class="row g-5">
             <!-- Billing Details -->
             <div class="col-lg-7">
@@ -90,75 +124,111 @@
 
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
-                        <!-- Saved Address List -->
 
+                        <h4 class="mb-4 fw-bold">Order Summary</h4>
 
-                        <h4 class="mb-4">Your Order</h4>
                         <table class="table align-middle">
                             <tbody>
                                 @if($cart && $cart->items->count())
                                 @foreach($cart->items as $item)
                                 <tr>
-                                    <td><img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}" width="60" class="rounded"></td>
-                                    <td>{{ $item->product->name }} × {{ $item->qty }}</td>
-                                    <td class="text-end">₹{{ $item->line_total }}</td>
+                                    <td width="70">
+                                        <img src="{{ asset('storage/products/'.$item->product->product_images[0]) }}"
+                                            width="60"
+                                            class="rounded-3 shadow-sm">
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $item->product->name }}</div>
+                                        <small class="text-muted">Qty: {{ $item->qty }}</small>
+                                    </td>
+                                    <td class="text-end fw-semibold">
+                                        ₹{{ $item->line_total }}
+                                    </td>
                                 </tr>
                                 @endforeach
                                 @else
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Your cart is empty</td>
+                                    <td colspan="3" class="text-center text-muted">
+                                        Your cart is empty
+                                    </td>
                                 </tr>
                                 @endif
+
                                 <tr>
                                     <th colspan="2">Subtotal</th>
                                     <th class="text-end">₹<span id="subtotal">{{ $cart->subtotal }}</span></th>
                                 </tr>
+
                                 <tr id="discountRow" class="d-none">
-                                    <th colspan="2">Coupon Discount</th>
-                                    <th class="text-end text-danger">- ₹<span id="discountAmount">0</span></th>
+                                    <th colspan="2" class="text-success">Coupon Discount</th>
+                                    <th class="text-end text-danger">
+                                        - ₹<span id="discountAmount">0</span>
+                                    </th>
                                 </tr>
-                                <tr>
-                                    <th colspan="2">Total</th>
-                                    <th class="text-end text-success fw-bold">₹<span id="finalTotal">{{ $cart->subtotal }}</span></th>
+
+                                <tr class="border-top">
+                                    <th colspan="2" class="fs-5">Total</th>
+                                    <th class="text-end text-success fs-5">
+                                        ₹<span id="finalTotal">{{ $cart->subtotal }}</span>
+                                    </th>
                                 </tr>
                             </tbody>
                         </table>
 
-                        <!-- Coupon -->
-                        <div class="mb-3">
-                            <select class="form-select" id="coupon_dropdown" onchange="applyCouponFromDropdown(this)">
-                                <option value="">Select Offer Code</option>
-                                @foreach($coupons as $coupon)
-                                @php
-                                $used = \App\Models\Order::where('user_id', auth()->id())->where('coupon_code', $coupon->code)->exists();
-                                @endphp
-                                @if(!$used)
-                                <option value="{{ $coupon->code }}">{{ $coupon->code }}
-                                    @if($coupon->discount_type=='flat') (₹{{ $coupon->discount_value }} OFF)
-                                    @else ({{ $coupon->discount_value }}% OFF) @endif
-                                </option>
-                                @endif
-                                @endforeach
-                            </select>
-                            <small id="coupon_msg" class="text-danger d-none"></small>
+                        <!-- Coupon Professional -->
+                        <div class="card bg-light border-0 rounded-4 mb-3">
+                            <div class="card-body p-3">
+                                <label class="fw-semibold mb-2 d-block">
+                                    Have a Promo Code?
+                                </label>
+
+                                <div class="input-group">
+
+                                    <input type="text"
+                                        id="coupon_input"
+                                        class="form-control"
+                                        placeholder="Enter coupon code">
+
+                                    <button class="btn btn-dark"
+                                        type="button"
+                                        onclick="applyCoupon()">
+                                        Apply
+                                    </button>
+                                </div>
+
+                                <small id="coupon_msg" class="d-none mt-2"></small>
+                            </div>
                         </div>
 
-                        <!-- Payment -->
-                        <div class="form-check my-3">
-                            <input class="form-check-input" type="radio" name="payment_method" value="cash" checked>
-                            <label class="form-check-label">Cash On Delivery</label>
-                        </div>
-                        <div class="form-check mb-4">
-                            <input class="form-check-input" type="radio" name="payment_method" value="online">
-                            <label class="form-check-label">Online Payment</label>
+                        <!-- Payment Professional -->
+                        <div class="mb-4">
+
+                            <label class="fw-semibold mb-3 d-block">
+                                Select Payment Method
+                            </label>
+
+                            <div class="payment-option active"
+                                onclick="selectPayment('cash', this)">
+                                <i class="bi bi-cash-stack me-2"></i>
+                                Cash On Delivery
+                            </div>
+
+                            <div class="payment-option"
+                                onclick="selectPayment('online', this)">
+                                <i class="bi bi-credit-card me-2"></i>
+                                Online Payment (Razorpay)
+                            </div>
+
                         </div>
 
-                        <button type="button" id="rzp-button" class="btn btn-primary w-100 py-3">Place Order</button>
-
+                        <button type="button"
+                            id="rzp-button"
+                            class="btn btn-success w-100 py-3 fw-semibold">
+                            Place Order
+                        </button>
                     </div>
                 </div>
             </div>
-
         </div>
         <div class="modal fade" id="billingAddressModal" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -280,217 +350,344 @@
                         </div>
                     </div>
                 </div>
-
     </form>
 </div>
 </div>
 </div>
 </div>
+@endsection
 
 <!-- Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-<!-- rezore pay -->
+
 <script>
     let rzpProcessing = false;
 
-    document.getElementById('rzp-button').addEventListener('click', async function(e) {
-        e.preventDefault();
+    document.addEventListener("DOMContentLoaded", function() {
 
-        if (rzpProcessing) return;
-        rzpProcessing = true;
+        const form = document.getElementById("checkoutForm");
+        const rzpBtn = document.getElementById("rzp-button");
 
-        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        const form = document.getElementById('checkoutForm');
+        rzpBtn.addEventListener("click", async function(e) {
 
-        // 💰 CASH FLOW
-        if (paymentMethod === 'cash') {
-            form.submit();
-            return;
-        }
+            e.preventDefault();
+            if (rzpProcessing) return;
 
-        try {
-            // 1️⃣ Place Order
-            const orderResponse = await fetch(form.action, {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                body: new FormData(form)
-            });
+            rzpProcessing = true;
+            rzpBtn.disabled = true;
+            rzpBtn.innerHTML = "Processing <span class='spinner-border spinner-border-sm'></span>";
 
-            const orderData = await orderResponse.json();
+            const paymentMethod = document.getElementById("payment_method").value;
 
-            if (!orderData.status) {
-                alert(orderData.message || "Order failed");
+            if (!document.getElementById("selected_address").value) {
+
+                alert("Please select delivery address");
+
                 rzpProcessing = false;
+                rzpBtn.disabled = false;
+                rzpBtn.innerHTML = "Place Order";
                 return;
             }
 
-            // 2️⃣ Create Razorpay Order (SERVER)
-            const rzpResponse = await fetch("/create-razorpay-order", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "X-Requested-With": "XMLHttpRequest"
-                },
-                body: JSON.stringify({
-                    order_id: orderData.order_id,
-                    amount: orderData.amount
-                })
-            });
+            if (paymentMethod === "cash") {
+                form.submit();
+                return;
+            }
+            try {
+                /* STEP 1 CREATE ORDER */
 
-            const rzpData = await rzpResponse.json();
+                const orderResponse = await fetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: new FormData(form)
+                });
 
-            // 3️⃣ Open Razorpay (ONCE)
-            const options = {
-                key: "{{ config('services.razorpay.key') }}",
-                amount: orderData.amount * 100,
-                currency: "INR",
-                order_id: rzpData.razorpay_order_id,
-                name: "Your Store Name",
-                description: "Order Payment",
+                console.log("STATUS:", orderResponse.status);
 
-                handler: function(response) {
-                    fetch("{{ route('payment.success') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify(response)
-                        })
-                        .then(res => res.json())
-                        .then(res => {
-                            console.log(res);
-                            if (res.status) {
-                                window.location.href = res.redirect_url;
-                            } else {
-                                alert("Payment verification failed");
-                            }
-                        });
-                },
-                modal: {
-                    ondismiss: function() {
-                        rzpProcessing = false;
-                        alert("Payment cancelled");
-                    }
+                const orderData = await orderResponse.json();
+
+                console.log("ORDER DATA:", orderData);
+
+
+                if (!orderData.status) {
+
+                    alert(orderData.message || "Order failed");
+
+                    rzpProcessing = false;
+                    rzpBtn.disabled = false;
+                    rzpBtn.innerHTML = "Place Order";
+                    return;
                 }
-            };
 
-            const rzp = new Razorpay(options);
-            rzp.open(); // ✅ ONLY ONCE
+                /* STEP 2 CREATE RAZORPAY ORDER */
 
-        } catch (err) {
-            console.error(err);
-            rzpProcessing = false;
-            alert("Order failed");
-        }
+                // const rzpResponse = await fetch("{{ route('checkout.razorpay.create') }}", {
+
+                //     method: "POST",
+
+                //     credentials: "same-origin", // ⭐ IMPORTANT
+
+                //     headers: {
+                //         "Content-Type": "application/json",
+                //         "Accept": "application/json",
+                //         "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                //     },
+
+                //     body: JSON.stringify({
+                //         order_id: orderData.order_id,
+                //         amount: orderData.amount
+
+                //     })
+
+                // });
+
+                const rzpResponse = await fetch("{{ route('checkout.razorpay.create') }}", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: JSON.stringify({
+                        order_id: orderData.order_id,
+                        amount: orderData.amount
+                    })
+                });
+
+                const rzpData = await rzpResponse.json();
+
+                console.log("RAZORPAY DATA:", rzpData);
+
+                const options = {
+
+                    key: "{{ config('services.razorpay.key') }}",
+
+                    amount: rzpData.amount,
+                    currency: "INR",
+                    order_id: rzpData.razorpay_order_id,
+
+                    name: "Your Store",
+                    description: "Order Payment",
+
+                    handler: function(response) {
+
+                        fetch("{{ route('payment.success') }}", {
+
+                                method: "POST",
+                                credentials: "same-origin", 
+
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                                },
+
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    order_id: orderData.order_id
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(res => {
+
+                                if (res.status) {
+                                    window.location.href = res.redirect_url;
+                                } else {
+                                    alert("Payment verification failed");
+                                }
+
+                            });
+
+                    },
+
+                    theme: {
+                        color: "#198754"
+                    }
+
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
+            } catch (error) {
+
+                console.error("Checkout Error:", error);
+
+                alert("Checkout failed");
+
+                rzpProcessing = false;
+                rzpBtn.disabled = false;
+                rzpBtn.innerHTML = "Place Order";
+
+            }
+
+        });
+
     });
 </script>
 
 <script>
     const addresses = @json($userAddresses);
+    const deliveryPincode = @json($deliveryPincode);
 
-    document.addEventListener('DOMContentLoaded', function() {
+    let pincodeManuallyChanged = false;
+
+    /*
+       DOM READY
+    */
+    document.addEventListener("DOMContentLoaded", function() {
 
         const selected = @json($defaultAddress);
-        if (!selected) return;
-        selectAddress(selected.id, selected.type);
 
-        // set hidden inputs (MOST IMPORTANT)
-        document.getElementById('address_id').value = selected.id;
-        document.getElementById('address_type').value = selected.type;
-        document.getElementById('selected_address').value = selected.id;
-
-        if (addressIdInput && addressTypeInput) {
-            addressIdInput.value = selected.id;
-            addressTypeInput.value = selected.type;
+        if (selected) {
+            selectAddress(selected.id, selected.type);
         }
 
-        // auto-check radio
-        const radio = document.getElementById('address_' + selected.id);
-        if (radio) {
-            radio.checked = true;
-        }
+        /* ADDRESS TAB SWITCH */
+        document.querySelectorAll(".address-tab").forEach(btn => {
 
-    });
+            btn.addEventListener("click", function() {
 
+                document.querySelectorAll(".address-tab").forEach(b => {
 
-    document.querySelectorAll('.address-tab').forEach(btn => {
-        btn.addEventListener('click', function() {
+                    b.classList.remove(
+                        "btn-success",
+                        "btn-primary",
+                        "btn-warning",
+                        "active"
+                    );
 
-            // reset buttons
-            document.querySelectorAll('.address-tab').forEach(b => {
-                b.classList.remove('btn-success', 'btn-primary', 'btn-warning', 'active');
-                if (b.dataset.type == 1) b.classList.add('btn-outline-success');
-                if (b.dataset.type == 2) b.classList.add('btn-outline-primary');
-                if (b.dataset.type == 3) b.classList.add('btn-outline-warning');
+                    if (b.dataset.type == 1) b.classList.add("btn-outline-success");
+                    if (b.dataset.type == 2) b.classList.add("btn-outline-primary");
+                    if (b.dataset.type == 3) b.classList.add("btn-outline-warning");
+
+                });
+
+                const type = parseInt(this.dataset.type);
+
+                this.classList.add("active");
+
+                if (type === 1)
+                    this.classList.replace("btn-outline-success", "btn-success");
+
+                if (type === 2)
+                    this.classList.replace("btn-outline-primary", "btn-primary");
+
+                if (type === 3)
+                    this.classList.replace("btn-outline-warning", "btn-warning");
+
+                let addr = addresses.find(a => parseInt(a.type) === type);
+
+                if (addr) fillAddressFields(addr);
+                else clearAddressForm(type);
+
             });
-
-            let type = parseInt(this.dataset.type);
-
-            // highlight selected
-            this.classList.add('active');
-            if (type === 1) this.classList.replace('btn-outline-success', 'btn-success');
-            if (type === 2) this.classList.replace('btn-outline-primary', 'btn-primary');
-            if (type === 3) this.classList.replace('btn-outline-warning', 'btn-warning');
-
-            let addr = addresses.find(a => parseInt(a.type) === type);
-
-            if (addr) {
-                fillAddressFields(addr);
-            } else {
-                clearAddressForm(type);
-            }
         });
+
+        /* PINCODE CHANGE */
+        const pincodeInput = document.getElementById("pincode");
+
+        if (pincodeInput) {
+
+            pincodeInput.addEventListener("input", function() {
+
+                pincodeManuallyChanged = true;
+            });
+        }
     });
+    /*
+       SELECT ADDRESS
+    */
+    function selectAddress(addressId, addressType) {
 
+        document.querySelectorAll(".address-box")
+            .forEach(box => box.classList.remove("active"));
+
+        const radio = document.getElementById("address_" + addressId);
+
+        if (radio) {
+
+            radio.checked = true;
+
+            radio.closest(".address-box")
+                ?.classList.add("active");
+
+        }
+
+        document.getElementById("address_id").value = addressId;
+        document.getElementById("address_type").value = addressType;
+        document.getElementById("selected_address").value = addressId;
+
+    }
+
+    /*
+       FILL ADDRESS FORM
+    */
     function fillAddressFields(a) {
-        document.getElementById('address_type').value = a.type;
-        document.getElementById('address_id').value = a.id;
 
-        document.querySelector('[name=first_name]').value = a.first_name ?? '';
-        document.querySelector('[name=last_name]').value = a.last_name ?? '';
-        document.querySelector('[name=flat_house]').value = a.flat_house ?? '';
-        document.querySelector('[name=floor]').value = a.floor ?? '';
-        document.querySelector('[name=area]').value = a.area ?? '';
-        document.querySelector('[name=landmark]').value = a.landmark ?? '';
-        document.querySelector('[name=city]').value = a.city ?? '';
+        document.querySelector('[name=first_name]').value = a.first_name ?? "";
+        document.querySelector('[name=last_name]').value = a.last_name ?? "";
+        document.querySelector('[name=flat_house]').value = a.flat_house ?? "";
+        document.querySelector('[name=floor]').value = a.floor ?? "";
+        document.querySelector('[name=area]').value = a.area ?? "";
+        document.querySelector('[name=landmark]').value = a.landmark ?? "";
+        document.querySelector('[name=city]').value = a.city ?? "";
+        document.querySelector('[name=phone]').value = a.phone ?? "";
+
         if (!pincodeManuallyChanged) {
-            document.getElementById('pincode').value =
-                a.postcode && a.postcode.trim() !== '' ?
+
+            document.getElementById("pincode").value =
+                a.postcode && a.postcode.trim() !== "" ?
                 a.postcode :
                 deliveryPincode;
         }
-
-
-        document.querySelector('[name=phone]').value = a.phone ?? '';
     }
-
+    /*
+       CLEAR ADDRESS FORM
+    */
     function clearAddressForm(type) {
-        document.getElementById('address_type').value = type;
 
+        document.getElementById("address_type").value = type;
 
-        ['first_name', 'last_name', 'flat_house', 'floor', 'area', 'landmark', 'city', 'phone']
-        .forEach(name => {
+        [
+            "first_name",
+            "last_name",
+            "flat_house",
+            "floor",
+            "area",
+            "landmark",
+            "city",
+            "phone"
+        ].forEach(name => {
+
             const el = document.querySelector(`[name="${name}"]`);
-            if (el) el.value = '';
+
+            if (el) el.value = "";
+
         });
 
+        if (!pincodeManuallyChanged)
+            document.getElementById("pincode").value = deliveryPincode;
 
-        if (!pincodeManuallyChanged) {
-            document.getElementById('pincode').value = deliveryPincode;
-        }
     }
-
+    /*
+       SAVE ADDRESS
+    */
     function saveAddress() {
-        const type = document.getElementById('address_type').value || 1;
+
+        const type = document.getElementById("address_type").value || 1;
 
         let data = {
+
             type: type,
+
             first_name: document.querySelector('[name="first_name"]').value,
             last_name: document.querySelector('[name="last_name"]').value,
             flat_house: document.querySelector('[name="flat_house"]').value,
@@ -499,112 +696,177 @@
             landmark: document.querySelector('[name="landmark"]').value,
             city: document.querySelector('[name="city"]').value,
             postcode: document.querySelector('[name="postcode"]').value,
-            phone: document.querySelector('[name="phone"]').value,
+            phone: document.querySelector('[name="phone"]').value
+
         };
 
-        fetch('/save-address', {
-                method: 'POST',
+        fetch("{{ route('save.address') }}", {
+
+                method: "POST",
+
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json' // 🔥 REQUIRED
+
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+
                 },
+
                 body: JSON.stringify(data)
+
             })
             .then(res => res.json())
             .then(res => {
-                if (res.status) {
-                    alert('Address saved successfully!');
 
-                    // Close modal
-                    let modalEl = document.getElementById('billingAddressModal');
-                    let modalInstance = bootstrap.Modal.getInstance(modalEl);
-                    if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+                if (res.status) {
+
+                    alert("Address saved successfully");
+
+                    const modalEl = document.getElementById("billingAddressModal");
+
+                    const modalInstance =
+                        bootstrap.Modal.getInstance(modalEl) ||
+                        new bootstrap.Modal(modalEl);
+
                     modalInstance.hide();
 
-                    // Optionally reload page to see new address
-                    window.location.href = "{{ url('/checkout') }}";
+                    location.reload();
+
                 } else {
-                    alert('Failed to save address');
+
+                    alert(res.message || "Address save failed");
+
                 }
+
             })
-            .catch(err => console.error(err));
+            .catch(() => alert("Server error"));
+
     }
 
-    function editAddress(event, type) {
+    /*
+       EDIT ADDRESS
+    */
+    function editAddress(event, addressId) {
+
         event.stopPropagation();
 
-        // address type set (home/work)
-        document.getElementById('address_type').value = type;
+        const addr = addresses.find(a => a.id == addressId);
 
-        // Bootstrap 5 modal open
-        let modal = new bootstrap.Modal(
-            document.getElementById('billingAddressModal')
+        if (!addr) return;
+
+        fillAddressFields(addr);
+
+        document.getElementById("address_id").value = addr.id;
+        document.getElementById("address_type").value = addr.type;
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("billingAddressModal")
         );
+
         modal.show();
+
     }
 
-    function selectAddress(addressId, addressType) {
-
-        document.getElementById('address_id').value = addressId;
-        document.getElementById('address_type').value = addressType;
-        document.getElementById('selected_address').value = addressId;
-
-        // uncheck all radios
-        document.querySelectorAll('.address-radio').forEach(r => r.checked = false);
-
-        // check selected radio
-        const radio = document.getElementById('address_' + addressId);
-        if (radio) radio.checked = true;
-    }
-
-    function applyCouponFromDropdown(el) {
-        let code = el.value;
-        if (!code) return;
-        document.getElementById('coupon_code').value = code;
-        applyCoupon();
-    }
-
+    /*
+       APPLY COUPON
+    */
     function applyCoupon() {
-        let code = document.getElementById('coupon_code').value;
-        let subtotal = parseFloat(document.getElementById('subtotal').innerText);
+
+        let code = document.getElementById("coupon_input").value.trim();
+
+        let subtotal = parseFloat(
+            document.getElementById("subtotal").innerText
+        );
+
+        if (!code) {
+
+            showCouponMsg("Enter coupon code", false);
+
+            return;
+
+        }
 
         fetch("{{ route('apply.coupon') }}", {
-                method: 'POST',
+
+                method: "POST",
+
                 headers: {
+
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
+
                 },
+
                 body: JSON.stringify({
+
                     coupon_code: code,
                     subtotal: subtotal
+
                 })
+
             })
             .then(res => res.json())
             .then(data => {
-                let msg = document.getElementById('coupon_msg');
 
                 if (!data.status) {
-                    msg.classList.remove('d-none', 'text-success');
-                    msg.classList.add('text-danger');
-                    msg.innerText = data.message;
+
+                    showCouponMsg(data.message, false);
                     return;
+
                 }
 
-                msg.classList.remove('d-none', 'text-danger');
-                msg.classList.add('text-success');
-                msg.innerText = 'Coupon applied successfully';
+                document.getElementById("discountRow")
+                    .classList.remove("d-none");
 
-                document.getElementById('discountRow').classList.remove('d-none');
-                document.getElementById('discountAmount').innerText = data.discount;
-                document.getElementById('finalTotal').innerText = data.final_total;
+                document.getElementById("discountAmount")
+                    .innerText = data.discount;
 
-                // ✅ store for order
-                document.getElementById('applied_coupon').value = code;
-                document.getElementById('coupon_discount').value = data.discount;
+                document.getElementById("finalTotal")
+                    .innerText = data.final_total;
+
+                document.getElementById("coupon_code").value = code;
+                document.getElementById("coupon_discount").value = data.discount;
+
+                showCouponMsg("Coupon applied successfully", true);
+
+            })
+            .catch(() => {
+
+                showCouponMsg("Server error", false);
+
             });
+
+    }
+
+    /*  COUPON MESSAGE
+     */
+    function showCouponMsg(message, success) {
+
+        let msg = document.getElementById("coupon_msg");
+
+        msg.classList.remove("d-none", "text-danger", "text-success");
+
+        msg.classList.add(
+            success ? "text-success" : "text-danger"
+        );
+
+        msg.innerText = message;
+
+    }
+
+    /*  PAYMENT SELECT
+     */
+    function selectPayment(method, el) {
+
+        document.querySelectorAll(".payment-option")
+            .forEach(option => option.classList.remove("active"));
+
+        el.classList.add("active");
+
+        const paymentInput = document.getElementById("payment_method");
+
+        if (paymentInput)
+            paymentInput.value = method;
+
     }
 </script>
-
-
-@endsection

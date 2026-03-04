@@ -430,4 +430,11 @@ class MasterWarehouseController extends Controller
                 ->with('error', 'Something went wrong while deleting warehouse.');
         }
     }
+
+    public function getTalukas($districtId)
+{
+    $talukas = Talukas::where('district_id', $districtId)->get();
+
+    return response()->json($talukas);
+}
 }

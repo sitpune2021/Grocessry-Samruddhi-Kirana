@@ -104,7 +104,7 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     // Razorpay
-    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder'])
+    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrders'])
         ->name('razorpay.create.order');
 
     Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment'])
@@ -159,6 +159,10 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
     Route::post('/reverse-geocode', [MasterWarehouseController::class, 'reverseGeocode']);
+    Route::get(
+        '/warehouse/get-talukas/{district}',
+        [MasterWarehouseController::class, 'getTalukas']
+    )->name('warehouse.getTalukas');
 
     Route::prefix('warehouses/')
         ->middleware(['auth'])
@@ -405,30 +409,19 @@ Route::middleware(['auth:admin'])->group(function () {
             [RetailerPricingController::class, 'getProductsByCategory']
         );
     });
-    Route::post(
-        '/checkout/razorpay/verify',
-        [PaymentGetwayController::class, 'verifyRazorpayPayment']
-    )->name('checkout.razorpay.verify')
-        ->middleware('auth:web');
+    Route::middleware('auth')->group(function () {
 
+        Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
+            ->name('place.order');
 
-    //  WEBSITE CHECKOUT RAZORPAY (WEB USER)
-    Route::post(
-        '/checkout/razorpay/create-order',
-        [CheckoutController::class, 'createRazorpayOrder']
-    )->name('checkout.razorpay.create')
-        ->middleware('auth');
+        Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
+            ->name('payment.success');
 
-
-    Route::post('/create-razorpay-order', [CheckoutController::class, 'createRazorpayOrder']);
-
-
-    Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
-        ->name('payment.success');
-
-    Route::post('/save-address', [LocationController::class, 'saveAddress'])
-        ->name('address.save');
-
+        Route::post(
+            '/checkout/razorpay/create-order',
+            [CheckoutController::class, 'createRazorpayOrder']
+        )->name('checkout.razorpay.create');
+    });
 
 
     // RETAILER ORDER
@@ -742,8 +735,14 @@ Route::middleware(['auth:admin'])->group(function () {
         // Route::get('/get-districts/{stateId}', [SupplierController::class, 'getDistricts']);
         // Route::get('/get-talukas/{districtId}', [SupplierController::class, 'getTalukas']);
 
-        Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
-        Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
+        // Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts']);
+        // Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas']);
+
+        Route::get('/get-districts/{state}', [SupplierController::class, 'getDistricts'])
+            ->name('getDistricts');
+
+        Route::get('/get-talukas/{district}', [SupplierController::class, 'getTalukas'])
+            ->name('getTalukas');
     });
 
     Route::prefix('supplier_challan')->name('supplier_challan.')->group(function () {
@@ -869,14 +868,29 @@ Route::get('/details/{slug}', [WebsiteController::class, 'categoryProducts'])
 Route::post('/cart/update-qty', [WebsiteController::class, 'updateQty'])
     ->name('cart.updateQty');
 
-Route::put('/cart/update/{id}', [WebsiteController::class, 'update'])
+// Update Qty
+Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
     ->name('cart.update');
 
+// Remove Item
 Route::delete('/cart/item/{id}', [WebsiteController::class, 'removeItem'])
-    ->name('remove_cart_item')
-    ->middleware('auth:web');
+    ->name('remove_cart_item');
 
-    Route::get('/live-search', [WebsiteController::class, 'liveSearch']);
+Route::post('/cart/remove/{id}', [WebsiteController::class, 'remove']);
+
+Route::get('/cart/drawer', [WebsiteController::class, 'drawer'])
+    ->name('cart.drawer');
+
+
+Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
+    ->name('cart.update');
+
+
+Route::get('/live-search', [WebsiteController::class, 'liveSearch']);
+
+Route::get('/cart-data', [WebsiteController::class, 'getCartData'])->name('cart.data');
+
+
 
 
 Route::get('/checkout', [CheckoutController::class, 'index'])

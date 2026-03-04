@@ -5,9 +5,11 @@
 <head>
 
     <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Samrudh Website')</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +19,8 @@
     {{-- Icons --}}
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
 
     {{-- Website CSS ONLY --}}
     <link href="{{ asset('website/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -1063,14 +1067,14 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #333232;
+            background: #1d1d1d;
             color: #fff;
             padding: 14px 25px;
             border-radius: 8px;
             z-index: 99999;
             font-weight: 500;
             font-size: 14px;
-            box-shadow: 0 8px 25px rgba(92, 92, 92, 0.3);
+            box-shadow: 0 8px 25px rgba(20, 19, 19, 0.3);
             animation: fadeIn 0.25s ease-in-out;
         }
 
@@ -1084,6 +1088,224 @@
                 opacity: 1;
                 transform: translate(-50%, -50%);
             }
+        }
+
+        /* cart model  */
+        .offcanvas {
+            width: 400px;
+        }
+
+        .offcanvas-header {
+            background: #fff;
+        }
+
+        .offcanvas-body {
+            background: #f8f9fa;
+        }
+
+        .offcanvas .card {
+            border: none;
+            border-bottom: 1px solid #eee;
+            border-radius: 0;
+        }
+
+        .offcanvas-end {
+            width: 100%;
+            max-width: 370px;
+        }
+
+        .cart-scroll-area {
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 100px;
+        }
+
+        /* Cart Item */
+        .cart-item-box {
+            background: #fff;
+            padding: 12px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+        }
+
+        /* Image */
+        .cart-img {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            border-radius: 10px;
+            background: #f7f7f7;
+            padding: 6px;
+        }
+
+        /* Title */
+        .product-title {
+            font-size: 14px;
+        }
+
+        /* Quantity */
+        .qty-control {
+            display: flex;
+            align-items: center;
+            background: #0c831f;
+            color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qty-control button {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 32px;
+            font-weight: bold;
+        }
+
+        .qty-control span {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Bill */
+        .bill-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .bill-row.total {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* Bottom Sticky */
+        .cart-bottom-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            max-width: 420px;
+            background: #0c831f;
+            color: #fff;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .proceed-btn {
+            background: #fff;
+            color: #0c831f;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .cart-qty-box {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #28a745;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 32px;
+        }
+
+        .cart-qty-box button {
+            background: #28a745;
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 32px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .cart-qty-box .qty {
+            width: 35px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .bill-box {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .bill-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .bill-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #555;
+        }
+
+        .bill-left i {
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        .bill-amount {
+            font-weight: 500;
+            color: #000;
+        }
+
+        .bill-free {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bill-divider {
+            margin: 10px 0;
+        }
+
+        .total-row {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .grand-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .bill-box {
+            border: 1px solid #f1f1f1;
+            background: #ffffff;
+        }
+
+        .bill-box i {
+            font-size: 16px;
+        }
+
+        .bill-box .total {
+            font-size: 16px;
         }
     </style>
 
@@ -1107,23 +1329,12 @@
     <script src="{{ asset('website/js/main.js') }}"></script>
 
     @stack('scripts')
-
-    <!-- Whats app -->
-    <!-- <a href="https://wa.me/918421309533" 
-                target="_blank" 
-                class="whatsapp-float">
-                <i class="fab fa-whatsapp"></i>
-            </a> -->
-
-    <a href="https://wa.me/918421309533?text=Hello%20Team,%0A%0AI%20want%20to%20order%20grocery%20items.%0A%0APlease%20share%20today's%20price%20list%20and%20offers."
-        target="_blank"
-        class="whatsapp-float">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-
     <div id="custom-alert" class="custom-alert d-none">
         <span id="custom-alert-msg"></span>
+    </div>
+
+    <div id="cart-drawer-container">
+        @include('website.partials.cart-drawer')
     </div>
 </body>
 
@@ -1148,8 +1359,6 @@
     });
 </script>
 
-
-
 <script>
     function showCustomAlert(message) {
 
@@ -1165,5 +1374,114 @@
         }, 2500);
     }
 </script>
+
+<script>
+    // 🔥 GLOBAL FUNCTION (outside)
+    function updateDrawerQty(btn, delta) {
+
+        const wrapper = btn.closest('.cart-qty-box');
+        const itemId = wrapper.dataset.itemId;
+        const qtySpan = wrapper.querySelector('.qty');
+
+        let qty = parseInt(qtySpan.innerText);
+        qty += delta;
+
+        // 🔥 IF QTY BECOMES 0 → REMOVE PRODUCT
+        if (qty <= 0) {
+
+            fetch("/cart/remove/" + itemId, {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.success) {
+
+                        // Remove item box from UI
+                        wrapper.closest('.cart-item-box').remove();
+
+                        // Update totals
+                        document.getElementById('cart-subtotal').innerText = "₹ " + data.subtotal;
+                        document.getElementById('cart-total').innerText = "₹ " + data.cart_total;
+
+                        const bottomTotal = document.querySelector('.cart-bottom-bar .fw-bold');
+                        if (bottomTotal) {
+                            bottomTotal.innerText = "₹ " + data.cart_total;
+                        }
+
+                        updateCartIcon(data.cart_count);
+
+                        // If cart empty → reload drawer
+                        if (data.cart_count == 0) {
+                            location.reload();
+                        }
+
+                    }
+
+                });
+
+            return;
+        }
+
+        // 🔥 NORMAL UPDATE
+        fetch("/cart/update/" + itemId, {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    qty: qty
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.success) {
+
+                    qtySpan.innerText = data.qty;
+
+                    document.getElementById('item-total-' + itemId)
+                        .innerText = "₹ " + data.line_total;
+
+                    document.getElementById('cart-subtotal')
+                        .innerText = "₹ " + data.subtotal;
+
+                    document.getElementById('cart-total')
+                        .innerText = "₹ " + data.cart_total;
+
+                    const bottomTotal = document.querySelector('.cart-bottom-bar .fw-bold');
+                    if (bottomTotal) {
+                        bottomTotal.innerText = "₹ " + data.cart_total;
+                    }
+
+                    updateCartIcon(data.cart_count);
+
+                } else {
+                    showCustomAlert(data.message);
+                }
+
+            });
+    }
+
+    function refreshCartDrawer() {
+
+        fetch("/cart/drawer")
+            .then(res => res.text())
+            .then(html => {
+
+                document.getElementById('cart-drawer-container').innerHTML = html;
+
+            })
+            .catch(err => console.error(err));
+    }
+</script>
+
+
+
 
 </html>
