@@ -318,10 +318,23 @@
                  </div>
 
                  <div class="d-flex m-3 me-0 align-items-center">
+                     <a href="javascript:void(0)"
+                         class="position-relative me-4 cart-wrapper"
+                         data-bs-toggle="offcanvas"
+                         data-bs-target="#cartDrawer">
 
+                         <i class="fa fa-shopping-cart fa-2x"></i>
+
+                         <span id="cart-count"
+                             class="cart-count position-absolute d-flex align-items-center justify-content-center">
+                             {{ $cartCount ?? 0 }}
+                         </span>
+                     </a>
                      <!-- User Account -->
                      @auth
                      <div class="dropdown user-wrapper">
+
+
                          <a href="#"
                              class=" d-flex align-items-center user-btn"
                              data-bs-toggle="dropdown"
@@ -368,13 +381,17 @@
                      @endauth
 
                      <!-- Cart -->
-                     <a href="{{ route('cart') }}" class="position-relative me-4 cart-wrapper">
+                     <!-- <a href="{{ route('cart') }}" class="position-relative me-4 cart-wrapper">
                          <i class="fa fa-shopping-cart fa-2x"></i>
                          <span id="cart-count"
                              class="cart-count position-absolute d-flex align-items-center justify-content-center">
                              {{ $cartCount }}
                          </span>
-                     </a>
+                     </a> -->
+
+                     <!-- Cart -->
+
+
 
                  </div>
 

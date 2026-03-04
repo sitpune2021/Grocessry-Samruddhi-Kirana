@@ -282,7 +282,6 @@
         });
     });
 </script>
-
 <style>
     .center-alert {
         position: fixed;

@@ -13,7 +13,7 @@ use App\Models\Cart;
 
 class AppServiceProvider extends ServiceProvider
 {
-    
+
     public function register(): void
     {
         //
@@ -22,21 +22,21 @@ class AppServiceProvider extends ServiceProvider
     // public function boot()
     // {
     //     Paginator::useBootstrap();
-        
+
     //     // Fix for MySQL key length issue (utf8mb4)
     //     Schema::defaultStringLength(191);
-        
+
 
     //     Blade::if('canPermission', function ($permission) {
 
     //         $user = auth()->user();
- 
+
     //         return $user && method_exists($user, 'hasPermission')
     //             && $user->hasPermission($permission);
     //     });
     // }
 
-   
+
     public function boot()
     {
         Paginator::useBootstrap();
@@ -48,23 +48,20 @@ class AppServiceProvider extends ServiceProvider
                 && $user->hasPermission($permission);
         });
 
-        // ✅ Cart Count Share (NEW)
         View::composer('*', function ($view) {
-            $cartCount = 0;
 
-            if (Auth::check()) {
-                $cart = Cart::where('user_id', Auth::id())->with('items')->first();
-            } else {
-                $cart = Cart::where('user_id', session()->getId())->with('items')->first();
-            }
+            $userId = Auth::id() ?? session()->getId();
 
-            if ($cart) {
-                $cartCount = $cart->items->sum('qty');
-            }
+            $cart = Cart::with('items.product')
+                ->where('user_id', $userId)
+                ->first();
 
-            $view->with('cartCount', $cartCount);
+            $cartCount = $cart ? $cart->items->sum('qty') : 0;
+
+            $view->with([
+                'globalCart' => $cart,
+                'cartCount'  => $cartCount
+            ]);
         });
     }
-
-
 }

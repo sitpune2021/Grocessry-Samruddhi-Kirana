@@ -1,123 +1,156 @@
 <!-- Footer Start -->
-<div class="container-fluid bg-light footer">
-    <div class="container py-3">
-        <div class="mb-3" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5);">
+<!-- MAIN FOOTER -->
+<footer class="footer-section">
+    <div class="container py-5">
+        <div class="row g-4">
 
-        </div>
+            <!-- LOGO & ABOUT -->
+            <div class="col-lg-3 col-md-6">
+                <div class="footer-box">
+                    <img src="{{ asset('website/img/samrudhi-kirana-logo1.png') }}"
+                        class="mb-3 footer-logo" alt="Logo">
 
-        <div class="container py-4">
-            <div class="row g-4 align-items-start">
+                    <p class="footer-text">
+                        Fresh groceries delivered at your doorstep with quality and trust.
+                        Your daily needs partner.
+                    </p>
 
-                <!-- LOGO & SOCIAL -->
-                <div class="col-lg-3 col-md-6 col-12">
-                    <div class="footer-item text-center text-lg-start">
-                        <a href="#" class="d-inline-block mb-3">
-                            <img src="{{ asset('website/img/samrudhi-kirana-logo1.png') }}"
-                                style="max-width:160px" alt="Logo">
-                        </a>
-
-                        <div class="d-flex justify-content-center justify-content-lg-start gap-2">
-                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
-                                <i class="fab fa-youtube"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary btn-sm rounded-circle" href="#">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                        </div>
+                    <div class="footer-social mt-3">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
-
-                <!-- SHOP INFO -->
-                <div class="col-lg-3 col-md-6 col-12">
-                    <div class="footer-item">
-                        <h4 class="text-dark mb-3">Shop Info</h4>
-                        <ul class="list-unstyled">
-                            <li><a class="text-dark d-block mb-2" href="{{ route('about') }}">About Us</a></li>
-                            <li>
-                                <a class="text-dark d-block mb-2" href="{{ route('contact') }}">
-                                    Contact Us
-                                </a>
-                            </li>
-
-                            <li><a class="text-dark d-block mb-2" href="#">Privacy Policy</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Terms & Condition</a></li>
-                            <li><a class="text-dark d-block mb-2" href="#">Return Policy</a></li>
-                            <li><a class="text-dark d-block" href="#">FAQs & Help</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- ACCOUNT -->
-                <div class="col-lg-3 col-md-6 col-12">
-                    <div class="footer-item">
-                        <h4 class="text-dark mb-3">Account</h4>
-                        <ul class="list-unstyled">
-                            <li><a class="text-dark d-block mb-2" href="#">My Account</a></li>
-                            <!-- <li><a class="text-dark d-block mb-2" href="#">Shop Details</a></li> -->
-                            <li><a class="text-dark d-block mb-2" href="{{ route('cart') }}">Shopping Cart</a></li>
-                            <!-- <li><a class="text-dark d-block mb-2" href="#">Wishlist</a></li> -->
-                            <li><a class="text-dark d-block mb-2" href="{{ route('my_orders') }}">Order History</a></li>
-                            <!-- <li><a class="text-dark d-block" href="#">International Orders</a></li> -->
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- CONTACT -->
-                <div class="col-lg-3 col-md-6 col-12">
-                    <div class="footer-item">
-                        <h4 class="text-dark mb-3">Contact</h4>
-
-                        <p class="mb-2 d-flex align-items-start gap-2">
-                            <i class="fa fa-map-marker-alt text-success mt-1"></i>
-                            <span>1429 Netus Rd, NY 48247</span>
-                        </p>
-
-                        <p class="mb-2 d-flex align-items-start gap-2">
-                            <i class="fa fa-envelope text-success mt-1"></i>
-                            <span>example@gmail.com</span>
-                        </p>
-
-                        <p class="mb-2 d-flex align-items-start gap-2">
-                            <i class="fa fa-phone-alt text-success mt-1"></i>
-                            <span>+0123 4567 8910</span>
-                        </p>
-
-                        <p class="mb-2 fw-semibold">Payment Accepted</p>
-
-                        <img src="{{ asset('website/img/payment.png') }}"
-                            class="img-fluid"
-                            style="max-width:200px"
-                            alt="Payments">
-                    </div>
-                </div>
-
-
             </div>
-        </div>
 
-    </div>
-</div>
-
-<div class="container-fluid bg-dark text-light py-2">
-    <div class="container">
-        <div class="row align-items-center">
-            <!-- Left Side: Copyright -->
-            <div class="col-md-6 text-center text-md-start mb-1 mb-md-0">
-                <span>
-                    <i class="fas fa-copyright me-1"></i>
-                    <a href="#" class="text-light text-decoration-none">SIT SOLUTIONS PVT LTD</a>, All rights reserved.
-                </span>
+            <!-- SHOP LINKS -->
+            <div class="col-lg-3 col-md-6">
+                <h5 class="footer-title">Shop Info</h5>
+                <ul class="footer-links">
+                    <li><a href="{{ route('about') }}">About Us</a></li>
+                    <li><a href="{{ route('contact') }}">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Return Policy</a></li>
+                    <li><a href="#">FAQs</a></li>
+                </ul>
             </div>
+
+            <!-- ACCOUNT -->
+            <div class="col-lg-3 col-md-6">
+                <h5 class="footer-title">My Account</h5>
+                <ul class="footer-links">
+                    <li><a href="#">My Account</a></li>
+                    <!-- <li><a href="{{ route('cart') }}">Shopping Cart</a></li> -->
+                    <li><a href="{{ route('my_orders') }}">Order History</a></li>
+                </ul>
+            </div>
+
+            <!-- CONTACT -->
+            <div class="col-lg-3 col-md-6">
+                <h5 class="footer-title">Contact Us</h5>
+
+                <p><i class="fas fa-map-marker-alt"></i> 1429 Netus Rd, NY 48247</p>
+                <p><i class="fas fa-envelope"></i> example@gmail.com</p>
+                <p><i class="fas fa-phone"></i> +0123 4567 8910</p>
+
+                <div class="mt-3">
+                    <img src="{{ asset('website/img/payment.png') }}"
+                        class="img-fluid payment-img" alt="Payments">
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
 
+    <!-- COPYRIGHT -->
+    <div class="footer-bottom text-center py-3">
+        © 2026 <strong>Samrudhi Kirana</strong> | Designed by SIT Solutions Pvt Ltd
+    </div>
+</footer>
+
+<style>
+    .footer-section {
+        background: white;
+        color: #5b5959;
+    }
+
+    .footer-logo {
+        max-width: 160px;
+    }
+
+    .footer-text {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .footer-title {
+        color: #070101;
+        margin-bottom: 20px;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .footer-title::after {
+        content: '';
+        width: 40px;
+        height: 2px;
+        background: #28a745;
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+    }
+
+    .footer-links li {
+        margin-bottom: 10px;
+    }
+
+    .footer-links a {
+        text-decoration: none;
+        color: #333333;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .footer-links a:hover {
+        color: #28a745;
+        padding-left: 5px;
+    }
+
+    .footer-social a {
+        display: inline-block;
+        width: 35px;
+        height: 35px;
+        background: #222;
+        color: #fff;
+        text-align: center;
+        line-height: 35px;
+        border-radius: 50%;
+        margin-right: 8px;
+        transition: 0.3s;
+    }
+
+    .footer-social a:hover {
+        background: #28a745;
+        transform: translateY(-3px);
+    }
+
+    .payment-img {
+        max-width: 180px;
+    }
+
+    .footer-bottom {
+        background: #191919a8;
+        color: #f4efef;
+        font-size: 14px;
+    }
+</style>
 
 
 <!-- JavaScript Libraries -->
