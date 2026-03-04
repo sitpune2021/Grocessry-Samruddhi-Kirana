@@ -153,7 +153,6 @@ class WebsiteController extends Controller
         return view('website.my_orders', compact('orders', 'addresses', 'tab'));
     }
 
-
     public function about()
     {
         // single about page data
@@ -443,24 +442,30 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
-    public function update(Request $request, $itemId)
-    {
-        $cartItem = CartItem::findOrFail($itemId);
-        $cartItem->qty = $request->qty;
-        $cartItem->save();
+public function update(Request $request, $itemId)
+{
+    $cartItem = CartItem::findOrFail($itemId);
 
-        $cart = $cartItem->cart; // assuming relation exists
+    $cartItem->qty = $request->qty;
+    $cartItem->line_total = $cartItem->price * $cartItem->qty;
+    $cartItem->save();
 
-        return response()->json([
-            'success' => true,
-            'qty' => $cartItem->qty,
-            'line_total' => number_format($cartItem->price * $cartItem->qty, 2),
-            'subtotal' => number_format($cart->subtotal(), 2),
-            'cart_total' => number_format($cart->total(), 2),
-            'cart_count' => $cart->items()->sum('qty'),
-        ]);
-    }
+    $cart = $cartItem->cart;
 
+    $cart->subtotal = $cart->items()->sum('line_total');
+    $cart->total = $cart->subtotal;
+    $cart->quantity = $cart->items()->sum('qty');
+    $cart->save();
+
+    return response()->json([
+        'success' => true,
+        'qty' => $cartItem->qty,
+        'line_total' => number_format($cartItem->line_total, 2),
+        'subtotal' => number_format($cart->subtotal, 2),
+        'cart_total' => number_format($cart->total, 2),
+        'cart_count' => $cart->quantity,
+    ]);
+}
 
     public function productdetails($id)
     {
@@ -507,16 +512,22 @@ class WebsiteController extends Controller
         return view('website.category-products', compact('category', 'products'));
     }
 
-    public function drawer()
-    {
-        $userId = Auth::id() ?? session()->getId();
+public function drawer()
+{
+    $userId = Auth::id() ?? session()->getId();
+    $dcId = session('dc_warehouse_id');
 
-        $cart = Cart::with('items.product')
-            ->where('user_id', $userId)
-            ->first();
+    $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
+        $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
+            $b->where('warehouse_id', $dcId)
+              ->where('quantity', '>', 0);
+        }], 'quantity');
+    }])
+    ->where('user_id', $userId)
+    ->first();
 
-        return view('website.cart-drawer', [
-            'globalCart' => $cart
-        ]);
-    }
+    return view('website.cart-drawer', [
+        'globalCart' => $cart
+    ]);
+}
 }
