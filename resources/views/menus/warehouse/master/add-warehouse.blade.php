@@ -449,25 +449,60 @@
             /* ===============================
                Taluka dynamic loading
             =============================== */
+            // function loadTalukas(districtId, selectedTalukaId = null) {
+
+            //     if (!districtId) {
+            //         talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+            //         return;
+            //     }
+
+            //     fetch(`/get-talukas/${districtId}`)
+            //         .then(res => res.json())
+            //         .then(data => {
+
+            //             talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+
+            //             data.forEach(t => {
+            //                 talukaSelect.innerHTML += `
+            //         <option value="${t.id}" ${selectedTalukaId == t.id ? 'selected' : ''}>
+            //             ${t.name}
+            //         </option>`;
+            //             });
+            //         })
+            //         .catch(() => {
+            //             talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
+            //         });
+            // }
+
             function loadTalukas(districtId, selectedTalukaId = null) {
+
+                talukaSelect.innerHTML = '<option value="">Loading...</option>';
 
                 if (!districtId) {
                     talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
                     return;
                 }
 
-                fetch(`/get-talukas/${districtId}`)
+                fetch(`{{ url('warehouse/get-talukas') }}/${districtId}`)
                     .then(res => res.json())
                     .then(data => {
 
                         talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
 
                         data.forEach(t => {
-                            talukaSelect.innerHTML += `
-                    <option value="${t.id}" ${selectedTalukaId == t.id ? 'selected' : ''}>
-                        ${t.name}
-                    </option>`;
+
+                            const option = document.createElement('option');
+                            option.value = t.id;
+                            option.textContent = t.name;
+
+                            if (selectedTalukaId && selectedTalukaId == t.id) {
+                                option.selected = true;
+                            }
+
+                            talukaSelect.appendChild(option);
+
                         });
+
                     })
                     .catch(() => {
                         talukaSelect.innerHTML = '<option value="">Select Taluka</option>';
@@ -529,34 +564,54 @@
                 }
             }
 
+            // parentSelect.addEventListener('change', function() {
+
+            //     const opt = this.options[this.selectedIndex];
+            //     if (!opt) return;
+
+            //     const districtId = opt.dataset.districtId;
+            //     const talukaId = opt.dataset.talukaId;
+
+            //     const selectedType = typeSelect.value;
+
+
+            //     // Apply ONLY for taluka & distribution_center
+            //     if (!['taluka', 'distribution_center'].includes(selectedType)) {
+            //         return;
+            //     }
+
+            //     // Auto-select district
+            //     if (districtId) {
+            //         districtSelect.value = districtId;
+
+            //         // Load talukas AFTER district set
+            //         const savedTalukaId =
+            //             document.getElementById('savedTalukaId')?.value || talukaId;
+
+            //         loadTalukas(districtId, savedTalukaId);
+            //     }
+            // });
             parentSelect.addEventListener('change', function() {
 
                 const opt = this.options[this.selectedIndex];
                 if (!opt) return;
 
                 const districtId = opt.dataset.districtId;
-                const talukaId = opt.dataset.talukaId;
-
                 const selectedType = typeSelect.value;
 
-
-                // Apply ONLY for taluka & distribution_center
+                // Only for taluka & distribution_center
                 if (!['taluka', 'distribution_center'].includes(selectedType)) {
                     return;
                 }
 
-                // Auto-select district
                 if (districtId) {
                     districtSelect.value = districtId;
 
-                    // Load talukas AFTER district set
-                    const savedTalukaId =
-                        document.getElementById('savedTalukaId')?.value || talukaId;
-
-                    loadTalukas(districtId, savedTalukaId);
+                    // 🔥 IMPORTANT CHANGE:
+                    // Only load talukas — DO NOT auto select
+                    loadTalukas(districtId, null);
                 }
             });
-
 
         });
     </script>

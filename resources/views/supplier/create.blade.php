@@ -122,7 +122,7 @@
                                                 {{-- District --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">District <span
-                                                            class="text-danger">*</span></label>
+                                                            class="text-danger"></span></label>
                                                     <select name="district_id" id="district_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="">Select District</option>
@@ -141,7 +141,7 @@
                                                 {{-- Taluka --}}
                                                 <div class="col-md-3 mb-3">
                                                     <label class="form-label">Taluka <span
-                                                            class="text-danger">*</span></label>
+                                                            class="text-danger"></span></label>
                                                     <select name="taluka_id" id="taluka_id" class="form-select"
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         @if (isset($supplier->taluka))
@@ -236,6 +236,68 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+    $(document).ready(function() {
+
+        $('#state_id').on('change', function() {
+
+            let stateId = $(this).val();
+
+            $('#district_id').html('<option value=""> Select District</option>');
+            $('#taluka_id').html('<option value="">Select Taluka</option>');
+
+            if (stateId) {
+
+                $.ajax({
+                    url: "{{ url('supplier/get-districts') }}/" + stateId,
+                    type: "GET",
+                    success: function(response) {
+
+                        $.each(response, function(key, district) {
+                            $('#district_id').append(
+                                `<option value="${district.id}">${district.name}</option>`
+                            );
+                        });
+
+                    },
+                    error: function(xhr) {
+                        console.log(xhr.responseText);
+                    }
+                });
+
+            }
+
+        });
+
+        $('#district_id').on('change', function() {
+
+            let districtId = $(this).val();
+
+            $('#taluka_id').html('<option value="">Select Taluka</option>');
+
+            if (districtId) {
+
+                $.ajax({
+                    url: "{{ url('supplier/get-talukas') }}/" + districtId,
+                    type: "GET",
+                    success: function(response) {
+
+                        $.each(response, function(key, taluka) {
+                            $('#taluka_id').append(
+                                `<option value="${taluka.id}">${taluka.name}</option>`
+                            );
+                        });
+
+                    }
+                });
+
+            }
+
+        });
+
+    });
+</script>
+
+<!-- <script>
 $(document).ready(function() {
 
     // State -> District
@@ -284,4 +346,4 @@ $(document).ready(function() {
     });
 
 });
-</script>
+</script> -->

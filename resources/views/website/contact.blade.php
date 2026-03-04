@@ -6,102 +6,181 @@
 @section('content')
 
 <body>
+    <style>
+        .contact-section {
+            background: #f8f9fa;
+            margin-top:130px;
+        }
 
-    <!-- Single Page Header start -->
-    <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6">Contact Details</h1>
-        <!-- <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item"><a href="#">Pages</a></li>
-                <li class="breadcrumb-item active text-white">Contact</li>
-            </ol> -->
-    </div>
-    <!-- Single Page Header End -->
+        .contact-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #222;
+        }
 
+        .contact-subtitle {
+            color: #666;
+            max-width: 600px;
+            margin: auto;
+        }
 
+        .contact-form-box,
+        .contact-info-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+        }
+
+        .custom-input {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            transition: 0.3s;
+        }
+
+        .custom-input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.15rem rgba(40, 167, 69, 0.25);
+        }
+
+        .contact-btn {
+            background: linear-gradient(45deg, #717071, #474747);
+            /* color: #d81414; */
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .contact-btn:hover {
+            opacity: 0.9;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .contact-info-item i {
+            font-size: 22px;
+            color: #28a745;
+            margin-right: 15px;
+            margin-top: 5px;
+        }
+
+        .contact-info-item h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+    </style>
     <!-- Contact Start -->
-    <div class="container-fluid contact">
-        <div class="container py-5">
-            <div class="p-5 bg-light rounded">
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="text-center mx-auto" style="max-width: 700px;">
-                            <h1 class="text-primary">Get in touch</h1>
-                            <p class="mb-4">
-                                Needs essential info like phone, email, hours, and address
-                                (with map), plus a simple form, clear CTAs (Call to Action),
-                                links to social media, and an expected response time to build
-                                trust and guide visitors, focusing on ease of use and clear
-                                solutions for their needs.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-lg-12">
-                        <div class="h-100 rounded">
-                            <iframe
-                                class="rounded w-100"
-                                style="height: 400px; border:0;"
-                                loading="lazy"
-                                allowfullscreen
-                                referrerpolicy="no-referrer-when-downgrade"
-                                src="https://www.google.com/maps?q=Maharashtra,India&z=6&output=embed">
-                            </iframe>
-                        </div>
-                    </div>
+    <section class="contact-section py-5" >
+        <div class="container">
 
-                    <div class="col-lg-7">
+            <!-- SECTION TITLE -->
+            <div class="text-center mb-5">
+                <h2 class="contact-title">Contact Us</h2>
+                <p class="contact-subtitle">
+                    We’d love to hear from you. Please fill out the form below
+                    and our team will get back to you within 24 hours.
+                </p>
+            </div>
+
+            <div class="row g-5">
+
+                <!-- LEFT SIDE - FORM -->
+                <div class="col-lg-7">
+                    <div class="contact-form-box shadow-sm">
+
                         <form action="{{ route('contact.store') }}" method="POST">
                             @csrf
 
-                            <input type="text" name="name"
-                                class="w-100 form-control border-0 py-3 mb-4"
-                                placeholder="Your Name" required>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" name="name"
+                                        class="form-control custom-input"
+                                        placeholder="Enter your name" required>
+                                </div>
 
-                            <input type="email" name="email"
-                                class="w-100 form-control border-0 py-3 mb-4"
-                                placeholder="Enter Your Email" required>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" name="email"
+                                        class="form-control custom-input"
+                                        placeholder="Enter your email" required>
+                                </div>
+                            </div>
 
-                            <textarea name="message"
-                                class="w-100 form-control border-0 mb-4"
-                                rows="5" placeholder="Your Message" required></textarea>
+                            <div class="mb-4">
+                                <label class="form-label">Your Message</label>
+                                <textarea name="message"
+                                    class="form-control custom-input"
+                                    rows="5"
+                                    placeholder="Write your message here..."
+                                    required></textarea>
+                            </div>
 
-                            <button class="w-100 btn form-control border-secondary py-3 bg-white text-primary"
-                                type="submit">Submit</button>
+                            <button type="submit"
+                                class="btn contact-btn text-white">
+                                Send Message
+                            </button>
                         </form>
 
                         @if(session('success'))
-                        <p class="text-success mt-3">{{ session('success') }}</p>
+                        <div class="alert alert-success mt-4">
+                            {{ session('success') }}
+                        </div>
                         @endif
-                    </div>
 
-                    <div class="col-lg-5">
-                        <div class="d-flex p-4 rounded mb-4 bg-white">
-                            <i class="fas fa-map-marker-alt fa-2x text-primary me-4"></i>
-                            <div>
-                                <h4>Address</h4>
-                                <p class="mb-2">Hadapser, Pune</p>
-                            </div>
-                        </div>
-                        <div class="d-flex p-4 rounded mb-4 bg-white">
-                            <i class="fas fa-envelope fa-2x text-primary me-4"></i>
-                            <div>
-                                <h4>Mail Us</h4>
-                                <p class="mb-2">shekharmudmesitsolution@gmail.com</p>
-                            </div>
-                        </div>
-                        <div class="d-flex p-4 rounded bg-white">
-                            <i class="fa fa-phone-alt fa-2x text-primary me-4"></i>
-                            <div>
-                                <h4>Telephone</h4>
-                                <p class="mb-2">(+91) 8421309533</p>
-                            </div>
-                        </div>
                     </div>
-
                 </div>
+
+                <!-- RIGHT SIDE - CONTACT INFO -->
+                <div class="col-lg-5">
+                    <div class="contact-info-box shadow-sm">
+
+                        <div class="contact-info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <h6>Our Location</h6>
+                                <p>Hadapser, Pune, Maharashtra</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h6>Email Us</h6>
+                                <p>shekharmudmesitsolution@gmail.com</p>
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <div>
+                                <h6>Call Us</h6>
+                                <p>(+91) 8421309533</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <iframe
+                                class="rounded w-100"
+                                style="height: 200px; border:0;"
+                                loading="lazy"
+                                allowfullscreen
+                                src="https://www.google.com/maps?q=Hadapser,Pune&z=14&output=embed">
+                            </iframe>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
+    </section>
+
     <!-- Contact End -->
 
     <div class="container featurs py-4">
