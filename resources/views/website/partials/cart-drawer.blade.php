@@ -32,9 +32,12 @@
                                 ₹ {{ number_format($item->price,2) }}
                             </div>
                         </div>
-
+                        @include('website.partials.add-to-cart-btn', [
+                        'product' => $item->product,
+                        'cartItems' => $globalCart->items->keyBy('product_id')
+                        ])
                         <!-- Qty -->
-                        <div class="cart-qty-box"
+                        <!-- <div class="cart-qty-box"
                             data-item-id="{{ $item->id }}">
 
                             <button type="button"
@@ -55,7 +58,7 @@
                                 onclick="updateDrawerQty(this, 1)">
                                 ADD
                             </button>
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- Item Total -->
