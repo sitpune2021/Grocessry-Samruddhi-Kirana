@@ -38,17 +38,17 @@
                                     @endif
                                     <div class="d-flex gap-3">
                                         <div class="mb-3 flex-fill">
-                                            <label class="form-label">
-                                                Role Name <span class="text-danger">*</span>
-                                            </label>
+                                            <label class="form-label">Role Name <span class="text-danger">*</span></label>
                                             <input type="text" name="name" class="form-control"
                                                 placeholder="Enter role name"
                                                 value="{{ old('name', $role->name ?? '') }}"
-                                                @if ($mode=='show' ) disabled @endif>
-
+                                                @if($mode=='show' ) readonly @endif>
                                             @error('name')
                                             <div class="text-danger mt-1">{{ $message }}</div>
                                             @enderror
+                                            @if(session('error'))
+                                            <div class="text-danger mt-1">{{ session('error') }}</div>
+                                            @endif
                                         </div>
 
                                         <div class="mb-3 flex-fill">
