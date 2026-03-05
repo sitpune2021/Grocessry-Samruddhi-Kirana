@@ -27,6 +27,8 @@
     <link href="{{ asset('website/lib/lightbox/css/lightbox.min.css') }}" rel="stylesheet">
     <link href="{{ asset('website/lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
     <link href="{{ asset('website/css/style.css') }}" rel="stylesheet">
+    <script src="{{ asset('website/js/cart.js') }}"></script>
+
 
     @stack('styles')
 
@@ -1327,7 +1329,7 @@
     <script src="{{ asset('website/lib/owlcarousel/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('website/lib/lightbox/js/lightbox.min.js') }}"></script>
     <script src="{{ asset('website/js/main.js') }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
     <div id="custom-alert" class="custom-alert d-none">
         <span id="custom-alert-msg"></span>
@@ -1375,7 +1377,9 @@
     }
 </script>
 
- 
+
+
+
 
 
 </html>

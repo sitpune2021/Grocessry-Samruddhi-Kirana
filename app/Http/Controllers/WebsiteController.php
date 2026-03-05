@@ -291,11 +291,10 @@ class WebsiteController extends Controller
             ->where('warehouse_id', $dcId)
             ->sum('quantity');
 
-        if ($availableQty < $qty) {
+        if ($qty > $availableQty) {
             return response()->json([
                 'success' => false,
-                'message' => "Sorry! Only {$availableQty} items are currently available."
-
+                'message' => "Only {$availableQty} items available."
             ], 422);
         }
 
@@ -307,24 +306,19 @@ class WebsiteController extends Controller
 
         $price = $product->final_price;
 
-        $item = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
-            ->first();
-
-        if ($item) {
-            $item->qty = $qty;   // ✅ overwrite
-            $item->line_total = $qty * $price;
-            $item->save();
-        } else {
-            $item = CartItem::create([
+        $item = CartItem::updateOrCreate(
+            [
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
+            ],
+            [
                 'qty' => $qty,
                 'price' => $price,
                 'line_total' => $price * $qty,
-            ]);
-        }
+            ]
+        );
 
+        // Recalculate cart
         $cart->subtotal = $cart->items()->sum('line_total');
         $cart->quantity = $cart->items()->sum('qty');
         $cart->total = $cart->subtotal;
@@ -332,7 +326,6 @@ class WebsiteController extends Controller
 
         return response()->json([
             'success' => true,
-            'item_id' => $item->id,
             'qty' => $item->qty,
             'line_total' => number_format($item->line_total, 2),
             'cart_total' => number_format($cart->total, 2),
@@ -409,17 +402,16 @@ class WebsiteController extends Controller
 
         $item->delete();
 
-        // Recalculate totals
-        $subtotal = $cart->items()->sum('line_total');
-        $cart->subtotal = $subtotal;
-        $cart->total = $subtotal;
+        $cart->subtotal = $cart->items()->sum('line_total');
+        $cart->quantity = $cart->items()->sum('qty');
+        $cart->total = $cart->subtotal;
         $cart->save();
 
         return response()->json([
             'success' => true,
             'subtotal' => number_format($cart->subtotal, 2),
             'cart_total' => number_format($cart->total, 2),
-            'cart_count' => $cart->items()->sum('qty')
+            'cart_count' => $cart->quantity
         ]);
     }
 
@@ -442,30 +434,46 @@ class WebsiteController extends Controller
         return redirect()->back()->with('success', 'Item removed from cart.');
     }
 
-public function update(Request $request, $itemId)
-{
-    $cartItem = CartItem::findOrFail($itemId);
+    public function update(Request $request, $itemId)
+    {
+        $request->validate([
+            'qty' => 'required|integer|min:1'
+        ]);
 
-    $cartItem->qty = $request->qty;
-    $cartItem->line_total = $cartItem->price * $cartItem->qty;
-    $cartItem->save();
+        $cartItem = CartItem::findOrFail($itemId);
+        $dcId = session('dc_warehouse_id');
 
-    $cart = $cartItem->cart;
+        $available = ProductBatch::where('product_id', $cartItem->product_id)
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
 
-    $cart->subtotal = $cart->items()->sum('line_total');
-    $cart->total = $cart->subtotal;
-    $cart->quantity = $cart->items()->sum('qty');
-    $cart->save();
+        if ($request->qty > $available) {
+            return response()->json([
+                'success' => false,
+                'message' => "Only {$available} available"
+            ], 422);
+        }
 
-    return response()->json([
-        'success' => true,
-        'qty' => $cartItem->qty,
-        'line_total' => number_format($cartItem->line_total, 2),
-        'subtotal' => number_format($cart->subtotal, 2),
-        'cart_total' => number_format($cart->total, 2),
-        'cart_count' => $cart->quantity,
-    ]);
-}
+        $cartItem->qty = $request->qty;
+        $cartItem->line_total = $cartItem->price * $request->qty;
+        $cartItem->save();
+
+        $cart = $cartItem->cart;
+
+        $cart->subtotal = $cart->items()->sum('line_total');
+        $cart->quantity = $cart->items()->sum('qty');
+        $cart->total = $cart->subtotal;
+        $cart->save();
+
+        return response()->json([
+            'success' => true,
+            'qty' => $cartItem->qty,
+            'line_total' => number_format($cartItem->line_total, 2),
+            'subtotal' => number_format($cart->subtotal, 2),
+            'cart_total' => number_format($cart->total, 2),
+            'cart_count' => $cart->quantity,
+        ]);
+    }
 
     public function productdetails($id)
     {
@@ -512,22 +520,22 @@ public function update(Request $request, $itemId)
         return view('website.category-products', compact('category', 'products'));
     }
 
-public function drawer()
-{
-    $userId = Auth::id() ?? session()->getId();
-    $dcId = session('dc_warehouse_id');
+    public function drawer()
+    {
+        $userId = Auth::id() ?? session()->getId();
+        $dcId = session('dc_warehouse_id');
 
-    $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
-        $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
-            $b->where('warehouse_id', $dcId)
-              ->where('quantity', '>', 0);
-        }], 'quantity');
-    }])
-    ->where('user_id', $userId)
-    ->first();
+        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
+            $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
+                $b->where('warehouse_id', $dcId)
+                    ->where('quantity', '>', 0);
+            }], 'quantity');
+        }])
+            ->where('user_id', $userId)
+            ->first();
 
-    return view('website.cart-drawer', [
-        'globalCart' => $cart
-    ]);
-}
+        return view('website.cart-drawer', [
+            'globalCart' => $cart
+        ]);
+    }
 }

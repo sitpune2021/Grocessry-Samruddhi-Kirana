@@ -1,10 +1,13 @@
+ 
+
     <!-- RIGHT SIDE CART DRAWER -->
+
     <div class="offcanvas offcanvas-end" tabindex="-1" id="cartDrawer">
         <div class="offcanvas-header border-bottom">
             <h5 class="fw-bold m-0">My Cart</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-        <div class="offcanvas-body p-0 d-flex flex-column">
+        <div class="offcanvas-body p-0 d-flex flex-column" id="cartDrawerItems">
             <!-- SCROLL AREA -->
             <div class="cart-scroll-area flex-grow-1">
                 @if(!empty($globalCart) && $globalCart->items->isNotEmpty())
