@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -45,172 +46,53 @@ class RoleController extends Controller
     // }
 
 
-    // public function store(Request $request)
-    // {
-    //     Log::info('Role Store Request', [
-    //         'request' => $request->all()
-    //     ]);
-
-    //     $validated = $request->validate([
-    //         'name' => 'required|string|unique:roles,name',
-    //         'description' => 'nullable|string',
-    //     ]);
-
-    //     $roleName = strtolower($validated['name']); // lowercase for uniform comparison
-    //     $existingRoles = Role::pluck('name')->map(fn($r) => strtolower($r))->toArray();
-
-    //     // 🔹 Sequence Enforcement
-    //     if (!in_array('master', $existingRoles)) {
-    //         // Master role must be first
-    //         if ($roleName !== 'master') {
-    //             return back()
-    //                 ->withInput()
-    //                 ->with('error', 'Please add Master role first.');
-    //         }
-    //     } elseif (!in_array('district', $existingRoles)) {
-    //         // Master exists, District must come next
-    //         if ($roleName !== 'district') {
-    //             return back()
-    //                 ->withInput()
-    //                 ->with('error', 'Please add District role next.');
-    //         }
-    //     } elseif (!in_array('taluka', $existingRoles)) {
-    //         // District exists, Taluka must come next
-    //         if ($roleName !== 'taluka') {
-    //             return back()
-    //                 ->withInput()
-    //                 ->with('error', 'Please add Taluka role next.');
-    //         }
-    //     }
-    //     // 🔹 After Master → District → Taluka, any other role is allowed freely
-
-    //     Role::create($validated);
-
-    //     return redirect()->route('roles.index')
-    //         ->with('success', 'Role created successfully.');
-    // }
-
     public function store(Request $request)
     {
-        Log::info('Role Store Request Received', [
-            'request_data' => $request->all()
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                Rule::unique('roles')->where(fn($query) => $query->whereNull('deleted_at')),
+            ],
+            'description' => 'nullable|string',
+        ], [
+            'name.required' => 'Please enter role name',
+            'name.unique' => 'This role already exists',
         ]);
 
-        try {
 
-            // Validation
-            $validated = $request->validate([
-                'name' => 'required|string|unique:roles,name',
-                'description' => 'nullable|string',
-            ]);
+        $roleName = strtolower($validated['name']); // lowercase for uniform comparison
+        $existingRoles = Role::pluck('name')->map(fn($r) => strtolower($r))->toArray();
 
-            Log::info('Role Validation Passed', [
-                'validated_data' => $validated
-            ]);
-
-            $roleName = strtolower($validated['name']);
-
-            $existingRoles = Role::pluck('name')
-                ->map(fn($r) => strtolower($r))
-                ->toArray();
-
-            Log::info('Existing Roles Fetched', [
-                'existing_roles' => $existingRoles
-            ]);
-
-            // 🔹 Sequence Enforcement
-            // if (!in_array('master', $existingRoles)) {
-
-            //     Log::warning('Master role not found in database');
-
-            //     if ($roleName !== 'master') {
-
-            //         Log::error('Invalid Role Order Attempt', [
-            //             'attempted_role' => $roleName,
-            //             'message' => 'Master role must be first'
-            //         ]);
-
-            //         return back()
-            //             ->withInput()
-            //             ->with('error', 'Please add Master role first.');
-            //     }
-            // }
-
-            // $roleName = strtolower($validated['name']);
-
-            // $existingRoles = Role::pluck('name')
-            //     ->map(fn($r) => strtolower($r))
-            //     ->toArray();
-
-            // 🔹 If no roles exist yet
-            $filteredRoles = array_diff($existingRoles, ['super admin']);
-
-            if (empty($filteredRoles)) {
-
-                if ($roleName !== 'master') {
-
-                    Log::error('First role must be Master', [
-                        'attempted_role' => $roleName
-                    ]);
-
-                    return back()
-                        ->withInput()
-                        ->with('error', 'Please add Master role first.');
-                }
-            } elseif (!in_array('district', $existingRoles)) {
-
-                Log::warning('District role not found, expecting District');
-
-                if ($roleName !== 'district') {
-
-                    Log::error('Invalid Role Order Attempt', [
-                        'attempted_role' => $roleName,
-                        'message' => 'District role must be second'
-                    ]);
-
-                    return back()
-                        ->withInput()
-                        ->with('error', 'Please add District role next.');
-                }
-            } elseif (!in_array('taluka', $existingRoles)) {
-
-                Log::warning('Taluka role not found, expecting Taluka');
-
-                if ($roleName !== 'taluka') {
-
-                    Log::error('Invalid Role Order Attempt', [
-                        'attempted_role' => $roleName,
-                        'message' => 'Taluka role must be third'
-                    ]);
-
-                    return back()
-                        ->withInput()
-                        ->with('error', 'Please add Taluka role next.');
-                }
+        // 🔹 Sequence Enforcement
+        if (!in_array('master admin', $existingRoles)) {
+            // Master role must be first
+            if ($roleName !== 'master admin') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add Master admin role first.');
             }
-
-            // Role Create
-            $role = Role::create($validated);
-
-            Log::info('Role Created Successfully', [
-                'role_id' => $role->id,
-                'role_name' => $role->name
-            ]);
-
-            return redirect()->route('roles.index')
-                ->with('success', 'Role created successfully.');
-        } catch (\Exception $e) {
-
-            Log::error('Role Store Failed', [
-                'error_message' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
-            ]);
-
-            return back()
-                ->withInput()
-                ->with('error', 'Something went wrong while creating role.');
+        } elseif (!in_array('district admin', $existingRoles)) {
+            // Master exists, District must come next
+            if ($roleName !== 'district admin') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add District admin role next.');
+            }
+        } elseif (!in_array('taluka admin', $existingRoles)) {
+            // District exists, Taluka must come next
+            if ($roleName !== 'taluka admin') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add Taluka admin role next.');
+            }
         }
+        // 🔹 After Master → District → Taluka, any other role is allowed freely
+
+        Role::create($validated);
+
+        return redirect()->route('roles.index')
+            ->with('success', 'Role created successfully.');
     }
 
     public function show($id)
