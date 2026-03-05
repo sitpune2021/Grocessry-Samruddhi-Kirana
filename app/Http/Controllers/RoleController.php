@@ -119,15 +119,38 @@ class RoleController extends Controller
             ]);
 
             // 🔹 Sequence Enforcement
-            if (!in_array('master', $existingRoles)) {
+            // if (!in_array('master', $existingRoles)) {
 
-                Log::warning('Master role not found in database');
+            //     Log::warning('Master role not found in database');
+
+            //     if ($roleName !== 'master') {
+
+            //         Log::error('Invalid Role Order Attempt', [
+            //             'attempted_role' => $roleName,
+            //             'message' => 'Master role must be first'
+            //         ]);
+
+            //         return back()
+            //             ->withInput()
+            //             ->with('error', 'Please add Master role first.');
+            //     }
+            // }
+
+            // $roleName = strtolower($validated['name']);
+
+            // $existingRoles = Role::pluck('name')
+            //     ->map(fn($r) => strtolower($r))
+            //     ->toArray();
+
+            // 🔹 If no roles exist yet
+            $filteredRoles = array_diff($existingRoles, ['super admin']);
+
+            if (empty($filteredRoles)) {
 
                 if ($roleName !== 'master') {
 
-                    Log::error('Invalid Role Order Attempt', [
-                        'attempted_role' => $roleName,
-                        'message' => 'Master role must be first'
+                    Log::error('First role must be Master', [
+                        'attempted_role' => $roleName
                     ]);
 
                     return back()

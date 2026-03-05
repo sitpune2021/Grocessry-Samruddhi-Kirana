@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('supplier_challan_items', function (Blueprint $table) {
 
-            // Add columns (if not already present)
             if (!Schema::hasColumn('supplier_challan_items', 'category_id')) {
                 $table->unsignedBigInteger('category_id')->nullable()->after('supplier_challan_id');
             }
@@ -21,10 +20,26 @@ return new class extends Migration
             if (!Schema::hasColumn('supplier_challan_items', 'sub_category_id')) {
                 $table->unsignedBigInteger('sub_category_id')->nullable()->after('category_id');
             }
+
             $table->decimal('rate', 10, 2)->nullable()->change();
             $table->integer('ordered_qty')->nullable()->change();
             $table->integer('received_qty')->nullable()->change();
-            // Foreign keys
+        });
+
+        Schema::table('supplier_challan_items', function (Blueprint $table) {
+
+            // Drop if exists
+            try {
+                $table->dropForeign(['category_id']);
+            } catch (\Exception $e) {
+            }
+
+            try {
+                $table->dropForeign(['sub_category_id']);
+            } catch (\Exception $e) {
+            }
+
+            // Add foreign keys
             $table->foreign('category_id')
                 ->references('id')
                 ->on('categories')
