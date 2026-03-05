@@ -105,52 +105,46 @@
 $cartQty = $cartItems[$product->id]->qty ?? 0;
 @endphp
 
-<form action="{{ route('add_cart') }}" method="POST" class="add-cart-form">
-    @csrf
-    <input type="hidden" name="product_id" value="{{ $product->id }}">
-    <input type="hidden" name="qty" value="1">
+<input type="hidden" name="qty" value="1">
 
-    {{--Warehouse not selected --}}
-    @if(!session('dc_warehouse_id'))
-    <button type="button" class="btn btn-availability" disabled>
-        Check Availability
+@if(!session('dc_warehouse_id'))
+<button type="button" class="btn btn-availability" disabled>
+    Check Availability
+</button>
+
+@elseif(($product->available_stock ?? 0) > 0)
+
+<div class="qty-wrapper"
+    data-product-id="{{ $product->id }}"
+    data-cart-item-id="{{ $cartItems[$product->id]->id ?? '' }}">
+    <button type="button"
+        class="btn btn-add-active add-btn {{ $cartQty > 0 ? 'd-none' : '' }}"
+        onclick="addToCartUI(this)">
+        ADD
     </button>
 
-    {{-- In Stock --}}
-    @elseif(($product->available_stock ?? 0) > 0)
+    <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
+        <button type="button" onclick="changeQty(this, -1)">−</button>
 
-    <div class="qty-wrapper"
-        data-product-id="{{ $product->id }}">
+        <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
 
-        {{-- ADD BUTTON --}}
-        <button type="button"
-            class="btn btn-add-active add-btn {{ $cartQty > 0 ? 'd-none' : '' }}"
-            onclick="addToCartUI(this)">
-            ADD
-        </button>
-
-        {{-- QTY CONTROLS --}}
-        <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
-            <button type="button" onclick="changeQty(this, -1)">−</button>
-
-            <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
-
-            <button type="button" onclick="changeQty(this, 1)">+</button>
-        </div>
-
-
+        <button type="button" onclick="changeQty(this, 1)">+</button>
     </div>
 
-    {{-- Out of stock --}}
-    @else
-    <button type="button" class="btn btn-danger  btn-out-stock" disabled>
-        Out of Stock
-    </button>
-    @endif
-</form>
+</div>
+
+@else
+<button type="button" class="btn btn-danger btn-out-stock" disabled>
+    Out of Stock
+</button>
+@endif
 
 <script>
     function addToCartUI(btn) {
+
+        // Prevent multiple clicks
+        if (btn.dataset.loading === "true") return;
+        btn.dataset.loading = "true";
 
         const form = btn.closest('form');
         const wrapper = btn.closest('.qty-wrapper');
@@ -164,7 +158,9 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         fetch(form.action, {
                 method: "POST",
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content')
                 },
                 body: formData
             })
@@ -181,14 +177,16 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
                     updateCartIcon(data.cart_count);
 
                     refreshCartDrawer();
-                     // ADD THIS
+
                 } else {
                     alert(data.message);
                 }
 
+                btn.dataset.loading = "false";
             })
             .catch(err => {
                 console.error(err);
+                btn.dataset.loading = "false";
             });
     }
 
@@ -202,14 +200,17 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         let qty = parseInt(qtySpan.innerText);
         qty += delta;
 
-        // 🔥 IF QTY BECOMES 0 → REMOVE FROM CART
+        const cartItemId = wrapper.dataset.cartItemId;
+
+        // IF QTY = 0 → REMOVE ITEM
         if (qty <= 0) {
 
-            fetch("/cart/remove/" + wrapper.dataset.productId, {
+            fetch("/cart/remove/" + cartItemId, {
                     method: "POST",
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json'
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
                     }
                 })
                 .then(res => res.json())
@@ -217,11 +218,16 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
                     if (data.success) {
 
+                        // SHOW ADD BUTTON
                         wrapper.querySelector('.add-btn').classList.remove('d-none');
+
+                        // HIDE QTY BOX
                         wrapper.querySelector('.qty-box').classList.add('d-none');
 
                         updateCartIcon(data.cart_count);
+
                         refreshCartDrawer();
+
                     }
 
                 });
@@ -236,7 +242,9 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         fetch(form.action, {
                 method: "POST",
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content')
                 },
                 body: formData
             })
@@ -246,11 +254,11 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
                 if (data.success) {
 
                     qtySpan.innerText = data.qty;
+
                     updateCartIcon(data.cart_count);
+
                     refreshCartDrawer();
 
-                } else {
-                    showCustomAlert(data.message);
                 }
 
             });
@@ -259,27 +267,20 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
     function updateCartIcon(count) {
 
         const countEl = document.getElementById('cart-count');
+
         if (!countEl) return;
 
         if (count > 0) {
+
             countEl.innerText = count;
             countEl.style.display = 'flex';
+
         } else {
+
             countEl.innerText = 0;
             countEl.style.display = 'none';
+
         }
-    }
-</script>
 
-<script>
-    function addToCart(btn) {
-        const form = btn.closest('form');
-
-        // qty = 1
-        const qtyInput = form.querySelector('input[name="qty"]');
-        qtyInput.value = 1;
-
-        // 🔥 form submit (backend hit)
-        form.submit();
     }
 </script>

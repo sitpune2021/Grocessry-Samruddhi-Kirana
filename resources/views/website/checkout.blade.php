@@ -480,7 +480,7 @@
                         fetch("{{ route('payment.success') }}", {
 
                                 method: "POST",
-                                credentials: "same-origin", 
+                                credentials: "same-origin",
 
                                 headers: {
                                     "Content-Type": "application/json",
