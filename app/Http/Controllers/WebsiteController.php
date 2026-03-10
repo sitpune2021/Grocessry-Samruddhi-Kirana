@@ -271,13 +271,26 @@ class WebsiteController extends Controller
     }
     public function addToCart(Request $request)
     {
+        \Log::info('Add To Cart User', [
+            'auth' => Auth::id(),
+            'session' => session()->getId()
+        ]);
+
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login first'
+            ], 401);
+        }
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'qty' => 'required|integer|min:1'
         ]);
 
         $product = Product::findOrFail($request->product_id);
-        $qty = $request->qty;
+        $qty = (int)$request->qty;
+
         $dcId = session('dc_warehouse_id');
 
         if (!$dcId) {
@@ -287,38 +300,60 @@ class WebsiteController extends Controller
             ], 422);
         }
 
+        // Check available stock
         $availableQty = ProductBatch::where('product_id', $product->id)
             ->where('warehouse_id', $dcId)
             ->sum('quantity');
 
-        if ($qty > $availableQty) {
+        if ($availableQty <= 0) {
             return response()->json([
                 'success' => false,
-                'message' => "Only {$availableQty} items available."
+                'message' => 'Product out of stock'
             ], 422);
         }
 
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
 
+        // Get or create cart
         $cart = Cart::firstOrCreate([
-            'user_id' => $userId,
+            'user_id' => $userId
         ]);
 
         $price = $product->final_price;
 
+        // Check existing item
+        $existingItem = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $product->id)
+            ->first();
+
+        $newQty = $qty;
+
+        if ($existingItem) {
+            $newQty = $existingItem->qty + $qty;
+        }
+
+        // Stock validation with existing qty
+        if ($newQty > $availableQty) {
+            return response()->json([
+                'success' => false,
+                'message' => "Only {$availableQty} items available in stock"
+            ], 422);
+        }
+
+        // Create or update cart item
         $item = CartItem::updateOrCreate(
             [
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
             ],
             [
-                'qty' => $qty,
+                'qty' => $newQty,
                 'price' => $price,
-                'line_total' => $price * $qty,
+                'line_total' => $price * $newQty,
             ]
         );
 
-        // Recalculate cart
+        // Recalculate cart totals
         $cart->subtotal = $cart->items()->sum('line_total');
         $cart->quantity = $cart->items()->sum('qty');
         $cart->total = $cart->subtotal;
@@ -326,6 +361,7 @@ class WebsiteController extends Controller
 
         return response()->json([
             'success' => true,
+            'message' => 'Product added to cart',
             'qty' => $item->qty,
             'line_total' => number_format($item->line_total, 2),
             'cart_total' => number_format($cart->total, 2),
@@ -336,7 +372,7 @@ class WebsiteController extends Controller
 
     public function cart()
     {
-        $userId = Auth::id() ?? session()->getId();
+       $userId = Auth::id();
         $dcId = session('dc_warehouse_id');
 
         $cart = Cart::with(['items.product' => function ($q) use ($dcId) {

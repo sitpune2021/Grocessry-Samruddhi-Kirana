@@ -756,7 +756,7 @@
 
          if (pin.length !== 6) {
              err.classList.remove('d-none');
-             err.innerText = 'Valid pincode enter kara';
+             err.innerText = 'please enter valid pincode';
              return;
          }
 

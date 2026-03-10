@@ -187,7 +187,7 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
             .catch(err => {
                 console.error(err);
                 btn.dataset.loading = "false";
-            }); 
+            });
     }
 
     function changeQty(btn, delta) {
