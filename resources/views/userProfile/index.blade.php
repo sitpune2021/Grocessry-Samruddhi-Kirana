@@ -48,7 +48,7 @@
                             let bsAlert = new bootstrap.Alert(alert);
                             bsAlert.close();
                         }
-                    }, 10000); // 15 seconds
+                    }, 10000);
                 </script>
                 @endif
                 
@@ -90,7 +90,7 @@
                                 <td>{{ $user->warehouse->name ?? '-' }}</td>
                                 <td>{{ $user->role->name ?? '-' }}</td>
 
-                                <td class="text-primary">{{ $user->status == 1 ? 'Yes' : 'No' }}</td>
+                                <td class="text-primary">{{ $user->status == 1 ? 'Active' : 'Inactive' }}</td>
 
                                 @if($canView || $canEdit || $canDelete )
                                 <td class="text-center" style="white-space:nowrap;">

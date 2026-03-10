@@ -409,18 +409,21 @@ Route::middleware(['auth:admin'])->group(function () {
             [RetailerPricingController::class, 'getProductsByCategory']
         );
     });
+
     Route::middleware('auth')->group(function () {
 
-        Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
-            ->name('place.order');
+        // Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
+        //     ->name('place.order');
 
         Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
             ->name('payment.success');
 
-        Route::post(
-            '/checkout/razorpay/create-order',
-            [CheckoutController::class, 'createRazorpayOrder']
-        )->name('checkout.razorpay.create');
+        
+
+        // Route::post(
+        //     '/checkout/razorpay/create-order',
+        //     [CheckoutController::class, 'createRazorpayOrder']
+        // )->name('checkout.razorpay.create');
     });
 
 
@@ -881,7 +884,7 @@ Route::post('/cart/remove/{id}', [WebsiteController::class, 'remove']);
 Route::get('/cart/drawer', [WebsiteController::class, 'drawer'])
     ->name('cart.drawer');
 
-    
+
 
 
 Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
@@ -912,6 +915,11 @@ Route::post('/enduserlogout', [AuthController::class, 'websitelogout'])->name('w
 
 Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
     ->middleware('auth');
+
+Route::post(
+    '/checkout/razorpay/create-order',
+    [CheckoutController::class, 'createRazorpayOrder']
+)->name('checkout.razorpay.create')->middleware('auth');
 
 Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
     ->name('apply.coupon');
