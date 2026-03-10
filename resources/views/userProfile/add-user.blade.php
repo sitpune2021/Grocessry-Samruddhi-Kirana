@@ -49,7 +49,6 @@
 
                                             
                                             <div class="row">
-
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">
                                                         First Name <span class="text-danger">*</span>
@@ -67,7 +66,7 @@
                                                 {{-- Last Name --}}
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">
-                                                        Last Name <span class="text-danger">*</span>
+                                                        Last Name<span class="text-danger">*</span>
                                                     </label>
 
                                                     <input type="text" name="last_name" class="form-control" placeholder="Enter last name"
@@ -190,10 +189,10 @@
                                                         {{ $mode === 'view' ? 'disabled' : '' }}>
                                                         <option value="1"
                                                             {{ old('status', $user->status ?? 1) == 1 ? 'selected' : '' }}>
-                                                            Yes</option>
+                                                            Active</option>
                                                         <option value="0"
                                                             {{ old('status', $user->status ?? 1) == 0 ? 'selected' : '' }}>
-                                                            No</option>
+                                                        Inactive</option>
                                                     </select>
 
                                                     @error('status')
