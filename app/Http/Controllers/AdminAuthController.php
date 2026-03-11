@@ -35,21 +35,21 @@ class AdminAuthController extends Controller
     {
 
         // Log the incoming request (excluding sensitive data)
-        Log::info('🔹 User Store Request Received', [
+        Log::info(' User Store Request Received', [
             'payload' => $request->except(['password', 'password_confirmation'])
         ]);
 
         // Validation start
-        Log::info('🔹 User Store Validation Started');
-        $validated = $request->validate([
+        Log::info(' User Store Validation Started');
+        $request->validate([
             'first_name'     => 'required|string|max:100',
             'last_name'      => 'required|string|max:100',
-            'email'          => 'nullable|email|unique:users,email',
+            'email'          => 'required|email|unique:users,email',
             'mobile'         => 'required|digits:10|unique:users,mobile',
             'role_id'        => 'required|exists:roles,id',
             'status'         => 'required|boolean',
             'profile_photo'  => 'nullable|image',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'warehouse_id'   => 'required|exists:warehouses,id',
         ]);
         try {
 

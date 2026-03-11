@@ -75,7 +75,7 @@
                             <td>{{ $role->name }}</td>
                             <td>{{ $role->description ?? '-' }}</td>
                             @if(hasPermission('roles.edit'))
-                            <td class="text-center" style="white-space:nowrap;">
+                            <td style="white-space:nowrap;">
                                 @if(hasPermission('roles.show'))
                                 <a href="{{ route('roles.show', $role->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif

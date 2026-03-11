@@ -62,7 +62,7 @@
 
                                                 <div class="col-md-2">
                                                     <label for="cgst" class="form-label">CGST (%)</label>
-                                                    <input type="number" step="0.01" name="cgst" id="cgst" class="form-control"
+                                                    <input type="text" step="0.01" name="cgst" id="cgst" class="form-control"
                                                         value="{{ old('cgst', $tax->cgst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="2.5">
@@ -73,7 +73,7 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <label for="sgst" class="form-label">SGST (%)</label>
-                                                    <input type="number" step="0.01" name="sgst" id="sgst" class="form-control"
+                                                    <input type="text" step="0.01" name="sgst" id="sgst" class="form-control"
                                                         value="{{ old('sgst', $tax->sgst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="2.5">
@@ -84,7 +84,7 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <label for="igst" class="form-label">IGST</label>
-                                                    <input type="number" step="0.01" name="igst" id="igst" class="form-control"
+                                                    <input type="text" step="0.01" name="igst" id="igst" class="form-control"
                                                         value="{{ old('igst', $tax->igst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="5">
@@ -94,7 +94,7 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <label for="gst" class="form-label">GST (%)</label>
-                                                    <input type="number" step="0.01" name="gst" id="gst" class="form-control"
+                                                    <input type="text" step="0.01" name="gst" id="gst" class="form-control"
                                                         value="{{ old('gst', $tax->gst ?? '') }}"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}
                                                         placeholder="5">

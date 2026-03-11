@@ -39,8 +39,10 @@ class BrandController extends Controller
             'slug'             => 'nullable|string|max:255',
             'description'      => 'nullable|string',
             'logo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'           => 'required|boolean',
+            // 'status'           => 'required|boolean',
         ]);
+
+        $validated['status'] = $request->has('status') ? 1 : 0;
 
         if (empty($validated['slug'])) {
             $slug = Str::slug($validated['name']);
