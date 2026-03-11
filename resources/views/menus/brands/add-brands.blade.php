@@ -161,23 +161,23 @@
                                                     @enderror
                                                 </div>
 
-                                                {{-- Status --}}
                                                 <div class="col-md-4">
-                                                    <label class="form-label fw-medium">Status</label> <span
-                                                        class="text-danger">*</span>
-                                                    <select name="status" class="form-control"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-                                                        <option value="1"
-                                                            {{ old('status', $brand->status ?? 1) == 1 ? 'selected' : '' }}>
-                                                            Active
-                                                        </option>
-                                                        <option value="0"
-                                                            {{ old('status', $brand->status ?? 1) == 0 ? 'selected' : '' }}>
-                                                            Inactive
-                                                        </option>
-                                                    </select>
-                                                </div>
+                                                    <label class="form-label fw-medium">Status</label> <span class="text-danger">*</span>
 
+                                                    <div class="form-check form-switch">
+                                                        <input
+                                                            type="checkbox"
+                                                            class="form-check-input"
+                                                            id="status"
+                                                            name="status"
+                                                            value="1"
+                                                            {{ old('status', $brand->status ?? 1) == 1 ? 'checked' : '' }}
+                                                            {{ $mode === 'view' ? 'disabled' : '' }}>
+                                                        <label class="form-check-label" for="status">
+                                                            Active
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             {{-- Buttons --}}
