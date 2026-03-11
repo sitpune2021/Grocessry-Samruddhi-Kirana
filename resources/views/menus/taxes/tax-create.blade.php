@@ -118,6 +118,8 @@
                                                 @error('is_active')
                                                 <div class="text-danger mt-1">{{ $message }}</div>
                                                 @enderror -->
+
+
                                                 <div class="col-md-2">
                                                     <div class="mb-3">
                                                         <label for="statusToggle" class="form-label mt-1">

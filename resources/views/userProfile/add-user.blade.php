@@ -129,7 +129,7 @@
                                                         @endforeach
                                                     </select>
                                                     @error('warehouse_id')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
