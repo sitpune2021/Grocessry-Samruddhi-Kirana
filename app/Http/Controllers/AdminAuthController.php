@@ -288,5 +288,4 @@ class AdminAuthController extends Controller
             ->with('success', 'Password reset successfully. Please login.');
     }
 
-
 }

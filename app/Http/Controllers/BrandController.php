@@ -14,7 +14,6 @@ use Illuminate\Validation\Rule;
 class BrandController extends Controller
 {
 
-
     public function index()
     {
         $brands = Brand::orderBy('created_at', 'desc')->paginate(20);
@@ -32,7 +31,6 @@ class BrandController extends Controller
 
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'category_id'      => 'required|exists:categories,id',
             'sub_category_id'  => 'required|exists:sub_categories,id',

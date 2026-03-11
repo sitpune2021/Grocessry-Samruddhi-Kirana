@@ -294,5 +294,15 @@ class UserController extends Controller
         return back()->with('success', 'Profile updated successfully');
     }
 
+    public function userstatus(Request $request)
+{
+    $user = User::findOrFail($request->id);
+
+    $user->status = $request->has('status') ? 1 : 0;
+    $user->save();
+
+    return back()->with('success', 'Status updated!');
+}
+
 
 }

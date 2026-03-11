@@ -71,7 +71,7 @@
 
                         @forelse ($roles as $role)
                         <tr>
-                            <td>{{ $srNo-- }}</td> <!-- Descending Sr No -->
+                           <td>{{ $loop->iteration }}</td> <!-- Descending Sr No -->
                             <td>{{ $role->name }}</td>
                             <td>{{ $role->description ?? '-' }}</td>
                             @if(hasPermission('roles.edit'))
