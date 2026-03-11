@@ -195,14 +195,12 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         const wrapper = btn.closest('.qty-wrapper');
         const form = btn.closest('form');
         const qtySpan = wrapper.querySelector('.qty');
-        const qtyInput = form.querySelector('input[name="qty"]');
 
         let qty = parseInt(qtySpan.innerText);
         qty += delta;
 
         const cartItemId = wrapper.dataset.cartItemId;
 
-        // IF QTY = 0 → REMOVE ITEM
         if (qty <= 0) {
 
             fetch("/cart/remove/" + cartItemId, {
@@ -218,16 +216,11 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
                     if (data.success) {
 
-                        // SHOW ADD BUTTON
                         wrapper.querySelector('.add-btn').classList.remove('d-none');
-
-                        // HIDE QTY BOX
                         wrapper.querySelector('.qty-box').classList.add('d-none');
 
                         updateCartIcon(data.cart_count);
-
                         refreshCartDrawer();
-
                     }
 
                 });
@@ -235,18 +228,17 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
             return;
         }
 
-        qtyInput.value = qty;
-
-        let formData = new FormData(form);
-
-        fetch(form.action, {
+        fetch("/cart/update/" + cartItemId, {
                 method: "POST",
                 headers: {
                     'X-CSRF-TOKEN': document
                         .querySelector('meta[name="csrf-token"]')
-                        .getAttribute('content')
+                        .getAttribute('content'),
+                    'Content-Type': 'application/json'
                 },
-                body: formData
+                body: JSON.stringify({
+                    qty: qty
+                })
             })
             .then(res => res.json())
             .then(data => {
@@ -258,6 +250,10 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
                     updateCartIcon(data.cart_count);
 
                     refreshCartDrawer();
+
+                } else {
+
+                    showAlert(data.message); // custom alert
 
                 }
 
@@ -283,4 +279,17 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
         }
 
     }
+
+    function refreshCartDrawer() {
+
+    fetch("/cart/drawer")
+        .then(res => res.text())
+        .then(html => {
+
+            document.getElementById("cartDrawerItems").innerHTML = html;
+
+        })
+        .catch(err => console.error(err));
+
+}
 </script>

@@ -109,7 +109,7 @@
                                             <td></td>
                                             <td></td>
                                             <td>{{ $stock->category->name ?? '' }}</td>
-                                            <td>{{ $stock->product->name }}</td>
+                                            <td>{{ $stock->product->name ?? '' }}</td>
                                             <td>{{ $stock->quantity }}</td>
                                         </tr>
                                     @endforeach

@@ -63,7 +63,7 @@
                             <th class="text-center" style="width: 120px;">Status</th>
                             @if($canView || $canEdit || $canDelete)
 
-                            <th class="text-center" style="width: 150px;">Actions</th>
+                            <th style="width: 150px;">Actions</th>
                             @endif
                         </tr>
                     </thead>

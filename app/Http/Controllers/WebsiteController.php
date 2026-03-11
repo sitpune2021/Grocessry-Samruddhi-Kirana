@@ -269,6 +269,7 @@ class WebsiteController extends Controller
 
         return view('website.partials.product-list', compact('products'))->render();
     }
+
     public function addToCart(Request $request)
     {
         \Log::info('Add To Cart User', [
@@ -372,7 +373,7 @@ class WebsiteController extends Controller
 
     public function cart()
     {
-       $userId = Auth::id();
+        $userId = Auth::id();
         $dcId = session('dc_warehouse_id');
 
         $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
@@ -386,6 +387,7 @@ class WebsiteController extends Controller
 
         return view('website.cart', compact('cart'));
     }
+
     public function getCartData()
     {
         $userId = Auth::id() ?? session()->getId();
@@ -544,6 +546,7 @@ class WebsiteController extends Controller
             compact('product', 'relatedProducts', 'availableStock', 'cartQty')
         );
     }
+
     public function categoryProducts($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();
@@ -555,22 +558,16 @@ class WebsiteController extends Controller
 
         return view('website.category-products', compact('category', 'products'));
     }
-
     public function drawer()
     {
         $userId = Auth::id() ?? session()->getId();
         $dcId = session('dc_warehouse_id');
 
-        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
-            $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
-                $b->where('warehouse_id', $dcId)
-                    ->where('quantity', '>', 0);
-            }], 'quantity');
-        }])
+        $cart = Cart::with(['items.product'])
             ->where('user_id', $userId)
             ->first();
 
-        return view('website.cart-drawer', [
+        return view('website.partials.cart-drawer-items', [
             'globalCart' => $cart
         ]);
     }

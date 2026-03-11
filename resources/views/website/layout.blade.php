@@ -1314,7 +1314,7 @@
 </head>
 
 <body>
-
+  
     {{-- Website Navbar --}}
     @include('website.partials.navbar')
 
