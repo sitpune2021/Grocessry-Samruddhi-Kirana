@@ -67,13 +67,32 @@
                             <td>{{ $tax->sgst }}%</td>
                             <td>{{ $tax->gst }}%</td>
                             <td>{{ $tax->igst }}%</td>
-                            <td>
+                            <!-- <td>
                                 @if($tax->is_active)
                                 <span class="badge bg-success">Active</span>
                                 @else
                                 <span class="badge bg-danger">Inactive</span>
                                 @endif
+                            </td> -->
+
+                            <td class="text-center">
+                                <form action="{{ route('updatestatus') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $tax->id }}">
+
+                                    <div class="form-check form-switch d-flex justify-content-center">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            role="switch"
+                                            id="statusSwitch{{ $tax->id }}"
+                                            name="status"
+                                            value="1"
+                                            onchange="this.form.submit()"
+                                            {{ $tax->is_active == 1 ? 'checked' : '' }}>
+                                    </div>
+                                </form>
                             </td>
+
                             <td class="text-center" style="white-space:nowrap;">
                                 <a href="{{ route('taxes.show', $tax->id) }}" class="btn btn-sm btn-primary">View</a>
                                 <a href="{{route('taxes.edit', $tax->id) }}" class="btn btn-sm btn-warning">Edit</a>

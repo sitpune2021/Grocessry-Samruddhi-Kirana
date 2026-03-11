@@ -15,12 +15,8 @@ class RoleController extends Controller
 
     public function index()
     {
-        //  Roles descending by created_at
-        $roles = Role::orderBy('created_at', 'desc')->paginate(10);
-
-        //  Users descending by created_at
+        $roles = Role::orderBy('created_at', 'asc')->paginate(10);
         $users = User::orderBy('created_at', 'desc')->paginate(10);
-
         return view('roles.index', compact('roles', 'users'));
     }
 
