@@ -51,7 +51,7 @@
                     }, 10000);
                 </script>
                 @endif
-                
+
                 <!-- Table -->
                 <div class="table-responsive mt-3">
                     <table id="batchTable" class="table table-bordered table-striped">
@@ -90,7 +90,24 @@
                                 <td>{{ $user->warehouse->name ?? '-' }}</td>
                                 <td>{{ $user->role->name ?? '-' }}</td>
 
-                                <td class="text-primary">{{ $user->status == 1 ? 'Active' : 'Inactive' }}</td>
+                                <!-- <td class="text-primary">{{ $user->status == 1 ? 'Active' : 'Inactive' }}</td> -->
+
+                                <td class="text-center">
+                                    <form action="{{ route('userstatus') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="id" value="{{ $user->id }}">
+
+                                        <div class="form-check form-switch d-flex justify-content-center">
+                                            <input class="form-check-input"
+                                                type="checkbox"
+                                                role="switch"
+                                                name="status"
+                                                value="1"
+                                                onchange="this.form.submit()"
+                                                {{ $user->status == 1 ? 'checked' : '' }}>
+                                        </div>
+                                    </form>
+                                </td>
 
                                 @if($canView || $canEdit || $canDelete )
                                 <td class="text-center" style="white-space:nowrap;">
