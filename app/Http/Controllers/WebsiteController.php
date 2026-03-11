@@ -372,7 +372,7 @@ class WebsiteController extends Controller
 
     public function cart()
     {
-       $userId = Auth::id();
+        $userId = Auth::id();
         $dcId = session('dc_warehouse_id');
 
         $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
@@ -555,23 +555,18 @@ class WebsiteController extends Controller
 
         return view('website.category-products', compact('category', 'products'));
     }
+   public function drawer()
+{
+    $userId = Auth::id() ?? session()->getId();
+    $dcId = session('dc_warehouse_id');
 
-    public function drawer()
-    {
-        $userId = Auth::id() ?? session()->getId();
-        $dcId = session('dc_warehouse_id');
+    $cart = Cart::with(['items.product'])
+        ->where('user_id', $userId)
+        ->first();
 
-        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
-            $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
-                $b->where('warehouse_id', $dcId)
-                    ->where('quantity', '>', 0);
-            }], 'quantity');
-        }])
-            ->where('user_id', $userId)
-            ->first();
-
-        return view('website.cart-drawer', [
-            'globalCart' => $cart
-        ]);
-    }
+    return view('website.partials.cart-drawer-items', [
+        'globalCart' => $cart
+    ]);
 }
+}
+  

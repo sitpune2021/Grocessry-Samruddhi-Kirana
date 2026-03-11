@@ -889,8 +889,6 @@ Route::get('/cart/drawer', [WebsiteController::class, 'drawer'])
     ->name('cart.drawer');
 
 
-
-
 Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
     ->name('cart.update');
 
