@@ -129,7 +129,7 @@
                                                         @endforeach
                                                     </select>
                                                     @error('warehouse_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
@@ -170,12 +170,12 @@
                                                     </label>
 
                                                     <input type="email" name="email" placeholder="Enter email"
-                                                        class="form-control @error('email') is-invalid @enderror"
+                                                        class="form-control"
                                                         value="{{ old('email', $user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
 
                                                     @error('email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 

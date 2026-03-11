@@ -75,7 +75,7 @@
 
                             {{-- Actions --}}
                             @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
+                            <td style="white-space:nowrap;">
                                 @if(hasPermission('unit.view'))
                                 <a href="{{ route('units.show', $unit->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif

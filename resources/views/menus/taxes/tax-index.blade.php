@@ -93,7 +93,7 @@
                                 </form>
                             </td>
 
-                            <td class="text-center" style="white-space:nowrap;">
+                            <td style="white-space:nowrap;">
                                 <a href="{{ route('taxes.show', $tax->id) }}" class="btn btn-sm btn-primary">View</a>
                                 <a href="{{route('taxes.edit', $tax->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 <form action="{{ route('taxes.destroy', $tax->id) }}" method="POST" class="d-inline">
