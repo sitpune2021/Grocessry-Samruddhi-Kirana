@@ -6,6 +6,8 @@ use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+
 
 class TaxController extends Controller
 {
@@ -185,5 +187,15 @@ class TaxController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function updatestatus(Request $request)
+    {
+        $tax = Tax::findOrFail($request->id);
+
+        $tax->is_active = $request->has('status') ? 1 : 0;
+        $tax->save();
+
+        return back()->with('success', 'Status updated!');
     }
 }

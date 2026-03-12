@@ -18,7 +18,6 @@ use Maatwebsite\Excel\Facades\Excel;
 class BrandController extends Controller
 {
 
-
     public function index()
     {
         $brands = Brand::orderBy('created_at', 'desc')->paginate(20);
@@ -36,7 +35,6 @@ class BrandController extends Controller
 
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'category_id'      => 'required|exists:categories,id',
             'sub_category_id'  => 'required|exists:sub_categories,id',
@@ -45,8 +43,10 @@ class BrandController extends Controller
             'slug'             => 'nullable|string|max:255',
             'description'      => 'nullable|string',
             'logo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'status'           => 'required|boolean',
+            // 'status'           => 'required|boolean',
         ]);
+
+        $validated['status'] = $request->has('status') ? 1 : 0;
 
         if (empty($validated['slug'])) {
             $slug = Str::slug($validated['name']);

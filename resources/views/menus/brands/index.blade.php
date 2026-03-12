@@ -59,6 +59,17 @@
                     </script>
                 @endif
 
+                <script>
+                    setTimeout(function() {
+                        let alert = document.getElementById('successAlert');
+                        if (alert) {
+                            let bsAlert = new bootstrap.Alert(alert);
+                            bsAlert.close();
+                        }
+                    }, 10000); // 15 seconds
+                </script>
+                @endif
+
                 <!-- Table -->
                 <div class="table-responsive mt-5">
                     <table id="batchTable" class="table table-bordered table-striped mb-0">
@@ -70,10 +81,31 @@
                                 <th style="width: 40%;">Slug</th>
                                 <th class="text-center" style="width: 120px;">Status</th>
                                 @if ($canView || $canEdit || $canDelete)
-                                    <th class="text-center" style="width: 150px;">Actions</th>
+
+                                    <th style="width: 150px;">Actions</th>
                                 @endif
                             </tr>
                         </thead>
+
+                        <tbody>
+                            @forelse ($brands as $index => $brand)
+                                <tr>
+
+                                    {{-- Sr No --}}
+                                    <td class="text-center fw-semibold">
+                                        {{ $brands->firstItem() + $index }}
+                                    </td>
+
+                                    {{-- Logo --}}
+                                    <td class="text-center">
+                                        @if ($brand->logo)
+                                            <img src="{{ asset('storage/brands/' . $brand->logo) }}" alt="{{ $brand->name }}"
+                                                width="50" height="50" class="rounded border">
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                </tr>
+                                </thead>
 
                         <tbody>
                             @forelse ($brands as $index => $brand)

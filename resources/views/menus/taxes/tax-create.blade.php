@@ -47,8 +47,8 @@
                                             @if($mode === 'edit')
                                             @method('PUT')
                                             @endif
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-2">
                                                     <label for="name" class="form-label">Tax Name <span class="text-danger">*</span></label>
                                                     <input type="text" name="name" id="name" class="form-control"
                                                         value="{{ old('name', $tax->name ?? '') }}"
@@ -59,7 +59,51 @@
                                                     <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
-                                                <div class="col-md-6">
+
+                                                <div class="col-md-2">
+                                                    <label for="cgst" class="form-label">CGST (%)</label>
+                                                    <input type="text" step="0.01" name="cgst" id="cgst" class="form-control"
+                                                        value="{{ old('cgst', $tax->cgst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="2.5">
+
+                                                    @error('cgst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="sgst" class="form-label">SGST (%)</label>
+                                                    <input type="text" step="0.01" name="sgst" id="sgst" class="form-control"
+                                                        value="{{ old('sgst', $tax->sgst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="2.5">
+
+                                                    @error('sgst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="igst" class="form-label">IGST</label>
+                                                    <input type="text" step="0.01" name="igst" id="igst" class="form-control"
+                                                        value="{{ old('igst', $tax->igst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="5">
+                                                    @error('igst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="gst" class="form-label">GST (%)</label>
+                                                    <input type="text" step="0.01" name="gst" id="gst" class="form-control"
+                                                        value="{{ old('gst', $tax->gst ?? '') }}"
+                                                        {{ $mode === 'show' ? 'disabled' : '' }}
+                                                        placeholder="5">
+                                                    @error('gst')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <!-- <div class="col-md-2">
                                                     <label for="is_active" class="form-label">Status</label>
                                                     <select name="is_active" id="is_active" class="form-control"
                                                         {{ $mode === 'show' ? 'disabled' : '' }}>
@@ -73,54 +117,38 @@
                                                 </div>
                                                 @error('is_active')
                                                 <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror
+                                                @enderror -->
+
+
+                                                <div class="col-md-2">
+                                                    <div class="mb-3">
+                                                        <label for="statusToggle" class="form-label mt-1">
+                                                            Status
+                                                        </label><br>
+
+                                                        <div class="form-check form-switch mt-1">
+                                                            <input
+                                                                class="form-check-input"
+                                                                type="checkbox"
+                                                                id="statusToggle"
+                                                                name="is_active"
+                                                                value="1"
+                                                                {{ old('is_active', $tax->is_active ?? 1) ? 'checked' : '' }}
+                                                                {{ $mode === 'show' ? 'disabled' : '' }}
+                                                                onchange="toggleStatusLabel()">
+
+                                                            <label class="form-check-label" id="statusLabel" for="statusToggle">
+                                                                Active
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    @error('is_active')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
                                             </div>
-
-                                            <div class="row mb-3">
-                                                <div class="col-md-4">
-                                                    <label for="cgst" class="form-label">CGST (%)</label>
-                                                    <input type="number" step="0.01" name="cgst" id="cgst" class="form-control"
-                                                        value="{{ old('cgst', $tax->cgst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5">
-
-                                                    @error('cgst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label for="sgst" class="form-label">SGST (%)</label>
-                                                    <input type="number" step="0.01" name="sgst" id="sgst" class="form-control"
-                                                        value="{{ old('sgst', $tax->sgst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5">
-
-                                                    @error('sgst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label for="igst" class="form-label">IGST</label>
-                                                    <input type="number" step="0.01" name="igst" id="igst" class="form-control"
-                                                        value="{{ old('igst', $tax->igst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5">
-                                                    @error('igst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label for="gst" class="form-label">GST (%)</label>
-                                                    <input type="number" step="0.01" name="gst" id="gst" class="form-control"
-                                                        value="{{ old('gst', $tax->gst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5">
-                                                         @error('gst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
                                             <!-- <button type="submit" class="btn btn-success">Save Tax</button>
                                             <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
 
@@ -173,4 +201,18 @@
         // Calculate on page load (edit mode)
         calculateGST();
     });
+</script>
+
+
+<script>
+function toggleStatusLabel() {
+    let toggle = document.getElementById("statusToggle");
+    let label = document.getElementById("statusLabel");
+
+    if (toggle.checked) {
+        label.innerText = "Active";
+    } else {
+        label.innerText = "Inactive";
+    }
+}
 </script>

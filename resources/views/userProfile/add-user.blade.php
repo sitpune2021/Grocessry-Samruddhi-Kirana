@@ -47,7 +47,7 @@
                                             @method('PUT')
                                             @endif
 
-                                            
+
                                             <div class="row">
                                                 <div class="col-md-4 mb-3">
                                                     <label class="form-label">
@@ -80,7 +80,7 @@
                                                 </div>
 
                                                 {{-- Mobile --}}
-                                                <div class="col-md-4 mb-3">
+                                                <div class="col-md-3 mb-3">
                                                     <label class="form-label">
                                                         Mobile <span class="text-danger">*</span>
                                                     </label>
@@ -128,7 +128,7 @@
                                                         </option>
                                                         @endforeach
                                                     </select>
-                                                @error('warehouse_id')
+                                                    @error('warehouse_id')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
                                                 </div>
@@ -170,17 +170,17 @@
                                                     </label>
 
                                                     <input type="email" name="email" placeholder="Enter email"
-                                                        class="form-control @error('email') is-invalid @enderror"
+                                                        class="form-control"
                                                         value="{{ old('email', $user->email ?? '') }}"
                                                         {{ $mode === 'view' ? 'readonly' : '' }}>
 
                                                     @error('email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
                                                     @enderror
                                                 </div>
 
                                                 {{-- Status --}}
-                                                <div class="col-md-2 mb-3">
+                                                <!-- <div class="col-md-2 mb-3">
                                                     <label class="form-label">User Active <span
                                                             class="text-danger">*</span></label>
 
@@ -198,6 +198,29 @@
                                                     @error('status')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                     @enderror
+                                                </div> -->
+
+
+                                                <div class="col-md-2">
+                                                    <label for="statusToggle" class="form-label mt-1">
+                                                        Status
+                                                    </label><br>
+
+                                                    <div class="form-check form-switch mt-1">
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            id="statusToggle"
+                                                            name="is_active"
+                                                            value="1"
+                                                            {{ old('is_active', $tax->is_active ?? 1) ? 'checked' : '' }}
+                                                            {{ $mode === 'show' ? 'disabled' : '' }}
+                                                            onchange="toggleStatusLabel()">
+
+                                                        <label class="form-check-label" id="statusLabel" for="statusToggle">
+                                                            Active
+                                                        </label>
+                                                    </div>
                                                 </div>
 
                                                 {{-- Profile Photo --}}
@@ -246,7 +269,7 @@
                                                 </div>
 
                                             </div>
-                                            
+
                                         </form>
 
                                     </div>

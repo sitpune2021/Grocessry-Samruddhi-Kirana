@@ -796,6 +796,7 @@ Route::middleware(['auth:admin'])->group(function () {
     // Taxes
     Route::prefix('settings')->group(function () {
         Route::resource('taxes', TaxController::class);
+        Route::post('tax/updatestatus', [TaxController::class,  'updatestatus'])->name('updatestatus');
     });
 
     Route::get('/user-profile', function () {
@@ -806,6 +807,9 @@ Route::middleware(['auth:admin'])->group(function () {
         ->name('profile.update');
     Route::get('/users/profile', [UserController::class, 'profile'])
         ->name('user.profile');
+
+   Route::post('user/userstatus', [UserController::class, 'userstatus'])->name('userstatus');
+
 
 
 
