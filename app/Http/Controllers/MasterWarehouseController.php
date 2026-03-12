@@ -348,66 +348,112 @@ class MasterWarehouseController extends Controller
 
     public function update(Request $request, $id)
     {
-        Log::info('Warehouse update request', [
+        Log::info('Warehouse update request received', [
             'warehouse_id' => $id,
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
         ]);
 
-        $warehouse = Warehouse::findOrFail($id);
+        try {
 
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('warehouses', 'name')->ignore($warehouse->id),
-            ],
-            'type' => 'required|in:master,district,taluka,distribution_center',
-            'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|required_if:type,distribution_center|integer',
-            'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
-            'taluka_id' => 'required_if:type,taluka|integer',
+            $warehouse = Warehouse::findOrFail($id);
 
-            'address' => 'required|string|max:500',
-
-            // DC only
-            'pincode' => 'required_if:type,distribution_center|digits:6',
-            'latitude' => 'required_if:type,distribution_center|numeric',
-            'longitude' => 'required_if:type,distribution_center|numeric',
-            'service_radius_km' => 'required_if:type,distribution_center|integer|min:1',
-
-        ]);
-
-        DB::transaction(function () use ($request, $warehouse) {
-
-            // 1️⃣ Update warehouse
-            $warehouse->update([
-                'name' => $request->name,
-                'type' => $request->type,
-                'parent_id' => $request->parent_id,
-                'district_id' => $request->district_id,
-                'taluka_id' => $request->taluka_id,
-                'address' => $request->address,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'service_radius_km' => $request->service_radius_km,
+            Log::info('Warehouse found', [
+                'warehouse_id' => $warehouse->id,
+                'name' => $warehouse->name
             ]);
-            //Handle DC pincode
-            if ($request->type === 'distribution_center') {
 
-                WarehouseServicePincode::updateOrCreate(
-                    ['warehouse_id' => $warehouse->id],
-                    ['pincode' => $request->pincode]
-                );
-            } else {
-                // If warehouse type changed from DC → others
-                WarehouseServicePincode::where('warehouse_id', $warehouse->id)->delete();
-            }
-        });
+            $request->validate([
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('warehouses', 'name')->ignore($warehouse->id),
+                ],
+                'type' => 'required|in:master,district,taluka,distribution_center',
+                'parent_id' => 'nullable|required_if:type,district|required_if:type,taluka|required_if:type,distribution_center|integer',
+                'district_id' => 'required_if:type,district|required_if:type,taluka|integer',
+                'taluka_id' => 'required_if:type,taluka|integer',
+                'address' => 'required|string|max:500',
 
-        return redirect()
-            ->route('warehouse.index')
-            ->with('success', 'Warehouse updated successfully');
+                // DC only
+                'pincode' => 'nullable|required_if:type,distribution_center|digits:6',
+                'latitude' => 'required_if:type,distribution_center|numeric',
+                'longitude' => 'required_if:type,distribution_center|numeric',
+                'service_radius_km' => 'required_if:type,distribution_center|integer|min:1',
+            ]);
+
+            Log::info('Warehouse validation passed', [
+                'warehouse_id' => $id
+            ]);
+
+            DB::transaction(function () use ($request, $warehouse) {
+
+                Log::info('Updating warehouse', [
+                    'warehouse_id' => $warehouse->id
+                ]);
+
+                // Update warehouse
+                $warehouse->update([
+                    'name' => $request->name,
+                    'type' => $request->type,
+                    'parent_id' => $request->parent_id,
+                    'district_id' => $request->district_id,
+                    'taluka_id' => $request->taluka_id,
+                    'address' => $request->address,
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'service_radius_km' => $request->service_radius_km,
+                ]);
+
+                Log::info('Warehouse updated successfully', [
+                    'warehouse_id' => $warehouse->id
+                ]);
+
+                // Handle DC pincode
+                if ($request->type === 'distribution_center') {
+
+                    WarehouseServicePincode::updateOrCreate(
+                        ['warehouse_id' => $warehouse->id],
+                        ['pincode' => $request->pincode]
+                    );
+
+                    Log::info('Distribution center pincode updated', [
+                        'warehouse_id' => $warehouse->id,
+                        'pincode' => $request->pincode
+                    ]);
+                } else {
+
+                    WarehouseServicePincode::where('warehouse_id', $warehouse->id)->delete();
+
+                    Log::info('Distribution center pincode removed', [
+                        'warehouse_id' => $warehouse->id
+                    ]);
+                }
+            });
+
+            Log::info('Warehouse update transaction completed', [
+                'warehouse_id' => $id
+            ]);
+
+            return redirect()
+                ->route('warehouse.index')
+                ->with('success', 'Warehouse updated successfully');
+        } catch (\Exception $e) {
+
+            Log::error('Warehouse update failed', [
+                'warehouse_id' => $id,
+                'error_message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Something went wrong while updating warehouse.');
+        }
     }
+
 
     public function destroy($id)
     {

@@ -16,6 +16,7 @@ use App\Models\WarehouseStock;
 use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Unit;
+use Illuminate\Validation\Rule;
 
 class ProductBatchController extends Controller
 {
@@ -44,8 +45,8 @@ class ProductBatchController extends Controller
 
         // Warehouses list
         $warehouses = $isSuperAdmin
-           // ? Warehouse::select('id', 'name')->orderBy('name')->get()
-           ? Warehouse::whereNull('parent_id')->get()
+            // ? Warehouse::select('id', 'name')->orderBy('name')->get()
+            ? Warehouse::whereNull('parent_id')->get()
             : Warehouse::where('id', $user->warehouse_id)->get();
 
         // Categories based on logged-in user's warehouse
@@ -91,8 +92,37 @@ class ProductBatchController extends Controller
             ]);
         }
 
+        $warehouseId = $isSuperAdmin
+            ? $request->warehouse_id
+            : $user->warehouse_id;
+
 
         try {
+            // Get product
+            $product = Product::findOrFail($request->product_id);
+
+            // Get warehouse stock
+            $warehouseStock = WarehouseStock::where('product_id', $request->product_id)
+                ->where('warehouse_id', $warehouseId)
+                ->value('quantity') ?? 0;
+
+            // Already allocated batch quantity
+            $batchUsed = ProductBatch::where('product_id', $request->product_id)
+                ->where('warehouse_id', $warehouseId)
+                ->sum('quantity');
+
+            // Remaining stock
+            $remainingStock = $warehouseStock - $batchUsed;
+
+            Log::info('Stock validation check', [
+                'warehouse_id' => $warehouseId,
+                'product_id' => $request->product_id,
+                'warehouse_stock' => $warehouseStock,
+                'batch_used' => $batchUsed,
+                'remaining_stock' => $remainingStock,
+                'requested_quantity' => $request->quantity
+            ]);
+
             $validated = $request->validate([
                 'warehouse_id' => $isSuperAdmin
                     ? 'required|exists:warehouses,id'
@@ -100,10 +130,29 @@ class ProductBatchController extends Controller
                 'category_id'      => 'required|exists:categories,id',
                 'sub_category_id'  => 'required|exists:sub_categories,id',
                 'product_id'       => 'required|exists:products,id',
-                'batch_no'         => 'required|string|max:50',
+                // 'batch_no'         => 'required|string|max:50',
+                'batch_no' => [
+                    'required',
+                    'string',
+                    'max:50',
+                    Rule::unique('product_batches')->where(function ($query) use ($request) {
+                        return $query->where('product_id', $request->product_id);
+                    })
+                ],
                 'mfg_date'         => 'nullable|date',
                 'expiry_date'      => 'nullable|date|after:mfg_date',
-                'quantity'         => 'required|integer|min:1',
+                // 'quantity'         => 'required|integer|min:1',
+                'quantity' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    function ($attribute, $value, $fail) use ($remainingStock) {
+
+                        if ($value > $remainingStock) {
+                            $fail('Only ' . $remainingStock . ' stock available for batch creation.');
+                        }
+                    }
+                ],
                 'unit_id'          => 'required|exists:units,id',
             ]);
 
@@ -303,27 +352,27 @@ class ProductBatchController extends Controller
         return redirect()->route('batches.index')->with('success', 'Batch deleted successfully');
     }
 
-   public function expiryAlerts()
-{
-    $user = Auth::user();
+    public function expiryAlerts()
+    {
+        $user = Auth::user();
 
-    $query = ProductBatch::with(['product', 'warehouse'])
-        ->where('quantity', '>', 0)
-        ->whereDate('expiry_date', '<=', now()->addDays(30));
+        $query = ProductBatch::with(['product', 'warehouse'])
+            ->where('quantity', '>', 0)
+            ->whereDate('expiry_date', '<=', now()->addDays(30));
 
-    // Non-super admin → restrict to own warehouse
-    if ($user->role_id != 1) {
-        $query->where('warehouse_id', $user->warehouse_id);
+        // Non-super admin → restrict to own warehouse
+        if ($user->role_id != 1) {
+            $query->where('warehouse_id', $user->warehouse_id);
+        }
+
+        // Super admin → sees all warehouses (no filter)
+
+        $batches = $query
+            ->orderBy('expiry_date')
+            ->paginate(15);
+
+        return view('batches.expiry', compact('batches'));
     }
-
-    // Super admin → sees all warehouses (no filter)
-
-    $batches = $query
-        ->orderBy('expiry_date')
-        ->paginate(15);
-
-    return view('batches.expiry', compact('batches'));
-}
 
 
     public function getCategoriesByWarehouse($warehouseId)
@@ -392,6 +441,4 @@ class ProductBatchController extends Controller
             'quantity' => (int) $qty
         ]);
     }
-
-
 }

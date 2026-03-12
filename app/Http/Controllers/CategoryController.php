@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class CategoryController extends Controller
 {
@@ -278,5 +280,143 @@ class CategoryController extends Controller
         // JSON response
         return redirect()->route('category.index')
             ->with('success', 'Category deleted successfully');
+    }
+    public function bulkUpload(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            Log::info('Bulk Upload Started', [
+                'ip'         => $request->ip(),
+                'excel_file' => $request->file('excel_file')->getClientOriginalName(),
+            ]);
+
+            $file = $request->file('excel_file');
+            $data = array_map('str_getcsv', file($file->getRealPath()));
+            array_shift($data); // header skip
+
+            $successCount = 0;
+            $skippedCount = 0;
+
+            foreach ($data as $rowIndex => $row) {
+                $name     = trim($row[0] ?? '');
+                $slug     = !empty(trim($row[1] ?? '')) ? Str::slug(trim($row[1])) : Str::slug($name);
+                $imageUrl = trim($row[2] ?? ''); // Column C = image URL
+
+                Log::info("Bulk Upload: Processing Row", [
+                    'row'   => $rowIndex + 2,
+                    'name'  => $name,
+                    'slug'  => $slug,
+                    'image' => $imageUrl,
+                ]);
+
+                if (empty($name)) {
+                    Log::warning("Bulk Upload: Skipped — Name Empty", ['row' => $rowIndex + 2]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                if (Category::where('name', $name)->exists()) {
+                    Log::warning("Bulk Upload: Skipped — Duplicate", ['name' => $name]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Slug unique बनवा
+                $original = $slug;
+                $i = 1;
+                while (Category::where('slug', $slug)->exists()) {
+                    $slug = $original . '-' . $i++;
+                }
+
+                // ✅ Image URL वरून download करा
+                $imageNames = [];
+                if (!empty($imageUrl) && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+                    try {
+                        $context = stream_context_create([
+                            'http' => [
+                                'timeout'    => 10,
+                                'user_agent' => 'Mozilla/5.0',
+                            ],
+                            'ssl' => [
+                                'verify_peer'      => false,
+                                'verify_peer_name' => false,
+                            ],
+                        ]);
+
+                        $imageContents = file_get_contents($imageUrl, false, $context);
+
+                        if ($imageContents !== false) {
+                            $imageName = time() . '_' . basename(parse_url($imageUrl, PHP_URL_PATH));
+                            Storage::disk('public')->put('categories/' . $imageName, $imageContents);
+                            $imageNames[] = $imageName;
+                            Log::info("Bulk Upload: Image Saved", ['name' => $imageName, 'category' => $name]);
+                        } else {
+                            Log::warning("Bulk Upload: Image Download Failed", ['url' => $imageUrl]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning("Bulk Upload: Image Error", [
+                            'url'   => $imageUrl,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                Category::create([
+                    'name'            => $name,
+                    'slug'            => $slug,
+                    'category_images' => $imageNames,
+                ]);
+
+                Log::info("Bulk Upload: Category Created", [
+                    'name'   => $name,
+                    'slug'   => $slug,
+                    'images' => $imageNames,
+                ]);
+
+                $successCount++;
+            }
+
+            Log::info('Bulk Upload Completed', [
+                'success' => $successCount,
+                'skipped' => $skippedCount,
+            ]);
+
+            return redirect()->route('category.index')
+                ->with('success', "{$successCount} categories imported. {$skippedCount} skipped.");
+        } catch (\Exception $e) {
+            Log::error('Bulk Upload Error', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+            return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
+        }
+    }
+
+    // =============================================
+    // SAMPLE CSV DOWNLOAD
+    // =============================================
+    public function downloadSampleExcel()
+    {
+        Log::info('Sample CSV Download Request');
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="category_sample.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['name', 'slug', 'image_url']);
+            fputcsv($file, ['Dairy Products', 'dairy-products', 'https://picsum.photos/200']);
+            fputcsv($file, ['Grains', 'grains', 'https://picsum.photos/201']);
+            fputcsv($file, ['Home & Garden', '', '']); // slug + image रिकामं
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

@@ -480,10 +480,12 @@
                         fetch("{{ route('payment.success') }}", {
 
                                 method: "POST",
-                                credentials: "same-origin",
+
+                                credentials: "same-origin", // ⭐ IMPORTANT
 
                                 headers: {
                                     "Content-Type": "application/json",
+                                    "Accept": "application/json",
                                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                                 },
 
@@ -493,14 +495,19 @@
                                     razorpay_signature: response.razorpay_signature,
                                     order_id: orderData.order_id
                                 })
+
                             })
                             .then(res => res.json())
-                            .then(res => {
+                            .then(data => {
 
-                                if (res.status) {
-                                    window.location.href = res.redirect_url;
+                                if (data.status) {
+
+                                  window.location.href = "{{ route('my_orders') }}";
+
                                 } else {
-                                    alert("Payment verification failed");
+
+                                    alert(data.message || "Payment verification failed");
+
                                 }
 
                             });

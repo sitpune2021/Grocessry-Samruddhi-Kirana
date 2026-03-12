@@ -99,9 +99,10 @@
                                                         class="text-danger">*</span></label>
                                                 <select name="sub_category_id" id="sub_category_id" class="form-select">
                                                     <option value="">Select Sub Category</option>
-
-
                                                 </select>
+                                                @error('sub_category_id')
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
                                             </div>
 
                                             {{-- Product --}}
