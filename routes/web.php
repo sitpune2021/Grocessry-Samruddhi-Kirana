@@ -153,8 +153,16 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/get-role-permissions/{id}', [RolePermissionController::class, 'getRolePermissions']);
 
 
+    Route::post('/category/bulk-upload', [CategoryController::class, 'bulkUpload'])->name('category.bulk-upload');
+    Route::get('/category/sample-excel', [CategoryController::class, 'downloadSampleExcel'])->name('category.sample-excel');
     Route::resource('/category', CategoryController::class);
+    Route::post('sub-category/bulk-upload', [SubCategoryController::class, 'bulkUpload'])
+        ->name('sub-category.bulk-upload');
+
+    Route::get('sub-category/sample-excel', [SubCategoryController::class, 'downloadSampleExcel'])
+        ->name('sub-category.sample-excel');
     Route::resource('/sub-category', SubCategoryController::class);
+
     Route::resource('/units', UnitController::class);
     Route::resource('/product', ProductController::class);
     Route::resource('/warehouse', MasterWarehouseController::class);
@@ -178,6 +186,8 @@ Route::middleware(['auth:admin'])->group(function () {
             Route::delete('service-areas/{pincode}', [WarehouseServicePincodeController::class, 'destroy'])
                 ->name('warehouse.service-areas.destroy');
         });
+    Route::post('/brands/bulk-upload', [BrandController::class, 'bulkUpload'])->name('brands.bulk-upload');
+    Route::get('/brands/sample-excel', [BrandController::class, 'downloadSampleExcel'])->name('brands.sample-excel');
 
     Route::resource('brands', BrandController::class);
     Route::get(
@@ -189,6 +199,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
     // Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
+
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
     Route::get('/get-categories', [ProductController::class, 'getCategories']);
     Route::get('/get-sub-categories/{categoryId}', [ProductController::class, 'getSubCategories']);
@@ -418,7 +429,7 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
             ->name('payment.success');
 
-        
+
 
         // Route::post(
         //     '/checkout/razorpay/create-order',

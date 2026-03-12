@@ -1,165 +1,228 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container-xxl flex-grow-1 container-p-y">
 
-    <div class="card shadow-sm">
-        <div class="card-datatable text-nowrap">
-            @php
-            $canView = hasPermission('sub_category.view');
-            $canEdit = hasPermission('sub_category.edit');
-            $canDelete = hasPermission('sub_category.delete');
-            @endphp
-            <!-- Header -->
-            <div class="row card-header flex-column flex-md-row align-items-center pb-2">
-                <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Sub Category</h5>
+        <div class="card shadow-sm">
+            <div class="card-datatable text-nowrap">
+                @php
+                    $canView = hasPermission('sub_category.view');
+                    $canEdit = hasPermission('sub_category.edit');
+                    $canDelete = hasPermission('sub_category.delete');
+                @endphp
+                <!-- Header -->
+                <div class="row card-header flex-column flex-md-row align-items-center pb-2">
+                    <div class="col-md-auto me-auto">
+                        <h5 class="card-title mb-0">Sub Category</h5>
+                    </div>
+                    <div class="col-md-auto ms-auto">
+                        @if (hasPermission('sub_category.create'))
+                            <a href="{{ route('sub-category.create') }}"
+                                class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                                Add Sub Category
+                            </a>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#bulkUploadModal">
+
+                                Upload Excel
+                            </button>
+
+                            <a href="{{ route('sub-category.sample-excel') }}" class="btn btn-outline-secondary btn-sm">
+
+                                Sample Download
+                            </a>
+                        @endif
+                    </div>
+
                 </div>
-                <div class="col-md-auto ms-auto">
-                    @if(hasPermission('sub_category.create'))
-                    <a href="{{ route('sub-category.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                        Add Sub Category
-                    </a>
-                    @endif
+
+                <!-- Search -->
+                <div class="px-3 pt-2">
+                    <x-datatable-search />
+                </div>
+
+                @if (session('success'))
+                    <div id="successAlert"
+                        class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                        role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <script>
+                        setTimeout(function() {
+                            let alert = document.getElementById('successAlert');
+                            if (alert) {
+                                let bsAlert = new bootstrap.Alert(alert);
+                                bsAlert.close();
+                            }
+                        }, 10000); // 15 seconds
+                    </script>
+                @endif
+
+                <!-- Table -->
+                <div class="table-responsive mt-5 p-3">
+                    <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width: 80px;">Sr No</th>
+                                <th style="width: 30%;">Category</th>
+                                <th style="width: 30%;">Sub Category</th>
+                                <th style="width: 40%;">Slug</th>
+                                @if ($canView || $canEdit || $canDelete)
+                                    <th class="text-center" style="width: 150px;">Actions</th>
+                                @endif
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @forelse($subCategories as $key => $item)
+                                <tr>
+                                    <td class="text-center">{{ $key + 1 }}</td>
+
+                                    <td>
+                                        {{ $item->category->name ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->name ?? '-' }}
+                                    </td>
+
+                                    <td>
+                                        {{ $item->slug }}
+                                    </td>
+
+                                    {{-- Actions --}}
+                                    @if ($canView || $canEdit || $canDelete)
+                                        <td class="text-center" style="white-space:nowrap;">
+                                            @if (hasPermission('sub_category.view'))
+                                                <a href="{{ route('sub-category.show', $item->id) }}"
+                                                    class="btn btn-sm btn-primary">View</a>
+                                            @endif
+                                            @if (hasPermission('sub_category.edit'))
+                                                <a href="{{ route('sub-category.edit', $item->id) }}"
+                                                    class="btn btn-sm btn-warning">Edit</a>
+                                            @endif
+                                            @if (hasPermission('sub_category.delete'))
+                                                <form action="{{ route('sub-category.destroy', $item->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button onclick="return confirm('Delete subcategory?')"
+                                                        class="btn btn-sm btn-danger">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    @endif
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No sub categories found
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+
+                <!-- Pagination -->
+                <div class="px-3 py-2">
+                    {{ $subCategories->onEachSide(0)->links('pagination::bootstrap-5') }}
                 </div>
 
             </div>
+        </div>
 
-            <!-- Search -->
-            <div class="px-3 pt-2">
-                <x-datatable-search />
+    </div>
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Bulk Upload Sub Categories</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form action="{{ route('sub-category.bulk-upload') }}" method="POST" enctype="multipart/form-data">
+
+                    @csrf
+
+                    <div class="modal-body">
+
+                        <div class="alert alert-info">
+
+                            CSV Format
+                            Column A → category_name
+                            Column B → sub_category_name
+                            Column C → slug (optional)
+
+                        </div>
+
+                        <input type="file" name="excel_file" class="form-control" required>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+
+                            Cancel
+
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+
+                            Upload
+
+                        </button>
+
+                    </div>
+
+                </form>
+
             </div>
-
-            @if(session('success'))
-            <div id="successAlert"
-                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
-                role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <script>
-                setTimeout(function() {
-                    let alert = document.getElementById('successAlert');
-                    if (alert) {
-                        let bsAlert = new bootstrap.Alert(alert);
-                        bsAlert.close();
-                    }
-                }, 10000); // 15 seconds
-            </script>
-            @endif
-            
-            <!-- Table -->
-            <div class="table-responsive mt-5 p-3">
-                <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 80px;">Sr No</th>
-                            <th style="width: 30%;">Category</th>
-                            <th style="width: 30%;">Sub Category</th>
-                            <th style="width: 40%;">Slug</th>
-                            @if($canView || $canEdit || $canDelete)
-                            <th class="text-center" style="width: 150px;">Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @forelse($subCategories as $key => $item)
-                        <tr>
-                            <td class="text-center">{{ $key + 1 }}</td>
-
-                            <td>
-                                {{ $item->category->name ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $item->name ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $item->slug }}
-                            </td>
-
-                            {{-- Actions --}}
-                            @if($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
-                                @if(hasPermission('sub_category.view'))
-                                <a href="{{ route('sub-category.show', $item->id) }}" class="btn btn-sm btn-primary">View</a>
-                                @endif
-                                @if(hasPermission('sub_category.edit'))
-                                <a href="{{route('sub-category.edit', $item->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                                @endif
-                                @if(hasPermission('sub_category.delete'))
-                                <form action="{{ route('sub-category.destroy', $item->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button onclick="return confirm('Delete subcategory?')" class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
-                                </form>
-                                @endif
-                            </td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-center text-muted">
-                                No sub categories found
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-
-            <!-- Pagination -->
-            <div class="px-3 py-2">
-                {{ $subCategories->onEachSide(0)->links('pagination::bootstrap-5') }}
-            </div>
-
         </div>
     </div>
-
-</div>
 @endsection
 
 @push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
-<!-- table search box script -->
+    <!-- table search box script -->
 
-@push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
+    @push('scripts')
+        <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
 
-        const searchInput = document.getElementById("dt-search-1");
-        const table = document.getElementById("batchTable");
+                const searchInput = document.getElementById("dt-search-1");
+                const table = document.getElementById("batchTable");
 
-        if (!searchInput || !table) return;
+                if (!searchInput || !table) return;
 
-        const rows = table.querySelectorAll("tbody tr");
+                const rows = table.querySelectorAll("tbody tr");
 
-        searchInput.addEventListener("keyup", function() {
-            const value = this.value.toLowerCase().trim();
+                searchInput.addEventListener("keyup", function() {
+                    const value = this.value.toLowerCase().trim();
 
-            rows.forEach(row => {
+                    rows.forEach(row => {
 
-                // Skip "No role found" row
-                if (row.cells.length === 1) return;
+                        // Skip "No role found" row
+                        if (row.cells.length === 1) return;
 
-                row.style.display = row.textContent
-                    .toLowerCase()
-                    .includes(value) ?
-                    "" :
-                    "none";
+                        row.style.display = row.textContent
+                            .toLowerCase()
+                            .includes(value) ?
+                            "" :
+                            "none";
+                    });
+                });
+
             });
-        });
+        </script>
 
-    });
-</script>
-
-@endpush
+    @endpush
