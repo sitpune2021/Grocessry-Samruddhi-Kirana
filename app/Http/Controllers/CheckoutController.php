@@ -439,9 +439,7 @@ class CheckoutController extends Controller
 
         try {
 
-            /* ---------------------------------
-        ADDRESS
-        ----------------------------------*/
+            /* ------ADDRESS--------*/
 
             if ($request->filled('selected_address')) {
 
@@ -478,9 +476,7 @@ class CheckoutController extends Controller
             }
 
 
-            /* ---------------------------------
-        CART
-        ----------------------------------*/
+            /* ----CART--------*/
 
             $cart = Cart::with('items.product')
                 ->where('user_id', auth()->id())
@@ -497,9 +493,7 @@ class CheckoutController extends Controller
             }
 
 
-            /* ---------------------------------
-        WAREHOUSE CHECK
-        ----------------------------------*/
+            /* ------ WAREHOUSE CHECK------*/
 
             $dcId = session('dc_warehouse_id');
 
@@ -514,9 +508,7 @@ class CheckoutController extends Controller
             }
 
 
-            /* ---------------------------------
-        STOCK CHECK
-        ----------------------------------*/
+            /* ------STOCK CHECK---------*/
 
             foreach ($cart->items as $item) {
 
@@ -535,10 +527,7 @@ class CheckoutController extends Controller
                 }
             }
 
-
-            /* ---------------------------------
-        COUPON
-        ----------------------------------*/
+            /* ---- COUPON-----*/
 
             $couponDiscount = 0;
             $couponCode = null;
@@ -571,12 +560,11 @@ class CheckoutController extends Controller
             $finalTotal = $cart->subtotal - $couponDiscount;
 
 
-            /* ---------------------------------
-        ORDER CREATE
-        ----------------------------------*/
+            /* ----ORDER CREATE-------*/
 
             $order = Order::create([
                 'user_id'        => auth()->id(),
+
                 'order_number'   => 'ORD' . date('Ymd') . rand(1000, 9999),
                 'channel'        => 'web',
                 'subtotal'       => $cart->subtotal,
@@ -591,10 +579,7 @@ class CheckoutController extends Controller
             ]);
 
 
-            /* ---------------------------------
-        PAYMENT
-        ----------------------------------*/
-
+            /* ------PAYMENT-----*/
             Payment::create([
                 'order_id'        => $order->id,
                 'user_id'         => auth()->id(),
@@ -603,11 +588,7 @@ class CheckoutController extends Controller
                 'status'          => 'pending'
             ]);
 
-
-            /* ---------------------------------
-        ORDER ITEMS
-        ----------------------------------*/
-
+            /* --ORDER ITEMS-----*/
             foreach ($cart->items as $item) {
 
                 OrderItem::create([
@@ -619,14 +600,8 @@ class CheckoutController extends Controller
                     'total'      => $item->line_total,
                 ]);
             }
-
-
             DB::commit();
-
-
-            /* ---------------------------------
-        COD ORDER
-        ----------------------------------*/
+            /* ----COD ORDER--*/
 
             if ($request->payment_method === 'cash') {
 
@@ -638,9 +613,7 @@ class CheckoutController extends Controller
             }
 
 
-            /* ---------------------------------
-        ONLINE PAYMENT
-        ----------------------------------*/
+            /* --ONLINE PAYMENT---*/
 
             return response()->json([
                 'status'   => true,
@@ -660,21 +633,21 @@ class CheckoutController extends Controller
         }
     }
     public function paymentSuccess(Request $request)
+
     {
-        Log::info('Payment Verify Request', $request->all());
-
-        $api = new Api(
-            config('services.razorpay.key'),
-            config('services.razorpay.secret')
-        );
-
-        $attributes = [
-            'razorpay_order_id' => $request->razorpay_order_id,
-            'razorpay_payment_id' => $request->razorpay_payment_id,
-            'razorpay_signature' => $request->razorpay_signature
-        ];
-
+        Log::info('paymentSuccess:', $request->all());
         try {
+
+            $api = new Api(
+                config('services.razorpay.key'),
+                config('services.razorpay.secret')
+            );
+
+            $attributes = [
+                'razorpay_order_id' => $request->razorpay_order_id,
+                'razorpay_payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature
+            ];
 
             $api->utility->verifyPaymentSignature($attributes);
 
@@ -685,32 +658,15 @@ class CheckoutController extends Controller
                 'status' => 'confirmed'
             ]);
 
-            // PAYMENT UPDATE
-            Payment::where('order_id', $request->order_id)
-                ->update([
-                    'payment_id' => $request->razorpay_payment_id,
-                    'razorpay_signature' => $request->razorpay_signature,
-                    'status' => 'success'
-                ]);
-
-            // CART CLEAR
-            $cart = Cart::where('user_id', $order->user_id)->first();
-
-            if ($cart) {
-                $cart->items()->delete();
-                $cart->delete();
-            }
-
             return response()->json([
                 'status' => true,
-                'redirect_url' => route('my_orders')
+                'message' => 'Payment successful'
             ]);
         } catch (\Exception $e) {
 
-            Log::error($e->getMessage());
-
             return response()->json([
-                'status' => false
+                'status' => false,
+                'message' => 'Payment verification failed'
             ]);
         }
     }
