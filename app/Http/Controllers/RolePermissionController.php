@@ -86,7 +86,7 @@ class RolePermissionController extends Controller
             ]);
 
             $rolePermission->update([
-                'permissions' => $mergedPermissions
+                'permissions' => $newPermissions
             ]);
 
             Log::info('Permissions updated successfully');
