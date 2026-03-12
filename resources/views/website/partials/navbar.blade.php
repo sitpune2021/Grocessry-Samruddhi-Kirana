@@ -205,12 +205,12 @@
  <div class="container-fluid fixed-top">
 
      <!-- TOP LOCATION BAR -->
-     <div class="container topbar bg-primary d-none d-lg-block">
+     <div class="container-fluid text-white  " style="z-index:1050; background-color: #1b764c;">
          <div class="container">
              <div class="d-flex justify-content-between align-items-center py-1">
 
                  <!-- HEADER LOCATION -->
-                 <div class="d-flex align-items-center gap-2"  style="z-index:1050; color: #2e2b2b;"
+                 <div class="d-flex align-items-center gap-2"
                      style="cursor:pointer"
                      data-bs-toggle="modal"
                      data-bs-target="#locationModal">

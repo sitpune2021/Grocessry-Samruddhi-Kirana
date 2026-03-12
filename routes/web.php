@@ -415,8 +415,8 @@ Route::middleware(['auth:admin'])->group(function () {
         // Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
         //     ->name('place.order');
 
-        Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
-            ->name('payment.success');
+        //  Route::post('/payment-success',[CheckoutController::class,'paymentSuccess'])
+        // ->name('payment.success');
 
 
 
@@ -425,6 +425,7 @@ Route::middleware(['auth:admin'])->group(function () {
         //     [CheckoutController::class, 'createRazorpayOrder']
         // )->name('checkout.razorpay.create');
     });
+
 
 
     // RETAILER ORDER
@@ -797,7 +798,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/users/profile', [UserController::class, 'profile'])
         ->name('user.profile');
 
-   Route::post('user/userstatus', [UserController::class, 'userstatus'])->name('userstatus');
+    Route::post('user/userstatus', [UserController::class, 'userstatus'])->name('userstatus');
 
 
 
@@ -889,8 +890,6 @@ Route::get('/cart/drawer', [WebsiteController::class, 'drawer'])
     ->name('cart.drawer');
 
 
-
-
 Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
     ->name('cart.update');
 
@@ -919,6 +918,9 @@ Route::post('/enduserlogout', [AuthController::class, 'websitelogout'])->name('w
 
 Route::post('/place-order', [CheckoutController::class, 'placeOrder'])
     ->middleware('auth');
+
+Route::post('/payment-success', [CheckoutController::class, 'paymentSuccess'])
+    ->name('payment.success');
 
 Route::post(
     '/checkout/razorpay/create-order',
