@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
+use App\Models\Product;
 use Illuminate\Container\Attributes\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -29,33 +30,101 @@ class BatchController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'batch_no' => 'required|string|max:50',
+    //         'expiry_date' => 'required|date',
+    //         'unit'        => 'nullable|string',
+    //         'quantity' => 'required|integer|min:1',
+    //     ]);
+
+    //     $batch = Batch::create($request->all());
+
+    //     // Log entry
+    //     Log::info('New Batch Created', [
+    //         'batch_id'   => $batch->id,
+    //         'product_id' => $batch->product_id,
+    //         'batch_no'   => $batch->batch_no,
+    //         'expiry_date' => $batch->expiry_date,
+    //         'quantity'   => $batch->quantity,
+
+    //     ]);
+
+    //     return response()->json([
+    //         'status'  => true,
+    //         'message' => 'Batch created successfully',
+    //         'data'    => $batch
+    //     ], 200);
+    // }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'batch_no' => 'required|string|max:50',
-            'expiry_date' => 'required|date',
-            'unit'        => 'nullable|string',
-            'quantity' => 'required|integer|min:1',
+        Log::info('Batch creation request received', [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all()
         ]);
 
-        $batch = Batch::create($request->all());
+        try {
+            $product = Product::with('stocks')->find($request->product_id);
 
-        // Log entry
-        Log::info('New Batch Created', [
-            'batch_id'   => $batch->id,
-            'product_id' => $batch->product_id,
-            'batch_no'   => $batch->batch_no,
-            'expiry_date' => $batch->expiry_date,
-            'quantity'   => $batch->quantity,
+            $totalStock = $product->stocks->sum('quantity');
 
-        ]);
+            $validated = $request->validate([
+                'product_id' => 'required|exists:products,id',
+                'batch_no' => 'required|string|max:50',
+                'mfg_date'   => 'required|date|before_or_equal:today',
+                'expiry_date' => 'required|date',
+                'unit' => 'nullable|string',
+                // 'quantity' => 'required|integer|min:1',
+                'quantity' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    function ($attribute, $value, $fail) use ($totalStock) {
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'Batch created successfully',
-            'data'    => $batch
-        ], 200);
+                        if ($value > $totalStock) {
+                            $fail('Batch quantity cannot exceed available stock: ' . $totalStock);
+                        }
+                    }
+                ],
+            ]);
+
+            Log::info('Batch validation passed', [
+                'product_id' => $request->product_id,
+                'batch_no' => $request->batch_no
+            ]);
+dd( $totalStock);
+            $batch = Batch::create($validated);
+
+            Log::info('New Batch Created Successfully', [
+                'batch_id' => $batch->id,
+                'product_id' => $batch->product_id,
+                'batch_no' => $batch->batch_no,
+                'expiry_date' => $batch->expiry_date,
+                'quantity' => $batch->quantity,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Batch created successfully',
+                'data' => $batch
+            ], 200);
+        } catch (\Exception $e) {
+
+            Log::error('Batch creation failed', [
+                'error_message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong while creating batch'
+            ], 500);
+        }
     }
 
     /**
