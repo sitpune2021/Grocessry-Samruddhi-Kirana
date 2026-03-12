@@ -1,5 +1,20 @@
  <!-- RIGHT SIDE CART DRAWER -->
- 
+<style>
+    .empty-state{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px;
+}
+
+.empty-img{
+    width:180px;
+    max-width:100%;
+    height:auto;
+    opacity:0.9;
+}
+</style>
  <div class="offcanvas offcanvas-end" tabindex="-1" id="cartDrawer">
      <div class="offcanvas-header border-bottom">
          <h5 class="fw-bold m-0">My Cart</h5>
@@ -39,7 +54,7 @@
                          'product' => $item->product,
                          'cartItems' => $globalCart->items->keyBy('product_id')
                          ])
-                        
+
                      </div>
 
                      <!-- Item Total -->
@@ -92,8 +107,10 @@
                      </div>
                  </div>
                  @else
-                 <div class="text-center p-5">
-                     <p>Your cart is empty</p>
+                 {{-- EMPTY STATE --}}
+                 <div class="empty-state mt-4">
+                     <img src="{{ asset('website/img/22.png') }}" alt="No Cart" class="empty-img">
+                     <p class="text-muted mb-0">Your cart is empty</p>
                  </div>
                  @endif
              </div>
@@ -119,15 +136,15 @@
      </div>
 
      <script>
-        function refreshCartDrawer() {
+         function refreshCartDrawer() {
 
-    fetch("/cart/drawer")
-        .then(res => res.text())
-        .then(html => {
+             fetch("/cart/drawer")
+                 .then(res => res.text())
+                 .then(html => {
 
-            document.getElementById("cartDrawerItems").innerHTML = html;
+                     document.getElementById("cartDrawerItems").innerHTML = html;
 
-        });
+                 });
 
-}
+         }
      </script>

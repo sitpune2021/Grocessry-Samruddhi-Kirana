@@ -10,7 +10,7 @@
     @endphp
 
     <div class="cart-item-box">
-
+ 
         <div class="d-flex align-items-center">
 
             <img src="{{ $firstImage 
@@ -30,7 +30,7 @@
 
                 {{-- DEBUG --}}
                 <div style="font-size:12px;color:red;">
-                    Stock: {{ $item->product->available_stock ?? 0 }}
+                   Available Stock: {{ $item->product->available_stock ?? 0 }}
                 </div>
 
             </div>
@@ -122,3 +122,4 @@
     @endif
 
 </div>
+

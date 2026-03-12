@@ -103,9 +103,36 @@ class Product extends Model
         return $this->hasOne(OnSaleProduct::class, 'product_id');
     }
 
-    
+
     public function sale()
     {
         return $this->hasOne(OnSaleProduct::class, 'product_id');
+    }
+
+    public function scopeWithStock($query, $dcId = null)
+    {
+        return $query->withSum([
+            'batches as available_stock' => function ($q) use ($dcId) {
+
+                $q->whereNull('deleted_at');
+
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId);
+                }
+            }
+        ], 'quantity');
+    }
+
+    public function getAvailableStockAttribute()
+    {
+        $dcId = session('dc_warehouse_id');
+
+        if (!$dcId) {
+            return 0;
+        }
+
+        return $this->batches()
+            ->where('warehouse_id', $dcId)
+            ->sum('quantity');
     }
 }

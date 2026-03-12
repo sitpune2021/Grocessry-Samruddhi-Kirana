@@ -128,7 +128,7 @@
     @else
     {{-- EMPTY STATE --}}
     <div class="empty-state mt-4">
-        <img src="{{ asset('website/img/not.png') }}" alt="No Products" class="empty-img">
+        <img src="{{ asset('website/img/no.png') }}" alt="No Products" class="empty-img">
         <h4 class="fw-semibold mb-2">Nothing here yet</h4>
         <p class="text-muted mb-0">Try searching for something else.</p>
     </div>
