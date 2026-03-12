@@ -7,6 +7,8 @@ use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Exports\SubCategorySampleExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SubCategoryController extends Controller
 {
@@ -33,12 +35,12 @@ class SubCategoryController extends Controller
      */
     public function store(Request $request)
     {
-         // Validation
-            $validated = $request->validate([
-                'category_id' => 'required|exists:categories,id',
-                'name'        => 'required|string|max:255 |unique:sub_categories,name',
-                'slug'        => 'required|string|max:255|unique:sub_categories,slug',
-            ]);
+        // Validation
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name'        => 'required|string|max:255 |unique:sub_categories,name',
+            'slug'        => 'required|string|max:255|unique:sub_categories,slug',
+        ]);
 
         try {
             // Create Sub Category
@@ -131,5 +133,81 @@ class SubCategoryController extends Controller
             ->get(['id', 'name']);
 
         return response()->json($subCategories);
+    }
+    public function bulkUpload(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+
+            $file = $request->file('excel_file');
+
+            // Excel read using maatwebsite
+            $data = Excel::toArray([], $file);
+            $rows = $data[0];
+
+            // remove header row
+            array_shift($rows);
+
+            $success = 0;
+            $skipped = 0;
+
+            foreach ($rows as $row) {
+
+                $categoryName = trim($row[0] ?? '');
+                $name = trim($row[1] ?? '');
+
+                if (!$categoryName || !$name) {
+                    $skipped++;
+                    continue;
+                }
+
+                // Case insensitive category match
+                $category = Category::whereRaw('LOWER(name) = ?', [strtolower($categoryName)])->first();
+
+                if (!$category) {
+                    $skipped++;
+                    continue;
+                }
+
+                $slug = Str::slug($name);
+
+                // Duplicate check
+                if (SubCategory::where('name', $name)
+                    ->where('category_id', $category->id)
+                    ->exists()
+                ) {
+
+                    $skipped++;
+                    continue;
+                }
+
+                SubCategory::create([
+                    'category_id' => $category->id,
+                    'name' => $name,
+                    'slug' => $slug,
+                    'created_by' => auth()->id(),
+                ]);
+
+                $success++;
+            }
+
+            return redirect()->route('sub-category.index')
+                ->with('success', "$success sub categories imported, $skipped skipped");
+        } catch (\Exception $e) {
+
+            Log::error('SubCategory Bulk Upload Error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function downloadSampleExcel()
+    {
+        return Excel::download(new SubCategorySampleExport, 'subcategory_sample.xlsx');
     }
 }

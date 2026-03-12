@@ -103,6 +103,7 @@
 
 @php
 $cartQty = $cartItems[$product->id]->qty ?? 0;
+$stock = $product->available_stock ?? 0;
 @endphp
 
 <input type="hidden" name="qty" value="1">
@@ -282,14 +283,14 @@ $cartQty = $cartItems[$product->id]->qty ?? 0;
 
     function refreshCartDrawer() {
 
-    fetch("/cart/drawer")
-        .then(res => res.text())
-        .then(html => {
+        fetch("/cart/drawer")
+            .then(res => res.text())
+            .then(html => {
 
-            document.getElementById("cartDrawerItems").innerHTML = html;
+                document.getElementById("cartDrawerItems").innerHTML = html;
 
-        })
-        .catch(err => console.error(err));
+            })
+            .catch(err => console.error(err));
 
-}
+    }
 </script>

@@ -1094,7 +1094,7 @@
 
         /* cart model  */
         .offcanvas {
-            width: 400px;
+            width: 300px;
         }
 
         .offcanvas-header {
@@ -1107,7 +1107,7 @@
 
         .offcanvas .card {
             border: none;
-            border-bottom: 1px solid #eee;
+            border-bottom: 0.1px solid #eee;
             border-radius: 0;
         }
 
@@ -1126,8 +1126,8 @@
         .cart-item-box {
             background: #fff;
             padding: 12px;
-            border-radius: 14px;
-            margin-bottom: 12px;
+            /* border-radius: 14px;
+            margin-bottom: 12px; */
         }
 
         /* Image */

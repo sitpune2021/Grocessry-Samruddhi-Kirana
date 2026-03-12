@@ -203,10 +203,10 @@
 
                         response.permissions.forEach(function(permission) {
 
-                            $(`input.perm[value="${permission}"]`)
-                                .prop("checked", true);
+    $(`input.perm[value="${permission}"]`)
+        .prop("checked", true);
 
-                        });
+});
                     }
 
                     // Super Admin (optional)

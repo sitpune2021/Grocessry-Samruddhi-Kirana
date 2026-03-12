@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Auth;
 class WebsiteController extends Controller
 {
 
-
     public function index(Request $request)
     {
         $dcId = session('dc_warehouse_id');
@@ -33,10 +32,9 @@ class WebsiteController extends Controller
             ->whereHas('products', fn($q) => $q->whereNull('deleted_at'))
             ->with(['products' => function ($q) use ($dcId) {
                 $q->whereNull('deleted_at')
-                    ->withSum(['batches as available_stock' => function ($b) use ($dcId) {
+                    ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                         if ($dcId) {
-                            $b->where('warehouse_id', $dcId)
-                                ->where('quantity', '>', 0);
+                            $q->where('warehouse_id', $dcId);
                         }
                     }], 'quantity');
             }])
@@ -44,7 +42,7 @@ class WebsiteController extends Controller
             ->take(5)
             ->get();
 
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
 
         $cart = Cart::where('user_id', $userId)
             ->with('items')
@@ -57,7 +55,7 @@ class WebsiteController extends Controller
             ->with('sale')
             ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                 if ($dcId) {
-                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                    $q->where('warehouse_id', $dcId);
                 }
             }], 'quantity')
             ->latest()
@@ -78,8 +76,7 @@ class WebsiteController extends Controller
             })
             ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                 if ($dcId) {
-                    $q->where('warehouse_id', $dcId)
-                        ->where('quantity', '>', 0);
+                    $q->where('warehouse_id', $dcId);
                 }
             }], 'quantity')
             ->latest()
@@ -90,7 +87,7 @@ class WebsiteController extends Controller
             ->whereDoesntHave('sale', fn($q) => $q->active()->online())
             ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                 if ($dcId) {
-                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                    $q->where('warehouse_id', $dcId);
                 }
             }], 'quantity')
             ->latest()
@@ -105,7 +102,7 @@ class WebsiteController extends Controller
             ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
             ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                 if ($dcId) {
-                    $q->where('warehouse_id', $dcId)->where('quantity', '>', 0);
+                    $q->where('warehouse_id', $dcId);
                 }
             }], 'quantity')
             ->latest()
@@ -192,7 +189,7 @@ class WebsiteController extends Controller
 
         $categories = Category::orderBy('name')->get();
 
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
 
         $cart = Cart::where('user_id', $userId)
             ->with('items')
@@ -269,13 +266,8 @@ class WebsiteController extends Controller
 
         return view('website.partials.product-list', compact('products'))->render();
     }
-
     public function addToCart(Request $request)
     {
-        \Log::info('Add To Cart User', [
-            'auth' => Auth::id(),
-            'session' => session()->getId()
-        ]);
 
         if (!Auth::check()) {
             return response()->json([
@@ -305,6 +297,12 @@ class WebsiteController extends Controller
         $availableQty = ProductBatch::where('product_id', $product->id)
             ->where('warehouse_id', $dcId)
             ->sum('quantity');
+
+        \Log::info('Stock Debug', [
+            'product_id' => $product->id,
+            'warehouse_id' => $dcId,
+            'available_stock' => $availableQty
+        ]);
 
         if ($availableQty <= 0) {
             return response()->json([
@@ -377,9 +375,10 @@ class WebsiteController extends Controller
         $dcId = session('dc_warehouse_id');
 
         $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
-            $q->withSum(['batches as available_stock' => function ($b) use ($dcId) {
-                $b->where('warehouse_id', $dcId)
-                    ->where('quantity', '>', 0);
+            $q->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId);
+                }
             }], 'quantity');
         }])
             ->where('user_id', $userId)
@@ -387,10 +386,9 @@ class WebsiteController extends Controller
 
         return view('website.cart', compact('cart'));
     }
-
     public function getCartData()
     {
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
 
         $cart = Cart::with(['items.product'])
             ->where('user_id', $userId)
@@ -523,7 +521,7 @@ class WebsiteController extends Controller
             ->where('warehouse_id', $dcId)
             ->sum('quantity');
 
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
 
         $cart = Cart::where('user_id', $userId)->first();
 
@@ -546,7 +544,6 @@ class WebsiteController extends Controller
             compact('product', 'relatedProducts', 'availableStock', 'cartQty')
         );
     }
-
     public function categoryProducts($slug)
     {
         $category = Category::where('slug', $slug)->firstOrFail();
@@ -560,10 +557,18 @@ class WebsiteController extends Controller
     }
     public function drawer()
     {
-        $userId = Auth::id() ?? session()->getId();
+        $userId = Auth::id();
         $dcId = session('dc_warehouse_id');
 
-        $cart = Cart::with(['items.product'])
+        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
+
+            $q->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+
+                if ($dcId) {
+                    $q->where('warehouse_id', $dcId);
+                }
+            }], 'quantity');
+        }])
             ->where('user_id', $userId)
             ->first();
 
