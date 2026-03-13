@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-auto ms-auto">
                     <a href="{{ route('vehicle-assignments.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success d-flex align-items-center gap-1">
                         Assign Vehicle
                     </a>
                 </div>

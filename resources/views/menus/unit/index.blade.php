@@ -17,10 +17,10 @@
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title mb-0">Unit</h5>
                 </div>
-                <div class="col-md-auto ms-auto">
+                <div class="col-md-auto ms-auto d-flex gap-2"">
                     @if(hasPermission('unit.create'))
                     <a href="{{ route('units.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success ">
                         Add Unit
                     </a>
                     @endif

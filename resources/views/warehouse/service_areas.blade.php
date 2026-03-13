@@ -22,7 +22,7 @@
                 @endif
             </h5>
 
-            <a href="{{ route('warehouse.index') }}" class="btn btn-sm btn-success">
+            <a href="{{ route('warehouse.index') }}" class="btn  btn-success">
                 Back
             </a>
         </div>
@@ -55,7 +55,6 @@
                 <div class="alert alert-info">
                     Please select a Distribution Center to manage service areas.
                 </div>
-                @return
             @endif
 
             {{-- ADD PINCODE --}}
@@ -92,7 +91,7 @@
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
-                            <th width="80">#</th>
+                            <th width="80">Sr no</th>
                             <th>Pincode</th>
                             <th width="120">Action</th>
                         </tr>
