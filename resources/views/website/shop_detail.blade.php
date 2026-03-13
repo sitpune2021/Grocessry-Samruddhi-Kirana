@@ -179,7 +179,7 @@
                                 <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
                             </div>
 
-                            @include('website.partials.add-to-cart-btn', ['product' => $product])
+                            @include('website.partials.add-to-cart-btn', ['product' => $related])
                         </div>
                     </form>
                 </div>
@@ -188,27 +188,6 @@
 
         @endforeach
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </div>
 <div id="custom-alert-container"></div>
@@ -222,8 +201,10 @@
         // Quantity +
         $(document).on('click', '.qty-plus', function() {
 
-            let input = $('.qty-input');
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let input = form.find('.qty-input');
+            let stockMsg = form.find('.stock-msg');
+
             let current = parseInt(input.val()) || 1;
 
             if (current >= availableStock) {
@@ -238,8 +219,10 @@
         // Quantity -
         $(document).on('click', '.qty-minus', function() {
 
-            let input = $('.qty-input');
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let input = form.find('.qty-input');
+            let stockMsg = form.find('.stock-msg');
+
             let current = parseInt(input.val()) || 1;
 
             if (current > 1) {
@@ -251,7 +234,9 @@
         // Manual typing validation
         $(document).on('input', '.qty-input', function() {
 
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let stockMsg = form.find('.stock-msg');
+
             let val = parseInt($(this).val()) || 1;
 
             if (val > availableStock) {

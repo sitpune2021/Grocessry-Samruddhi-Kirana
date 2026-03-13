@@ -957,8 +957,8 @@
         }
 
         .price {
-            font-weight: 700;
-            font-size: 16px;
+            font-weight: 600;
+            font-size: 10px;
         }
 
         .mrp {
@@ -1007,6 +1007,40 @@
         .price-old {
             font-size: 12px;
             text-decoration: line-through;
+        }
+
+        /* new css */
+
+        .cart-top-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5;
+        }
+
+        .delivery-icon {
+            width: 38px;
+            height: 38px;
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .delivery-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .shipment-text {
+            font-size: 13px;
+            color: #6c757d;
         }
     </style>
 
@@ -1314,7 +1348,7 @@
 </head>
 
 <body>
-  
+
     {{-- Website Navbar --}}
     @include('website.partials.navbar')
 
