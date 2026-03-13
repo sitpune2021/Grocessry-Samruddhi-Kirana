@@ -19,7 +19,7 @@
                 </div>
 
                 @if(hasPermission('product.create'))
-                <div class="col-md-auto ms-auto">
+                <div class="col-md-auto ms-auto d-flex gap-2"">
                     <a href="{{ route('product.create') }}" class="btn btn-success">
                         Add Product
                     </a>

@@ -17,19 +17,19 @@
                         <h5 class="card-title mb-0">Brands</h5>
                     </div>
 
-                    <div class="col-md-auto ms-auto">
+                    <div class="col-md-auto ms-auto d-flex gap-2">
                         @if (hasPermission('brands.create'))
                             <a href="{{ route('brands.create') }}"
-                                class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                                class="btn btn-success">
                                 Add Brands
                             </a>
-                            <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-1"
+                            <button type="button" class="btn btn-primary "
                                 data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-                                <i class="bx bx-upload"></i> Upload CSV
+                                 Upload Excel
                             </button>
                             <a href="{{ route('brands.sample-excel') }}"
-                                class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                                <i class="bx bx-download"></i> Sample CSV
+                                class="btn btn-outline-secondary">
+                               Sample Download
                             </a>
                         @endif
                     </div>
@@ -58,16 +58,6 @@
                         }, 10000); // 15 seconds
                     </script>
                 @endif
-
-                <script>
-                    setTimeout(function() {
-                        let alert = document.getElementById('successAlert');
-                        if (alert) {
-                            let bsAlert = new bootstrap.Alert(alert);
-                            bsAlert.close();
-                        }
-                    }, 10000); // 15 seconds
-                </script>
 
                 <!-- Table -->
                 <div class="table-responsive mt-5">
