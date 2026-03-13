@@ -23,7 +23,7 @@
                 <div class="col-md-auto ms-auto">
                     @if($canCreate)
                     <a href="{{ route('supplier_challan.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        class="btn btn-success d-flex align-items-center gap-1">
                          Create Challan
                     </a>
                     @endif

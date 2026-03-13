@@ -10,15 +10,14 @@ class CartItem extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        $dcId = session('dc_warehouse_id');
+
+        return $this->belongsTo(Product::class)
+            ->withStock($dcId);
     }
 
     public function cart()
     {
         return $this->belongsTo(Cart::class);
     }
-
-    
-    
 }
-

@@ -24,4 +24,10 @@ class Batch extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function batches()
+    {
+        return $this->hasMany(ProductBatch::class)
+            ->whereNull('deleted_at');
+    }
 }

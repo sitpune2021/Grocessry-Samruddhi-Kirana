@@ -11,10 +11,10 @@
                 <div class="col-md-auto me-auto">
                     <h5 class="card-title mb-0">Taxes</h5>
                 </div>
-                <div class="col-md-auto ms-auto mt-5">
 
+                <div class="col-md-auto ms-auto d-flex gap-2"">
                     <a href="{{ route('taxes.create') }}"
-                        class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                       class="btn btn-success">
                         Add Tax
                     </a>
                 </div>

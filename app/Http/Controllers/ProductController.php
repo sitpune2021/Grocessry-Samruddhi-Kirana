@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Exports\ProductSampleExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class ProductController extends Controller
 {
@@ -95,7 +99,7 @@ class ProductController extends Controller
                 'base_price'      => 'required|numeric|min:1',
 
                 // FULL VALIDATION HERE
-               'retailer_price' => 'required|numeric|gte:base_price',
+                'retailer_price' => 'required|numeric|gte:base_price',
                 'mrp'             => 'required|numeric|min:1',
                 'tax_id'          => 'required|exists:taxes,id',
 
@@ -392,5 +396,284 @@ class ProductController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
+    }
+    public function downloadSampleExcel()
+    {
+        return Excel::download(new ProductSampleExport, 'product_sample.xlsx');
+    }
+
+    public function bulkUpload(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            Log::info('Product Bulk Upload Started', [
+                'ip'         => $request->ip(),
+                'file'       => $request->file('excel_file')->getClientOriginalName(),
+                'user_id'    => auth()->id(),
+            ]);
+
+            $rows = Excel::toArray([], $request->file('excel_file'));
+            $data = $rows[0] ?? [];
+            array_shift($data); // header skip
+
+            Log::info('Product Bulk Upload: Total Rows', ['count' => count($data)]);
+
+            $successCount = 0;
+            $skippedCount = 0;
+
+            foreach ($data as $rowIndex => $row) {
+
+                $categoryName    = trim($row[0] ?? '');
+                $subCategoryName = trim($row[1] ?? '');
+                $brandName       = trim($row[2] ?? '');
+                $productName     = trim($row[3] ?? '');
+                $barcode         = trim($row[4] ?? '');
+                $description     = trim($row[5] ?? '');
+                $unitLabel       = trim($row[6] ?? '');
+                $unitValue       = trim($row[7] ?? '');
+                $basePrice       = trim($row[8] ?? '');
+                $sellingPrice    = trim($row[9] ?? '');
+                $mrp             = trim($row[10] ?? '');
+                $gstLabel        = trim($row[11] ?? '');
+                $imageUrl        = trim($row[12] ?? '');
+
+                $rowNum = $rowIndex + 2;
+
+                Log::info("Product Bulk Upload: Processing Row $rowNum", [
+                    'product_name'     => $productName,
+                    'category'         => $categoryName,
+                    'sub_category'     => $subCategoryName,
+                    'brand'            => $brandName,
+                    'unit'             => $unitLabel,
+                    'base_price'       => $basePrice,
+                    'selling_price'    => $sellingPrice,
+                    'mrp'              => $mrp,
+                    'gst'              => $gstLabel,
+                    'has_image'        => !empty($imageUrl),
+                ]);
+
+                // Required fields check
+                if (empty($productName) || empty($categoryName) || empty($subCategoryName) || empty($brandName)) {
+                    Log::warning("Product Bulk Upload: Skipped — Required Fields Empty", [
+                        'row'          => $rowNum,
+                        'product_name' => $productName,
+                        'category'     => $categoryName,
+                        'sub_category' => $subCategoryName,
+                        'brand'        => $brandName,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Category
+                $category = Category::whereRaw('LOWER(name) = ?', [strtolower($categoryName)])->first();
+                if (!$category) {
+                    Log::warning("Product Bulk Upload: Skipped — Category Not Found", [
+                        'row' => $rowNum,
+                        'category' => $categoryName,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // SubCategory
+                $subCategory = SubCategory::whereRaw('LOWER(name) = ?', [strtolower($subCategoryName)])
+                    ->where('category_id', $category->id)->first();
+                if (!$subCategory) {
+                    Log::warning("Product Bulk Upload: Skipped — SubCategory Not Found", [
+                        'row' => $rowNum,
+                        'sub_category' => $subCategoryName,
+                        'category_id' => $category->id,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Brand
+                $brand = Brand::whereRaw('LOWER(name) = ?', [strtolower($brandName)])
+                    ->where('sub_category_id', $subCategory->id)->first();
+                if (!$brand) {
+                    Log::warning("Product Bulk Upload: Skipped — Brand Not Found", [
+                        'row' => $rowNum,
+                        'brand' => $brandName,
+                        'sub_category_id' => $subCategory->id,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Unit
+                preg_match('/^(.+?)\s*\(([^)]+)\)$/', $unitLabel, $unitMatch);
+                $unitName = trim($unitMatch[1] ?? $unitLabel);
+                $unit = \App\Models\Unit::whereRaw('LOWER(name) = ?', [strtolower($unitName)])->first();
+                if (!$unit) {
+                    Log::warning("Product Bulk Upload: Skipped — Unit Not Found", [
+                        'row' => $rowNum,
+                        'unit_label' => $unitLabel,
+                        'parsed_unit' => $unitName,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // GST
+                preg_match('/^(.+?)\s*\(([0-9.]+)%\)$/', $gstLabel, $gstMatch);
+                $gstName = trim($gstMatch[1] ?? $gstLabel);
+                $tax = \App\Models\Tax::whereRaw('LOWER(name) = ?', [strtolower($gstName)])->first();
+                if (!$tax) {
+                    Log::warning("Product Bulk Upload: Skipped — GST/Tax Not Found", [
+                        'row' => $rowNum,
+                        'gst_label' => $gstLabel,
+                        'parsed_gst' => $gstName,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Price validation
+                if (!is_numeric($basePrice) || !is_numeric($sellingPrice) || !is_numeric($mrp)) {
+                    Log::warning("Product Bulk Upload: Skipped — Invalid Price (non-numeric)", [
+                        'row'           => $rowNum,
+                        'base_price'    => $basePrice,
+                        'selling_price' => $sellingPrice,
+                        'mrp'           => $mrp,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+                if ($sellingPrice < $basePrice || $sellingPrice > $mrp) {
+                    Log::warning("Product Bulk Upload: Skipped — Price Range Invalid", [
+                        'row'           => $rowNum,
+                        'base_price'    => $basePrice,
+                        'selling_price' => $sellingPrice,
+                        'mrp'           => $mrp,
+                        'reason'        => $sellingPrice < $basePrice ? 'selling < base' : 'selling > mrp',
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Duplicate check
+                if (Product::whereRaw('LOWER(name) = ?', [strtolower($productName)])->exists()) {
+                    Log::warning("Product Bulk Upload: Skipped — Duplicate Product", [
+                        'row' => $rowNum,
+                        'product_name' => $productName,
+                    ]);
+                    $skippedCount++;
+                    continue;
+                }
+
+                // GST Calculate
+                $gstPercent = $tax->gst ?? 0;
+                $gstAmount  = ($sellingPrice * $gstPercent) / 100;
+                $finalPrice = $sellingPrice + $gstAmount;
+
+                // SKU auto generate
+                $sku = strtoupper(Str::slug($productName, '')) . rand(1000, 9999);
+
+                // Image download
+                $imageNames = [];
+                if (!empty($imageUrl)) {
+                    $savedImage = $this->downloadImage($imageUrl, 'products');
+                    if ($savedImage) {
+                        $imageNames[] = $savedImage;
+                        Log::info("Product Bulk Upload: Image Saved", [
+                            'row' => $rowNum,
+                            'file' => $savedImage,
+                        ]);
+                    } else {
+                        Log::warning("Product Bulk Upload: Image Download Failed", [
+                            'row' => $rowNum,
+                            'url' => $imageUrl,
+                        ]);
+                    }
+                }
+
+                Product::create([
+                    'category_id'     => $category->id,
+                    'sub_category_id' => $subCategory->id,
+                    'brand_id'        => $brand->id,
+                    'name'            => $productName,
+                    'sku'             => $sku,
+                    'barcode'         => $barcode ?: null,
+                    'description'     => $description ?: null,
+                    'unit_id'         => $unit->id,
+                    'unit_value'      => $unitValue,
+                    'base_price'      => $basePrice,
+                    'retailer_price'  => $sellingPrice,
+                    'mrp'             => $mrp,
+                    'tax_id'          => $tax->id,
+                    'gst_percentage'  => $gstPercent,
+                    'gst_amount'      => round($gstAmount, 2),
+                    'final_price'     => round($finalPrice, 2),
+                    'product_images'  => !empty($imageNames) ? $imageNames : null,
+                ]);
+
+                Log::info("Product Bulk Upload: Product Created", [
+                    'row'          => $rowNum,
+                    'product_name' => $productName,
+                    'sku'          => $sku,
+                    'category_id'  => $category->id,
+                    'brand_id'     => $brand->id,
+                    'final_price'  => round($finalPrice, 2),
+                ]);
+
+                $successCount++;
+            }
+
+            Log::info('Product Bulk Upload Completed', [
+                'success' => $successCount,
+                'skipped' => $skippedCount,
+                'total'   => $successCount + $skippedCount,
+            ]);
+
+            return redirect()->route('product.index')
+                ->with('success', "{$successCount} products imported. {$skippedCount} skipped.");
+        } catch (\Exception $e) {
+            Log::error('Product Bulk Upload Error', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+            return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
+        }
+    }
+
+    // ── Reusable image download helper ───────────────────────────────────────
+    private function downloadImage(string $url, string $folder): ?string
+    {
+        // Base64 Data URI
+        if (str_starts_with($url, 'data:image')) {
+            preg_match('/data:image\/(\w+);base64,(.+)/', $url, $matches);
+            if (count($matches) === 3) {
+                $imageData = base64_decode($matches[2]);
+                if ($imageData !== false) {
+                    $fileName = time() . '_' . uniqid() . '.' . $matches[1];
+                    Storage::disk('public')->put($folder . '/' . $fileName, $imageData);
+                    return $fileName;
+                }
+            }
+            return null;
+        }
+
+        // HTTP URL
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            try {
+                $response = Http::timeout(10)->withHeaders(['User-Agent' => 'Mozilla/5.0'])->get($url);
+                if ($response->successful()) {
+                    $ext      = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                    $fileName = time() . '_' . uniqid() . '.' . $ext;
+                    Storage::disk('public')->put($folder . '/' . $fileName, $response->body());
+                    return $fileName;
+                }
+            } catch (\Exception $e) {
+                Log::warning("Image download failed", ['url' => $url, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return null;
     }
 }
