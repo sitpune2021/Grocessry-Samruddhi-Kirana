@@ -1,222 +1,219 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y">
 
-        <div class="card shadow-sm">
-            <div class="card-datatable text-nowrap">
-                @php
-                    $canView = hasPermission('category.view');
-                    $canEdit = hasPermission('category.edit');
-                    $canDelete = hasPermission('category.delete');
-                @endphp
-                <!-- Header -->
-                <div class="row card-header flex-column flex-md-row align-items-center pb-2">
-                    <div class="col-md-auto me-auto">
-                        <h5 class="card-title mb-0">Category</h5>
-                    </div>
-                    <div class="col-md-auto ms-auto">
-                        @if (hasPermission('category.create'))
-                            <a href="{{ route('category.create') }}"
-                                class="btn btn-success btn-sm d-flex align-items-center gap-1">
-                                Add Category
-                            </a>
-                            <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-1"
-                                data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-                                <i class="bx bx-upload"></i> Upload Excel
-                            </button>
-                        @endif
-                        <div class="mb-3">
-                            <a href="{{ route('category.sample-excel') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="bx bx-download me-1"></i> Sample Format Download करा
-                            </a>
-                        </div>
-                    </div>
-
+    <div class="card shadow-sm">
+        <div class="card-datatable text-nowrap">
+            @php
+            $canView = hasPermission('category.view');
+            $canEdit = hasPermission('category.edit');
+            $canDelete = hasPermission('category.delete');
+            @endphp
+            <!-- Header -->
+            <div class="row card-header flex-column flex-md-row align-items-center pb-2">
+                <div class="col-md-auto me-auto">
+                    <h5 class="card-title mb-0">Category</h5>
                 </div>
-
-                <!-- Search -->
-                <div class="px-3 pt-2">
-                    <x-datatable-search />
+                <div class="col-md-auto ms-auto">
+                    @if (hasPermission('category.create'))
+                    <a href="{{ route('category.create') }}"
+                        class="btn btn-success d-flex align-items-center gap-1">
+                        Add Category
+                    </a>
+                    <button type="button" class="btn btn-primary "
+                        data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
+                       Upload Excel
+                    </button>
+                    <a href="{{ route('category.sample-excel') }}" class="btn btn-outline-secondary ">
+                        Sample Download
+                    </a>
+                    @endif
                 </div>
+            </div>
 
-                @if (session('success'))
-                    <div id="successAlert"
-                        class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
-                        role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+            <!-- Search -->
+            <div class="px-3 pt-2">
+                <x-datatable-search />
+            </div>
 
-                    <script>
-                        setTimeout(function() {
-                            let alert = document.getElementById('successAlert');
-                            if (alert) {
-                                let bsAlert = new bootstrap.Alert(alert);
-                                bsAlert.close();
-                            }
-                        }, 10000); // 15 seconds
-                    </script>
-                @endif
+            @if (session('success'))
+            <div id="successAlert"
+                class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
-                <!-- Table -->
-                <div class="table-responsive mt-5 p-3">
-                    <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-center" style="width: 80px;">Sr No</th>
-                                <th>Image</th>
-                                <th style="width: 30%;">Category Name</th>
-                                <th style="width: 40%;">Slug</th>
-                                @if ($canView || $canEdit || $canDelete)
-                                    <th class="text-center" style="width: 150px;">Actions</th>
+            <script>
+                setTimeout(function() {
+                    let alert = document.getElementById('successAlert');
+                    if (alert) {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 10000); // 15 seconds
+            </script>
+            @endif
+
+            <!-- Table -->
+            <div class="table-responsive mt-5 ">
+                <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 80px;">Sr No</th>
+                            <th>Image</th>
+                            <th style="width: 30%;">Category Name</th>
+                            <th style="width: 40%;">Slug</th>
+                            @if ($canView || $canEdit || $canDelete)
+                            <th class="text-center" style="width: 150px;">Actions</th>
+                            @endif
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse ($categories as $index => $category)
+                        <tr>
+                            <td class="text-center fw-semibold">
+                                {{ $categories->firstItem() + $index }}
+                            </td>
+                            {{-- Product Image --}}
+                            <td>
+                                @if (!empty($category->category_images))
+                                @php
+                                $images = $category->category_images; // Already array
+                                $image = $images[0] ?? null;
+                                @endphp
+
+                                @if ($image)
+                                <img src="{{ asset('storage/categories/' . $image) }}" alt="category Image"
+                                    width="60" height="60" class="rounded border">
+                                @else
+                                <span class="text-muted">No Image</span>
                                 @endif
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @forelse ($categories as $index => $category)
-                                <tr>
-                                    <td class="text-center fw-semibold">
-                                        {{ $categories->firstItem() + $index }}
-                                    </td>
-                                    {{-- Product Image --}}
-                                    <td>
-                                        @if (!empty($category->category_images))
-                                            @php
-                                                $images = $category->category_images; // Already array
-                                                $image = $images[0] ?? null;
-                                            @endphp
-
-                                            @if ($image)
-                                                <img src="{{ asset('storage/categories/' . $image) }}" alt="category Image"
-                                                    width="60" height="60" class="rounded border">
-                                            @else
-                                                <span class="text-muted">No Image</span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">No Image</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="fw-medium">{{ $category->name }}</span>
-                                    </td>
-                                    <td class="text-muted">{{ $category->slug }}</td>
+                                @else
+                                <span class="text-muted">No Image</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="fw-medium">{{ $category->name }}</span>
+                            </td>
+                            <td class="text-muted">{{ $category->slug }}</td>
 
 
-                                    @if ($canView || $canEdit || $canDelete)
-                                        <td class="text-center" style="white-space:nowrap;">
-                                            @if (hasPermission('category.view'))
-                                                <a href="{{ route('category.show', $category->id) }}"
-                                                    class="btn btn-sm btn-primary">View</a>
-                                            @endif
-                                            @if (hasPermission('category.edit'))
-                                                <a href="{{ route('category.edit', $category->id) }}"
-                                                    class="btn btn-sm btn-warning">Edit</a>
-                                            @endif
-                                            @if (hasPermission('category.delete'))
-                                                <form action="{{ route('category.destroy', $category->id) }}" method="POST"
-                                                    class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button onclick="return confirm('Delete category?')"
-                                                        class="btn btn-sm btn-danger">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </td>
-                                    @endif
-                                </tr>
+                            @if ($canView || $canEdit || $canDelete)
+                            <td class="text-center" style="white-space:nowrap;">
+                                @if (hasPermission('category.view'))
+                                <a href="{{ route('category.show', $category->id) }}"
+                                    class="btn btn-sm btn-primary">View</a>
+                                @endif
+                                @if (hasPermission('category.edit'))
+                                <a href="{{ route('category.edit', $category->id) }}"
+                                    class="btn btn-sm btn-warning">Edit</a>
+                                @endif
+                                @if (hasPermission('category.delete'))
+                                <form action="{{ route('category.destroy', $category->id) }}" method="POST"
+                                    class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button onclick="return confirm('Delete category?')"
+                                        class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                                @endif
+                            </td>
+                            @endif
+                        </tr>
 
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
-                                        No categories found
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination -->
-                <div class="px-3 py-2">
-                    {{ $categories->onEachSide(0)->links('pagination::bootstrap-5') }}
-                </div>
-
+                        @empty
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                No categories found
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
 
-    </div>
-    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Bulk Upload Categories</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="{{ route('category.bulk-upload') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="alert alert-info mb-3">
-                            <strong>CSV Format:</strong><br>
-                            Column A: <code>name</code> &nbsp;|&nbsp;
-                            Column B: <code>slug</code> (optional) &nbsp;|&nbsp;
-                            Column C: <code>image_url</code> (optional)<br>
-                            <small class="text-muted">Image URL = internet वरील direct image link</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">File Select करा <span class="text-danger">*</span></label>
-                            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
-                            <small class="text-muted">Allowed: .xlsx, .xls, .csv — Max: 5MB</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary btn-sm">Upload & Import</button>
-                    </div>
-                </form>
+            <!-- Pagination -->
+            <div class="px-3 py-2">
+                {{ $categories->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
+
         </div>
     </div>
+
+</div>
+<div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Upload Categories</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('category.bulk-upload') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <strong>CSV Format:</strong><br>
+                        Column A: <code>name</code> &nbsp;|&nbsp;
+                        Column B: <code>slug</code> (optional) &nbsp;|&nbsp;
+                        Column C: <code>image_url</code> (optional)<br>
+                        <small class="text-muted">Image URL = internet वरील direct image link</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">File Select करा <span class="text-danger">*</span></label>
+                        <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <small class="text-muted">Allowed: .xlsx, .xls, .csv — Max: 5MB</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Upload & Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
-    <!-- table search box script -->
+<!-- table search box script -->
 
-    @push('scripts')
-        <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
+@push('scripts')
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
 
-                const searchInput = document.getElementById("dt-search-1");
-                const table = document.getElementById("batchTable");
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
 
-                if (!searchInput || !table) return;
+        if (!searchInput || !table) return;
 
-                const rows = table.querySelectorAll("tbody tr");
+        const rows = table.querySelectorAll("tbody tr");
 
-                searchInput.addEventListener("keyup", function() {
-                    const value = this.value.toLowerCase().trim();
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
 
-                    rows.forEach(row => {
+            rows.forEach(row => {
 
-                        // Skip "No role found" row
-                        if (row.cells.length === 1) return;
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
 
-                        row.style.display = row.textContent
-                            .toLowerCase()
-                            .includes(value) ?
-                            "" :
-                            "none";
-                    });
-                });
-
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
             });
-        </script>
+        });
 
-    @endpush
+    });
+</script>
+
+@endpush

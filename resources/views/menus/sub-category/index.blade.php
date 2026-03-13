@@ -18,17 +18,15 @@
                     <div class="col-md-auto ms-auto">
                         @if (hasPermission('sub_category.create'))
                             <a href="{{ route('sub-category.create') }}"
-                                class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                                class="btn btn-success">
                                 Add Sub Category
                             </a>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-primary " data-bs-toggle="modal"
                                 data-bs-target="#bulkUploadModal">
-
                                 Upload Excel
                             </button>
 
-                            <a href="{{ route('sub-category.sample-excel') }}" class="btn btn-outline-secondary btn-sm">
-
+                            <a href="{{ route('sub-category.sample-excel') }}" class="btn btn-outline-secondary ">
                                 Sample Download
                             </a>
                         @endif
