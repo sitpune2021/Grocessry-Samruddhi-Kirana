@@ -19,17 +19,15 @@
 
                     <div class="col-md-auto ms-auto d-flex gap-2">
                         @if (hasPermission('brands.create'))
-                            <a href="{{ route('brands.create') }}"
-                                class="btn btn-success">
+                            <a href="{{ route('brands.create') }}" class="btn btn-success">
                                 Add Brands
                             </a>
-                            <button type="button" class="btn btn-primary "
-                                data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-                                 Upload Excel
+                            <button type="button" class="btn btn-primary " data-bs-toggle="modal"
+                                data-bs-target="#bulkUploadModal">
+                                Upload Excel
                             </button>
-                            <a href="{{ route('brands.sample-excel') }}"
-                                class="btn btn-outline-secondary">
-                               Sample Download
+                            <a href="{{ route('brands.sample-excel') }}" class="btn btn-outline-secondary">
+                                Sample Download
                             </a>
                         @endif
                     </div>
@@ -178,6 +176,50 @@
             </div>
         </div>
 
+    </div>
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Brands Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form action="{{ route('brands.bulk-upload') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+
+                        @if (session('error'))
+                            <div class="alert alert-danger">{{ session('error') }}</div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Excel / CSV File <span
+                                    class="text-danger">*</span></label>
+                            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                            <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        </div>
+
+                        <div class="alert alert-info py-2 mb-0">
+                            <small>
+                                <strong>Format:</strong> Category Name | Sub Category Name | Brand Name | Logo URL<br>
+                                <a href="{{ route('brands.sample-excel') }}" class="text-decoration-underline">Download
+                                    Sample</a>
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
     </div>
 @endsection
 
