@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\NamedRange;
 
 class BrandSampleExport implements WithHeadings, WithEvents
 {
@@ -18,7 +19,8 @@ class BrandSampleExport implements WithHeadings, WithEvents
         return [
             'Category Name',
             'Sub Category Name',
-            'Brand Name'
+            'Brand Name',
+            'Logo URL',
         ];
     }
 
@@ -30,49 +32,84 @@ class BrandSampleExport implements WithHeadings, WithEvents
 
                 $spreadsheet = $event->sheet->getDelegate()->getParent();
 
-                $categorySheet = new Worksheet($spreadsheet, "CategoryList");
+                // ── Hidden sheets ──────────────────────────────────────
+                $categorySheet    = new Worksheet($spreadsheet, "CategoryList");
                 $subCategorySheet = new Worksheet($spreadsheet, "SubCategoryList");
 
                 $spreadsheet->addSheet($categorySheet);
                 $spreadsheet->addSheet($subCategorySheet);
 
-                $categories = Category::pluck('name')->toArray();
-                $subCategories = SubCategory::pluck('name')->toArray();
+                // ── Categories ────────────────────────────────────────
+                $categories = Category::with('subCategories')->orderBy('name')->get();
 
-                foreach ($categories as $index => $cat) {
-                    $categorySheet->setCellValue('A'.($index+1), $cat);
+                $catRow = 1;
+                foreach ($categories as $category) {
+                    $categorySheet->setCellValue('A' . $catRow, $category->name);
+                    $catRow++;
                 }
 
-                foreach ($subCategories as $index => $sub) {
-                    $subCategorySheet->setCellValue('A'.($index+1), $sub);
+                // ── SubCategories per Category (named ranges) ─────────
+                $col = 'A';
+                foreach ($categories as $category) {
+                    $subs = $category->subCategories->pluck('name')->toArray();
+
+                    if (empty($subs)) {
+                        $col++;
+                        continue;
+                    }
+
+                    $subRow = 1;
+                    foreach ($subs as $sub) {
+                        $subCategorySheet->setCellValue($col . $subRow, $sub);
+                        $subRow++;
+                    }
+
+                    // Named range: category name spaces → underscore
+                    $rangeName = preg_replace('/[^A-Za-z0-9_]/', '_', $category->name);
+                    $subCount  = count($subs);
+
+                    $spreadsheet->addNamedRange(
+                        new NamedRange(
+                            $rangeName,
+                            $subCategorySheet,
+                            '$' . $col . '$1:$' . $col . '$' . $subCount
+                        )
+                    );
+
+                    $col++;
                 }
 
+                // ── Hide helper sheets ────────────────────────────────
                 $categorySheet->setSheetState(Worksheet::SHEETSTATE_HIDDEN);
                 $subCategorySheet->setSheetState(Worksheet::SHEETSTATE_HIDDEN);
 
-                $catCount = count($categories);
-                $subCount = count($subCategories);
+                $catCount = $categories->count();
 
+                // ── Dropdowns for rows 2–500 ──────────────────────────
                 for ($row = 2; $row <= 500; $row++) {
 
-                    // Category dropdown
-                    $validation = $event->sheet->getCell('A'.$row)->getDataValidation();
+                    // Column A — Category dropdown
+                    $val1 = $event->sheet->getCell('A' . $row)->getDataValidation();
+                    $val1->setType(DataValidation::TYPE_LIST);
+                    $val1->setErrorStyle(DataValidation::STYLE_STOP);
+                    $val1->setAllowBlank(true);
+                    $val1->setShowDropDown(true);
+                    $val1->setFormula1("=CategoryList!\$A\$1:\$A\$$catCount");
 
-                    $validation->setType(DataValidation::TYPE_LIST);
-                    $validation->setErrorStyle(DataValidation::STYLE_STOP);
-                    $validation->setAllowBlank(true);
-                    $validation->setShowDropDown(true);
-                    $validation->setFormula1("=CategoryList!A1:A$catCount");
-
-                    // SubCategory dropdown
-                    $validation2 = $event->sheet->getCell('B'.$row)->getDataValidation();
-
-                    $validation2->setType(DataValidation::TYPE_LIST);
-                    $validation2->setErrorStyle(DataValidation::STYLE_STOP);
-                    $validation2->setAllowBlank(true);
-                    $validation2->setShowDropDown(true);
-                    $validation2->setFormula1("=SubCategoryList!A1:A$subCount");
+                    // Column B — SubCategory dropdown (INDIRECT based on A column)
+                    $val2 = $event->sheet->getCell('B' . $row)->getDataValidation();
+                    $val2->setType(DataValidation::TYPE_LIST);
+                    $val2->setErrorStyle(DataValidation::STYLE_STOP);
+                    $val2->setAllowBlank(true);
+                    $val2->setShowDropDown(true);
+                    $val2->setFormula1('INDIRECT(SUBSTITUTE(A' . $row . '," ","_"))');
                 }
+
+                // ── Column widths ─────────────────────────────────────
+                $event->sheet->getColumnDimension('A')->setWidth(20);
+                $event->sheet->getColumnDimension('B')->setWidth(20);
+                $event->sheet->getColumnDimension('C')->setWidth(25);
+                $event->sheet->getColumnDimension('D')->setWidth(40);
 
             }
 

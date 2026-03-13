@@ -214,27 +214,27 @@ class BrandController extends Controller
                 'excel_file' => $request->file('excel_file')->getClientOriginalName(),
             ]);
 
-            $file = $request->file('excel_file');
-            $data = array_map('str_getcsv', file($file->getRealPath()));
-            array_shift($data); // header skip
+            // ✅ xlsx/xls/csv सर्वांसाठी Excel facade वापरा
+            $rows = Excel::toArray([], $request->file('excel_file'));
+            $data = $rows[0] ?? []; // पहिली sheet
+            array_shift($data);     // header row skip
 
             $successCount = 0;
             $skippedCount = 0;
 
             foreach ($data as $rowIndex => $row) {
-                $name          = trim($row[0] ?? '');
-                $slug          = !empty(trim($row[1] ?? '')) ? Str::slug(trim($row[1])) : Str::slug($name);
-                $categoryId    = trim($row[2] ?? '');
-                $subCategoryId = trim($row[3] ?? '');
-                $status        = isset($row[4]) ? (int) trim($row[4]) : 1;
-                $logoUrl       = trim($row[5] ?? '');
+
+                $categoryName    = trim($row[0] ?? '');
+                $subCategoryName = trim($row[1] ?? '');
+                $name            = trim($row[2] ?? '');
+                $logoUrl         = trim($row[3] ?? '');
 
                 Log::info("Brand Bulk Upload: Processing Row", [
-                    'row'          => $rowIndex + 2,
-                    'name'         => $name,
-                    'category_id'  => $categoryId,
-                    'sub_cat_id'   => $subCategoryId,
-                    'logo_url'     => $logoUrl,
+                    'row'               => $rowIndex + 2,
+                    'name'              => $name,
+                    'category_name'     => $categoryName,
+                    'sub_category_name' => $subCategoryName,
+                    'logo_url'          => $logoUrl,
                 ]);
 
                 // Name empty check
@@ -244,21 +244,35 @@ class BrandController extends Controller
                     continue;
                 }
 
-                // Category check
-                if (empty($categoryId) || !Category::where('id', $categoryId)->exists()) {
-                    Log::warning("Brand Bulk Upload: Skipped — Invalid Category", ['name' => $name, 'category_id' => $categoryId]);
+                // Category name ने शोधा
+                $category = Category::where('name', $categoryName)->first();
+                if (!$category) {
+                    Log::warning("Brand Bulk Upload: Skipped — Invalid Category", [
+                        'name'          => $name,
+                        'category_name' => $categoryName,
+                    ]);
                     $skippedCount++;
                     continue;
                 }
 
-                // SubCategory check
-                if (empty($subCategoryId) || !SubCategory::where('id', $subCategoryId)->where('category_id', $categoryId)->exists()) {
-                    Log::warning("Brand Bulk Upload: Skipped — Invalid SubCategory", ['name' => $name, 'sub_category_id' => $subCategoryId]);
+                // SubCategory name ने शोधा
+                $subCategory = SubCategory::where('name', $subCategoryName)
+                    ->where('category_id', $category->id)
+                    ->first();
+
+                if (!$subCategory) {
+                    Log::warning("Brand Bulk Upload: Skipped — Invalid SubCategory", [
+                        'name'              => $name,
+                        'sub_category_name' => $subCategoryName,
+                    ]);
                     $skippedCount++;
                     continue;
                 }
 
-                // Duplicate name check (same category)
+                $categoryId    = $category->id;
+                $subCategoryId = $subCategory->id;
+
+                // Duplicate check
                 if (Brand::where('name', $name)->where('category_id', $categoryId)->exists()) {
                     Log::warning("Brand Bulk Upload: Skipped — Duplicate", ['name' => $name]);
                     $skippedCount++;
@@ -266,41 +280,56 @@ class BrandController extends Controller
                 }
 
                 // Slug unique बनवा
+                $slug     = Str::slug($name);
                 $original = $slug;
-                $i = 1;
+                $i        = 1;
                 while (Brand::where('slug', $slug)->exists()) {
                     $slug = $original . '-' . $i++;
                 }
 
-                // ✅ Logo URL वरून download करा
+                // Logo URL वरून download करा
+                // Logo URL किंवा Base64 वरून save करा
                 $logoName = null;
-                if (!empty($logoUrl) && filter_var($logoUrl, FILTER_VALIDATE_URL)) {
-                    try {
-                        $context = stream_context_create([
-                            'http' => [
-                                'timeout'    => 10,
-                                'user_agent' => 'Mozilla/5.0',
-                            ],
-                            'ssl' => [
-                                'verify_peer'      => false,
-                                'verify_peer_name' => false,
-                            ],
-                        ]);
+                if (!empty($logoUrl)) {
 
-                        $imageContents = file_get_contents($logoUrl, false, $context);
+                    // ── Base64 Data URI ──────────────────────────────
+                    if (str_starts_with($logoUrl, 'data:image')) {
+                        try {
+                            // data:image/jpeg;base64,/9j/4AAQ... format parse करा
+                            preg_match('/data:image\/(\w+);base64,(.+)/', $logoUrl, $matches);
 
-                        if ($imageContents !== false) {
-                            $logoName = time() . '_' . basename(parse_url($logoUrl, PHP_URL_PATH));
-                            Storage::disk('public')->put('brands/' . $logoName, $imageContents);
-                            Log::info("Brand Bulk Upload: Logo Saved", ['name' => $logoName, 'brand' => $name]);
-                        } else {
-                            Log::warning("Brand Bulk Upload: Logo Download Failed", ['url' => $logoUrl]);
+                            if (count($matches) === 3) {
+                                $extension = $matches[1]; // jpeg, png, webp
+                                $imageData = base64_decode($matches[2]);
+
+                                if ($imageData !== false) {
+                                    $logoName = time() . '_' . uniqid() . '.' . $extension;
+                                    Storage::disk('public')->put('brands/' . $logoName, $imageData);
+                                    Log::info("Logo Saved from Base64", ['file' => $logoName]);
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning("Base64 Logo Error", ['error' => $e->getMessage()]);
                         }
-                    } catch (\Exception $e) {
-                        Log::warning("Brand Bulk Upload: Logo Error", [
-                            'url'   => $logoUrl,
-                            'error' => $e->getMessage(),
-                        ]);
+
+                        // ── HTTP URL ─────────────────────────────────────
+                    } elseif (filter_var($logoUrl, FILTER_VALIDATE_URL)) {
+                        try {
+                            $response = Http::timeout(10)
+                                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                                ->get($logoUrl);
+
+                            if ($response->successful()) {
+                                $extension = pathinfo(parse_url($logoUrl, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                                $logoName  = time() . '_' . uniqid() . '.' . $extension;
+                                Storage::disk('public')->put('brands/' . $logoName, $response->body());
+                                Log::info("Logo Saved from URL", ['file' => $logoName]);
+                            } else {
+                                Log::warning("Logo Download Failed", ['status' => $response->status(), 'url' => $logoUrl]);
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning("Logo URL Error", ['url' => $logoUrl, 'error' => $e->getMessage()]);
+                        }
                     }
                 }
 
@@ -309,23 +338,15 @@ class BrandController extends Controller
                     'slug'            => $slug,
                     'category_id'     => $categoryId,
                     'sub_category_id' => $subCategoryId,
-                    'status'          => $status,
+                    'status'          => 1,
                     'logo'            => $logoName,
                 ]);
 
-                Log::info("Brand Bulk Upload: Brand Created", [
-                    'name' => $name,
-                    'slug' => $slug,
-                    'logo' => $logoName,
-                ]);
-
+                Log::info("Brand Bulk Upload: Brand Created", ['name' => $name, 'slug' => $slug]);
                 $successCount++;
             }
 
-            Log::info('Brand Bulk Upload Completed', [
-                'success' => $successCount,
-                'skipped' => $skippedCount,
-            ]);
+            Log::info('Brand Bulk Upload Completed', ['success' => $successCount, 'skipped' => $skippedCount]);
 
             return redirect()->route('brands.index')
                 ->with('success', "{$successCount} brands imported. {$skippedCount} skipped.");

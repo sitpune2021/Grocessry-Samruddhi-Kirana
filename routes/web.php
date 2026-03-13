@@ -73,7 +73,8 @@ Route::post('/reset-password', [AdminAuthController::class, 'resetPassword'])
 Route::middleware(['auth:admin'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
+    Route::post('/products/bulk-upload', [ProductController::class, 'bulkUpload'])->name('product.bulk-upload');
+    Route::get('/products/sample-excel', [ProductController::class, 'downloadSampleExcel'])->name('product.sample-excel');
     // Product CRUD
     Route::resource('products', ProductController::class)
         ->middleware([
