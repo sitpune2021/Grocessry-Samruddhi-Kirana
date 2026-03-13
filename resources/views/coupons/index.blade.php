@@ -17,7 +17,7 @@
                     <h5 class="card-title mb-0">Coupon</h5>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <a href="{{ route('coupons.create') }}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                    <a href="{{ route('coupons.create') }}" class="btn btn-success d-flex align-items-center gap-1">
                         Add Coupon
                     </a>
                 </div>

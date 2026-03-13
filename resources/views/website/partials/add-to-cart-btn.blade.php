@@ -176,11 +176,12 @@ $stock = $product->available_stock ?? 0;
                     wrapper.querySelector('.qty').innerText = data.qty;
 
                     updateCartIcon(data.cart_count);
+                    updateShipmentCount(data.cart_count);
 
                     refreshCartDrawer();
 
                 } else {
-                    alert(data.message);
+                   showCustomAlert(data.message);
                 }
 
                 btn.dataset.loading = "false";
@@ -221,6 +222,7 @@ $stock = $product->available_stock ?? 0;
                         wrapper.querySelector('.qty-box').classList.add('d-none');
 
                         updateCartIcon(data.cart_count);
+                        updateShipmentCount(data.cart_count);
                         refreshCartDrawer();
                     }
 
@@ -250,11 +252,14 @@ $stock = $product->available_stock ?? 0;
 
                     updateCartIcon(data.cart_count);
 
+                    updateShipmentCount(data.cart_count);
+
                     refreshCartDrawer();
+                    syncCartButtons();
 
                 } else {
 
-                    showAlert(data.message); // custom alert
+                     showCustomAlert(data.message); // custom alert
 
                 }
 
@@ -289,8 +294,65 @@ $stock = $product->available_stock ?? 0;
 
                 document.getElementById("cartDrawerItems").innerHTML = html;
 
+                syncCartButtons(); // 🔥 important
+
             })
             .catch(err => console.error(err));
+
+    }
+
+    function syncCartButtons() {
+
+        fetch("/cart/data")
+            .then(res => res.json())
+            .then(data => {
+
+                if (!data.items) return;
+
+                // reset all buttons first
+                document.querySelectorAll('.qty-wrapper').forEach(wrapper => {
+
+                    wrapper.querySelector('.add-btn')?.classList.remove('d-none');
+                    wrapper.querySelector('.qty-box')?.classList.add('d-none');
+
+                });
+
+                data.items.forEach(item => {
+
+                    const wrapper = document.querySelector(
+                        '.qty-wrapper[data-product-id="' + item.product_id + '"]'
+                    );
+
+                    if (!wrapper) return;
+
+                    const addBtn = wrapper.querySelector('.add-btn');
+                    const qtyBox = wrapper.querySelector('.qty-box');
+                    const qtySpan = wrapper.querySelector('.qty');
+
+                    if (addBtn && qtyBox && qtySpan) {
+
+                        addBtn.classList.add('d-none');
+                        qtyBox.classList.remove('d-none');
+
+                        qtySpan.innerText = item.qty;
+
+                        // update cart item id
+                        wrapper.dataset.cartItemId = item.id;
+                    }
+
+                });
+
+            });
+
+    }
+
+    function updateShipmentCount(count) {
+
+        const el = document.getElementById("shipment-count");
+
+        if (!el) return;
+
+        el.innerText = count;
 
     }
 </script>

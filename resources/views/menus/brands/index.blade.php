@@ -17,19 +17,17 @@
                         <h5 class="card-title mb-0">Brands</h5>
                     </div>
 
-                    <div class="col-md-auto ms-auto">
+                    <div class="col-md-auto ms-auto d-flex gap-2">
                         @if (hasPermission('brands.create'))
-                            <a href="{{ route('brands.create') }}"
-                                class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                            <a href="{{ route('brands.create') }}" class="btn btn-success">
                                 Add Brands
                             </a>
-                            <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-1"
-                                data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-                                <i class="bx bx-upload"></i> Upload CSV
+                            <button type="button" class="btn btn-primary " data-bs-toggle="modal"
+                                data-bs-target="#bulkUploadModal">
+                                Upload Excel
                             </button>
-                            <a href="{{ route('brands.sample-excel') }}"
-                                class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                                <i class="bx bx-download"></i> Sample CSV
+                            <a href="{{ route('brands.sample-excel') }}" class="btn btn-outline-secondary">
+                                Sample Download
                             </a>
                         @endif
                     </div>
@@ -58,16 +56,6 @@
                         }, 10000); // 15 seconds
                     </script>
                 @endif
-
-                <script>
-                    setTimeout(function() {
-                        let alert = document.getElementById('successAlert');
-                        if (alert) {
-                            let bsAlert = new bootstrap.Alert(alert);
-                            bsAlert.close();
-                        }
-                    }, 10000); // 15 seconds
-                </script>
 
                 <!-- Table -->
                 <div class="table-responsive mt-5">
@@ -188,6 +176,50 @@
             </div>
         </div>
 
+    </div>
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Brands Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form action="{{ route('brands.bulk-upload') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+
+                        @if (session('error'))
+                            <div class="alert alert-danger">{{ session('error') }}</div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Excel / CSV File <span
+                                    class="text-danger">*</span></label>
+                            <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                            <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        </div>
+
+                        <div class="alert alert-info py-2 mb-0">
+                            <small>
+                                <strong>Format:</strong> Category Name | Sub Category Name | Brand Name | Logo URL<br>
+                                <a href="{{ route('brands.sample-excel') }}" class="text-decoration-underline">Download
+                                    Sample</a>
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
     </div>
 @endsection
 

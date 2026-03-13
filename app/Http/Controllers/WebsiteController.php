@@ -83,13 +83,19 @@ class WebsiteController extends Controller
             ->paginate(12, ['*'], 'all_page');
 
 
-        $latestPro = Product::whereNull('deleted_at')
-            ->whereDoesntHave('sale', fn($q) => $q->active()->online())
-            ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-                if ($dcId) {
-                    $q->where('warehouse_id', $dcId);
-                }
-            }], 'quantity')
+        // $latestPro = Product::whereNull('deleted_at')
+        //     ->whereDoesntHave('sale', fn($q) => $q->active()->online())
+        //     ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
+        //         if ($dcId) {
+        //             $q->where('warehouse_id', $dcId);
+        //         }
+        //     }], 'quantity')
+        //     ->latest()
+        //     ->take(12)
+        //     ->get();
+
+        $latestPro = Product::withStock($dcId)
+            ->whereNull('deleted_at')
             ->latest()
             ->take(12)
             ->get();
@@ -217,7 +223,12 @@ class WebsiteController extends Controller
             });
         }
 
-        $products = $query->latest()->paginate(40);
+        $dcId = session('dc_warehouse_id');
+
+        $products = $query
+            ->withStock($dcId)
+            ->latest()
+            ->paginate(40);
 
         // 🔥 IMPORTANT: If AJAX request → return only product list
         if ($request->ajax()) {
@@ -390,7 +401,11 @@ class WebsiteController extends Controller
     {
         $userId = Auth::id();
 
-        $cart = Cart::with(['items.product'])
+        $dcId = session('dc_warehouse_id');
+
+        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
+            $q->withStock($dcId);
+        }])
             ->where('user_id', $userId)
             ->first();
 
@@ -515,34 +530,35 @@ class WebsiteController extends Controller
     {
         $dcId = session('dc_warehouse_id');
 
-        $product = Product::findOrFail($id);
+        $product = Product::with(['category', 'unit'])->findOrFail($id);
 
-        $availableStock = ProductBatch::where('product_id', $id)
-            ->where('warehouse_id', $dcId)
-            ->sum('quantity');
+        $availableStock = 0;
 
-        $userId = Auth::id();
-
-        $cart = Cart::where('user_id', $userId)->first();
-
-        $cartItem = $cart
-            ? CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $id)
-            ->first()
-            : null;
-
-        $cartQty = $cartItem ? $cartItem->qty : 0;
+        if ($dcId) {
+            $availableStock = ProductBatch::where('product_id', $id)
+                ->where('warehouse_id', $dcId)
+                ->sum('quantity');
+        }
 
         $relatedProducts = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->latest()
-            ->take(8)
+            ->where('id', '!=', $id)
+            ->limit(4)
             ->get();
 
-        return view(
-            'website.shop_detail',
-            compact('product', 'relatedProducts', 'availableStock', 'cartQty')
-        );
+        $cart = Cart::where('user_id', auth()->id())
+            ->with('items')
+            ->first();
+
+        $cartItems = $cart ? $cart->items->keyBy('product_id') : collect();
+
+        return view('website.shop_detail', compact(
+            'product',
+            'relatedProducts',
+            'availableStock',
+            'cartItems'
+        ));
+
+     
     }
     public function categoryProducts($slug)
     {
@@ -557,19 +573,20 @@ class WebsiteController extends Controller
     }
     public function drawer()
     {
+
+        // $test = Product::withStock(8)->find(1);
+
+        // dd($test->available_stock);
+
         $userId = Auth::id();
         $dcId = session('dc_warehouse_id');
 
-        $cart = Cart::with(['items.product' => function ($q) use ($dcId) {
-
-            $q->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-
-                if ($dcId) {
-                    $q->where('warehouse_id', $dcId);
+        $cart = Cart::where('user_id', $userId)
+            ->with([
+                'items.product' => function ($q) use ($dcId) {
+                    $q->withStock($dcId);
                 }
-            }], 'quantity');
-        }])
-            ->where('user_id', $userId)
+            ])
             ->first();
 
         return view('website.partials.cart-drawer-items', [

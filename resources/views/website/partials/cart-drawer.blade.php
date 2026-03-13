@@ -1,16 +1,46 @@
  <!-- RIGHT SIDE CART DRAWER -->
- 
+ <style>
+     .empty-state {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         padding: 40px 20px;
+     }
+
+     .empty-img {
+         width: 180px;
+         max-width: 100%;
+         height: auto;
+         opacity: 0.9;
+     }
+ </style>
  <div class="offcanvas offcanvas-end" tabindex="-1" id="cartDrawer">
      <div class="offcanvas-header border-bottom">
          <h5 class="fw-bold m-0">My Cart</h5>
          <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
      </div>
      <div class="offcanvas-body p-0 d-flex flex-column">
+         <div class="cart-top-box" id="cart-top-box">
+             <div class="delivery-icon">
+                 <i class="ri-timer-line"></i>
+             </div>
 
+             <div>
+                 <div class="delivery-title">Free delivery</div>
+                 <div class="shipment-text">
+                     Shipment of
+                     <span id="shipment-count">
+                         {{ $globalCart?->items?->sum('qty') ?? 0 }}
+                     </span> items
+                 </div>
+             </div>
+         </div>
          <div id="cartDrawerItems">
              <!-- SCROLL AREA -->
              <div class="cart-scroll-area flex-grow-1">
                  @if(!empty($globalCart) && $globalCart->items->isNotEmpty())
+
                  @foreach($globalCart->items as $item)
                  @php
                  $images = $item->product->product_images ?? [];
@@ -39,7 +69,7 @@
                          'product' => $item->product,
                          'cartItems' => $globalCart->items->keyBy('product_id')
                          ])
-                        
+
                      </div>
 
                      <!-- Item Total -->
@@ -91,9 +121,19 @@
                          </span>
                      </div>
                  </div>
+
+                 <!-- <div class="bill-box border rounded p-2 mt-3 bg-light">
+                     <h6 class="text-dark mb-1 small fw-semibold">Cancellation Policy</h6>
+                     <p class=" small mb-0" >
+                         Orders cannot be cancelled once packed for delivery. In case of unexpected delays,
+                         a refund will be provided if applicable.
+                     </p>
+                 </div> -->
                  @else
-                 <div class="text-center p-5">
-                     <p>Your cart is empty</p>
+                 {{-- EMPTY STATE --}}
+                 <div class="empty-state mt-4">
+                     <img src="{{ asset('website/img/22.png') }}" alt="No Cart" class="empty-img">
+                     <p class="text-muted mb-0">Your cart is empty</p>
                  </div>
                  @endif
              </div>
@@ -119,15 +159,15 @@
      </div>
 
      <script>
-        function refreshCartDrawer() {
+         function refreshCartDrawer() {
 
-    fetch("/cart/drawer")
-        .then(res => res.text())
-        .then(html => {
+             fetch("/cart/drawer")
+                 .then(res => res.text())
+                 .then(html => {
 
-            document.getElementById("cartDrawerItems").innerHTML = html;
+                     document.getElementById("cartDrawerItems").innerHTML = html;
 
-        });
+                 });
 
-}
+         }
      </script>
