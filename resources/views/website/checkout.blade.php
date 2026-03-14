@@ -35,6 +35,21 @@
         border: 2px solid #198754 !important;
         background: #f8fff9;
     }
+
+    .coupon-card {
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    .coupon-card:hover {
+        background: #f8f9fa;
+        border-color: #198754;
+    }
+
+    .coupon-card button {
+        font-size: 13px;
+        padding: 4px 12px;
+    }
 </style>
 
 <!-- <div class="container-fluid page-header py-5 bg-dark">
@@ -189,14 +204,56 @@
                                         class="form-control"
                                         placeholder="Enter coupon code">
 
-                                    <button class="btn btn-dark"
-                                        type="button"
+                                    <button type="button"
+                                        class="btn btn-dark"
                                         onclick="applyCoupon()">
                                         Apply
                                     </button>
                                 </div>
 
                                 <small id="coupon_msg" class="d-none mt-2"></small>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-4 mb-3">
+                            <div class="card-body p-3">
+
+                                <h6 class="fw-bold mb-3">Available Coupons</h6>
+
+                                @foreach($coupons as $coupon)
+
+                                <div class="coupon-card border rounded-3 p-3 mb-2 d-flex justify-content-between align-items-center">
+
+                                    <div>
+
+                                        <div class="fw-bold text-success">
+                                            {{ $coupon->code }}
+                                        </div>
+                                        <small class="text-muted">
+
+                                            @if($coupon->discount_type == 'percentage')
+                                            {{ $coupon->discount_value }}% OFF
+                                            @else
+                                            ₹{{ $coupon->discount_value }} OFF
+                                            @endif
+                                            • Min Order ₹{{ $coupon->min_amount }}
+
+                                        </small>
+
+                                    </div>
+
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        onclick="copyCoupon('{{ $coupon->code }}')">
+
+                                        Copy
+
+                                    </button>
+
+                                </div>
+
+                                @endforeach
+
                             </div>
                         </div>
 
@@ -502,7 +559,7 @@
 
                                 if (data.status) {
 
-                                  window.location.href = "{{ route('my_orders') }}";
+                                    window.location.href = "{{ route('my_orders') }}";
 
                                 } else {
 
@@ -779,69 +836,45 @@
     */
     function applyCoupon() {
 
-        let code = document.getElementById("coupon_input").value.trim();
+        let coupon_code = $('#coupon_input').val();
 
-        let subtotal = parseFloat(
-            document.getElementById("subtotal").innerText
-        );
+        $.ajax({
+            url: "/apply-coupon",
+            type: "POST",
+            data: {
+                coupon_code: coupon_code,
+                _token: "{{ csrf_token() }}"
+            },
+            success: function(response) {
 
-        if (!code) {
+                if (response.status) {
 
-            showCouponMsg("Enter coupon code", false);
+                    $('#coupon_msg')
+                        .removeClass('d-none text-danger')
+                        .addClass('text-success')
+                        .html("Coupon Applied! Discount ₹" + response.discount);
 
-            return;
+                    // Discount row show
+                    $('#discountRow').removeClass('d-none');
 
-        }
+                    // Discount amount update
+                    $('#discountAmount').text(response.discount);
 
-        fetch("{{ route('apply.coupon') }}", {
+                    // Final total update
+                    $('#finalTotal').text(response.final_total);
 
-                method: "POST",
+                } else {
 
-                headers: {
-
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-
-                },
-
-                body: JSON.stringify({
-
-                    coupon_code: code,
-                    subtotal: subtotal
-
-                })
-
-            })
-            .then(res => res.json())
-            .then(data => {
-
-                if (!data.status) {
-
-                    showCouponMsg(data.message, false);
-                    return;
+                    $('#coupon_msg')
+                        .removeClass('d-none text-success')
+                        .addClass('text-danger')
+                        .html(response.message);
 
                 }
 
-                document.getElementById("discountRow")
-                    .classList.remove("d-none");
+            }
 
-                document.getElementById("discountAmount")
-                    .innerText = data.discount;
-
-                document.getElementById("finalTotal")
-                    .innerText = data.final_total;
-
-                document.getElementById("coupon_code").value = code;
-                document.getElementById("coupon_discount").value = data.discount;
-
-                showCouponMsg("Coupon applied successfully", true);
-
-            })
-            .catch(() => {
-
-                showCouponMsg("Server error", false);
-
-            });
+        });
 
     }
 
@@ -874,6 +907,19 @@
 
         if (paymentInput)
             paymentInput.value = method;
+
+    }
+
+
+
+    function copyCoupon(code) {
+
+        $('#coupon_input').val(code);
+
+        $('#coupon_msg')
+            .removeClass('d-none text-danger')
+            .addClass('text-success')
+            .html("Coupon <b>" + code + "</b> copied. Click Apply to use.");
 
     }
 </script>

@@ -939,8 +939,7 @@ Route::post(
     [CheckoutController::class, 'createRazorpayOrder']
 )->name('checkout.razorpay.create')->middleware('auth');
 
-Route::post('/apply-coupon', [CheckoutController::class, 'applyCoupon'])
-    ->name('apply.coupon');
+Route::post('/apply-coupon', [WebsiteController::class,'applyCoupon'])->name('apply_coupon');
 
 Route::post('/save-address', [LocationController::class, 'saveAddress'])
     ->name('save.address');
