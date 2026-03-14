@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\FifoStockService;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -689,48 +690,5 @@ class CheckoutController extends Controller
         }
     }
 
-    public function applyCoupon(Request $request)
-    {
-        Log::info($request->all());
-        $coupon = Coupon::where('code', $request->coupon_code)
-            ->where('status', 1)
-            ->whereDate('start_date', '<=', now())
-            ->whereDate('end_date', '>=', now())
-            ->first();
-
-        if (!$coupon) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid or expired coupon'
-            ]);
-        }
-
-        // Minimum order validation (₹1000 etc.)
-        if ($request->subtotal < $coupon->min_amount) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
-            ]);
-        }
-
-        // Discount calculation
-        if ($coupon->discount_type === 'percentage') {
-            $discount = ($request->subtotal * $coupon->discount_value) / 100;
-        } else {
-            $discount = $coupon->discount_value;
-        }
-
-        // safety
-        if ($discount > $request->subtotal) {
-            $discount = $request->subtotal;
-        }
-
-        $finalTotal = $request->subtotal - $discount;
-
-        return response()->json([
-            'status' => true,
-            'discount' => $discount,
-            'final_total' => $finalTotal
-        ]);
-    }
+   
 }

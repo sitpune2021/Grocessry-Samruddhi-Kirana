@@ -32,6 +32,11 @@
                     <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
                     <p class="text-muted mb-2">{{ $product->category->name ?? 'N/A' }}</p>
 
+                    <!-- Unit -->
+                    <div class="product-unit mb-2">
+                        {{ rtrim(rtrim(number_format($product->unit_value,2),'0'),'.') }}
+                        {{ Str::title(optional($product->unit)->name) }}
+                    </div>
                     <!-- Price -->
                     <div class="mb-2">
 
@@ -55,11 +60,6 @@
                     <div class="offer-badge">{{ $discount }}% OFF</div>
                     @endif
 
-                    <!-- Unit -->
-                    <div class="product-unit mb-3">
-                        {{ rtrim(rtrim(number_format($product->unit_value,2),'0'),'.') }}
-                        {{ Str::title(optional($product->unit)->name) }}
-                    </div>
 
                     <!-- Add To Cart Form -->
                     <form action="{{ route('add_cart') }}" method="POST" class="add-to-cart-form d-flex align-items-center gap-3 flex-wrap">

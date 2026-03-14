@@ -13,12 +13,12 @@
                 @endphp
 
                 <!-- Header -->
-                <div class="row card-header flex-column flex-md-row pb-0">
+                <div class="row card-header d-flex flex-md-row pb-0">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title"> Banner List</h5>
+                        <h4 class="card-title"> Banner List</h4>
                     </div>
                     @if(hasPermission('banners.create'))
-                    <div class="col-md-auto ms-auto mt-5">
+                    <div class="col-md-auto ms-auto">
                         <a href="{{ route('banners.create') }}" class="btn btn-success">
                            Add Banner
                         </a>

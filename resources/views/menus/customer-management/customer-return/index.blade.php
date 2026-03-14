@@ -9,7 +9,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Customer Order Returns</h5>
+                    <h4 class="card-title mb-0">Customer Order Returns</h4>
                 </div>
                 <!-- <div class="col-md-auto ms-auto">
                     <a href="{{ route('delivery-agents.create') }}"

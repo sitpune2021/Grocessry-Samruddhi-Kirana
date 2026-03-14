@@ -11,16 +11,16 @@
     </div>
 @endif
 
-    <div class="card">
+    <div class="card mt-4">
 
         {{-- HEADER --}}
         <div class="card-header align-items-center" style="display:flex;">
-            <h5 class="mb-0 flex-grow-1">
+            <h4 class="mb-0 flex-grow-1">
                 Service Areas
                 @if($warehouse)
                     – {{ $warehouse->name }}
                 @endif
-            </h5>
+            </h4>
 
             <a href="{{ route('warehouse.index') }}" class="btn  btn-success">
                 Back
