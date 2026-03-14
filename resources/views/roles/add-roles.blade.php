@@ -1,88 +1,74 @@
-@include('layouts.header')
+@extends('layouts.app')
 
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
+@section('content')
+<div class="content-wrapper">
+    <div class="container-xxl container-p-y">
+        <div class="card">
 
-            @include('layouts.sidebar')
+            <div class="card-header">
+                @if ($mode == 'add')
+                <h4>Add Role</h4>
+                @endif
 
-            <div class="layout-page">
-                @include('layouts.navbar')
+                @if ($mode == 'edit')
+                <h4>Edit Role</h4>
+                @endif
 
-                <div class="content-wrapper">
-                    <div class="container-xxl container-p-y">
-                        <div class="card">
+                @if ($mode == 'show')
+                <h4>Role</h4>
+                @endif
 
-                            <div class="card-header">
-                                @if ($mode == 'add')
-                                <h4>Add Role</h4>
-                                @endif
+            </div>
 
-                                @if ($mode == 'edit')
-                                <h4>Edit Role</h4>
-                                @endif
+            <div class="card-body">
+                <form
+                    action="{{ $mode == 'edit' ? route('roles.update', $role->id) : route('roles.store') }}"
+                    method="POST">
+                    @csrf
+                    @if ($mode == 'edit')
+                    @method('PUT') <!-- Use PUT method for editing -->
+                    @endif
+                    <div class="d-flex gap-3">
+                        <div class="mb-3 flex-fill">
+                            <label class="form-label">Role Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control"
+                                placeholder="Enter role name"
+                                value="{{ old('name', $role->name ?? '') }}"
+                                @if($mode=='show' ) readonly @endif>
+                            @error('name')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
+                            @if(session('error'))
+                            <div class="text-danger mt-1">{{ session('error') }}</div>
+                            @endif
+                        </div>
 
-                                @if ($mode == 'show')
-                                <h4>Role</h4>
-                                @endif
+                        <div class="mb-3 flex-fill">
+                            <label class="form-label">
+                                Description <span class="text-danger"></span>
+                            </label>
 
-                            </div>
+                            <input type="text" name="description" class="form-control"
+                                placeholder="Enter description"
+                                value="{{ old('description', $role->description ?? '') }}"
+                                @if ($mode=='show' ) disabled @endif>
 
-                            <div class="card-body">
-                                <form
-                                    action="{{ $mode == 'edit' ? route('roles.update', $role->id) : route('roles.store') }}"
-                                    method="POST">
-                                    @csrf
-                                    @if ($mode == 'edit')
-                                    @method('PUT') <!-- Use PUT method for editing -->
-                                    @endif
-                                    <div class="d-flex gap-3">
-                                        <div class="mb-3 flex-fill">
-                                            <label class="form-label">Role Name <span class="text-danger">*</span></label>
-                                            <input type="text" name="name" class="form-control"
-                                                placeholder="Enter role name"
-                                                value="{{ old('name', $role->name ?? '') }}"
-                                                @if($mode=='show' ) readonly @endif>
-                                            @error('name')
-                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                            @enderror
-                                            @if(session('error'))
-                                            <div class="text-danger mt-1">{{ session('error') }}</div>
-                                            @endif
-                                        </div>
-
-                                        <div class="mb-3 flex-fill">
-                                            <label class="form-label">
-                                                Description <span class="text-danger"></span>
-                                            </label>
-
-                                            <input type="text" name="description" class="form-control"
-                                                placeholder="Enter description"
-                                                value="{{ old('description', $role->description ?? '') }}"
-                                                @if ($mode=='show' ) disabled @endif>
-
-                                            @error('description')
-                                            <div class="text-danger mt-1">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-
-                                    <div class="text-end">
-                                        <a href="{{ route('roles.index') }}" class="btn btn-success">Back</a>
-                                        @if ($mode != 'show')
-                                        <button
-                                            class="btn btn-success">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
-                                        @endif
-                                    </div>
-                                </form>
-                            </div>
-
+                            @error('description')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
-                    @include('layouts.footer')
-                </div>
+                    <div class="text-end">
+                        <a href="{{ route('roles.index') }}" class="btn btn-success">Back</a>
+                        @if ($mode != 'show')
+                        <button
+                            class="btn btn-success">{{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}</button>
+                        @endif
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</body>
+</div>
+@endsection
