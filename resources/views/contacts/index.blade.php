@@ -10,7 +10,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title">User Contact List</h5>
+                    <h4 class="card-title">User Contact List</h4>
                 </div>
             </div><br><br>
 

@@ -7,9 +7,9 @@
                 <div class="card shadow-sm border-0 rounded-3">
                     <div class="card-header bg-white fw-semibold">
                         @if ($mode === 'add')
-                            Add Retailer Offer
+                            <h4>Add Retailer Offer</h4>
                         @elseif($mode === 'edit')
-                            Edit Retailer Offer
+                             <h4>Edit Retailer Offer</h4>
                         @endif
                     </div>
 

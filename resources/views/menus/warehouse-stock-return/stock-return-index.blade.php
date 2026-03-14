@@ -9,7 +9,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row pb-0">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Raise Warehouse Stock Return</h5>
+                    <h4 class="card-title">Raise Warehouse Stock Return</h4>
                 </div>
                 @php
                 $warehouseType = auth()->user()?->warehouse?->type;

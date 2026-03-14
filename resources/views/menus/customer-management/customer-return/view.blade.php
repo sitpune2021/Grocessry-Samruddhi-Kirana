@@ -1,22 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
-
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
-
-                @include('layouts.navbar')
-                <!-- / Navbar -->
-
+@extends('layouts.app')
+@section('content')
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
                     <!-- Content -->
@@ -142,13 +125,4 @@
                     </div>
                 </div>
                 <!-- / Content -->
-                @include('layouts.footer')
-            </div>
-            <!-- Content wrapper -->
-        </div>
-        <!-- / Layout page -->
-    </div>
-
-    </div>
-    <!-- / Layout wrapper -->
-</body>
+@endsection

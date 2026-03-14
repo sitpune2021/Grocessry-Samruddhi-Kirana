@@ -1,21 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
-
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
-                @include('layouts.navbar')
-                <!-- / Navbar -->
-
+@extends('layouts.app')
+@section('content')
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
@@ -308,15 +292,10 @@
                         </div>
                     </div>
 
-                    @include('layouts.footer')
                 </div>
                 <!-- / Content wrapper -->
-            </div>
-            <!-- / Layout page -->
-        </div>
-    </div>
-    <!-- / Layout wrapper -->
-
+      @endsection
+@push('scripts')
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
@@ -776,3 +755,5 @@
         //     return true;
         // }
     </script>
+
+    @endpush
