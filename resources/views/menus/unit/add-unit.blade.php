@@ -1,126 +1,103 @@
-@include('layouts.header')
+@extends('layouts.app')
+@section('content')
+<!-- Content wrapper -->
+<div class="content-wrapper">
+    <!-- Content -->
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row g-6">
 
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
+            <!-- Form controls -->
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-3">
 
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
+                    <!-- Card Header -->
+                    <div class="card-header bg-white fw-semibold">
+                        
+                        @if ($mode === 'add')
+                        <h4>Add Unit</h4>
+                        @elseif($mode === 'edit')
+                        <h4>Edit Unit</h4>
+                        @else
+                        <h4>View Unit</h4>
+                        @endif
+                    </div>
 
-                @include('layouts.navbar')
-                <!-- / Navbar -->
+                    <div class="card-body">
+                        <form
+                            action="{{ $mode === 'edit' ? route('units.update', $units->id) : route('units.store') }}"
+                            method="POST">
+                            @csrf
 
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
-                    <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row g-6">
+                            @if ($mode === 'edit')
+                            @method('PUT')
+                            @endif
 
-                            <!-- Form controls -->
-                            <div class="col-12">
-                                <div class="card shadow-sm border-0 rounded-3">
+                            <!-- Inputs side by side -->
+                            <div class="row g-3">
 
-                                    <!-- Card Header -->
-                                    <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-category me-1"></i>
-                                        @if ($mode === 'add')
-                                        Add Unit
-                                        @elseif($mode === 'edit')
-                                        Edit Unit
-                                        @else
-                                        View Unit
-                                        @endif
-                                    </div>
+                                <!-- Parent Category -->
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">
+                                        Unit Name <span class="text-danger">*</span>
+                                    </label>
 
-                                    <div class="card-body">
-                                        <form
-                                            action="{{ $mode === 'edit' ? route('units.update', $units->id) : route('units.store') }}"
-                                            method="POST">
-                                            @csrf
+                                    <input type="text"
+                                        name="name"
+                                        class="form-control"
+                                        value="{{ old('name', $units->name ?? '') }}"
+                                        {{ $mode === 'view' ? 'readonly' : '' }}>
 
-                                            @if ($mode === 'edit')
-                                            @method('PUT')
-                                            @endif
+                                    @error('name')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                                            <!-- Inputs side by side -->
-                                            <div class="row g-3">
+                                <!-- Sub Category Name -->
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium">
+                                        Short Name<span class="text-danger">*</span>
+                                    </label>
 
-                                                <!-- Parent Category -->
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Unit Name <span class="text-danger">*</span>
-                                                    </label>
+                                    <input type="text"
+                                        name="short_name"
+                                        class="form-control"
+                                        value="{{ old('short_name', $units->short_name ?? '') }}"
+                                        {{ $mode === 'view' ? 'readonly' : '' }}>
 
-                                                    <input type="text"
-                                                        name="name"
-                                                        class="form-control"
-                                                        value="{{ old('name', $units->name ?? '') }}"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-
-                                                    @error('name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                <!-- Sub Category Name -->
-                                                <div class="col-md-4">
-                                                    <label class="form-label fw-medium">
-                                                        Short Name<span class="text-danger">*</span>
-                                                    </label>
-
-                                                    <input type="text"
-                                                        name="short_name"
-                                                        class="form-control"
-                                                        value="{{ old('short_name', $units->short_name ?? '') }}"
-                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
-
-                                                    @error('short_name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                            </div>
-
-                                            <!-- Buttons (Right Aligned) -->
-                                            <div class="mt-4 d-flex justify-content-end gap-2 text-end">
-                                                <a href="{{ route('units.index') }}" class="btn btn-success">
-                                                    Back
-                                                </a>
-
-                                                @if ($mode === 'add')
-                                                <button type="submit" class="btn btn-success">
-                                                    Save Unit
-                                                </button>
-                                                @elseif ($mode === 'edit')
-                                                <button type="submit" class="btn btn-success">
-                                                    Update Unit
-                                                </button>
-                                                @endif
-                                            </div>
-                                        </form>
-                                    </div>
+                                    @error('short_name')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- Buttons (Right Aligned) -->
+                            <div class="mt-4 d-flex justify-content-end gap-2 text-end">
+                                <a href="{{ route('units.index') }}" class="btn btn-success">
+                                    Back
+                                </a>
+
+                                @if ($mode === 'add')
+                                <button type="submit" class="btn btn-success">
+                                    Save Unit
+                                </button>
+                                @elseif ($mode === 'edit')
+                                <button type="submit" class="btn btn-success">
+                                    Update Unit
+                                </button>
+                                @endif
+                            </div>
+                        </form>
                     </div>
-                    <!-- / Content -->
-                    @include('layouts.footer')
                 </div>
-                <!-- Content wrapper -->
             </div>
-            <!-- / Layout page -->
         </div>
-
     </div>
-    <!-- / Layout wrapper -->
-</body>
+    <!-- / Content -->
+</div>
+<!-- Content wrapper -->
+@endsection
 
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nameInput = document.querySelector('input[name="name"]');
@@ -146,3 +123,4 @@
         }
     });
 </script>
+@endpush

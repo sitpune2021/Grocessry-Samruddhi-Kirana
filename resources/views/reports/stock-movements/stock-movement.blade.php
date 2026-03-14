@@ -5,7 +5,7 @@
 
         <div class="card shadow-sm">
             <div class="card-header">
-                <h5 class="mb-0">Stock Movement Report</h5>
+                <h4 class="mb-0">Stock Movement Report</h4>
             </div>
 
             <!-- Filters -->

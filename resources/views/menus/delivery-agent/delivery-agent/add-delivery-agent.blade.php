@@ -1,22 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
-
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
-
-                @include('layouts.navbar')
-                <!-- / Navbar -->
-
+@extends('layouts.app')
+@section('content')
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
                     <!-- Content -->
@@ -28,13 +11,12 @@
 
                                     {{-- Card Header --}}
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-category me-1"></i>
                                         @if ($mode === 'add')
-                                            Add Agent
+                                            <h4>Add Agent</h4>
                                         @elseif($mode === 'edit')
-                                            Edit Agent
+                                            <h4>Edit Agent</h4>
                                         @else
-                                            View Agent
+                                            <h4>View Agent</h4>
                                         @endif
                                     </div>                               
                                     <div class="card-body">
@@ -312,7 +294,7 @@
                                             </div>
 
                                             {{-- Buttons --}}
-                                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                            <div class="mt-4 d-flex justify-content-end text-end gap-2">
                                                 <a href="{{ route('delivery-agents.index') }}"
                                                     class="btn btn-success">
                                                     Back
@@ -321,7 +303,7 @@
                                                 @if ($mode === 'add')
                                                     <button type="submit" class="btn btn-success">Save Agent</button>
                                                 @elseif($mode === 'edit')
-                                                    <button type="submit" class="btn btn-primary">Update
+                                                    <button type="submit" class="btn btn-success">Update
                                                         Agent</button>
                                                 @endif
                                             </div>
@@ -333,17 +315,10 @@
                     </div>
                 </div>
                 <!-- / Content -->
-                @include('layouts.footer')
-            </div>
-            <!-- Content wrapper -->
-        </div>
-        <!-- / Layout page -->
-    </div>
+           
+@endsection
 
-    </div>
-    <!-- / Layout wrapper -->
-</body>
-
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nameInput = document.querySelector('input[name="name"]');
@@ -369,3 +344,4 @@
         }
     });
 </script>
+@endpush
