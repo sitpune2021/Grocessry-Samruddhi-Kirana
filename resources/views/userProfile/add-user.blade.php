@@ -195,9 +195,9 @@
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             id="statusToggle"
-                                                            name="is_active"
+                                                            name="status"
                                                             value="1"
-                                                            {{ old('is_active', $tax->is_active ?? 1) ? 'checked' : '' }}
+                                                            {{ old('status', $tax->status ?? 1) ? 'checked' : '' }}
                                                             {{ $mode === 'show' ? 'disabled' : '' }}
                                                             onchange="toggleStatusLabel()">
 
