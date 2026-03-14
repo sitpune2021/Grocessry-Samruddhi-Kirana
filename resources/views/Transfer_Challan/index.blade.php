@@ -15,7 +15,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Transfer Challans</h5>
+                    <h4 class="card-title mb-0">Transfer Challans</h4>
                 </div>
                 <!-- @if(hasPermission('transfer_challan.create'))
                     <div class="col-md-auto ms-auto">

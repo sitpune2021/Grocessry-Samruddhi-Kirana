@@ -12,11 +12,12 @@ use App\Models\Category;
 use App\Models\ContactDetail;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\ProductBatch;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Log;
 class WebsiteController extends Controller
 {
 
@@ -557,8 +558,6 @@ class WebsiteController extends Controller
             'availableStock',
             'cartItems'
         ));
-
-     
     }
     public function categoryProducts($slug)
     {
@@ -593,4 +592,56 @@ class WebsiteController extends Controller
             'globalCart' => $cart
         ]);
     }
+
+   public function applyCoupon(Request $request)
+{
+    Log::info('applyCoupon Request:', $request->all());
+
+    $coupon = Coupon::where('code', $request->coupon_code)->first();
+
+    if (!$coupon) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid coupon'
+        ]);
+    }
+
+    $cart = Cart::where('user_id', auth()->id())->first();
+
+    if (!$cart) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Cart empty'
+        ]);
+    }
+
+    $cartItems = CartItem::where('cart_id', $cart->id)->get();
+
+    $subtotal = 0;
+
+    foreach ($cartItems as $item) {
+        $subtotal += $item->price * $item->qty;
+    }
+
+    if ($subtotal < $coupon->min_amount) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
+        ]);
+    }
+
+    if ($coupon->discount_type == 'percentage') {
+        $discount = ($subtotal * $coupon->discount_value) / 100;
+    } else {
+        $discount = $coupon->discount_value;
+    }
+
+    $finalTotal = $subtotal - $discount;
+
+    return response()->json([
+        'status' => true,
+        'discount' => $discount,
+        'final_total' => $finalTotal
+    ]);
+}
 }

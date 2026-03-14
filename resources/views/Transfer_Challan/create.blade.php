@@ -1,17 +1,6 @@
-@include('layouts.header')
+@extends('layouts.app')
 
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            {{-- Sidebar --}}
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <div class="layout-page">
-                @include('layouts.navbar')
-
+@section('content')
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -187,12 +176,11 @@
                         </div>
 
                     </div>
-                    @include('layouts.footer')
+                   
                 </div>
-            </div>
-        </div>
-    </div>
+@endsection
 
+@push('scripts')
     <script>
         document.getElementById('addRow')?.addEventListener('click', function() {
             const table = document.getElementById('itemsTable');
@@ -283,7 +271,4 @@
             });
         });
     </script>
-
-
-
-</body>
+@endpush
