@@ -633,9 +633,9 @@ class CheckoutController extends Controller
         }
     }
     public function paymentSuccess(Request $request)
-
     {
         Log::info('paymentSuccess:', $request->all());
+
         try {
 
             $api = new Api(
@@ -653,16 +653,34 @@ class CheckoutController extends Controller
 
             $order = Order::findOrFail($request->order_id);
 
+            /* ORDER UPDATE */
             $order->update([
                 'payment_status' => 'paid',
                 'status' => 'confirmed'
             ]);
+
+            /* PAYMENT UPDATE */
+            Payment::where('order_id', $order->id)->update([
+                'payment_id' => $request->razorpay_payment_id,
+                'razorpay_signature' => $request->razorpay_signature,
+                'status' => 'success'
+            ]);
+
+            /* CART CLEAR */
+            $cart = Cart::with('items')->where('user_id', $order->user_id)->first();
+
+            if ($cart) {
+                $cart->items()->delete();
+                $cart->delete();
+            }
 
             return response()->json([
                 'status' => true,
                 'message' => 'Payment successful'
             ]);
         } catch (\Exception $e) {
+
+            Log::error('Payment Verification Failed: ' . $e->getMessage());
 
             return response()->json([
                 'status' => false,

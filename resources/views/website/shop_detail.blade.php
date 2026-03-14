@@ -10,6 +10,8 @@
 </div> -->
 
 <!-- Product Detail -->
+
+
 <div class="container mb-5" style="margin-top:140px;">
     <div class="row g-4">
 
@@ -17,10 +19,12 @@
         <div class="col-lg-5">
             <div class="card shadow-sm product-image-wrapper">
                 <img src="{{ asset('storage/products/'.$product->product_images[0]) }}"
-                    class="img-fluid product-main-img" alt="{{ $product->name }}">
+                    class="img-fluid product-main-img"
+                    alt="{{ $product->name }}">
             </div>
         </div>
 
+        <!-- Product Info -->
         <div class="col-lg-7">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
@@ -28,86 +32,102 @@
                     <h3 class="fw-bold mt-3">{{ $product->name }}</h3>
                     <p class="text-muted mb-2">{{ $product->category->name ?? 'N/A' }}</p>
 
+                    <!-- Price -->
                     <div class="mb-2">
 
                         @if($product->mrp > $product->final_price)
-                        <span class="text-muted text-decoration-line-through ms-2">
-                            ₹{{ number_format($product->mrp, 0) }}
+                        <span class="text-muted text-decoration-line-through">
+                            ₹{{ number_format($product->mrp,0) }}
+                        </span>
+                        @endif
+
+                        <span class="fs-4 fw-bold text-success ms-2">
+                            ₹{{ number_format($product->final_price,0) }}
                         </span>
 
-                        @endif
-                        <span class="fs-4 ms-2 fw-bold text-success">
-                            ₹{{ number_format($product->final_price, 0) }}
-                        </span>
                     </div>
-                    {{-- DISCOUNT --}}
+
+                    <!-- Discount -->
                     @if($product->mrp > $product->final_price)
                     @php
                     $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
                     @endphp
                     <div class="offer-badge">{{ $discount }}% OFF</div>
                     @endif
-                    <div class="product-unit">
-                        {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
+
+                    <!-- Unit -->
+                    <div class="product-unit mb-3">
+                        {{ rtrim(rtrim(number_format($product->unit_value,2),'0'),'.') }}
                         {{ Str::title(optional($product->unit)->name) }}
                     </div>
-                    <form action="{{ route('add_cart') }}" method="POST" class="d-flex align-items-center gap-3 flex-wrap">
+
+                    <!-- Add To Cart Form -->
+                    <form action="{{ route('add_cart') }}" method="POST" class="add-to-cart-form d-flex align-items-center gap-3 flex-wrap">
                         @csrf
+
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" id="available-stock" value="{{ $availableStock }}">
+
                         @php
                         $cartQty = $cartItems[$product->id]->qty ?? 0;
                         @endphp
+
                         {{-- Warehouse not selected --}}
                         @if(!session('dc_warehouse_id'))
+
                         <button type="button" class="btn btn-secondary" disabled>
                             Check Availability
                         </button>
-                        <div class="qty-wrapper">
-                            {{-- QTY CONTROLS --}}
-                            <div class="qty-box {{ $cartQty > 0 ? '' : 'd-none' }}">
-                                <button type="button" onclick="changeQty(this, -1)">−</button>
 
-                                <span class="qty">{{ $cartQty > 0 ? $cartQty : 1 }}</span>
+                        @else
 
-                                <button type="button" onclick="changeQty(this, 1)">+</button>
-                            </div>
+                        {{-- Add to cart button component --}}
+                        @include('website.partials.add-to-cart-btn', [
+                        'product' => $product,
+                        'cartItems' => $cartItems
+                        ])
 
-                        </div>
                         @endif
-                    </form>
 
-                    <!-- <button class="btn btn-primary rounded-pill px-4">
-                            <i class="fa fa-shopping-bag me-2"></i>Add to Cart
-                        </button> -->
-
-                    @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </form>
 
                     <hr>
 
                     <!-- Tabs -->
-                    <ul class="nav nav-tabs" role="tablist">
+                    <ul class="nav nav-tabs">
                         <li class="nav-item">
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description">Description</button>
+                            <button class="nav-link active"
+                                data-bs-toggle="tab"
+                                data-bs-target="#description">
+                                Description
+                            </button>
                         </li>
+
                         <li class="nav-item">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews">Reviews</button>
+                            <button class="nav-link"
+                                data-bs-toggle="tab"
+                                data-bs-target="#reviews">
+                                Reviews
+                            </button>
                         </li>
                     </ul>
 
                     <div class="tab-content pt-3">
+
                         <div class="tab-pane fade show active" id="description">
                             <p>{{ $product->description }}</p>
                         </div>
+
                         <div class="tab-pane fade" id="reviews">
                             <p class="text-muted">No reviews available.</p>
                         </div>
+
                     </div>
 
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="row g-3 mt-3">
@@ -159,7 +179,7 @@
                                 <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
                             </div>
 
-                            @include('website.partials.add-to-cart-btn', ['product' => $product])
+                            @include('website.partials.add-to-cart-btn', ['product' => $related])
                         </div>
                     </form>
                 </div>
@@ -168,27 +188,6 @@
 
         @endforeach
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </div>
 <div id="custom-alert-container"></div>
@@ -202,8 +201,10 @@
         // Quantity +
         $(document).on('click', '.qty-plus', function() {
 
-            let input = $('.qty-input');
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let input = form.find('.qty-input');
+            let stockMsg = form.find('.stock-msg');
+
             let current = parseInt(input.val()) || 1;
 
             if (current >= availableStock) {
@@ -218,8 +219,10 @@
         // Quantity -
         $(document).on('click', '.qty-minus', function() {
 
-            let input = $('.qty-input');
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let input = form.find('.qty-input');
+            let stockMsg = form.find('.stock-msg');
+
             let current = parseInt(input.val()) || 1;
 
             if (current > 1) {
@@ -231,7 +234,9 @@
         // Manual typing validation
         $(document).on('input', '.qty-input', function() {
 
-            let stockMsg = $('.stock-msg');
+            let form = $(this).closest('form');
+            let stockMsg = form.find('.stock-msg');
+
             let val = parseInt($(this).val()) || 1;
 
             if (val > availableStock) {
