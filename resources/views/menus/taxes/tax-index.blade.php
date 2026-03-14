@@ -9,10 +9,10 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Taxes</h5>
+                    <h4 class="card-title mb-0">Taxes</h4>
                 </div>
 
-                <div class="col-md-auto ms-auto d-flex gap-2"">
+                <div class="col-md-auto ms-auto d-flex gap-2">
                     <a href="{{ route('taxes.create') }}"
                        class="btn btn-success">
                         Add Tax

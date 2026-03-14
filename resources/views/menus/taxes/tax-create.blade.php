@@ -1,185 +1,143 @@
-@include('layouts.header')
+@extends('layouts.app')
 
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
+@section('content')
 
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
+<!-- Content wrapper -->
+<div class="content-wrapper">
+    <!-- Content -->
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row">
+            <!-- Form controls -->
+            <div class="col-xxl-12">
+                <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <!-- Card Header -->
+                    <h4 class="mb-0 flex-grow-1">
+                        @if ($mode === 'add')
+                        Add Tax
+                        @elseif($mode === 'edit')
+                        Edit Tax
+                        @else
+                        View Tax
+                        @endif
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form
+                        action="{{ $mode === 'edit' ? route('taxes.update', $tax->id) : route('taxes.store') }}"
+                        method="POST">
+                        @csrf
+                        @if($mode === 'edit')
+                        @method('PUT')
+                        @endif
+                        <div class="row">
+                            <div class="col-md-2">
+                                <label for="name" class="form-label">Tax Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" id="name" class="form-control"
+                                    value="{{ old('name', $tax->name ?? '') }}"
+                                    {{ $mode === 'show' ? 'disabled' : '' }}
+                                    placeholder="GST 5%">
 
-                @include('layouts.navbar')
-                <!-- / Navbar -->
+                                @error('name')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
-                    <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row g-6">
+                            <div class="col-md-2">
+                                <label for="cgst" class="form-label">CGST (%)</label>
+                                <input type="text" step="0.01" name="cgst" id="cgst" class="form-control"
+                                    value="{{ old('cgst', $tax->cgst ?? '') }}"
+                                    {{ $mode === 'show' ? 'disabled' : '' }}
+                                    placeholder="2.5">
 
-                            <!-- Form controls -->
-                            <div class="col-12">
-                                <div class="card shadow-sm border-0 rounded-3">
+                                @error('cgst')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-2">
+                                <label for="sgst" class="form-label">SGST (%)</label>
+                                <input type="text" step="0.01" name="sgst" id="sgst" class="form-control"
+                                    value="{{ old('sgst', $tax->sgst ?? '') }}"
+                                    {{ $mode === 'show' ? 'disabled' : '' }}
+                                    placeholder="2.5">
 
-                                    <!-- Card Header -->
-                                    <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-category me-1"></i>
-                                        @if ($mode === 'add')
-                                        Add Tax
-                                        @elseif($mode === 'edit')
-                                        Edit Tax
-                                        @else
-                                        View Tax
-                                        @endif
-                                    </div>
+                                @error('sgst')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-2">
+                                <label for="igst" class="form-label">IGST</label>
+                                <input type="text" step="0.01" name="igst" id="igst" class="form-control"
+                                    value="{{ old('igst', $tax->igst ?? '') }}"
+                                    {{ $mode === 'show' ? 'disabled' : '' }}
+                                    placeholder="5">
+                                @error('igst')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-2">
+                                <label for="gst" class="form-label">GST (%)</label>
+                                <input type="text" step="0.01" name="gst" id="gst" class="form-control"
+                                    value="{{ old('gst', $tax->gst ?? '') }}"
+                                    {{ $mode === 'show' ? 'disabled' : '' }}
+                                    placeholder="5">
+                                @error('gst')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                                    <div class="card-body">
-                                        <form
-                                            action="{{ $mode === 'edit' ? route('taxes.update', $tax->id) : route('taxes.store') }}"
-                                            method="POST">
-                                            @csrf
-                                            @if($mode === 'edit')
-                                            @method('PUT')
-                                            @endif
-                                            <div class="row">
-                                                <div class="col-md-2">
-                                                    <label for="name" class="form-label">Tax Name <span class="text-danger">*</span></label>
-                                                    <input type="text" name="name" id="name" class="form-control"
-                                                        value="{{ old('name', $tax->name ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="GST 5%">
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label for="statusToggle" class="form-label mt-1">
+                                        Status
+                                    </label><br>
 
-                                                    @error('name')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                    <div class="form-check form-switch mt-1">
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            id="statusToggle"
+                                            name="is_active"
+                                            value="1"
+                                            {{ old('is_active', $tax->is_active ?? 1) ? 'checked' : '' }}
+                                            {{ $mode === 'show' ? 'disabled' : '' }}
+                                            onchange="toggleStatusLabel()">
 
-                                                <div class="col-md-2">
-                                                    <label for="cgst" class="form-label">CGST (%)</label>
-                                                    <input type="text" step="0.01" name="cgst" id="cgst" class="form-control"
-                                                        value="{{ old('cgst', $tax->cgst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5">
-
-                                                    @error('cgst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label for="sgst" class="form-label">SGST (%)</label>
-                                                    <input type="text" step="0.01" name="sgst" id="sgst" class="form-control"
-                                                        value="{{ old('sgst', $tax->sgst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="2.5">
-
-                                                    @error('sgst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label for="igst" class="form-label">IGST</label>
-                                                    <input type="text" step="0.01" name="igst" id="igst" class="form-control"
-                                                        value="{{ old('igst', $tax->igst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5">
-                                                    @error('igst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label for="gst" class="form-label">GST (%)</label>
-                                                    <input type="text" step="0.01" name="gst" id="gst" class="form-control"
-                                                        value="{{ old('gst', $tax->gst ?? '') }}"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}
-                                                        placeholder="5">
-                                                    @error('gst')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                <!-- <div class="col-md-2">
-                                                    <label for="is_active" class="form-label">Status</label>
-                                                    <select name="is_active" id="is_active" class="form-control"
-                                                        {{ $mode === 'show' ? 'disabled' : '' }}>
-                                                        <option value="1" {{ (old('is_active', $tax->is_active ?? '') == 1) ? 'selected' : '' }}>
-                                                            Active
-                                                        </option>
-                                                        <option value="0" {{ (old('is_active', $tax->is_active ?? '') == 0) ? 'selected' : '' }}>
-                                                            Inactive
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                @error('is_active')
-                                                <div class="text-danger mt-1">{{ $message }}</div>
-                                                @enderror -->
-
-
-                                                <div class="col-md-2">
-                                                    <div class="mb-3">
-                                                        <label for="statusToggle" class="form-label mt-1">
-                                                            Status
-                                                        </label><br>
-
-                                                        <div class="form-check form-switch mt-1">
-                                                            <input
-                                                                class="form-check-input"
-                                                                type="checkbox"
-                                                                id="statusToggle"
-                                                                name="is_active"
-                                                                value="1"
-                                                                {{ old('is_active', $tax->is_active ?? 1) ? 'checked' : '' }}
-                                                                {{ $mode === 'show' ? 'disabled' : '' }}
-                                                                onchange="toggleStatusLabel()">
-
-                                                            <label class="form-check-label" id="statusLabel" for="statusToggle">
-                                                                Active
-                                                            </label>
-                                                        </div>
-                                                    </div>
-
-                                                    @error('is_active')
-                                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                            </div>
-                                            <!-- <button type="submit" class="btn btn-success">Save Tax</button>
-                                            <a href="{{ route('taxes.index') }}" class="btn btn-secondary">Back</a> -->
-
-                                            <div class="mt-3 text-end">
-                                                <a href="{{ route('taxes.index') }}" class="btn btn-success">
-                                                    Back
-                                                </a>
-
-                                                @if($mode !== 'show')
-                                                <button type="submit" class="btn btn-success">
-                                                    {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
-                                                </button>
-                                                @endif
-                                            </div>
-                                        </form>
+                                        <label class="form-check-label" id="statusLabel" for="statusToggle">
+                                            Active
+                                        </label>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- / Content -->
-                    @include('layouts.footer')
-                </div>
-                <!-- Content wrapper -->
-            </div>
-            <!-- / Layout page -->
-        </div>
 
+                                @error('is_active')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                        </div>
+                        <div class="mt-3 text-end">
+                            <a href="{{ route('taxes.index') }}" class="btn btn-success">
+                                Back
+                            </a>
+
+                            @if($mode !== 'show')
+                            <button type="submit" class="btn btn-success">
+                                {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
+                            </button>
+                            @endif
+                        </div>
+                    </form>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- / Layout wrapper -->
-</body>
+</div>
+
+<!-- Content wrapper -->
+@endsection
+
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -205,14 +163,15 @@
 
 
 <script>
-function toggleStatusLabel() {
-    let toggle = document.getElementById("statusToggle");
-    let label = document.getElementById("statusLabel");
+    function toggleStatusLabel() {
+        let toggle = document.getElementById("statusToggle");
+        let label = document.getElementById("statusLabel");
 
-    if (toggle.checked) {
-        label.innerText = "Active";
-    } else {
-        label.innerText = "Inactive";
+        if (toggle.checked) {
+            label.innerText = "Active";
+        } else {
+            label.innerText = "Inactive";
+        }
     }
-}
 </script>
+@endpush
