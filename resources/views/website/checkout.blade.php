@@ -854,14 +854,18 @@
                         .addClass('text-success')
                         .html("Coupon Applied! Discount ₹" + response.discount);
 
-                    // Discount row show
+                    // discount row show
                     $('#discountRow').removeClass('d-none');
 
-                    // Discount amount update
+                    // update discount
                     $('#discountAmount').text(response.discount);
 
-                    // Final total update
+                    // update final total
                     $('#finalTotal').text(response.final_total);
+
+                    //  IMPORTANT
+                    $('#coupon_code').val(coupon_code);
+                    $('#coupon_discount').val(response.discount);
 
                 } else {
 
@@ -873,9 +877,7 @@
                 }
 
             }
-
         });
-
     }
 
     /*  COUPON MESSAGE

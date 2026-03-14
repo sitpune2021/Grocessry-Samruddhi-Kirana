@@ -690,52 +690,5 @@ class CheckoutController extends Controller
         }
     }
 
-    // public function applyCoupon(Request $request)
-    // {
-    //     Log::info('applyCoupon Request:', $request->all());
-    //     $coupon = Coupon::where('code', $request->coupon_code)->first();
-
-    //     if (!$coupon) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Invalid coupon'
-    //         ]);
-    //     }
-
-    //     $cartItems = CartItem::where('user_id', auth()->id())->get();
-
-    //     $subtotal = 0;
-
-    //     foreach ($cartItems as $item) {
-    //         $subtotal += $item->price * $item->qty;
-    //     }
-
-    //     /* MIN ORDER CHECK */
-
-    //     if ($subtotal < $coupon->min_amount) {
-
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
-    //         ]);
-    //     }
-
-    //     /* DISCOUNT */
-
-    //     if ($coupon->discount_type == 'percentage') {
-
-    //         $discount = ($subtotal * $coupon->discount_value) / 100;
-    //     } else {
-
-    //         $discount = $coupon->discount_value;
-    //     }
-
-    //     $finalTotal = $subtotal - $discount;
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'discount' => $discount,
-    //         'final_total' => $finalTotal
-    //     ]);
-    // }
+   
 }
