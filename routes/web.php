@@ -901,11 +901,6 @@ Route::post('/cart/remove/{id}', [WebsiteController::class, 'remove']);
 Route::get('/cart/drawer', [WebsiteController::class, 'drawer'])
     ->name('cart.drawer');
 
-
-Route::post('/cart/update/{itemId}', [WebsiteController::class, 'update'])
-    ->name('cart.update');
-
-
 Route::get('/live-search', [WebsiteController::class, 'liveSearch']);
 
 Route::get('/cart-data', [WebsiteController::class, 'getCartData'])->name('cart.data');

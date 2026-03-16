@@ -143,7 +143,6 @@ $stock = $product->available_stock ?? 0;
 <script>
     function addToCartUI(btn) {
 
-        // Prevent multiple clicks
         if (btn.dataset.loading === "true") return;
         btn.dataset.loading = "true";
 
@@ -161,12 +160,29 @@ $stock = $product->available_stock ?? 0;
                 headers: {
                     'X-CSRF-TOKEN': document
                         .querySelector('meta[name="csrf-token"]')
-                        .getAttribute('content')
+                        .getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest' // 🔥 important
                 },
                 body: formData
             })
-            .then(res => res.json())
+
+            .then(res => {
+
+                //  logout user
+                if (res.status === 401) {
+
+                    window.location.href = "/enduserlogin";
+                    return;
+
+                }
+
+                return res.json();
+
+            })
+
             .then(data => {
+
+                if (!data) return;
 
                 if (data.success) {
 
@@ -177,18 +193,22 @@ $stock = $product->available_stock ?? 0;
 
                     updateCartIcon(data.cart_count);
                     updateShipmentCount(data.cart_count);
-
                     refreshCartDrawer();
 
                 } else {
-                   showCustomAlert(data.message);
+
+                    showCustomAlert(data.message);
+
                 }
 
                 btn.dataset.loading = "false";
+
             })
             .catch(err => {
+
                 console.error(err);
                 btn.dataset.loading = "false";
+
             });
     }
 
@@ -259,7 +279,7 @@ $stock = $product->available_stock ?? 0;
 
                 } else {
 
-                     showCustomAlert(data.message); // custom alert
+                    showCustomAlert(data.message); // custom alert
 
                 }
 
