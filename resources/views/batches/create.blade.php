@@ -216,144 +216,199 @@
                 <!-- / Content -->
 @endSection
 
-@push('Scripts')
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@push('scripts')
 <script>
-    $(document).ready(function() {
-
-        /* ===============================
-           HELPERS
-        =============================== */
-
-        function getWarehouseId() {
-            return $('#warehouse_id').val();
-        }
-
-        function resetBelowCategory() {
-            $('#sub_category_id').html('<option value="">Select Sub Category</option>');
-            $('#product_id').html('<option value="">Select Product</option>');
-            $('#quantity').val('');
-        }
-
-        /* ===============================
-           LOADERS (AJAX)
-        =============================== */
-
-        function loadCategories(wid, selected = null) {
-            if (!wid) return;
-
-            return $.get('/ws/categories/' + wid, function(data) {
-                let html = '<option value="">Select Category</option>';
-                data.forEach(c => {
-                    html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
-                });
-                $('#category_id').html(html);
+$(function () {
+ 
+    console.log("Warehouse script loaded");
+ 
+    /* =========================
+       HELPERS
+    ========================== */
+ 
+    function getWarehouseId() {
+        return $('#warehouse_id').val();
+    }
+ 
+    function resetSubCategory() {
+        $('#sub_category_id').html('<option value="">Select Sub Category</option>');
+    }
+ 
+    function resetProduct() {
+        $('#product_id').html('<option value="">Select Product</option>');
+        $('#quantity').val('');
+    }
+ 
+    /* =========================
+       LOAD CATEGORIES
+    ========================== */
+ 
+    function loadCategories(wid, selected = '') {
+ 
+        if (!wid) return;
+ 
+        $.get('/ws/categories/' + wid, function (data) {
+ 
+            let html = '<option value="">Select Category</option>';
+ 
+            data.forEach(function (c) {
+                html += `<option value="${c.id}" ${selected == c.id ? 'selected' : ''}>${c.name}</option>`;
             });
-        }
-
-        function loadSubCategories(wid, cid, selected = null) {
-            if (!wid || !cid) return;
-
-            return $.get('/ws/subcategories/' + wid + '/' + cid, function(data) {
-                let html = '<option value="">Select Sub Category</option>';
-                data.forEach(s => {
-                    html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
-                });
-                $('#sub_category_id').html(html);
+ 
+            $('#category_id').html(html);
+ 
+        });
+ 
+    }
+ 
+    /* =========================
+       LOAD SUB CATEGORIES
+    ========================== */
+ 
+    function loadSubCategories(wid, cid, selected = '') {
+ 
+        if (!wid || !cid) return;
+ 
+        $.get('/ws/subcategories/' + wid + '/' + cid, function (data) {
+ 
+            let html = '<option value="">Select Sub Category</option>';
+ 
+            data.forEach(function (s) {
+                html += `<option value="${s.id}" ${selected == s.id ? 'selected' : ''}>${s.name}</option>`;
             });
-        }
-
-        function loadProducts(wid, sid, selected = null) {
-            if (!wid || !sid) return;
-
-            return $.get('/ws/products-by-sub/' + wid + '/' + sid, function(data) {
-                let html = '<option value="">Select Product</option>';
-                data.forEach(p => {
-                    html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
-                });
-                $('#product_id').html(html);
+ 
+            $('#sub_category_id').html(html);
+ 
+        });
+ 
+    }
+ 
+    /* =========================
+       LOAD PRODUCTS
+    ========================== */
+ 
+    function loadProducts(wid, sid, selected = '') {
+ 
+        if (!wid || !sid) return;
+ 
+        $.get('/ws/products-by-sub/' + wid + '/' + sid, function (data) {
+ 
+            let html = '<option value="">Select Product</option>';
+ 
+            data.forEach(function (p) {
+                html += `<option value="${p.id}" ${selected == p.id ? 'selected' : ''}>${p.name}</option>`;
             });
-        }
-
-        function loadQuantity(wid, pid) {
-            if (!wid || !pid) return;
-
-            return $.get('/ws/quantity/' + wid + '/' + pid, function(res) {
-                $('#quantity').val(res.quantity);
-            });
-        }
-
-        /* ===============================
-           CHANGE EVENTS
-        =============================== */
-
-        $('#warehouse_id').on('change', function() {
-            let wid = getWarehouseId();
-            resetBelowCategory();
-            loadCategories(wid);
+ 
+            $('#product_id').html(html);
+ 
         });
-
-        $('#category_id').on('change', function() {
-            let wid = getWarehouseId();
-            let cid = this.value;
-
-            resetBelowCategory();
-            loadSubCategories(wid, cid);
+ 
+    }
+ 
+    /* =========================
+       LOAD QUANTITY
+    ========================== */
+ 
+    function loadQuantity(wid, pid) {
+ 
+        if (!wid || !pid) return;
+ 
+        $.get('/ws/quantity/' + wid + '/' + pid, function (res) {
+ 
+            $('#quantity').val(res.quantity ?? 0);
+ 
         });
-
-        $('#sub_category_id').on('change', function() {
-            let wid = getWarehouseId();
-            let sid = this.value;
-
-            $('#product_id').html('<option value="">Select Product</option>');
-            $('#quantity').val('');
-
-            loadProducts(wid, sid);
-        });
-
-        $('#product_id').on('change', function() {
-            let wid = getWarehouseId();
-            let pid = this.value;
-
-            loadQuantity(wid, pid);
-        });
-
-        /* ===============================
-           AUTO LOAD (ADD / EDIT / VIEW)
-        =============================== */
-
-        (async function autoLoad() {
-
-            let mode = "{{ $mode }}";
-
-            // ADD → load categories if warehouse already selected
-            if (mode === 'add') {
-                let wid = getWarehouseId();
-                if (wid) {
-                    loadCategories(wid);
-                }
-                return;
-            }
-
-            // EDIT / VIEW
-            let wid = "{{ $batch->warehouse_id ?? '' }}";
-            let cid = "{{ $batch->category_id ?? '' }}";
-            let sid = "{{ $batch->sub_category_id ?? '' }}";
-            let pid = "{{ $batch->product_id ?? '' }}";
-
-            if (!wid) return;
-
-            $('#warehouse_id').val(wid);
-
-            await loadCategories(wid, cid);
-            await loadSubCategories(wid, cid, sid);
-            await loadProducts(wid, sid, pid);
-            await loadQuantity(wid, pid);
-
-        })();
-
+ 
+    }
+ 
+    /* =========================
+       EVENTS
+    ========================== */
+ 
+    $('#warehouse_id').on('change', function () {
+ 
+        let wid = getWarehouseId();
+ 
+        resetSubCategory();
+        resetProduct();
+ 
+        loadCategories(wid);
+ 
     });
+ 
+ 
+    $('#category_id').on('change', function () {
+ 
+        let wid = getWarehouseId();
+        let cid = $(this).val();
+ 
+        resetSubCategory();
+        resetProduct();
+ 
+        loadSubCategories(wid, cid);
+ 
+    });
+ 
+ 
+    $('#sub_category_id').on('change', function () {
+ 
+        let wid = getWarehouseId();
+        let sid = $(this).val();
+ 
+        resetProduct();
+ 
+        loadProducts(wid, sid);
+ 
+    });
+ 
+ 
+    $('#product_id').on('change', function () {
+ 
+        let wid = getWarehouseId();
+        let pid = $(this).val();
+ 
+        loadQuantity(wid, pid);
+ 
+    });
+ 
+ 
+    /* =========================
+       AUTO LOAD FOR EDIT
+    ========================== */
+ 
+    let mode = @json($mode??'add');
+ 
+    if (mode !== 'add') {
+ 
+        let wid = @json($batch->warehouse_id ?? null);
+        let cid = @json($batch->category_id ?? null);
+        let sid = @json($batch->sub_category_id ?? null);
+        let pid = @json($batch->product_id ?? null);
+ 
+        if (wid) {
+ 
+            $('#warehouse_id').val(wid);
+ 
+            loadCategories(wid, cid);
+ 
+            if (cid) {
+                setTimeout(() => loadSubCategories(wid, cid, sid), 300);
+            }
+ 
+            if (sid) {
+                setTimeout(() => loadProducts(wid, sid, pid), 600);
+            }
+ 
+            if (pid) {
+                setTimeout(() => loadQuantity(wid, pid), 900);
+            }
+ 
+        }
+ 
+    }
+ 
+});
 </script>
-
 @endpush
+ 
