@@ -69,65 +69,66 @@
     <ul>
         @foreach(config('menu.sidebar') as $menu)
 
-            {{-- 🔹 Parent role check --}}
-            @if(isset($menu['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $menu['roles']))
-                @continue
-            @endif
+        {{-- 🔹 Parent role check --}}
+        @if(isset($menu['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $menu['roles']))
+        @continue
+        @endif
 
-            {{-- 🔹 Parent exclude check --}}
-            @if(isset($menu['exclude_roles']) && auth()->check() && in_array(auth()->user()->role_id, $menu['exclude_roles']))
-                @continue
-            @endif
+        {{-- 🔹 Parent exclude check --}}
+        @if(isset($menu['exclude_roles']) && auth()->check() && in_array(auth()->user()->role_id, $menu['exclude_roles']))
+        @continue
+        @endif
 
-            {{-- 🔹 Single menu --}}
-            @if($menu['type'] === 'single')
-                <li class="list-outer mt-4">
-                    <a href="{{ isset($menu['route']) ? route($menu['route']) : url($menu['url']) }}" class="text-white">
+        {{-- 🔹 Single menu --}}
+        @if($menu['type'] === 'single')
+        <li class="list-outer mt-4">
+            <a href="{{ isset($menu['route']) ? route($menu['route']) : url($menu['url']) }}" class="text-white">
+                <i class="{{ $menu['icon'] }}"></i>
+                <span style="margin-left: 6px;">{{ $menu['title'] }}</span>
+            </a>
+        </li>
+        @endif
+
+        {{-- Dropdown menu --}}
+        @if($menu['type'] === 'dropdown')
+        <li>
+            <div class="dropdown-outer menu-parent"id="{{ $menu['key'] }}Parent"
+                onclick="toggleMenu('{{ $menu['key'] }}','{{ $menu['key'] }}Arrow')">
+                <div class="dropdowns-menus text-white mt-4">
+                    <div>
                         <i class="{{ $menu['icon'] }}"></i>
-                        <span style="margin-left: 6px;">{{ $menu['title'] }}</span>
+                    </div>
+                    <div style="margin-left: 10px;">
+                        {{ $menu['title'] }}
+                    </div>
+                </div>
+                <div class="text-end mt-4" style="margin-left: 5px;">
+                    <i class="bx bx-chevron-right arrow text-white" id="{{ $menu['key'] }}Arrow"></i>
+                </div>
+            </div>
+
+            <ul class="submenu" id="{{ $menu['key'] }}">
+                @foreach($menu['children'] as $child)
+
+                {{-- Child role check --}}
+                @if(isset($child['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $child['roles']))
+                @continue
+                @endif
+
+                {{-- Child exclude check --}}
+                @if(isset($child['exclude_roles']) && auth()->check() && in_array(auth()->user()->role_id, $child['exclude_roles']))
+                @continue
+                @endif
+
+                <li>
+                    <a href="{{ isset($child['route']) ? route($child['route']) : url($child['url']) }}">
+                        {{ $child['title'] }}
                     </a>
                 </li>
-            @endif
-
-            {{-- Dropdown menu --}}
-            @if($menu['type'] === 'dropdown')
-                <li>
-                    <div class="dropdown-outer" onclick="toggleMenu('{{ $menu['key'] }}','{{ $menu['key'] }}Arrow')">
-                        <div class="dropdowns-menus text-white mt-4">
-                            <div>
-                                <i class="{{ $menu['icon'] }}"></i>
-                            </div>
-                            <div style="margin-left: 10px;">
-                                {{ $menu['title'] }}
-                            </div>
-                        </div>
-                        <div class="text-end mt-4" style="margin-left: 5px;">
-                            <i class="bx bx-chevron-right arrow text-white" id="{{ $menu['key'] }}Arrow"></i>
-                        </div>
-                    </div>
-
-                    <ul class="submenu" id="{{ $menu['key'] }}">
-                        @foreach($menu['children'] as $child)
-
-                            {{-- Child role check --}}
-                            @if(isset($child['roles']) && auth()->check() && !in_array(auth()->user()->role_id, $child['roles']))
-                                @continue
-                            @endif
-
-                            {{-- Child exclude check --}}
-                            @if(isset($child['exclude_roles']) && auth()->check() && in_array(auth()->user()->role_id, $child['exclude_roles']))
-                                @continue
-                            @endif
-
-                            <li>
-                                <a href="{{ isset($child['route']) ? route($child['route']) : url($child['url']) }}">
-                                    {{ $child['title'] }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </li>
-            @endif
+                @endforeach
+            </ul>
+        </li>
+        @endif
 
         @endforeach
     </ul>
@@ -153,6 +154,31 @@
         if (!isOpen) {
             currentMenu.style.display = 'block';
             currentArrow.classList.add('rotate');
+
+            // 🔥 Save opened menu
+            localStorage.setItem('activeSidebarMenu', menuId);
+        } else {
+            localStorage.removeItem('activeSidebarMenu');
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        let activeMenu = localStorage.getItem('activeSidebarMenu');
+
+        if (activeMenu) {
+
+            let menu = document.getElementById(activeMenu);
+            let arrow = document.getElementById(activeMenu + "Arrow");
+
+            if (menu) {
+                menu.style.display = "block";
+            }
+
+            if (arrow) {
+                arrow.classList.add("rotate");
+            }
+        }
+
+    });
 </script>

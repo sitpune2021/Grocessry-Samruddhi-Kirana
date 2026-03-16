@@ -429,7 +429,7 @@
                          maxlength="6" placeholder="Enter pincode">
                      <button class="btn btn-success" onclick="changePincode()">Change</button>
                  </div>
-
+                 <small class="text-danger d-none mt-2" id="modalPinError"></small>
                  <hr>
 
                  <button class="btn btn-outline-success mb-3"
@@ -805,4 +805,18 @@
              this.classList.add('active');
          });
      });
+
+     function changePincode() {
+
+         let pin = document.getElementById('modalPincode').value;
+
+         if (pin.length !== 6) {
+             let err = document.getElementById('modalPinError');
+             err.classList.remove('d-none');
+             err.innerText = "Enter valid pincode";
+             return;
+         }
+
+         setPincode(pin);
+     }
  </script>
