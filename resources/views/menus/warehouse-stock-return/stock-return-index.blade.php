@@ -31,7 +31,7 @@
             <!-- Table -->
             <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle">
-                    <thead>
+                      <thead class="table-light">
                         <tr>
                             <th>sr no</th>
                             <th>Return No</th>
