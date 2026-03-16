@@ -92,8 +92,22 @@ class stockWarehouseController extends Controller
             $query->where('warehouse_id', $user->warehouse_id);
         }
 
-        $stocks = $query->get()->groupBy('warehouse_id');
-
+        $stocks = $query
+            ->select(
+                'warehouse_id',
+                'category_id',
+                'sub_category_id',
+                'product_id',
+                DB::raw('SUM(quantity) as quantity')
+            )
+            ->groupBy(
+                'warehouse_id',
+                'category_id',
+                'sub_category_id',
+                'product_id'
+            )
+            ->get()
+            ->groupBy('warehouse_id');
         $warehouses = $user->role_id == 1
             ? Warehouse::select('id', 'name')->orderBy('name')->get()
             : collect();
@@ -104,6 +118,12 @@ class stockWarehouseController extends Controller
         );
     }
 
+
+    // ============================================================
+    // FUNCTION 1: addStockForm()
+    // Replace your existing addStockForm() with this
+    // ============================================================
+
     public function addStockForm()
     {
         $mode = 'add';
@@ -113,9 +133,10 @@ class stockWarehouseController extends Controller
             abort(401, 'Unauthenticated');
         }
 
-        $userWarehouse    = $user->warehouse;
-        $readonly         = true;
-        $warehouse_stock  = null; // ✅ prevent undefined variable in view
+        $userWarehouse   = $user->warehouse;
+        $readonly        = true;
+        $warehouse_stock = null;
+        $selectedChallan = null;
 
         $categories      = Category::all();
         $products        = collect();
@@ -128,16 +149,11 @@ class stockWarehouseController extends Controller
             $warehouses = Warehouse::orderBy('name')->get();
         }
 
-        $usedChallanIds = WarehouseStock::whereNotNull('supplier_challan_id')
-            ->pluck('supplier_challan_id')
-            ->unique();
-
+        // ✅ FIX: Only show challans with status = 'received'
+        // After stock is added, status becomes 'stock_added' so it disappears from list
         $challans = SupplierChallan::where('status', 'received')
-            ->whereNotIn('id', $usedChallanIds)
             ->orderBy('id', 'desc')
             ->get();
-
-        $selectedChallan = null; // ✅ prevent undefined variable in view
 
         return view(
             'menus.warehouse.add-stock.add-stock',
@@ -158,12 +174,11 @@ class stockWarehouseController extends Controller
         );
     }
 
-    public function byCategory($categoryId)
-    {
-        return SubCategory::where('category_id', $categoryId)
-            ->select('id', 'name')
-            ->get();
-    }
+
+    // ============================================================
+    // FUNCTION 2: addStock()
+    // Replace your existing addStock() with this
+    // ============================================================
 
     public function addStock(Request $request)
     {
@@ -184,23 +199,20 @@ class stockWarehouseController extends Controller
             'products.*.quantity'        => 'required|numeric|min:0.01',
         ]);
 
-        // ✅ Duplicate check AFTER validation
-        $exists = WarehouseStock::where('supplier_challan_id', $request->supplier_challan_id)
-            ->exists();
+        // ✅ Duplicate check — make sure challan is still 'received' status
+        $challan = SupplierChallan::findOrFail($request->supplier_challan_id);
 
-        if ($exists) {
+        if ($challan->status !== 'received') {
             Log::warning('⛔ Duplicate challan attempt blocked', [
                 'warehouse_id'        => $request->warehouse_id,
                 'supplier_challan_id' => $request->supplier_challan_id,
+                'challan_status'      => $challan->status,
             ]);
 
             return back()
                 ->with('error', 'This supplier challan is already added to warehouse stock.')
                 ->withInput();
         }
-
-        // ✅ Fetch challan_no from DB (not from form — more reliable)
-        $challan = SupplierChallan::findOrFail($request->supplier_challan_id);
 
         DB::beginTransaction();
 
@@ -222,55 +234,35 @@ class stockWarehouseController extends Controller
                     'quantity'        => $item['quantity'],
                 ]);
 
-                $stock = WarehouseStock::where([
-                    'warehouse_id'    => $request->warehouse_id,
-                    'category_id'     => $item['category_id'],
-                    'product_id'      => $item['product_id'],
-                    'sub_category_id' => $item['sub_category_id'],
-                ])->first();
+                // total stock calculate
+                $totalStock = WarehouseStock::where('warehouse_id', $request->warehouse_id)
+                    ->where('product_id', $item['product_id'])
+                    ->sum('batch_qty');
 
-                if ($stock) {
+                // always create new batch row
+                WarehouseStock::create([
+                    'warehouse_id'        => $request->warehouse_id,
+                    'supplier_challan_id' => $request->supplier_challan_id,
+                    'category_id'         => $item['category_id'],
+                    'sub_category_id'     => $item['sub_category_id'],
+                    'product_id'          => $item['product_id'],
 
-                    Log::info('➕ AddStock: Existing stock found, updating quantity', [
-                        'stock_id'     => $stock->id,
-                        'old_quantity' => $stock->quantity,
-                        'add_quantity' => $item['quantity'],
-                    ]);
+                    'batch_qty'           => $item['quantity'],              // batch qty
+                    'quantity'            => $totalStock + $item['quantity'], // total qty
 
-                    $stock->quantity             += $item['quantity'];   // ✅ cumulative total
-                    $stock->batch_qty             = $item['quantity'];   // ✅ current batch qty
-                    $stock->supplier_challan_id   = $request->supplier_challan_id;
-                    $stock->challan_no            = $challan->challan_no; // ✅ store challan_no
-                    $stock->bill_no               = $request->bill_no;
-                    $stock->batch_no              = $request->batch_no;
-                    $stock->save();
-
-                    Log::info('✅ AddStock: Stock updated', [
-                        'stock_id'     => $stock->id,
-                        'new_quantity' => $stock->quantity,
-                    ]);
-                } else {
-
-                    Log::info('🆕 AddStock: Creating new stock row');
-
-                    $newStock = WarehouseStock::create([
-                        'warehouse_id'        => $request->warehouse_id,
-                        'supplier_challan_id' => $request->supplier_challan_id,
-                        'category_id'         => $item['category_id'],
-                        'sub_category_id'     => $item['sub_category_id'],
-                        'product_id'          => $item['product_id'],
-                        'quantity'            => $item['quantity'],       // ✅ total qty
-                        'batch_qty'           => $item['quantity'],       // ✅ batch qty
-                        'bill_no'             => $request->bill_no,
-                        'challan_no'          => $challan->challan_no,    // ✅ from DB
-                        'batch_no'            => $request->batch_no,
-                    ]);
-
-                    Log::info('✅ AddStock: New stock created', [
-                        'stock_id' => $newStock->id,
-                    ]);
-                }
+                    'bill_no'             => $request->bill_no,
+                    'challan_no'          => $challan->challan_no,
+                    'batch_no'            => $request->batch_no,
+                ]);
             }
+            // ✅ FIX: Mark challan as 'stock_added' so it won't appear in dropdown again
+            $challan->status = 'stock_added';
+            $challan->save();
+
+            Log::info('✅ Challan status updated to stock_added', [
+                'challan_id' => $challan->id,
+                'challan_no' => $challan->challan_no,
+            ]);
 
             DB::commit();
 
@@ -298,7 +290,12 @@ class stockWarehouseController extends Controller
                 ->with('error', 'Something went wrong while saving stock');
         }
     }
-
+    public function byCategory($categoryId)
+    {
+        return SubCategory::where('category_id', $categoryId)
+            ->select('id', 'name')
+            ->get();
+    }
     public function showStockForm($id)
     {
         $mode = 'view';
