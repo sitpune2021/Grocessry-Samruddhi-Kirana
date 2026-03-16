@@ -1,18 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            <!-- Sidebar -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <!-- Page -->
-            <div class="layout-page">
-                @include('layouts.navbar')
-
+@extends('layouts.app')
+@section('content')
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -189,13 +176,8 @@
                         </div>
 
                     </div>
-
-                    @include('layouts.footer')
                 </div>
-            </div>
-        </div>
-    </div>
-</body>
+@endsection
 {{-- <script>
     document.addEventListener('DOMContentLoaded', function() {
 

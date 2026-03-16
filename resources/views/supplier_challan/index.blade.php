@@ -6,7 +6,7 @@
     <div class="card shadow-sm p-2">
         <div class="card-datatable text-nowrap">
 
-            {{-- 🔐 Permissions --}}
+            {{-- Permissions --}}
             @php
             $canView = hasPermission('supplier_challan.view');
             $canCreate = hasPermission('supplier_challan.create');
@@ -17,7 +17,7 @@
             <!-- Header -->
             <div class="row card-header flex-column flex-md-row align-items-center pb-2">
                 <div class="col-md-auto me-auto">
-                    <h5 class="card-title mb-0">Supplier Challans</h5>
+                    <h4 class="card-title mb-0">Supplier Challans</h4>
                 </div>
 
                 <div class="col-md-auto ms-auto">

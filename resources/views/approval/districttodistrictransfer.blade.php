@@ -5,7 +5,7 @@
 
     <div class="container bg-white mt-5 shadow rounded p-3">
 
-        <h5 class="card-title mt-5">District-District Warehouse Stock Transfer</h5>
+        <h4 class="card-title mt-5">District-District Warehouse Stock Transfer</h4>
 
         <div class="table-responsive mt-5">
 

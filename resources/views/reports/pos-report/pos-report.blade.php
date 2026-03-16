@@ -6,7 +6,7 @@
         <div class="card shadow-sm">
 
             <div class="card-header">
-                <h5 class="mb-0">POS Walk-in Sales Report</h5>
+                <h4 class="mb-0">POS Walk-in Sales Report</h4>
             </div>
 
             <!-- Filters -->

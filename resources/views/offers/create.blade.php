@@ -1,18 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            <!-- Sidebar -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <!-- Page -->
-            <div class="layout-page">
-                @include('layouts.navbar')
-
+@extends('layouts.app')
+@section('content')
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -296,8 +283,8 @@
 
                     <div class="card-footer text-end">
 
-                        @if($mode === 'view')
-                        <a href="{{ route('offers.index') }}" class="btn btn-secondary">
+                        @if($mode === 'view' || $mode === 'add' )
+                        <a href="{{ route('offers.index') }}" class="btn btn-success">
                             Back
                         </a>
                         @endif
@@ -319,50 +306,11 @@
                     </form>
                 </div>
             </div>
-
         </div>
-
-        @include('layouts.footer')
     </div>
-    </div>
-    </div>
-    </div>
-</body>
-{{-- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-        const categorySelect = document.querySelector('select[name="category_id"]');
-        const productSelect = document.querySelector('select[name="product_id"]');
-
-        categorySelect.addEventListener('change', function() {
-
-            let categoryId = this.value;
-
-            productSelect.innerHTML = '<option value="">Loading...</option>';
-
-            if (!categoryId) {
-                productSelect.innerHTML = '<option value="">Select Product</option>';
-                return;
-            }
-
-            fetch(`/offer/products-by-category/${categoryId}`)
-                .then(response => response.json())
-                .then(products => {
-                    productSelect.innerHTML = '<option value="">Select Product</option>';
-
-                    products.forEach(product => {
-                        productSelect.innerHTML +=
-                            `<option value="${product.id}">${product.name}</option>`;
-                    });
-                })
-                .catch(() => {
-                    productSelect.innerHTML = '<option value="">No products found</option>';
-                });
-        });
-
-    });
-</script> --}}
-<script>
+   @endsection
+    @push('scripts')
+   <script>
     document.addEventListener('DOMContentLoaded', function() {
 
         const categorySelect = document.querySelector('select[name="category_id"]');
@@ -433,3 +381,5 @@
         toggleBxgy(); // on page load
     });
 </script>
+
+@endpush
