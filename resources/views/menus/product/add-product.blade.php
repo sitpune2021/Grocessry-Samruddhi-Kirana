@@ -1,23 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
-
-            <!-- Layout container -->
-            <div class="layout-page">
-
-                <!-- Navbar -->
-                @include('layouts.navbar')
-                <!-- / Navbar -->
-
+@extends('layouts.app')
+@section('content')
                 <!-- Content wrapper -->
                 <div class="content-wrapper">              
                     <!-- Content -->
@@ -29,13 +11,13 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-box me-1"></i>
+                                        
                                         @if ($mode === 'add')
                                         <h4>Add Product</h4>
                                         @elseif ($mode === 'edit')
-                                        Edit Product
+                                        <h4>Edit Product</h4>
                                         @else
-                                        View Product
+                                        <h4>View Product</h4>
                                         @endif
                                     </div>
 
@@ -242,7 +224,7 @@
                                                         <label class="form-label">
                                                             Base Price / unit<span class="text-danger">*</span>
                                                         </label>
-                                                        <input type="number" step="0.01" name="base_price"
+                                                        <input type="text" step="0.01" name="base_price"
                                                             class="form-control" placeholder="Enter base price"
                                                             value="{{ old('base_price', $product->base_price ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -274,7 +256,7 @@
                                                         <label class="form-label">
                                                             MRP <span class="text-danger">*</span>
                                                         </label>
-                                                        <input type="number" step="0.01" name="mrp"
+                                                        <input type="text" step="0.01" name="mrp"
                                                             class="form-control" placeholder="Enter mrp "
                                                             value="{{ old('mrp', $product->mrp ?? '') }}"
                                                             {{ $mode === 'view' ? 'readonly' : '' }}>
@@ -399,17 +381,9 @@
                         </div>
                     </div>
                     <!-- / Content -->
-
                 </div>
                 <!-- / Content wrapper -->
-
-            </div>
-            <!-- / Layout page -->
-
-        </div>
-    </div>
-    <!-- / Layout wrapper -->
-</body>
+                 @endsection
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

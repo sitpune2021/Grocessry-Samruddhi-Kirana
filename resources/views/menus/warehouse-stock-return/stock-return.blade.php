@@ -1,20 +1,5 @@
-@include('layouts.header')
-
-<body>
-
-
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <div class="layout-page">
-
-                @include('layouts.navbar')
-
+@extends('layouts.app')
+@section('content')
                 @if (session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
@@ -34,7 +19,6 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-box me-1"></i>
                                         <h4>Warehouse Stock Return</h4>
                                     </div>
 
@@ -216,21 +200,13 @@
 
                                         </form>
                                     </div>
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
-
-                    <!-- / Content -->
-                    @include('layouts.footer')
                 </div>
-            </div>
-        </div>
-
-    </div>
-</body>
+       @endsection
+       @push('script')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     let rowIndex = 1;
@@ -367,3 +343,4 @@
 
     });
 </script>
+@endpush

@@ -74,18 +74,7 @@ class AdminAuthController extends Controller
                 'profile_photo' => $photoPath,
                 'password'      => Hash::make('pass@123'),
             ]);
-            // if ($request->warehouse_id) {
-
-            //     $warehouse = Warehouse::find($request->warehouse_id);
-
-            //     if ($warehouse) {
-            //         $warehouse->update([
-            //             'contact_person' => $user->first_name . ' ' . $user->last_name,
-            //             'contact_number' => $user->mobile,
-            //             'email'          => $user->email,
-            //         ]);
-            //     }
-            // }
+           
 
             Log::info('User created successfully', ['user_id' => $user->id]);
 

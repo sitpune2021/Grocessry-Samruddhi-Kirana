@@ -15,7 +15,7 @@
                 <!-- Header -->
                 <div class="row card-header flex-column flex-md-row pb-0">
                     <div class="col-md-auto me-auto">
-                        <h5 class="card-title">Product</h5>
+                        <h4 class="card-title">Product</45>
                     </div>
 
                     @if (hasPermission('product.create'))

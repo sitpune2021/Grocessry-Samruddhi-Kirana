@@ -1,43 +1,5 @@
-@include('layouts.header')
-
-{{-- Payment Failed Overlay --}}
-<div id="payment-failed-box"
-    class="position-fixed top-50 start-50 translate-middle bg-white shadow p-4 rounded text-center"
-    style="z-index:9999; width:420px; display:none;">
-
-    <h2 class="text-danger mb-3">Payment Failed</h2>
-
-    <p class="mb-2">
-        Order #: <strong id="failed-order-number"></strong>
-    </p>
-
-    <p class="text-muted mb-4">
-        Payment could not be completed. Please retry.
-    </p>
-
-    <div class="d-flex justify-content-center gap-3">
-        <button class="btn btn-warning" onclick="retryPayment()">
-            Retry Payment
-        </button>
-
-        <button class="btn btn-secondary" onclick="closePaymentFailedBox()">
-            Continue Billing
-        </button>
-    </div>
-</div>
-
-
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            {{-- Sidebar --}}
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <div class="layout-page">
-                @include('layouts.navbar')
+@extends('layouts.app')
+@section('content')
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     @if ($errors->any())
@@ -164,10 +126,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</body>
+            
+
+@endsection
+@push('scripts')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
@@ -653,3 +615,4 @@
             });
     }
 </script>
+@endpush

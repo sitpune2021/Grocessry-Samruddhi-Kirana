@@ -37,7 +37,8 @@ class DeliveryAgentController extends Controller
     {
         $mode = 'add';
         $agent = null;
-        $shops = Warehouse::where('status', 'active')->get();
+        $shops = Warehouse::where('status', 'active')
+            ->where('type', 'distribution_center')->get();
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('mode', 'agent', 'shops'));
     }
 
@@ -64,7 +65,7 @@ class DeliveryAgentController extends Controller
                 //'warehouse_id' => 'required|exists:warehouses,id',
                 'shop_id' => 'required|exists:warehouses,id',
                 // 'shop_id'         => 'required|exists:grocery_shops,id',
-                'dob'             => 'nullable|date',
+                'dob'             => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
                 'gender'          => 'nullable|in:male,female',
                 'address'         => 'nullable|string',
                 'active_status'   => 'required|boolean',
@@ -209,7 +210,8 @@ class DeliveryAgentController extends Controller
     {
 
         $agent = DeliveryAgent::with('user')->findOrFail($id);
-        $shops = GroceryShop::where('status',  'active')->get();
+        $shops =  Warehouse::where('status', 'active')
+            ->where('type', 'distribution_center')->get();
         $mode = 'view';
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('agent', 'mode', 'shops'));
     }
@@ -217,7 +219,8 @@ class DeliveryAgentController extends Controller
     public function edit(string $id)
     {
         $agent = DeliveryAgent::with('user')->findOrFail($id);
-        $shops = GroceryShop::where('status',  'active')->get();
+        $shops =  Warehouse::where('status', 'active')
+            ->where('type', 'distribution_center')->get();
         $mode = 'edit';
 
         return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('agent', 'mode', 'shops'));
@@ -246,7 +249,7 @@ class DeliveryAgentController extends Controller
                 'shop_id'       => 'required|exists:grocery_shops,id',
                 'name'          => 'required|string|max:255',
                 'last_name'     => 'required|string|max:255',
-                'dob'           => 'nullable|date',
+                'dob'           => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
                 'gender'        => 'nullable|in:male,female',
                 'address'       => 'nullable|string',
                 'active_status' => 'required|boolean',
@@ -537,6 +540,4 @@ class DeliveryAgentController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
-
-    
 }
