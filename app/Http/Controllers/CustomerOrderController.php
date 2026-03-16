@@ -10,7 +10,6 @@ use App\Models\Order;
 class CustomerOrderController extends Controller
 {
 
-
     public function index()
     {
         $orders = Order::with([

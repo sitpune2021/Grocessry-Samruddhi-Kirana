@@ -126,8 +126,7 @@
 
                                     </label>
                                 </div>
-                                <i class="bi bi-pencil text-primary fs-5"
-                                    onclick="editAddress(event, {{ $address->id }})"></i>
+
                             </div>
                         </div>
                     </div>
