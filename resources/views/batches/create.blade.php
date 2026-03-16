@@ -399,9 +399,7 @@ $(function () {
                 setTimeout(() => loadProducts(wid, sid, pid), 600);
             }
  
-            if (pid) {
-                setTimeout(() => loadQuantity(wid, pid), 900);
-            }
+            
  
         }
  
