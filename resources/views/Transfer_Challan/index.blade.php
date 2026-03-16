@@ -150,7 +150,7 @@
                                 @endif
 
                                 <a href="{{ route('transfer-challans.download.pdf', $item->id) }}"
-                                    class="btn btn-sm btn-outline-danger mt-1">PDF</a>
+                                    class="btn btn-sm btn-outline-danger mt-1" target="_blank">PDF</a>
 
                                 <a href="{{ route('transfer-challans.download.csv', $item->id) }}"
                                     class="btn btn-sm btn-outline-success mt-1">CSV</a>
