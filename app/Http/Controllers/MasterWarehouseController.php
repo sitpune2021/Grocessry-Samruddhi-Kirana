@@ -31,7 +31,7 @@ class MasterWarehouseController extends Controller
 
     //     if ($user->role_id == 1) {
 
-    //         $warehouses = Warehouse::orderBy('id', 'desc')
+    //         $warehouses = Warehouse::orderBy('id', 'asc')
     //             ->paginate(20);
     //     }
 
@@ -60,7 +60,7 @@ class MasterWarehouseController extends Controller
     //             ->merge($shopIds);
 
     //         $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
-    //             ->orderBy('id', 'desc')
+    //             ->orderBy('id', 'asc')
     //             ->paginate(20);
     //     }
 
@@ -76,7 +76,7 @@ class MasterWarehouseController extends Controller
     //             ->merge($talukaIds);
 
     //         $warehouses = Warehouse::whereIn('id', $allowedWarehouseIds)
-    //             ->orderBy('id', 'desc')
+    //             ->orderBy('id', 'asc')
     //             ->paginate(20);
     //     }
     //     else {
@@ -98,7 +98,7 @@ class MasterWarehouseController extends Controller
         if ($user->role_id == 1) {
 
             $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
-                ->orderBy('id', 'desc')
+                ->orderBy('id', 'asc')
                 ->paginate(20);
         } elseif ($user->warehouse->type === 'master') {
 
@@ -123,7 +123,7 @@ class MasterWarehouseController extends Controller
 
             $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
                 ->whereIn('id', $allowedWarehouseIds)
-                ->orderBy('id', 'desc')
+                ->orderBy('id', 'asc')
                 ->paginate(20);
         } elseif ($user->warehouse->type === 'district') {
 
@@ -138,7 +138,7 @@ class MasterWarehouseController extends Controller
 
             $warehouses = Warehouse::with('users') // 👈 YAHAN ADD
                 ->whereIn('id', $allowedWarehouseIds)
-                ->orderBy('id', 'desc')
+                ->orderBy('id', 'asc')
                 ->paginate(20);
         } else {
 
