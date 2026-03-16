@@ -1,5 +1,22 @@
-@extends('layouts.app')
-@section('content')
+ @include('layouts.header')
+ 
+<body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+ 
+            <!-- Menu -->
+                <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+                    @include('layouts.sidebar')
+                </aside>
+            <!-- / Menu -->
+ 
+            <!-- Layout container -->
+            <div class="layout-page">
+                <!-- Navbar -->
+                    @include('layouts.navbar')
+                <!-- / Navbar -->
+ 
                 @if(session('error'))
                 <div class="alert alert-danger">
                     {{ session('error') }}
@@ -12,7 +29,7 @@
                         <!-- Form card -->
                         <div class="col-12 col-md-10 col-lg-12">
                             <div class="card mb-4">
-                                <h4 class="card-header text-start">
+                                <h4 class="card-header text-center">
                                    Warehouse / Distribution Center Stock Request
                                 </h4>
  
@@ -136,22 +153,23 @@
  
                                         @if (request()->is('warehouse-transfer/*/edit'))
                                             <div class="text-end mt-3">
-                                                 <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
                                                 <button type="submit" class="btn btn-success" style="">
                                                     Update
                                                 </button>
                                             </div>
+                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
                                         @else
  
-                                        <div class="d-flex justify-content-between align-items-end mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
                                             <div class="d-flex gap-2">
                                                 <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+ 
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
                                                     Add Stock
                                                 </button>
                                             </div>
                                             <div class="text-end mt-3">
-                                                <button type="submit" class="btn btn-success">
+                                                <button type="submit" class="btn btn-success" style="">
                                                     Product Stock Request
                                                 </button>
                                             </div>
@@ -193,9 +211,14 @@
                     </div>
                 </div>
                 <!-- / Content wrapper -->
-            @endsection
+            </div>
+            <!-- / Layout page -->
+        </div>
+    </div>
+    <!-- / Layout wrapper -->
+</body>
  
-@push('scripts')
+
 <!-- jQuery + Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -516,4 +539,5 @@
  
     });
 </script>
- @endpush
+ 
+ 
