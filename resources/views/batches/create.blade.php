@@ -190,7 +190,6 @@
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
-
                                         </div>
 
                                         {{-- Buttons --}}
@@ -400,9 +399,7 @@ $(function () {
                 setTimeout(() => loadProducts(wid, sid, pid), 600);
             }
  
-            if (pid) {
-                setTimeout(() => loadQuantity(wid, pid), 900);
-            }
+            
  
         }
  

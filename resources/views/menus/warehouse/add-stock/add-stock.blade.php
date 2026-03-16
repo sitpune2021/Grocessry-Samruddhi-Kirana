@@ -9,15 +9,27 @@
 
                     <div class="card shadow-sm border-0 rounded-3">
 
-                        <!-- Card Header -->
-                        <div class="card-header bg-white fw-semibold">
-                            <i class="bx bx-box me-1"></i>
-                            @if ($mode === 'add')
-                                Add Warehouse Stock
-                            @elseif($mode === 'edit')
-                                Edit Stock
-                            @else
-                                View Stock
+                    <!-- Card Header -->
+                    <div class="card-header bg-white fw-semibold">
+                       <h4> 
+                        @if ($mode === 'add')
+                        Add Warehouse Stock
+                        @elseif($mode === 'edit')
+                        Edit Stock
+                        @else
+                        View Stock
+                        @endif
+                        </h4>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <form
+                            action="{{ $mode === 'edit' ? route('stock.update', $warehouse_stock->id) : route('warehouse.addStock') }}"
+                            enctype="multipart/form-data" method="POST">
+                            @csrf
+                            @if ($mode === 'edit')
+                            @method('PUT')
                             @endif
                         </div>
 
