@@ -11,7 +11,7 @@
 
                     <!-- Card Header -->
                     <div class="card-header bg-white fw-semibold">
-                        <i class="bx bx-box me-1"></i>
+                       <h4> 
                         @if ($mode === 'add')
                         Add Warehouse Stock
                         @elseif($mode === 'edit')
@@ -19,6 +19,7 @@
                         @else
                         View Stock
                         @endif
+                        </h4>
                     </div>
 
                     <!-- Card Body -->

@@ -103,7 +103,7 @@
                                                 <h5>Return Products</h5>
 
                                                 <table class="table table-bordered" id="productTable">
-                                                    <thead>
+                                                    <thead class="table-light">
                                                         <tr>
                                                             <th>Product</th>
                                                             <th>Condition Image</th>
@@ -185,15 +185,15 @@
                                                     </tbody>
                                                 </table>
 
-                                                <button type="button" id="addRow" class="btn btn-secondary">
+                                                <button type="button" id="addRow" class="btn btn-success mt-4">
                                                     Add Product
                                                 </button>
 
                                             </div>
 
                                             {{-- Footer --}}
-                                            <div class="card-footer text-right">
-                                                <button type="submit" class="btn btn-primary">
+                                            <div class="card-footer text-end">
+                                                <button type="submit" class="btn btn-success ">
                                                     Save as Draft
                                                 </button>
                                             </div>
