@@ -238,258 +238,330 @@ class ProductController extends Controller
     }
 
     public function downloadSampleExcel()
-{
-    Log::info('Product Sample Excel Download');
+    {
+        Log::info('Product Sample Excel Download');
 
-    $categories = Category::with(['subCategories.brands' => function ($q) {
-        $q->where('status', 1);
-    }])->orderBy('name')->get();
-    $catNames  = $categories->pluck('name')->toArray();
-    $catCount  = count($catNames);
-    $units     = Unit::orderBy('name')->get();
-    $taxes     = Tax::where('is_active', 1)->get();
+        $categories = Category::with(['subCategories.brands' => function ($q) {
+            $q->where('status', 1);
+        }])->orderBy('name')->get();
 
-    // ── Shared Strings ────────────────────────────────────────────
-    $allStrings = array_merge(
-        ['Category Name', 'Sub Category Name', 'Brand Name', 'Product Name',
-         'Barcode', 'Description', 'Unit', 'Unit Value', 'Base Price',
-         'Selling Price', 'MRP', 'GST', 'Image URL'],
-        $catNames
-    );
+        $units = Unit::orderBy('name')->get();
+        $taxes = Tax::where('is_active', 1)->get();
 
-    $allSubNames   = [];
-    $allBrandNames = [];
+        // ── Build all shared strings ───────────────────────────────────
+        $allStrings = [
+            'Category Name',
+            'Sub Category Name',
+            'Brand Name',
+            'Product Name',
+            'Barcode',
+            'Description',
+            'Unit',
+            'Unit Value',
+            'Base Price',
+            'Selling Price',
+            'MRP',
+            'GST',
+            'Image URL'
+        ];
 
-    foreach ($categories as $cat) {
-        foreach ($cat->subCategories->pluck('name')->toArray() as $sub) {
-            $allStrings[]  = $sub;
-            $allSubNames[] = $sub;
-        }
-        foreach ($cat->subCategories as $subCat) {
-            foreach ($subCat->brands->pluck('name')->toArray() as $brand) {
-                $allStrings[]    = $brand;
-                $allBrandNames[] = $brand;
+        foreach ($categories as $cat) {
+            $allStrings[] = $cat->name;
+            foreach ($cat->subCategories as $sub) {
+                $allStrings[] = $sub->name;
+                foreach ($sub->brands as $brand) {
+                    $allStrings[] = $brand->name;
+                }
             }
         }
-    }
-    foreach ($units as $unit) {
-        $allStrings[] = $unit->name . ' (' . strtoupper($unit->short_name) . ')';
-    }
-    foreach ($taxes as $tax) {
-        $allStrings[] = $tax->name . ' (' . $tax->gst . '%)';
-    }
+        foreach ($units as $unit) {
+            $allStrings[] = $unit->name . ' (' . strtoupper($unit->short_name) . ')';
+        }
+        foreach ($taxes as $tax) {
+            $allStrings[] = $tax->name . ' (' . $tax->gst . '%)';
+        }
 
-    $strIndex = [];
-    foreach ($allStrings as $s) {
-        if (!isset($strIndex[$s])) $strIndex[$s] = count($strIndex);
-    }
-    $siXml = '';
-    foreach (array_keys($strIndex) as $s) {
-        $siXml .= '<si><t>' . htmlspecialchars($s, ENT_XML1) . '</t></si>';
-    }
+        // Build unique string index
+        $strIndex = [];
+        foreach ($allStrings as $s) {
+            if (!isset($strIndex[$s])) {
+                $strIndex[$s] = count($strIndex);
+            }
+        }
 
-    // ── Category Sheet ────────────────────────────────────────────
-    $catRows = '';
-    foreach ($catNames as $i => $cat) {
-        $r = $i + 1; $idx = $strIndex[$cat];
-        $catRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
-    }
+        $siXml = '';
+        foreach (array_keys($strIndex) as $s) {
+            $siXml .= '<si><t>' . htmlspecialchars($s, ENT_XML1) . '</t></si>';
+        }
 
-    // ── SubCategory Sheet — सर्व एकत्र Column A मध्ये ────────────
-    $allSubNames  = array_unique($allSubNames);
-    $subRows      = '';
-    $subCount     = count($allSubNames);
-    foreach (array_values($allSubNames) as $i => $sub) {
-        $r   = $i + 1;
-        $idx = $strIndex[$sub] ?? null;
-        if ($idx === null) continue;
-        $subRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
-    }
+        // ── Sheet 2: CategoryList (Column A) ──────────────────────────
+        $catNames = $categories->pluck('name')->toArray();
+        $catCount = count($catNames);
+        $catRows  = '';
+        foreach ($catNames as $i => $cat) {
+            $r       = $i + 1;
+            $idx     = $strIndex[$cat];
+            $catRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
+        }
 
-    // ── Brand Sheet — सर्व एकत्र Column A मध्ये ─────────────────
-    $allBrandNames = array_unique($allBrandNames);
-    $brandRows     = '';
-    $brandCount    = count($allBrandNames);
-    foreach (array_values($allBrandNames) as $i => $brand) {
-        $r   = $i + 1;
-        $idx = $strIndex[$brand] ?? null;
-        if ($idx === null) continue;
-        $brandRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
-    }
+        // ── Sheet 3: SubCategoryList — each category in its own column ─
+        // Named range per category: e.g. "Electronics" → SubCategoryList!$A$1:$A$3
+        $subRows       = '';
+        $subNamedRanges = '';
+        $colNum        = 1;
+        $subColMap     = []; // category_name => [colLetter, count]
 
-    // ── Unit Sheet ────────────────────────────────────────────────
-    $unitRows  = '';
-    $unitCount = $units->count();
-    foreach ($units as $ui => $unit) {
-        $r     = $ui + 1;
-        $label = $unit->name . ' (' . strtoupper($unit->short_name) . ')';
-        $idx   = $strIndex[$label];
-        $unitRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
-    }
+        foreach ($categories as $cat) {
+            $subs = $cat->subCategories->pluck('name')->toArray();
+            if (empty($subs)) continue;
 
-    // ── GST Sheet ─────────────────────────────────────────────────
-    $gstRows  = '';
-    $gstCount = $taxes->count();
-    foreach ($taxes as $gi => $tax) {
-        $r     = $gi + 1;
-        $label = $tax->name . ' (' . $tax->gst . '%)';
-        $idx   = $strIndex[$label];
-        $gstRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
-    }
+            $colLetter = $colNum <= 26
+                ? chr(64 + $colNum)
+                : chr(64 + intdiv($colNum - 1, 26)) . chr(64 + (($colNum - 1) % 26) + 1);
 
-    // ── Dropdown Validations — Simple range, no INDIRECT ─────────
-    $dvXml =
-        '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="A2:A500">'
-        . '<formula1>\'CategoryList\'!$A$1:$A$' . $catCount . '</formula1></dataValidation>'
-        . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="B2:B500">'
-        . '<formula1>\'SubCategoryList\'!$A$1:$A$' . $subCount . '</formula1></dataValidation>'
-        . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="C2:C500">'
-        . '<formula1>\'BrandList\'!$A$1:$A$' . $brandCount . '</formula1></dataValidation>'
-        . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="G2:G500">'
-        . '<formula1>\'UnitList\'!$A$1:$A$' . $unitCount . '</formula1></dataValidation>'
-        . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="L2:L500">'
-        . '<formula1>\'GSTList\'!$A$1:$A$' . $gstCount . '</formula1></dataValidation>';
+            foreach ($subs as $si => $sub) {
+                $r       = $si + 1;
+                $idx     = $strIndex[$sub];
+                $subRows .= "<row r=\"$r\"><c r=\"{$colLetter}{$r}\" t=\"s\"><v>$idx</v></c></row>";
+            }
 
-    $dvCount = 5;
+            // Named range must match SUBSTITUTE(A2," ","_")
+            // e.g. "Baby Care" → named range "Baby_Care"
+            $rangeName = preg_replace('/[^A-Za-z0-9]/', '_', $cat->name);
+            $subNamedRanges .= '<definedName name="' . htmlspecialchars($rangeName, ENT_XML1) . '">'
+                . '\'SubCategoryList\'!$' . $colLetter . '$1:$' . $colLetter . '$' . count($subs)
+                . '</definedName>';
 
-    // ── Header Row ────────────────────────────────────────────────
-    $headers = ['Category Name', 'Sub Category Name', 'Brand Name', 'Product Name',
-                'Barcode', 'Description', 'Unit', 'Unit Value', 'Base Price',
-                'Selling Price', 'MRP', 'GST', 'Image URL'];
-    $cols      = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
-    $headerRow = '';
-    foreach ($headers as $hi => $h) {
-        $idx        = $strIndex[$h];
-        $c          = $cols[$hi];
-        $headerRow .= "<c r=\"{$c}1\" t=\"s\" s=\"1\"><v>$idx</v></c>";
-    }
+            $subColMap[$cat->name] = [$colLetter, count($subs)];
+            $colNum++;
+        }
 
-    // ── XMLs ──────────────────────────────────────────────────────
-    $sheet1Xml = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-        . '<cols>'
-        . '<col min="1" max="1" width="20" customWidth="1"/>'
-        . '<col min="2" max="2" width="20" customWidth="1"/>'
-        . '<col min="3" max="3" width="20" customWidth="1"/>'
-        . '<col min="4" max="4" width="25" customWidth="1"/>'
-        . '<col min="5" max="5" width="15" customWidth="1"/>'
-        . '<col min="6" max="6" width="30" customWidth="1"/>'
-        . '<col min="7" max="7" width="15" customWidth="1"/>'
-        . '<col min="8" max="8" width="12" customWidth="1"/>'
-        . '<col min="9" max="9" width="12" customWidth="1"/>'
-        . '<col min="10" max="10" width="12" customWidth="1"/>'
-        . '<col min="11" max="11" width="12" customWidth="1"/>'
-        . '<col min="12" max="12" width="15" customWidth="1"/>'
-        . '<col min="13" max="13" width="40" customWidth="1"/>'
-        . '</cols>'
-        . '<sheetData><row r="1">' . $headerRow . '</row></sheetData>'
-        . '<dataValidations count="' . $dvCount . '">' . $dvXml . '</dataValidations>'
-        . '</worksheet>';
+        // ── Sheet 4: BrandList — each sub-category in its own column ──
+        // Named range per sub-category: "brand_SubName" → BrandList!$A$1:$A$3
+        $brandRows        = '';
+        $brandNamedRanges = '';
+        $bColNum          = 1;
 
-    $mkSheet = function($rows) {
-        return '<?xml version="1.0" encoding="UTF-8"?>'
+        foreach ($categories as $cat) {
+            foreach ($cat->subCategories as $sub) {
+                $brands = $sub->brands->pluck('name')->toArray();
+                if (empty($brands)) continue;
+
+                $bColLetter = $bColNum <= 26
+                    ? chr(64 + $bColNum)
+                    : chr(64 + intdiv($bColNum - 1, 26)) . chr(64 + (($bColNum - 1) % 26) + 1);
+
+                foreach ($brands as $bi => $brand) {
+                    $r          = $bi + 1;
+                    $idx        = $strIndex[$brand] ?? null;
+                    if ($idx === null) continue;
+                    $brandRows .= "<row r=\"$r\"><c r=\"{$bColLetter}{$r}\" t=\"s\"><v>$idx</v></c></row>";
+                }
+
+                // Named range: "brand_SubName" (spaces → _)
+                $bRangeName = 'brand_' . preg_replace('/[^A-Za-z0-9]/', '_', $sub->name);
+                $brandNamedRanges .= '<definedName name="' . htmlspecialchars($bRangeName, ENT_XML1) . '">'
+                    . '\'BrandList\'!$' . $bColLetter . '$1:$' . $bColLetter . '$' . count($brands)
+                    . '</definedName>';
+
+                $bColNum++;
+            }
+        }
+
+        // ── Sheet 5: UnitList ─────────────────────────────────────────
+        $unitRows  = '';
+        $unitCount = $units->count();
+        foreach ($units as $ui => $unit) {
+            $r         = $ui + 1;
+            $label     = $unit->name . ' (' . strtoupper($unit->short_name) . ')';
+            $idx       = $strIndex[$label];
+            $unitRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
+        }
+
+        // ── Sheet 6: GSTList ─────────────────────────────────────────
+        $gstRows  = '';
+        $gstCount = $taxes->count();
+        foreach ($taxes as $gi => $tax) {
+            $r        = $gi + 1;
+            $label    = $tax->name . ' (' . $tax->gst . '%)';
+            $idx      = $strIndex[$label];
+            $gstRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
+        }
+
+        // ── Header Row (Sheet 1) ──────────────────────────────────────
+        $headers = [
+            'Category Name',
+            'Sub Category Name',
+            'Brand Name',
+            'Product Name',
+            'Barcode',
+            'Description',
+            'Unit',
+            'Unit Value',
+            'Base Price',
+            'Selling Price',
+            'MRP',
+            'GST',
+            'Image URL'
+        ];
+        $cols      = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+        $headerRow = '';
+        foreach ($headers as $hi => $h) {
+            $idx        = $strIndex[$h];
+            $c          = $cols[$hi];
+            $headerRow .= "<c r=\"{$c}1\" t=\"s\" s=\"1\"><v>$idx</v></c>";
+        }
+
+        // ── Data Validations ─────────────────────────────────────────
+        // A: Category list (simple range)
+        // B: SubCategory via INDIRECT(SUBSTITUTE(A2," ","_")) per row
+        // C: Brand via INDIRECT("brand_"&SUBSTITUTE(B2," ","_")) per row
+        // G: Unit list, L: GST list
+        $dvXml =
+            '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="A2:A500">'
+            . '<formula1>\'CategoryList\'!$A$1:$A$' . $catCount . '</formula1></dataValidation>'
+            . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="G2:G500">'
+            . '<formula1>\'UnitList\'!$A$1:$A$' . $unitCount . '</formula1></dataValidation>'
+            . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="L2:L500">'
+            . '<formula1>\'GSTList\'!$A$1:$A$' . $gstCount . '</formula1></dataValidation>';
+
+        // Per-row INDIRECT for B and C (rows 2–100)
+        for ($row = 2; $row <= 100; $row++) {
+            $dvXml .= '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="B' . $row . '">'
+                . '<formula1>INDIRECT(SUBSTITUTE(A' . $row . '," ","_"))</formula1></dataValidation>';
+            $dvXml .= '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="C' . $row . '">'
+                . '<formula1>INDIRECT("brand_"&amp;SUBSTITUTE(B' . $row . '," ","_"))</formula1></dataValidation>';
+        }
+        $dvCount = 3 + (99 * 2);
+
+        // ── Build XMLs ────────────────────────────────────────────────
+        $mkSheet = function ($rows) {
+            return '<?xml version="1.0" encoding="UTF-8"?>'
+                . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                . '<sheetData>' . $rows . '</sheetData>'
+                . '</worksheet>';
+        };
+
+        $sheet1Xml = '<?xml version="1.0" encoding="UTF-8"?>'
             . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            . '<sheetData>' . $rows . '</sheetData>'
+            . '<cols>'
+            . '<col min="1" max="1" width="20" customWidth="1"/>'
+            . '<col min="2" max="2" width="20" customWidth="1"/>'
+            . '<col min="3" max="3" width="20" customWidth="1"/>'
+            . '<col min="4" max="4" width="25" customWidth="1"/>'
+            . '<col min="5" max="5" width="15" customWidth="1"/>'
+            . '<col min="6" max="6" width="30" customWidth="1"/>'
+            . '<col min="7" max="7" width="15" customWidth="1"/>'
+            . '<col min="8" max="8" width="12" customWidth="1"/>'
+            . '<col min="9" max="9" width="12" customWidth="1"/>'
+            . '<col min="10" max="10" width="12" customWidth="1"/>'
+            . '<col min="11" max="11" width="12" customWidth="1"/>'
+            . '<col min="12" max="12" width="15" customWidth="1"/>'
+            . '<col min="13" max="13" width="40" customWidth="1"/>'
+            . '</cols>'
+            . '<sheetData><row r="1">' . $headerRow . '</row></sheetData>'
+            . '<dataValidations count="' . $dvCount . '">' . $dvXml . '</dataValidations>'
             . '</worksheet>';
-    };
 
-    $sharedStringsXml = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
-        . ' count="' . count($strIndex) . '" uniqueCount="' . count($strIndex) . '">'
-        . $siXml . '</sst>';
+        $sharedStringsXml = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+            . ' count="' . count($strIndex) . '" uniqueCount="' . count($strIndex) . '">'
+            . $siXml . '</sst>';
 
-    // ── workbook.xml — definedNames नाही ─────────────────────────
-    $workbook = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
-        . ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-        . '<sheets>'
-        . '<sheet name="Worksheet" sheetId="1" r:id="rId1"/>'
-        . '<sheet name="CategoryList" sheetId="2" r:id="rId2" state="hidden"/>'
-        . '<sheet name="SubCategoryList" sheetId="3" r:id="rId3" state="hidden"/>'
-        . '<sheet name="BrandList" sheetId="4" r:id="rId4" state="hidden"/>'
-        . '<sheet name="UnitList" sheetId="5" r:id="rId5" state="hidden"/>'
-        . '<sheet name="GSTList" sheetId="6" r:id="rId6" state="hidden"/>'
-        . '</sheets>'
-        . '</workbook>';
+        // Named ranges from BOTH sub-category and brand sheets
+        $allNamedRanges = $subNamedRanges . $brandNamedRanges;
 
-    $contentTypes = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-        . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-        . '<Default Extension="xml" ContentType="application/xml"/>'
-        . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet4.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet5.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/worksheets/sheet6.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-        . '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>'
-        . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
-        . '</Types>';
+        $workbook = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
+            . ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheets>'
+            . '<sheet name="Worksheet" sheetId="1" r:id="rId1"/>'
+            . '<sheet name="CategoryList" sheetId="2" r:id="rId2" state="hidden"/>'
+            . '<sheet name="SubCategoryList" sheetId="3" r:id="rId3" state="hidden"/>'
+            . '<sheet name="BrandList" sheetId="4" r:id="rId4" state="hidden"/>'
+            . '<sheet name="UnitList" sheetId="5" r:id="rId5" state="hidden"/>'
+            . '<sheet name="GSTList" sheetId="6" r:id="rId6" state="hidden"/>'
+            . '</sheets>'
+            . '<definedNames>' . $allNamedRanges . '</definedNames>'
+            . '</workbook>';
 
-    $rels = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-        . '</Relationships>';
+        $contentTypes = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            . '<Default Extension="xml" ContentType="application/xml"/>'
+            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet4.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet5.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet6.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>'
+            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            . '</Types>';
 
-    $workbookRels = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-        . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-        . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'
-        . '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/>'
-        . '<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet4.xml"/>'
-        . '<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet5.xml"/>'
-        . '<Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet6.xml"/>'
-        . '<Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>'
-        . '<Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
-        . '</Relationships>';
+        $rels = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            . '</Relationships>';
 
-    $styles = '<?xml version="1.0" encoding="UTF-8"?>'
-        . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-        . '<fonts><font><sz val="11"/><name val="Calibri"/></font>'
-        . '<font><b/><sz val="11"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font></fonts>'
-        . '<fills><fill><patternFill patternType="none"/></fill>'
-        . '<fill><patternFill patternType="gray125"/></fill>'
-        . '<fill><patternFill patternType="solid"><fgColor rgb="FF4472C4"/></patternFill></fill></fills>'
-        . '<borders><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
-        . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-        . '<cellXfs>'
-        . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
-        . '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0"/>'
-        . '</cellXfs>'
-        . '</styleSheet>';
+        $workbookRels = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'
+            . '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/>'
+            . '<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet4.xml"/>'
+            . '<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet5.xml"/>'
+            . '<Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet6.xml"/>'
+            . '<Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>'
+            . '<Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . '</Relationships>';
 
-    // ── ZIP बनवा ──────────────────────────────────────────────────
-    $zipPath = sys_get_temp_dir() . '/product_sample.xlsx';
-    if (file_exists($zipPath)) unlink($zipPath);
+        $styles = '<?xml version="1.0" encoding="UTF-8"?>'
+            . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<fonts><font><sz val="11"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="11"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font></fonts>'
+            . '<fills><fill><patternFill patternType="none"/></fill>'
+            . '<fill><patternFill patternType="gray125"/></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF4472C4"/></patternFill></fill></fills>'
+            . '<borders><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+            . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            . '<cellXfs>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+            . '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0"/>'
+            . '</cellXfs>'
+            . '</styleSheet>';
 
-    $zip = new \ZipArchive();
-    $zip->open($zipPath, \ZipArchive::CREATE);
-    $zip->addFromString('[Content_Types].xml',        $contentTypes);
-    $zip->addFromString('_rels/.rels',                $rels);
-    $zip->addFromString('xl/workbook.xml',            $workbook);
-    $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRels);
-    $zip->addFromString('xl/worksheets/sheet1.xml',   $sheet1Xml);
-    $zip->addFromString('xl/worksheets/sheet2.xml',   $mkSheet($catRows));
-    $zip->addFromString('xl/worksheets/sheet3.xml',   $mkSheet($subRows));
-    $zip->addFromString('xl/worksheets/sheet4.xml',   $mkSheet($brandRows));
-    $zip->addFromString('xl/worksheets/sheet5.xml',   $mkSheet($unitRows));
-    $zip->addFromString('xl/worksheets/sheet6.xml',   $mkSheet($gstRows));
-    $zip->addFromString('xl/sharedStrings.xml',       $sharedStringsXml);
-    $zip->addFromString('xl/styles.xml',              $styles);
-    $zip->close();
+        // ── Build ZIP ─────────────────────────────────────────────────
+        $zipPath = sys_get_temp_dir() . '/product_sample.xlsx';
+        if (file_exists($zipPath)) unlink($zipPath);
 
-    return response()->download($zipPath, 'product_sample.xlsx', [
-        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ])->deleteFileAfterSend(true);
-}
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::CREATE);
+        $zip->addFromString('[Content_Types].xml',        $contentTypes);
+        $zip->addFromString('_rels/.rels',                $rels);
+        $zip->addFromString('xl/workbook.xml',            $workbook);
+        $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRels);
+        $zip->addFromString('xl/worksheets/sheet1.xml',   $sheet1Xml);
+        $zip->addFromString('xl/worksheets/sheet2.xml',   $mkSheet($catRows));
+        $zip->addFromString('xl/worksheets/sheet3.xml',   $mkSheet($subRows));
+        $zip->addFromString('xl/worksheets/sheet4.xml',   $mkSheet($brandRows));
+        $zip->addFromString('xl/worksheets/sheet5.xml',   $mkSheet($unitRows));
+        $zip->addFromString('xl/worksheets/sheet6.xml',   $mkSheet($gstRows));
+        $zip->addFromString('xl/sharedStrings.xml',       $sharedStringsXml);
+        $zip->addFromString('xl/styles.xml',              $styles);
+        $zip->close();
 
-      public function bulkUpload(Request $request)
+        return response()->download($zipPath, 'product_sample.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+    public function bulkUpload(Request $request)
     {
         $request->validate([
             'excel_file' => 'required|file|mimes:xlsx,csv,txt|max:5120',
         ]);
- 
+
         try {
             Log::info('Product Bulk Upload Started', [
                 'ip'      => $request->ip(),
@@ -547,10 +619,10 @@ class ProductController extends Controller
                 fclose($handle);
             }
             Log::info('Product Bulk Upload: Total Rows', ['count' => count($data)]);
- 
+
             $successCount = 0;
             $skippedCount = 0;
- 
+
             foreach ($data as $rowIndex => $row) {
                 $categoryName    = trim($row[0] ?? '');
                 $subCategoryName = trim($row[1] ?? '');
@@ -645,7 +717,7 @@ class ProductController extends Controller
                     $savedImage = $this->downloadImage($imageUrl, 'products');
                     if ($savedImage) $imageNames[] = $savedImage;
                 }
- 
+
                 Product::create([
                     'category_id'     => $category->id,
                     'sub_category_id' => $subCategory->id,
@@ -711,7 +783,7 @@ class ProductController extends Controller
         foreach (array_keys($strIndex) as $s) {
             $siXml .= '<si><t>' . htmlspecialchars($s, ENT_XML1) . '</t></si>';
         }
- 
+
         // ── Category Sheet ────────────────────────────────────────────
         $catRows = '';
         foreach ($catNames as $i => $cat) {
@@ -719,7 +791,7 @@ class ProductController extends Controller
             $idx      = $strIndex[$cat];
             $catRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
         }
- 
+
         // ── SubCategory Sheet + Named Ranges ──────────────────────────
         $subRows     = '';
         $namedRanges = '';
@@ -727,11 +799,11 @@ class ProductController extends Controller
         foreach ($categories as $category) {
             $subs = $category->subCategories->pluck('name')->toArray();
             if (empty($subs)) continue;
- 
+
             $colLetter = $col <= 26
                 ? chr(64 + $col)
                 : chr(64 + intdiv($col - 1, 26)) . chr(64 + (($col - 1) % 26) + 1);
- 
+
             foreach ($subs as $si => $sub) {
                 $r        = $si + 1;
                 $idx      = $strIndex[$sub];
@@ -743,24 +815,24 @@ class ProductController extends Controller
                 . '</definedName>';
             $col++;
         }
- 
+
         // ── Brand Sheet + Named Ranges ────────────────────────────────
         $brandRows       = '';
         $brandNamedRanges = '';
         $bCol            = 1;
- 
+
         $subCategories = SubCategory::with(['brands' => function ($q) {
             $q->where('status', 1);
         }])->orderBy('name')->get();
- 
+
         foreach ($subCategories as $subCat) {
             $brands = $subCat->brands->pluck('name')->toArray();
             if (empty($brands)) continue;
- 
+
             $bColLetter = $bCol <= 26
                 ? chr(64 + $bCol)
                 : chr(64 + intdiv($bCol - 1, 26)) . chr(64 + (($bCol - 1) % 26) + 1);
- 
+
             foreach ($brands as $bi => $brand) {
                 $r          = $bi + 1;
                 $idx        = $strIndex[$brand] ?? null;
@@ -773,7 +845,7 @@ class ProductController extends Controller
                 . '</definedName>';
             $bCol++;
         }
- 
+
         // ── Unit Sheet ────────────────────────────────────────────────
         $unitRows  = '';
         $unitCount = $units->count();
@@ -783,7 +855,7 @@ class ProductController extends Controller
             $idx       = $strIndex[$label];
             $unitRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
         }
- 
+
         // ── GST Sheet ─────────────────────────────────────────────────
         $gstRows  = '';
         $gstCount = $taxes->count();
@@ -793,20 +865,20 @@ class ProductController extends Controller
             $idx      = $strIndex[$label];
             $gstRows .= "<row r=\"$r\"><c r=\"A$r\" t=\"s\"><v>$idx</v></c></row>";
         }
- 
+
         // ── Dropdown Validations ──────────────────────────────────────
         // ── Dropdown Validations — Range based + INDIRECT per row ────
         // A, G, L — range based (एकच validation पुरे)
         $dvXml =
             '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="A2:A500">'
             . '<formula1>\'CategoryList\'!$A$1:$A$' . $catCount . '</formula1></dataValidation>'
- 
+
             . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="G2:G500">'
             . '<formula1>\'UnitList\'!$A$1:$A$' . $unitCount . '</formula1></dataValidation>'
- 
+
             . '<dataValidation type="list" allowBlank="1" showDropDown="0" sqref="L2:L500">'
             . '<formula1>\'GSTList\'!$A$1:$A$' . $gstCount . '</formula1></dataValidation>';
- 
+
         // B, C — INDIRECT साठी per-row लागतं — फक्त 100 rows
         $dvIndirect = '';
         for ($row = 2; $row <= 100; $row++) {
@@ -840,7 +912,7 @@ class ProductController extends Controller
             $c          = $cols[$hi];
             $headerRow .= "<c r=\"{$c}1\" t=\"s\" s=\"1\"><v>$idx</v></c>";
         }
- 
+
         // ── sheet1.xml ────────────────────────────────────────────────
         $sheet1Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -876,34 +948,34 @@ class ProductController extends Controller
   <dataValidations>' . $dvXml . '</dataValidations>
  
 </worksheet>';
- 
+
         // ── Helper Sheets ─────────────────────────────────────────────
         $sheet2Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>' . $catRows . '</sheetData></worksheet>';
- 
+
         $sheet3Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>' . $subRows . '</sheetData></worksheet>';
- 
+
         $sheet4Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>' . $brandRows . '</sheetData></worksheet>';
- 
+
         $sheet5Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>' . $unitRows . '</sheetData></worksheet>';
- 
+
         $sheet6Xml = '<?xml version="1.0" encoding="UTF-8"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>' . $gstRows . '</sheetData></worksheet>';
- 
+
         // ── sharedStrings.xml ─────────────────────────────────────────
         $sharedStringsXml = '<?xml version="1.0" encoding="UTF-8"?>
 <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
      count="' . count($strIndex) . '" uniqueCount="' . count($strIndex) . '">'
             . $siXml . '</sst>';
- 
+
         // ── workbook.xml ──────────────────────────────────────────────
         $allNamedRanges = $namedRanges . $brandNamedRanges;
         $workbook = '<?xml version="1.0" encoding="UTF-8"?>
@@ -919,7 +991,7 @@ class ProductController extends Controller
   </sheets>
   <definedNames>' . $allNamedRanges . '</definedNames>
 </workbook>';
- 
+
         $contentTypes = '<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -934,14 +1006,14 @@ class ProductController extends Controller
   <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>
   <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
 </Types>';
- 
+
         $rels = '<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1"
     Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
     Target="xl/workbook.xml"/>
 </Relationships>';
- 
+
         $workbookRels = '<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
@@ -953,7 +1025,7 @@ class ProductController extends Controller
   <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
   <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>';
- 
+
         $styles = '<?xml version="1.0" encoding="UTF-8"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <fonts>
@@ -972,11 +1044,11 @@ class ProductController extends Controller
     <xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0"/>
   </cellXfs>
 </styleSheet>';
- 
+
         // ── ZIP बनवा ──────────────────────────────────────────────────
         $zipPath = sys_get_temp_dir() . '/product_sample.xlsx';
         if (file_exists($zipPath)) unlink($zipPath);
- 
+
         $zip = new \ZipArchive();
         $zip->open($zipPath, \ZipArchive::CREATE);
         $zip->addFromString('[Content_Types].xml',        $contentTypes);
@@ -992,12 +1064,9 @@ class ProductController extends Controller
         $zip->addFromString('xl/sharedStrings.xml',       $sharedStringsXml);
         $zip->addFromString('xl/styles.xml',              $styles);
         $zip->close();
- 
+
         return response()->download($zipPath, 'product_sample.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
- 
- 
-
 }

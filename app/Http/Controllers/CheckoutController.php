@@ -415,7 +415,10 @@ class CheckoutController extends Controller
         ]);
 
         $rules = [
-            'selected_address' => 'nullable|exists:user_addresses,id',
+            'selected_address' => [
+                'nullable',
+                Rule::exists('user_addresses', 'id')->where('user_id', auth()->id())
+            ],
             'payment_method'   => 'required|in:online,cash'
         ];
 
@@ -562,10 +565,10 @@ class CheckoutController extends Controller
 
 
             /* ----ORDER CREATE-------*/
-
+            $addressId = $request->selected_address;
             $order = Order::create([
                 'user_id'        => auth()->id(),
-
+                'address_id' => $addressId,
                 'order_number'   => 'ORD' . date('Ymd') . rand(1000, 9999),
                 'channel'        => 'web',
                 'subtotal'       => $cart->subtotal,
@@ -689,6 +692,4 @@ class CheckoutController extends Controller
             ]);
         }
     }
-
-   
 }
