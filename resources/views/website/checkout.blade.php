@@ -96,6 +96,7 @@
 
                                     <input class="form-check-input"
                                         type="radio"
+                                        name="delivery_address"
                                         id="address_{{ $address->id }}"
                                         @checked($defaultAddress && $defaultAddress->id == $address->id)
                                     onclick="selectAddress({{ $address->id }}, {{ $address->type }})">
@@ -676,19 +677,28 @@
         const radio = document.getElementById("address_" + addressId);
 
         if (radio) {
-
             radio.checked = true;
-
-            radio.closest(".address-box")
-                ?.classList.add("active");
-
+            radio.closest(".address-box")?.classList.add("active");
         }
 
         document.getElementById("address_id").value = addressId;
         document.getElementById("address_type").value = addressType;
         document.getElementById("selected_address").value = addressId;
-
     }
+
+    document.querySelectorAll(".address-box").forEach(box => {
+
+        box.addEventListener("click", function() {
+
+            const radio = this.querySelector("input[type=radio]");
+
+            if (radio) {
+                radio.click();
+            }
+
+        });
+
+    });
 
     /*
        FILL ADDRESS FORM
