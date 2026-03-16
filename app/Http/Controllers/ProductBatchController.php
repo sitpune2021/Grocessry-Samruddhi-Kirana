@@ -430,15 +430,20 @@ class ProductBatchController extends Controller
             ->distinct()
             ->get();
     }
-
     public function getProductQuantity($warehouseId, $productId)
     {
-        $qty = WarehouseStock::where('warehouse_id', $warehouseId)
+        $warehouseStock = WarehouseStock::where('warehouse_id', $warehouseId)
             ->where('product_id', $productId)
             ->sum('quantity');
 
+        $batchUsed = ProductBatch::where('warehouse_id', $warehouseId)
+            ->where('product_id', $productId)
+            ->sum('quantity');
+
+        $availableStock = max($warehouseStock - $batchUsed, 0);
+
         return response()->json([
-            'quantity' => (int) $qty
+            'quantity' => $availableStock
         ]);
     }
 }

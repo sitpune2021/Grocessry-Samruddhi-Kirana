@@ -45,7 +45,7 @@
                                         name="name"
                                         class="form-control"
                                         value="{{ old('name', $units->name ?? '') }}"
-                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                        {{ $mode === 'show' ? 'readonly' : '' }}>
 
                                     @error('name')
                                     <div class="text-danger mt-1">{{ $message }}</div>
@@ -62,7 +62,7 @@
                                         name="short_name"
                                         class="form-control"
                                         value="{{ old('short_name', $units->short_name ?? '') }}"
-                                        {{ $mode === 'view' ? 'readonly' : '' }}>
+                                        {{ $mode === 'show' ? 'readonly' : '' }}>
 
                                     @error('short_name')
                                     <div class="text-danger mt-1">{{ $message }}</div>
