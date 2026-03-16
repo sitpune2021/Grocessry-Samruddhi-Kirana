@@ -70,11 +70,11 @@
                                     </td>
 
                                     <td align="center" class="text-success">
-                                        @if($batch->quantity > 0 && $batch->expiry_date >= now())
+                                        @if(auth()->user()->role_id != 1 && $batch->quantity > 0 && $batch->expiry_date >= now())
                                         <a href="{{ route('sale.create', ['batch_id' => $batch->id]) }}"
                                             title="Sale Product"
                                             class="btn btn-success btn-sm text-white">
-                                             Sale <i class="bx bx-cart me-1"></i>
+                                            Sale <i class="bx bx-cart me-1"></i>
                                         </a>
                                         @else
                                         ❌

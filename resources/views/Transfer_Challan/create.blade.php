@@ -127,7 +127,7 @@
                                                         {{-- BATCH --}}
                                                         <td>
                                                             <input type="text" class="form-control"
-                                                                value="{{ $item->batch_id }}" readonly>
+                                                                value="{{ $item->batch->batch_no ?? '' }}" readonly>
 
                                                         </td>
                                                         <td>

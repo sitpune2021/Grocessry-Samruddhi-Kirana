@@ -41,7 +41,8 @@ class TransferChallanController extends Controller
         if ($request->filled('transfer_group')) {
             [$from, $to] = explode('_', $request->transfer_group);
 
-            $transferItems = WarehouseTransfer::with('product')
+            //$transferItems = WarehouseTransfer::with('product')
+            $transferItems = WarehouseTransfer::with(['product','batch'])
                 ->where('approved_by_warehouse_id', $from)
                 ->where('requested_by_warehouse_id', $to)
                 ->where('status', 0)
