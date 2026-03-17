@@ -31,7 +31,7 @@
             <!-- Table -->
             <div class="table-responsive">
                 <table class="table table-bordered table-striped align-middle">
-                      <thead class="table-light">
+                    <thead class="table-light">
                         <tr>
                             <th>sr no</th>
                             <th>Return No</th>
@@ -101,7 +101,7 @@
                             <td>
                                 @php
                                 $userWarehouseId = auth()->user()->warehouse_id;
-                        $userWarehouseType = optional(auth()->user()->warehouse)->type;
+                                $userWarehouseType = optional(auth()->user()->warehouse)->type;
 
                                 @endphp
 
@@ -166,7 +166,10 @@
                     </tbody>
                 </table>
             </div>
-            <x-pagination :from="$returns->firstItem()" :to="$returns->lastItem()" :total="$returns->total()" />
+            <div class="px-3 py-2">
+                {{ $returns->onEachSide(0)->links('pagination::bootstrap-5') }}
+            </div>
+           
         </div>
     </div>
 </div>
