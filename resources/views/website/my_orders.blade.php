@@ -191,7 +191,7 @@
                         'pending' => 'status-pending',
                         'completed' => 'status-completed',
                         'cancelled' => 'status-cancelled',
-                        default => 'bg-secondary'
+                        default => 'bg-primary'
                         };
                         @endphp
 
@@ -260,13 +260,12 @@
                 <div class="address-card">
                     <h6>{{ $address->first_name }} {{ $address->last_name }}</h6>
                     <p class="mb-1">
-                        {{ $address->address }},
-                        {{ $address->city }},
-                        {{ $address->postcode }},
-                        {{ $address->country }}
+                        {{ $address->flat_house }}, {{ $address->area }} ,
+                        Floor: {{ $address->floor }}, {{ $address->landmark }}<br>
+                        {{ $address->city }} - {{ $address->postcode }}
                     </p>
                     <p class="mb-0">
-                        {{ $address->phone }} | {{ $address->email }}
+                        {{ $address->phone }} 
                     </p>
                 </div>
                 @empty

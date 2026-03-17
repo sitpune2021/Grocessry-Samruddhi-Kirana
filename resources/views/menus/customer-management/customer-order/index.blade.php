@@ -51,6 +51,7 @@
                         <tr>
                             <th class="text-center" style="width: 80px;">Sr No</th>
                             <th style="width: 25%;">Customer Name</th>
+                            <th style="width: 25%;">Customer Address</th>
                             <th style="width: 25%;">Order Number</th>
                             <th style="width: 25%;">Delivery Agent Name</th>
                             <th style="width: 25%;">Product</th>
@@ -75,6 +76,17 @@
                             <td>
                                 {{ $order->user->first_name ?? '-' }}
                                 {{ $order->user->last_name ?? '' }}
+                            </td>
+
+                            <td>
+
+                                {{ $order->address->landmark ?? '' }},
+                                {{ $order->address->flat_house ?? '' }},
+                                {{ $order->address->area ?? '' }}<br>
+
+                                {{ $order->address->city ?? '' }} {{ $order->address->postcode ?? '' }}<br>
+
+                                {{ $order->address->phone ?? '' }}
                             </td>
 
                             <td>

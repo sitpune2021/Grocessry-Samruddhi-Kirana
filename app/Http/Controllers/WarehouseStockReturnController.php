@@ -101,6 +101,7 @@ class WarehouseStockReturnController extends Controller
         /**
          * AVAILABLE STOCK IN LOGGED-IN WAREHOUSE
          */
+        
         $warehouseStocks = ProductBatch::with('product')
             ->where('warehouse_id', $fromWarehouseId)
             ->where('is_blocked', 0)
@@ -114,6 +115,8 @@ class WarehouseStockReturnController extends Controller
             'mode'
         ));
     }
+
+
     public function challanProducts($challanId)
     {
         $items = TransferChallanItem::join(
