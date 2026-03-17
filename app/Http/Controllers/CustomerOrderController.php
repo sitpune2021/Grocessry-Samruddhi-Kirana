@@ -10,12 +10,15 @@ use App\Models\Order;
 class CustomerOrderController extends Controller
 {
 
+
     public function index()
     {
+        
         $orders = Order::with([
             'items',
             'user',
             'orderItems',
+            'address',
             'deliveryAgent.user'
         ])
             ->latest()

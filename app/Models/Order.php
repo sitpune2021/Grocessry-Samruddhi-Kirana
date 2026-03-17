@@ -88,4 +88,9 @@ class Order extends Model
         return $this->belongsTo(UserAddress::class, 'user_id', 'user_id')
             ->where('is_default', 1);
     }
+
+    public function address()
+    {
+        return $this->belongsTo(UserAddress::class, 'address_id');
+    }
 }
