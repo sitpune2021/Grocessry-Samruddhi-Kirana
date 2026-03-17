@@ -62,8 +62,8 @@
                             <th>Warehouse Request</th>
                             <th>Warehouse Approved</th>
                             <th>Product</th>
-                            <td>Request Stock</td>
-                            <td>Dispatch Stock</td>
+                            <th>Request Stock</th>
+                            <th>Dispatch Stock</th>
                             <th>Created Date</th>
                             <th>Updated Date</th>
                         </tr>
