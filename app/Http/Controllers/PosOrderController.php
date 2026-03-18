@@ -114,6 +114,11 @@ class PosOrderController extends Controller
     }
     public function searchProducts(Request $request)
     {
+        Log::info('POS Search Hit', [
+            'query' => $request->q,
+            'user_id' => Auth::id()
+        ]);
+
         $request->validate([
             'q' => 'required|string|min:1',
         ]);
@@ -121,6 +126,9 @@ class PosOrderController extends Controller
         $user = Auth::user();
 
         if (!$user || !$user->warehouse_id) {
+            Log::warning('User or warehouse missing', [
+                'user' => $user
+            ]);
             return response()->json([]);
         }
 
@@ -160,17 +168,23 @@ class PosOrderController extends Controller
                 ->limit(20)
                 ->get();
 
+            Log::info('POS Products Found', [
+                'count' => $products->count(),
+                'products' => $products
+            ]);
+
             return response()->json($products);
         } catch (\Throwable $e) {
 
             Log::error('POS Search Error', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ]);
 
             return response()->json([], 500);
         }
     }
-
     public function productByBarcode($code)
     {
         $user = Auth::user();
