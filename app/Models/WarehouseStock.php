@@ -28,7 +28,11 @@ class WarehouseStock extends Model
         'supplier_challan_id'
 
     ];
-
+    protected $casts = [
+        'batch_no' => 'array',
+        'supplier_challan_id' => 'array',
+        'batch_qty' => 'array', // 🔥 NEW
+    ];
     public function batch()
     {
         return $this->belongsTo(ProductBatch::class, 'batch_no');
