@@ -27,7 +27,7 @@ class ReportsController extends Controller
         $download      = $request->query('download');
 
         $query = DB::table('warehouse_transfers')
-            ->orderBy('id', 'desc');
+            ->orderBy('id', 'asc');
 
         if ($fromDate && $toDate && $fromDate <= $toDate) {
             $query->whereBetween('created_at', [
@@ -290,7 +290,7 @@ class ReportsController extends Controller
                 'r.created_at',
                 'r.updated_at',
             ])
-            ->orderBy('r.id', 'desc');
+            ->orderBy('r.id', 'asc');
 
         if ($warehouseId) {
             $query->where(function ($q) use ($warehouseId) {
@@ -359,7 +359,6 @@ class ReportsController extends Controller
 
         return view('reports.warehouse-stock-returns.warehouse-stock-returns', compact('returns'));
     }
-
 
     public function pos_report(Request $request)
     {
@@ -449,4 +448,6 @@ class ReportsController extends Controller
 
         return view('reports.pos-report.pos-report', compact('rows'));
     }
+
+    
 }
