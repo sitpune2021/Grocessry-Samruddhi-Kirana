@@ -14,6 +14,7 @@ class WarehouseStockReturn extends Model
         'status',
         'created_by',
         'approved_by',
+        'received_by',
         'remarks',
         'dispatched_at',
         'received_at'
