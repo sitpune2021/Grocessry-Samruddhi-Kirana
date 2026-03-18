@@ -67,7 +67,6 @@
                     <tbody>
                         @forelse($orders as $index => $order)
 
-                        @foreach($order->orderItems as $item)
                         <tr>
                             <td class="text-center">
                                 {{ $loop->parent->iteration }}
@@ -103,16 +102,22 @@
 
 
                             <td>
-                                {{ $item->product->name ?? '-' }}
-                            </td>
+    @foreach($order->orderItems as $item)
+        <div>{{ $item->product->name ?? '-' }}</div>
+    @endforeach
+</td>
 
                             <td>
-                                {{ $item->quantity }}
-                            </td>
+    @foreach($order->orderItems as $item)
+        <div>{{ $item->quantity }}</div>
+    @endforeach
+</td>
 
                             <td>
-                                ₹{{ number_format($item->price, 2) }}
-                            </td>
+    @foreach($order->orderItems as $item)
+        <div>₹{{ number_format($item->price, 2) }}</div>
+    @endforeach
+</td>
 
                             <td>
                                 ₹{{ number_format($item->total, 2) }}
@@ -168,8 +173,7 @@
                             </td>
 
                         </tr>
-                        @endforeach
-
+                     
                         @empty
                         <tr>
                             <td colspan="9" class="text-center text-muted">
