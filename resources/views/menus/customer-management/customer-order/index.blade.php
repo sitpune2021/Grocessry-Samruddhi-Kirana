@@ -69,7 +69,7 @@
 
                         <tr>
                             <td class="text-center">
-                                {{ $loop->parent->iteration }}
+                                {{ $loop->iteration }}
                             </td>
 
                             <td>
@@ -102,25 +102,25 @@
 
 
                             <td>
-    @foreach($order->orderItems as $item)
-        <div>{{ $item->product->name ?? '-' }}</div>
-    @endforeach
-</td>
+                                @foreach($order->orderItems as $item)
+                                <div>{{ $item->product->name ?? '-' }}</div>
+                                @endforeach
+                            </td>
 
                             <td>
-    @foreach($order->orderItems as $item)
-        <div>{{ $item->quantity }}</div>
-    @endforeach
-</td>
+                                @foreach($order->orderItems as $item)
+                                <div>{{ $item->quantity }}</div>
+                                @endforeach
+                            </td>
 
                             <td>
-    @foreach($order->orderItems as $item)
-        <div>₹{{ number_format($item->price, 2) }}</div>
-    @endforeach
-</td>
+                                @foreach($order->orderItems as $item)
+                                <div>₹{{ number_format($item->price, 2) }}</div>
+                                @endforeach
+                            </td>
 
                             <td>
-                                ₹{{ number_format($item->total, 2) }}
+                               ₹{{ number_format($order->orderItems->sum('total'), 2) }}
                             </td>
 
                             <td>
@@ -173,7 +173,7 @@
                             </td>
 
                         </tr>
-                     
+
                         @empty
                         <tr>
                             <td colspan="9" class="text-center text-muted">

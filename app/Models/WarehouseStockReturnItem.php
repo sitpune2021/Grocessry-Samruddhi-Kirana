@@ -19,7 +19,7 @@ class WarehouseStockReturnItem extends Model
 
     public function stockReturn()
     {
-        return $this->belongsTo(WarehouseStockReturn::class,'stock_return_id', 'id');
+        return $this->belongsTo(WarehouseStockReturn::class, 'stock_return_id', 'id');
     }
     public function product()
     {
@@ -28,6 +28,6 @@ class WarehouseStockReturnItem extends Model
 
     public function batch()
     {
-        return $this->belongsTo(Batch::class);
+        return $this->belongsTo(ProductBatch::class, 'batch_no');
     }
 }
