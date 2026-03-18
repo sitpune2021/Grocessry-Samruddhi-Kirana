@@ -61,12 +61,12 @@
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th>Sr no</th>
                 <th>Product</th>
                 <th>Batch</th>
                 <th>Return Qty</th>
                 <th>Received Qty</th>
-                <th>Damaged Qty</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -75,7 +75,7 @@
             <tr>
                 <td>{{ $key + 1 }}</td>
                 <td>{{ $item->product->name ?? '-' }}</td>
-                <td>{{ $item->batch_no ?? '-' }}</td>
+                <td>{{ $item->batch->batch_no ?? '-' }}</td>
                 <td class="text-center">{{ $item->return_qty }}</td>
                 <td class="text-center">
                     @if($return->status === 'received')
@@ -84,7 +84,6 @@
                     -
                     @endif
                 </td>
-                <td class="text-center">{{ $item->damaged_qty }}</td>
             </tr>
             @endforeach
             @else
@@ -109,7 +108,6 @@
         <tr>
             <td class="center">
                 <strong>Prepared By</strong><br>
-
                 {{ $return->creator?->first_name ?? '' }} {{ $return->creator?->last_name ?? ''}}
             </td>
 
@@ -120,7 +118,7 @@
 
             <td class="center">
                 <strong>Received By</strong><br>
-                {{ $return->receivedBy->first_name ?? ''}} {{ $return->receivedBy->first_name ?? '' }}
+                {{ $return->receivedBy->first_name ?? ''}} {{ $return->receivedBy->last_name ?? '' }}
             </td>
         </tr>
     </table>

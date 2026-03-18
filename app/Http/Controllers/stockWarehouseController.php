@@ -139,7 +139,17 @@ class stockWarehouseController extends Controller
         // ✅ NEW: Supplier Challans (Received only)
         $usedChallanIds = WarehouseStock::whereNotNull('supplier_challan_id')
             ->pluck('supplier_challan_id')
-            ->unique();
+            ->map(function ($item) {
+                if (is_array($item)) {
+                    return $item;
+                }
+                return json_decode($item, true) ?? [];
+            })
+            ->flatten()
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
 
         $challans = SupplierChallan::where('status', 'received')
             ->whereNotIn('id', $usedChallanIds)
@@ -171,73 +181,24 @@ class stockWarehouseController extends Controller
             ->select('id', 'name')
             ->get();
     }
-
     public function addStock(Request $request)
     {
-        // 🔹 Incoming request log
-        Log::info('🟢 AddStock: Request received', [
-            'payload' => $request->all()
-        ]);
-
-        // $exists = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-        //     ->where('challan_no', $request->challan_no)
-        //     ->exists();
-
-        $exists = WarehouseStock::where('supplier_challan_id', $request->supplier_challan_id)
-            ->exists();
-
-        if ($exists) {
-            Log::warning('⛔ Duplicate challan attempt blocked', [
-                'warehouse_id' => $request->warehouse_id,
-                'challan_no'   => $request->challan_no,
-            ]);
-
-            return back()
-                ->with('error', 'This supplier challan is already added to warehouse stock.')
-                ->withInput();
-        }
-
-        $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            // 'supplier_id'  => 'required|exists:suppliers,id',
-            'bill_no'      => 'required|string',
-            'supplier_challan_id' => 'required|exists:supplier_challans,id',
-
-            // 'challan_no' => [
-            //     'required',
-            //     'string',
-            //     Rule::unique('warehouse_stock', 'challan_no')
-            //         ->where('warehouse_id', $request->warehouse_id),
-            // ],
-
-            'batch_no'     => 'required|string',
-
-            'products' => 'required|array|min:1',
-            'products.*.category_id' => 'required|exists:categories,id',
-            'products.*.sub_category_id' => 'required|exists:sub_categories,id',
-            'products.*.product_id' => 'required|exists:products,id',
-            'products.*.quantity' => 'required|numeric|min:0.01',
+        Log::info('🟢 AddStock START', [
+            'request' => $request->all()
         ]);
 
         DB::beginTransaction();
 
         try {
 
-            Log::info('🟡 AddStock: Transaction started', [
-                'warehouse_id' => $request->warehouse_id,
-                'challan_no'   => $request->challan_no,
-                // 'supplier_id'  => $request->supplier_id,
-                'products_cnt' => count($request->products),
-            ]);
-
             foreach ($request->products as $index => $item) {
 
-                Log::info('🔍 AddStock: Processing product', [
-                    'index'           => $index,
-                    'category_id'     => $item['category_id'],
-                    'sub_category_id' => $item['sub_category_id'],
-                    'product_id'      => $item['product_id'],
-                    'quantity'        => $item['quantity'],
+                Log::info('🔍 Processing Product', [
+                    'index' => $index,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'batch' => $request->batch_no,
+                    'challan' => $request->supplier_challan_id
                 ]);
 
                 $stock = WarehouseStock::where([
@@ -250,49 +211,81 @@ class stockWarehouseController extends Controller
 
                 if ($stock) {
 
-                    Log::info('➕ AddStock: Existing stock found, updating quantity', [
-                        'stock_id'     => $stock->id,
-                        'old_quantity' => $stock->quantity,
-                        'add_quantity' => $item['quantity'],
+                    Log::info('✏️ Existing stock found', [
+                        'stock_id' => $stock->id,
+                        'old_qty' => $stock->quantity
                     ]);
 
+                    // ✅ Total qty
                     $stock->quantity += $item['quantity'];
+
+                    // ✅ Batch array
+                    $batches = $stock->batch_no ?? [];
+                    if (!in_array($request->batch_no, $batches)) {
+                        $batches[] = $request->batch_no;
+                    }
+
+                    // ✅ Challan array
+                    $challans = $stock->supplier_challan_id ?? [];
+                    if (!in_array($request->supplier_challan_id, $challans)) {
+                        $challans[] = $request->supplier_challan_id;
+                    }
+
+                    // ✅ Batch-wise qty
+                    $batchQty = $stock->batch_qty ?? [];
+
+                    if (isset($batchQty[$request->batch_no])) {
+                        $batchQty[$request->batch_no] += $item['quantity'];
+                    } else {
+                        $batchQty[$request->batch_no] = $item['quantity'];
+                    }
+
+                    Log::info('📊 Updating stock', [
+                        'new_total_qty' => $stock->quantity,
+                        'batches' => $batches,
+                        'challans' => $challans,
+                        'batch_qty' => $batchQty
+                    ]);
+
+                    // ✅ Save
+                    $stock->batch_no = $batches;
+                    $stock->supplier_challan_id = $challans;
+                    $stock->batch_qty = $batchQty;
+                    $stock->bill_no = $request->bill_no;
+
                     $stock->save();
 
-                    Log::info('✅ AddStock: Stock updated', [
-                        'stock_id'    => $stock->id,
-                        'new_quantity' => $stock->quantity,
+                    Log::info('✅ Stock Updated', [
+                        'stock_id' => $stock->id
                     ]);
                 } else {
 
-                    Log::info('🆕 AddStock: Creating new stock row');
+                    Log::info('🆕 Creating new stock');
 
                     $newStock = WarehouseStock::create([
-                        'warehouse_id'         => $request->warehouse_id,
-                        // 'supplier_id'          => $request->supplier_id,
-                        'supplier_challan_id' => $request->supplier_challan_id, // ✅ MUST
-                        'category_id'          => $item['category_id'],
-                        'sub_category_id'      => $item['sub_category_id'],
-                        'product_id'           => $item['product_id'],
-                        'quantity'             => $item['quantity'],
-                        'bill_no'              => $request->bill_no,
-                        'challan_no'           => $request->challan_no,
-                        'batch_no'             => $request->batch_no,
+                        'warehouse_id' => $request->warehouse_id,
+                        'supplier_challan_id' => [$request->supplier_challan_id],
+                        'category_id' => $item['category_id'],
+                        'sub_category_id' => $item['sub_category_id'],
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'bill_no' => $request->bill_no,
+                        'challan_no' => $request->challan_no,
+                        'batch_no' => [$request->batch_no],
+                        'batch_qty' => [
+                            $request->batch_no => $item['quantity']
+                        ],
                     ]);
 
-                    Log::info('✅ AddStock: New stock created', [
-                        'stock_id' => $newStock->id,
+                    Log::info('✅ New Stock Created', [
+                        'stock_id' => $newStock->id
                     ]);
                 }
             }
 
             DB::commit();
 
-            Log::info('🟢 AddStock: Transaction committed successfully', [
-                'challan_no' => $request->challan_no,
-                'warehouse_id' => $request->warehouse_id,
-            ]);
-
+            Log::info('🟢 AddStock SUCCESS');
             return redirect()
                 ->route('index.addStock.warehouse')
                 ->with('success', 'Stock saved successfully');
@@ -300,11 +293,10 @@ class stockWarehouseController extends Controller
 
             DB::rollBack();
 
-            Log::error('🔴 AddStock: Transaction failed', [
-                'error'   => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'request' => $request->all(),
+            Log::error('🔴 AddStock FAILED', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ]);
 
             return redirect()

@@ -1,20 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            {{-- Sidebar --}}
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-
-
-            {{-- Page --}}
-            <div class="layout-page">
-                @include('layouts.navbar')
-
+@extend('layouts.app');
+@section('content')
                 <div class="content-wrapper">
 
 
@@ -199,19 +184,13 @@
                                         </form>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
-
                     </div>
-
-                    @include('layouts.footer')
                 </div>
-            </div>
-        </div>
-    </div>
-</body>
+           @endsection
 
+@push('script')
 {{-- Scripts --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -220,11 +199,7 @@
 
         let discountPercent = parseFloat($(this).val());
         let sellingPrice = parseFloat($('#original_price').val());
-        let basePrice = {
-            {
-                (float) $batch - > product - > base_price
-            }
-        };
+        let basePrice = {{(float) $batch->product->base_price}};
 
         if (!discountPercent || discountPercent <= 0) {
             $('#sale_price').val('');
@@ -252,3 +227,4 @@
         $('#discount_on_mrp').val(discountAmount.toFixed(2));
     });
 </script>
+@endpush

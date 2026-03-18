@@ -482,6 +482,7 @@ class WarehouseStockReturnController extends Controller
     {
         $return = WarehouseStockReturn::with([
             'WarehouseStockReturnItem',
+             'WarehouseStockReturnItem.batch',
             'fromWarehouse',
             'toWarehouse',
             'creator',

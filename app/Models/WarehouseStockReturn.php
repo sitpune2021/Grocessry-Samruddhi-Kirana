@@ -14,6 +14,7 @@ class WarehouseStockReturn extends Model
         'status',
         'created_by',
         'approved_by',
+        'received_by',
         'remarks',
         'dispatched_at',
         'received_at'
@@ -51,6 +52,6 @@ class WarehouseStockReturn extends Model
 
     public function receivedBy()
     {
-        return $this->belongsTo(User::class, 'received_by');
+        return $this->belongsTo(User::class, 'received_by', 'id');
     }
 }

@@ -41,8 +41,8 @@ class SupplierChallenController extends Controller
     }
 
     public function create()
-    { 
-        
+    {
+
         $warehouse = Warehouse::where('type', 'master')
             ->where('status', 1)
             ->first();
@@ -198,6 +198,8 @@ class SupplierChallenController extends Controller
             'warehouse' => $challan->warehouse,
             'suppliers' => Supplier::all(),
             'categories' => Category::all(),
+            'products' => Product::all(),   // ✅ ADD THIS
+
             'purchaseOrders' => PurchaseOrder::all()
         ]);
     }
