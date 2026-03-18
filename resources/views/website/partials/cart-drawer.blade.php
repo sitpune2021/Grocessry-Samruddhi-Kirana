@@ -62,7 +62,7 @@
                              </div>
 
                              <div class="fw-bold mt-1">
-                                 ₹ {{ number_format($item->price,2) }}
+                                 ₹ {{ number_format($item->price,0) }}
                              </div>
                          </div>
                          @include('website.partials.add-to-cart-btn', [

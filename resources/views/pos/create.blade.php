@@ -288,25 +288,39 @@
 
 
 
-    function fetchProducts(query) {
+  function fetchProducts(query) {
 
-        if (isBarcodeScan) return;
-        fetch(`/pos/search-products?q=${encodeURIComponent(query)}`)
-            .then(res => res.json())
-            .then(data => {
+    if (isBarcodeScan) return;
 
-                suggestions.innerHTML = '';
-                if (!Array.isArray(data) || !data.length) {
-                    hideSuggestions();
-                    return;
-                }
+    fetch(`/pos/search-products?q=${encodeURIComponent(query)}`)
+        .then(res => {
+            if (!res.ok) throw new Error('API error');
+            return res.json();
+        })
+        .then(data => {
 
-                data.forEach(p => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'list-group-item list-group-item-action';
+            suggestions.innerHTML = '';
 
-                    btn.innerHTML = `
+            // ✅ SHOW MESSAGE IF EMPTY
+            if (!Array.isArray(data) || !data.length) {
+
+                const noResult = document.createElement('div');
+                noResult.className = 'list-group-item text-danger text-center fw-bold';
+                noResult.innerText = 'No product found / Out of stock / Expired';
+
+                suggestions.appendChild(noResult);
+                suggestions.style.display = 'block';
+
+                return;
+            }
+
+            // ✅ SHOW PRODUCTS
+            data.forEach(p => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action';
+
+                btn.innerHTML = `
                     <div class="d-flex justify-content-between">
                         <span>${p.name}</span>
                         <strong>₹${Number(p.final_price).toFixed(2)}</strong>
@@ -316,15 +330,23 @@
                     </small>
                 `;
 
-                    btn.onclick = () => addToCart(p);
-                    suggestions.appendChild(btn);
-                });
+                btn.onclick = () => addToCart(p);
+                suggestions.appendChild(btn);
+            });
 
-                suggestions.style.display = 'block';
-            })
-            .catch(() => hideSuggestions());
-    }
+            suggestions.style.display = 'block';
+        })
+        .catch(err => {
+            console.error(err);
 
+            suggestions.innerHTML = `
+                <div class="list-group-item text-danger text-center fw-bold">
+                    Error loading products
+                </div>
+            `;
+            suggestions.style.display = 'block';
+        });
+}
 
     function hideSuggestions() {
         suggestions.style.display = 'none';

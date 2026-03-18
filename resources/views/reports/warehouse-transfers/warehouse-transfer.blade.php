@@ -63,7 +63,7 @@
                             <th>Warehouse Approved</th>
                             <th>Product</th>
                             <th>Request Stock</th>
-                            <th>Recived Stock</th>
+                            <th>Received Stock</th>
                             <th>Created Date</th>
                             <th>Updated Date</th>
                         </tr>

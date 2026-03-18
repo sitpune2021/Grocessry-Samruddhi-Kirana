@@ -21,7 +21,7 @@ class CustomerOrderController extends Controller
             'address',
             'deliveryAgent.user'
         ])
-            ->latest()
+            ->orderByDesc('id')
             ->paginate(10);
 
         $deliveryAgents = DeliveryAgent::with('user')->get();
