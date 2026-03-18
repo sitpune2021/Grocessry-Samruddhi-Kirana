@@ -129,7 +129,7 @@
             
 
 @endsection
-@push('scripts')
+@stack('scripts')
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
@@ -615,4 +615,4 @@
             });
     }
 </script>
-@endpush
+@endstack
