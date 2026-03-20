@@ -110,7 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('auth')->group(function () {
     Route::post('mobile/verify-otp/{type}', [DeliveryAgentController::class, 'verifyOtp']);
     Route::post('mobile/resend-otp', [DeliveryAgentController::class, 'resendOtp']);
-    Route::post('/login/{type}', [DeliveryAgentController::class, 'login']);
+    Route::post('/login-agent/{type}', [DeliveryAgentController::class, 'login']);
     Route::post('/reset-password', [DeliveryAgentController::class, 'resetPassword']);
     Route::post('forgot-password/send-otp', [DeliveryAgentController::class, 'forgotPasswordSendOtp']);
 });
