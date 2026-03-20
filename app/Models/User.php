@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,11 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, HasApiTokens, Notifiable, SoftDeletes;
-    use HasApiTokens, Notifiable;
 
-    
     protected $fillable = [
         'first_name',
         'last_name',
@@ -32,39 +28,35 @@ class User extends Authenticatable
         'deleted_at',
         'status',
         'last_login_at',
-        'warehouse_id',
         'otp',
         'otp_expires_at',
         'is_online',
         'duty_start_time',
         'duty_paused_at',
-        'total_duty_minutes'
+        'total_duty_minutes',
     ];
 
-   
     protected $hidden = [
         'password',
         'remember_token',
     ];
-    protected $casts = [
-        'duty_start_time' => 'datetime',
-        'duty_paused_at' => 'datetime',
-        'is_online' => 'boolean',
-    ];
-    
+
+    // ✅ ONE casts() method only — no $casts property
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'duty_start_time'   => 'datetime',
+            'duty_paused_at'    => 'datetime',
+            'is_online'         => 'boolean',
+        ];
+    }
 
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -75,10 +67,13 @@ class User extends Authenticatable
         return $this->role->permissions();
     }
 
+    // public function hasRole(string $role): bool
+    // {
+    //     return $this->role === $role;
+    // }
     public function hasRole(string $role): bool
     {
-        return $this->role === $role;
-        // OR: return $this->role->name === $role; (if role relation)
+        return strtolower($this->role->name ?? '') === strtolower($role);
     }
 
     public function hasPermission(string $permission): bool
@@ -114,6 +109,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Address::class, 'user_id', 'id');
     }
-
-   
 }
