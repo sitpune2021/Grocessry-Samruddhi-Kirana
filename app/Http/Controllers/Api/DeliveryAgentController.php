@@ -22,13 +22,18 @@ class DeliveryAgentController extends Controller
 {
     public function login(Request $request, $type)
     {
+        Log::info("🔐 Login attempt started", [
+            'type' => $type,
+            'input' => $request->only(['username', 'mobile']),
+            'ip' => $request->ip()
+        ]);
+
         if (!in_array($type, ['password', 'otp'])) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid login type'
-            ], 400);
+            Log::warning("❌ Invalid login type", ['type' => $type]);
+            return response()->json(['status' => false, 'message' => 'Invalid login type'], 400);
         }
 
+        // ================= PASSWORD LOGIN =================
         if ($type === 'password') {
 
             $request->validate([
@@ -38,6 +43,11 @@ class DeliveryAgentController extends Controller
 
             $username = trim($request->username);
 
+            Log::info("🔍 Searching user", [
+                'username' => $username,
+                'is_numeric' => is_numeric($username)
+            ]);
+
             $user = User::with('role')
                 ->where(function ($q) use ($username) {
                     is_numeric($username)
@@ -46,14 +56,42 @@ class DeliveryAgentController extends Controller
                 })
                 ->first();
 
-            if (!$user || !Hash::check($request->password, $user->password)) {
+            if (!$user) {
+                Log::error("❌ User not found", [
+                    'username' => $username
+                ]);
+
                 return response()->json([
                     'status' => false,
                     'message' => 'Invalid credentials'
                 ], 401);
             }
+
+            Log::info("✅ User found", [
+                'user_id' => $user->id,
+                'db_mobile' => $user->mobile,
+                'db_email' => $user->email
+            ]);
+
+            $passwordMatch = Hash::check($request->password, $user->password);
+
+            if (!$passwordMatch) {
+                Log::error("❌ Password mismatch", [
+                    'user_id' => $user->id,
+                    'entered_password' => $request->password,
+                    'hashed_password' => $user->password
+                ]);
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            Log::info("✅ Password matched", ['user_id' => $user->id]);
         }
 
+        // ================= OTP LOGIN =================
         if ($type === 'otp') {
 
             $request->validate([
@@ -63,24 +101,26 @@ class DeliveryAgentController extends Controller
             $user = User::with('role')->where('mobile', $request->mobile)->first();
 
             if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Mobile number not registered'
-                ], 404);
+                Log::warning("❌ OTP: User not found", ['mobile' => $request->mobile]);
+                return response()->json(['status' => false, 'message' => 'Mobile number not registered'], 404);
             }
 
+            Log::info("✅ OTP User found", ['user_id' => $user->id]);
+
             if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Access denied'
-                ], 403);
+                Log::warning("❌ OTP Role mismatch", [
+                    'user_id' => $user->id,
+                    'role' => $user->role->name ?? null
+                ]);
+                return response()->json(['status' => false, 'message' => 'Access denied'], 403);
             }
 
             if ($user->status != 1) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Account inactive'
-                ], 403);
+                Log::warning("❌ OTP Inactive user", [
+                    'user_id' => $user->id,
+                    'status' => $user->status
+                ]);
+                return response()->json(['status' => false, 'message' => 'Account inactive'], 403);
             }
 
             $otp = random_int(100000, 999999);
@@ -90,13 +130,10 @@ class DeliveryAgentController extends Controller
                 'otp_expires_at' => now()->addMinutes(5),
             ]);
 
-            Http::asForm()->post('http://redirect.ds3.in/submitsms.jsp', [
-                'user' => env('SMS_USER'),
-                'key' => env('SMS_KEY'),
-                'mobile' => '91' . $user->mobile,
-                'message' => "Your OTP is {$otp}",
-                'senderid' => env('SMS_SENDERID'),
-                'accusage' => '10',
+            Log::info("📲 OTP generated", [
+                'user_id' => $user->id,
+                'mobile' => $user->mobile,
+                'otp' => $otp
             ]);
 
             return response()->json([
@@ -105,18 +142,21 @@ class DeliveryAgentController extends Controller
             ]);
         }
 
+        // ================= FINAL CHECK =================
         if (!$user->role || strtolower($user->role->name) !== 'delivery agent') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Access denied'
-            ], 403);
+            Log::warning("❌ Role mismatch (final)", [
+                'user_id' => $user->id,
+                'role' => $user->role->name ?? null
+            ]);
+            return response()->json(['status' => false, 'message' => 'Access denied'], 403);
         }
 
         if ($user->status != 1) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Account inactive'
-            ], 403);
+            Log::warning("❌ Inactive user (final)", [
+                'user_id' => $user->id,
+                'status' => $user->status
+            ]);
+            return response()->json(['status' => false, 'message' => 'Account inactive'], 403);
         }
 
         $token = $user->createToken('delivery-agent-token')->plainTextToken;
@@ -124,20 +164,16 @@ class DeliveryAgentController extends Controller
         $user->update([
             'last_login_at' => now(),
             'is_online' => 1,
+        ]);
 
+        Log::info("🎉 Login success", [
+            'user_id' => $user->id
         ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Login successful',
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => trim($user->first_name . ' ' . $user->last_name),
-                'email' => $user->email,
-                'mobile' => $user->mobile,
-                'role' => $user->role->name,
-            ]
+            'token' => $token
         ]);
     }
 
@@ -474,7 +510,7 @@ class DeliveryAgentController extends Controller
             'message' => 'Invalid update type'
         ], 400);
     }
-    
+
     public function updateAddress(Request $request)
     {
         $user = $request->user(); // logged-in partner
@@ -1053,7 +1089,7 @@ class DeliveryAgentController extends Controller
     //         ]
     //     ]);
     // }
-    
+
     // public function goOnline(Request $request)
     // {
     //     $user = $request->user();
