@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use App\Models\Offer;
 use App\Models\Cart;
 use App\Models\Coupon;
 use App\Models\CartItem;
@@ -13,298 +12,132 @@ use Illuminate\Support\Facades\DB;
 
 class CustomerCouponsOffersController extends Controller
 {
-    public function getOffers(Request $request)
+    /**
+     * Get all currently active coupons
+     */
+    public function getAllCoupons(Request $request)
     {
-        $today = Carbon::today()->toDateString();
+        $today = Carbon::today();
 
-        $offers = Offer::where('status', 1)
+        $coupons = Coupon::where('status', 1)
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
-            ->select(
-                'id',
-                'title',
-                'description',
-                'offer_type',
-                'discount_value',
-                'max_discount',
-                'min_order_amount',
-                'start_date',
-                'end_date'
-            )
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($coupon) {
+                return [
+                    'id'            => $coupon->id,
+                    'title'         => $coupon->title,
+                    'code'          => $coupon->code,
+                    'description'   => $coupon->description,
+                    'discount_text' => $coupon->discount_type == 'flat'
+                        ? '₹' . $coupon->discount_value . ' OFF'
+                        : $coupon->discount_value . '% OFF',
+                    'min_amount'    => (float)$coupon->min_amount,
+                    'valid_till'    => Carbon::parse($coupon->end_date)->format('d M Y'),
+                ];
+            });
 
         return response()->json([
             'status' => true,
-            'data'   => $offers
-        ], 200);
+            'data'   => $coupons
+        ]);
     }
-    public function applyOffer(Request $request)
+
+    /**
+     * Apply Coupon to Cart
+     */
+    public function applyCoupon(Request $request)
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-
+        // 1. Change validation to expect 'id'
         $request->validate([
-            'id'           => 'required|integer|exists:offers,id',
-            'order_amount' => 'required|numeric|min:1'
+            'id' => 'required|integer|exists:coupons,id',
         ]);
 
-        $today = Carbon::today()->toDateString();
+        $user = auth()->user();
+        $cart = Cart::with('items')->where('user_id', $user->id)->first();
 
-        $offer = Offer::where('id', $request->id)
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json(['status' => false, 'message' => 'Cart is empty'], 400);
+        }
+
+        // 2. Fetch coupon by ID and check dates
+        $today = Carbon::today();
+        $coupon = Coupon::where('id', $request->id) // Query by ID
             ->where('status', 1)
             ->whereDate('start_date', '<=', $today)
             ->whereDate('end_date', '>=', $today)
             ->first();
 
-        if (!$offer) {
+        if (!$coupon) {
+            return response()->json(['status' => false, 'message' => 'This coupon is no longer available'], 404);
+        }
+
+        // 3. Minimum amount check (using your 'min_amount' column)
+        if ($cart->subtotal < $coupon->min_amount) {
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid or expired offer'
+                'message' => 'Minimum order amount for this coupon is ₹' . $coupon->min_amount
             ], 400);
         }
 
-        if ($request->order_amount < $offer->min_order_amount) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Minimum order amount not met'
-            ], 400);
-        }
-
-        // 💸 Discount calculation
-        if (in_array($offer->offer_type, ['flat', 'flat_discount'])) {
-            $discount = $offer->discount_value;
+        // 4. Calculate Discount
+        $discount = 0;
+        if ($coupon->discount_type == 'flat') {
+            $discount = $coupon->discount_value;
         } else {
-            $discount = ($request->order_amount * $offer->discount_value) / 100;
-
-            if (!empty($offer->max_discount)) {
-                $discount = min($discount, $offer->max_discount);
+            $discount = ($cart->subtotal * $coupon->discount_value) / 100;
+            if (!empty($coupon->max_discount)) {
+                $discount = min($discount, $coupon->max_discount);
             }
         }
 
-        $discount = min($discount, $request->order_amount);
-        // ✅ Save discount to cart
+        // Prevent discount from exceeding subtotal
+        $discount = min($discount, $cart->subtotal);
+
+        // 5. Update Cart with the new totals
+        $cart->update([
+            'coupon_id'   => $coupon->id,
+            'coupon_code' => $coupon->code,
+            'discount'    => round($discount, 2),
+            'total'       => max(($cart->subtotal + ($cart->tax_total ?? 0)) - $discount, 0)
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Coupon applied successfully',
+            'data' => [
+                'coupon_code' => $coupon->code,
+                'discount'    => $cart->discount,
+                'new_total'   => $cart->total
+            ]
+        ]);
+    }
+
+    /**
+     * Remove Coupon
+     */
+    public function removeCoupon(Request $request)
+    {
+        $user = $request->user();
         $cart = Cart::where('user_id', $user->id)->first();
 
         if ($cart) {
-            $cart->discount = round($discount, 2);
-            $cart->total = max($request->order_amount - $discount, 0); // optional if you already use total
-            $cart->save();
+            $subtotal = $cart->subtotal;
+            $tax = $cart->tax_total ?? 0;
+            $delivery = $cart->delivery_charge ?? 0;
+
+            $cart->update([
+                'discount'    => 0,
+                'coupon_id'   => null,
+                'coupon_code' => null,
+                'total'       => $subtotal + $tax + $delivery
+            ]);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Offer applied successfully',
-            'data' => [
-                'id'            => $offer->id,
-                'title'         => $offer->title,
-                'discount'      => round($discount, 2),
-                'final_amount'  => round(max($request->order_amount - $discount, 0), 2)
-            ]
-        ], 200);
-    }
-    public function removeOffer(Request $request)
-    {
-        $user = $request->user();
-
-        $cart = Cart::where('user_id', $user->id)->first();
-
-        if (!$cart) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Cart empty'
-            ], 400);
-        }
-
-        $cart->update([
-            'discount' => 0,
-            'offer_id' => null,
-            'total' => $cart->subtotal + $cart->tax_total
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Offer removed successfully'
+            'status'  => true,
+            'message' => 'Coupon removed successfully'
         ]);
     }
-
-    // public function getAllCoupons(Request $request)
-    // {
-    //     $user = $request->user();
-
-    //     if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Unauthenticated'
-    //         ], 401);
-    //     }
-
-    //     $today = Carbon::today(); // ✅ FIX
-
-    //     $coupons = Coupon::where('status', 1)
-    //         ->whereDate('start_date', '<=', $today)
-    //         ->whereDate('end_date', '>=', $today)
-    //         ->orderBy('created_at', 'desc')
-    //         ->get()
-    //         ->map(function ($coupon) {
-    //             return [
-    //                 'id' => $coupon->id,
-    //                 'title' => $coupon->title,
-    //                 'code' => $coupon->code,
-    //                 'description' => $coupon->description,
-    //                 'discount' => $coupon->discount_type == 'flat'
-    //                     ? '₹' . $coupon->discount_value
-    //                     : $coupon->discount_value . '% OFF',
-    //                 'min_amount' => $coupon->min_amount,
-    //                 'valid_till' => $coupon->end_date,
-    //                 'is_applicable' => true
-    //             ];
-    //         });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'data' => $coupons
-    //     ]);
-    // }
-    // public function applyCoupon(Request $request)
-    // {
-    //     $user = $request->user();
-
-    //     if (!$user) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Unauthenticated'
-    //         ], 401);
-    //     }
-
-    //     // ✅ Validate coupon_code instead of id
-    //     $request->validate([
-    //         'id' => 'required|exists:coupons,id'
-    //     ]);
-
-    //     $cart = Cart::where('user_id', $user->id)->first();
-
-    //     if (!$cart) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Cart is empty'
-    //         ], 400);
-    //     }
-
-    //     if ($cart->offer_id) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Remove offer before applying coupon'
-    //         ], 400);
-    //     }
-
-    //     // ✅ Get coupon by code
-    //     $coupon = Coupon::where('code', $request->coupon_code)
-    //         ->where('status', 1)
-    //         ->whereDate('start_date', '<=', now())
-    //         ->whereDate('end_date', '>=', now())
-    //         ->first();
-
-    //     if (!$coupon) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Invalid or expired coupon'
-    //         ], 400);
-    //     }
-
-    //     $cartItems = CartItem::with('product')
-    //         ->where('cart_id', $cart->id)
-    //         ->get();
-
-    //     $eligibleSubtotal = 0;
-
-    //     foreach ($cartItems as $item) {
-
-    //         if ($coupon->product_id && $item->product_id == $coupon->product_id) {
-    //             $eligibleSubtotal += $item->price * $item->qty;
-    //         } elseif ($coupon->category_id && $item->product->category_id == $coupon->category_id) {
-    //             $eligibleSubtotal += $item->price * $item->qty;
-    //         } elseif (is_null($coupon->product_id) && is_null($coupon->category_id)) {
-    //             $eligibleSubtotal += $item->price * $item->qty;
-    //         }
-    //     }
-
-    //     // ✅ Minimum amount check
-    //     if ($eligibleSubtotal < $coupon->min_amount) {
-
-    //         $remainingAmount = round($coupon->min_amount - $eligibleSubtotal, 2);
-
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Add ₹' . $remainingAmount . ' more to apply this coupon',
-    //             'data' => [
-    //                 'min_amount' => (float) $coupon->min_amount,
-    //                 'eligible_amount' => round($eligibleSubtotal, 2),
-    //                 'remaining_amount' => $remainingAmount
-    //             ]
-    //         ], 400);
-    //     }
-
-    //     // ✅ Discount calculation
-    //     if ($coupon->discount_type === 'flat') {
-    //         $discount = $coupon->discount_value;
-    //     } else {
-    //         $discount = ($eligibleSubtotal * $coupon->discount_value) / 100;
-    //     }
-
-    //     $discount = min($discount, $eligibleSubtotal);
-
-    //     $cartTotal = $cart->subtotal + $cart->tax_total;
-
-    //     // ✅ Update cart
-    //     $cart->update([
-    //         'discount'    => round($discount, 2),
-    //         'coupon_id'   => $coupon->id,
-    //         'coupon_code' => $coupon->code,
-    //         'offer_id'    => null,
-    //         'total'       => max($cartTotal - $discount, 0)
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Coupon applied successfully',
-    //         'data' => [
-    //             'coupon_id' => $coupon->id,
-    //             'coupon_code' => $coupon->code,
-    //             'eligible_amount' => round($eligibleSubtotal, 2),
-    //             'discount' => round($discount, 2),
-    //             'payable_amount' => round($cart->total, 2)
-    //         ]
-    //     ], 200);
-    // }
-    // public function removeCoupon(Request $request)
-    // {
-    //     $user = $request->user();
-
-    //     $cart = Cart::where('user_id', $user->id)->first();
-
-    //     if (!$cart) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Cart empty'
-    //         ], 400);
-    //     }
-
-    //     $cart->update([
-    //         'discount'    => 0,
-    //         'coupon_id'   => null,
-    //         'coupon_code' => null,
-    //         'total'       => $cart->subtotal + $cart->tax_total
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Coupon removed successfully'
-    //     ], 200);
-    // }
 }
