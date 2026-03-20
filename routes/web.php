@@ -848,6 +848,9 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
     });
+//Website User Order History Report 
+    Route::get('/orders', [CustomerOrderController::class, 'userorder'])
+    ->name('userorder');
 });
 // end admin auth 
 
@@ -942,9 +945,8 @@ Route::post('/save-address', [LocationController::class, 'saveAddress'])
 Route::post('/check-pincode', [LocationController::class, 'checkPincode'])
     ->name('check.pincode');
 
-Route::get('/orders', [CustomerOrderController::class, 'userorder'])
-    ->name('userorder');
 
+//paymet getway
 Route::post('/orders/{id}/approve', [CustomerOrderController::class, 'orderapprove'])
     ->name('orderapprove');
 
