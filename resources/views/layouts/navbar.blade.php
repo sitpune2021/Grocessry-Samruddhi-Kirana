@@ -33,6 +33,7 @@
                     href="javascript:void(0);"
                     data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
+                       
                         @if(Auth::check())
                             <img
                                 src="{{ Auth::user()->profile_photo

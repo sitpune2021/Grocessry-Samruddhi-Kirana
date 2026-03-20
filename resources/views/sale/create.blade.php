@@ -198,6 +198,26 @@
     $('#discount_percent').on('input', function() {
 
         let discountPercent = parseFloat($(this).val());
+        let mrp = parseFloat($('#mrp').val()); // 🔥 use MRP
+
+        if (!discountPercent || discountPercent <= 0) {
+            $('#sale_price').val('');
+            $('#discount_on_mrp').val('');
+            return;
+        }
+
+        // ✅ Discount on MRP
+        let discountAmount = mrp * discountPercent / 100;
+        let salePrice = mrp - discountAmount;
+
+        $('#sale_price').val(salePrice.toFixed(2));
+        $('#discount_on_mrp').val(discountAmount.toFixed(2));
+    });
+</script>
+<!-- <script>
+    $('#discount_percent').on('input', function() {
+
+        let discountPercent = parseFloat($(this).val());
         let sellingPrice = parseFloat($('#original_price').val());
         let basePrice = {{(float) $batch->product->base_price}};
 
@@ -226,5 +246,5 @@
         $('#sale_price').val(salePrice.toFixed(2));
         $('#discount_on_mrp').val(discountAmount.toFixed(2));
     });
-</script>
+</script> -->
 @endpush

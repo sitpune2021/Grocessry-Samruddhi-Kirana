@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Validation\ValidationException;
 
 class WarehouseStockReturnController extends Controller
 {
@@ -101,7 +101,7 @@ class WarehouseStockReturnController extends Controller
         /**
          * AVAILABLE STOCK IN LOGGED-IN WAREHOUSE
          */
-        
+
         $warehouseStocks = ProductBatch::with('product')
             ->where('warehouse_id', $fromWarehouseId)
             ->where('is_blocked', 0)
@@ -216,7 +216,10 @@ class WarehouseStockReturnController extends Controller
                     ->first();
 
                 if (!$batch) {
-                    abort(422, 'Invalid batch selected');
+                    // abort(422, 'Invalid batch selected');
+                    throw ValidationException::withMessages([
+                        'error' => ['Invalid batch selected']
+                    ]);
                 }
 
                 $available = $batch->quantity;
@@ -236,7 +239,10 @@ class WarehouseStockReturnController extends Controller
                         'batch_id' => $item['batch_no'],
                         'warehouse_id' => $fromWarehouse->id,
                     ]);
-                    abort(422, 'Invalid batch selected');
+                    // abort(422, 'Invalid batch selected');
+                    throw ValidationException::withMessages([
+                        'error' => ['Invalid batch selected']
+                    ]);
                 }
 
                 // Challan qty (PER BATCH)
@@ -258,7 +264,10 @@ class WarehouseStockReturnController extends Controller
                         'return_qty' => $item['return_qty'],
                         'challan_qty' => $challanQty,
                     ]);
-                    abort(422, 'Return quantity exceeds challan quantity for this batch');
+                    // abort(422, 'Return quantity exceeds challan quantity for this batch');
+                    throw ValidationException::withMessages([
+                        'error' => ['Invalid batch selected']
+                    ]);
                 }
 
                 if ($item['return_qty'] > $available) {
@@ -268,7 +277,11 @@ class WarehouseStockReturnController extends Controller
                         'return_qty' => $item['return_qty'],
                         'available_stock' => $available,
                     ]);
-                    abort(422, 'Return quantity exceeds available batch stock');
+                    // abort(422, 'Return quantity exceeds available batch stock');
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Return quantity exceeds available batch stock'
+                    ], 422);
                 }
 
                 WarehouseStockReturnItem::create([
@@ -482,7 +495,7 @@ class WarehouseStockReturnController extends Controller
     {
         $return = WarehouseStockReturn::with([
             'WarehouseStockReturnItem',
-             'WarehouseStockReturnItem.batch',
+            'WarehouseStockReturnItem.batch',
             'fromWarehouse',
             'toWarehouse',
             'creator',

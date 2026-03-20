@@ -5,7 +5,9 @@
 @endif
 
 @if (session('error'))
-<div class="alert alert-danger">{{ session('error') }}</div>
+<div class="alert alert-danger">
+    {{ session('error') }}
+</div>
 @endif
 
 <!-- Content wrapper -->
@@ -24,7 +26,7 @@
 
                     <!-- Card Body -->
                     <div class="card-body">
-                        <form action="{{ route('stock-returns.store') }}" method="POST" enctype="multipart/form-data">
+                        <form id="stockReturnForm" action="{{ route('stock-returns.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
 
                             <div class="card-body">
@@ -203,7 +205,7 @@
 </div>
 @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-@stack('script')
+@stack('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -368,6 +370,45 @@
         /* ================= REMOVE ROW ================= */
         $(document).on('click', '.removeRow', function() {
             $(this).closest('tr').remove();
+        });
+
+
+        // alert for error
+        $('#stockReturnForm').on('submit', function(e) {
+            e.preventDefault();
+
+            let form = this;
+            let formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                })
+                .then(async res => {
+                    let data = await res.json();
+
+                    if (!res.ok) {
+
+                        let msg = data.message;
+
+                        if (data.errors) {
+                            msg = Object.values(data.errors)[0][0];
+                        }
+
+                        alert(msg);
+                        return;
+                    }
+
+                    alert(data.message || 'Success');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Return quantity exceeds available batch stock');
+                });
         });
 
     });
