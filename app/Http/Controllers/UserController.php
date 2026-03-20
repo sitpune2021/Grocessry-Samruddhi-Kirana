@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
-    
-    
+
+
     public function profile()
     {
         $users = User::with('role')->paginate(20);
@@ -31,10 +31,18 @@ class UserController extends Controller
         Log::info('User Store Request Received', ['request' => $request->all()]);
         Log::info('RAW BODY', ['body' => $request->getContent()]);
 
+
         try {
 
             // Log: Starting validation
             Log::info('User Store Validation Started');
+
+            $deliveryAgentRoleId = Role::whereRaw('LOWER(name) = ?', ['delivery agent'])->value('id');
+
+            // ✅ FINAL LOGIC
+            $password = ($request->role_id == $deliveryAgentRoleId)
+                ? 'Agent@123'
+                : 'pass@123';
 
             $request->validate([
                 'first_name' => 'required|string|max:100',
@@ -53,8 +61,8 @@ class UserController extends Controller
                 'email'      => $request->email,
                 'last_name'  => $request->last_name,
                 'mobile'     => $request->mobile,
-                'role'       => $request->role,
-                'password'   => Hash::make($request->password),
+                'role_id'    => $request->role_id, // ⚠️ IMPORTANT
+                'password'   => Hash::make($password),
             ]);
 
             // Log: After creating user
@@ -83,7 +91,6 @@ class UserController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
-        
     }
 
     public function show(string $id)
@@ -131,7 +138,7 @@ class UserController extends Controller
             'user_id' => $id,
             'request' => $request->all()
         ]);
-
+        dd($request->all());
         try {
 
             $user = User::find($id);
@@ -295,14 +302,12 @@ class UserController extends Controller
     }
 
     public function userstatus(Request $request)
-{
-    $user = User::findOrFail($request->id);
+    {
+        $user = User::findOrFail($request->id);
 
-    $user->status = $request->has('status') ? 1 : 0;
-    $user->save();
+        $user->status = $request->has('status') ? 1 : 0;
+        $user->save();
 
-    return back()->with('success', 'Status updated!');
-}
-
-
+        return back()->with('success', 'Status updated!');
+    }
 }
