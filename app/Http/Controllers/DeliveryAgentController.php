@@ -118,7 +118,7 @@ class DeliveryAgentController extends Controller
                 'last_name'      => $validated['last_name'],
                 'email'     => $validated['email'] ?? null,
                 'mobile'    => $validated['mobile'],
-                'password'  => Hash::make('Agent@123'),
+                'password'  => Hash::make('pass@123'),
                 'role_id'   => $role->id,
                 'profile_photo'   => $profileImage,
                 //'warehouse_id' => $validated['warehouse_id'],
