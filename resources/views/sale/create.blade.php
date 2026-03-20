@@ -1,4 +1,4 @@
-@extend('layouts.app');
+@extends('layouts.app');
 @section('content')
                 <div class="content-wrapper">
 
@@ -190,11 +190,31 @@
                 </div>
            @endsection
 
-@push('script')
+@push('scripts')
 {{-- Scripts --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+    $('#discount_percent').on('input', function() {
+
+        let discountPercent = parseFloat($(this).val());
+        let mrp = parseFloat($('#mrp').val()); // 🔥 use MRP
+
+        if (!discountPercent || discountPercent <= 0) {
+            $('#sale_price').val('');
+            $('#discount_on_mrp').val('');
+            return;
+        }
+
+        // ✅ Discount on MRP
+        let discountAmount = mrp * discountPercent / 100;
+        let salePrice = mrp - discountAmount;
+
+        $('#sale_price').val(salePrice.toFixed(2));
+        $('#discount_on_mrp').val(discountAmount.toFixed(2));
+    });
+</script>
+<!-- <script>
     $('#discount_percent').on('input', function() {
 
         let discountPercent = parseFloat($(this).val());
@@ -226,5 +246,5 @@
         $('#sale_price').val(salePrice.toFixed(2));
         $('#discount_on_mrp').val(discountAmount.toFixed(2));
     });
-</script>
+</script> -->
 @endpush
