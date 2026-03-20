@@ -1,18 +1,5 @@
-@include('layouts.header')
-
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <div class="layout-page">
-
-                @include('layouts.navbar')
-
+@extends('layouts.app')
+@section('content')
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
                     <!-- Content -->
@@ -24,7 +11,7 @@
 
                                     <!-- Card Header -->
                                     <div class="card-header bg-white fw-semibold">
-                                        <i class="bx bx-box me-1"></i>
+                                        <h4>
                                         @if ($mode === 'add')
                                             Add Warehouse Stock
                                         @elseif($mode === 'edit')
@@ -32,6 +19,7 @@
                                         @else
                                             View Stock
                                         @endif
+                                        </h4>
                                     </div>
 
                                     <!-- Card Body -->
@@ -248,17 +236,10 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- / Content -->
-                    @include('layouts.footer')
                 </div>
-            </div>
-        </div>
-
-    </div>
-</body>
+           @endsection
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -314,9 +295,7 @@
             loadProducts(subCategorySelect.value, selectedProduct);
         }
     });
-</script>
 
-<script>
     document.addEventListener('DOMContentLoaded', function() {
 
         const categorySelect = document.getElementById('category_id');
@@ -361,8 +340,7 @@
         }
 
     });
-</script>
-<script>
+
     document.getElementById('supplier_challan_id')
         ?.addEventListener('change', function() {
 
@@ -427,8 +405,7 @@
                     console.error('Supplier challan fetch error:', err);
                 });
         });
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function() {
         const challanSelect = document.getElementById('supplier_challan_id');
 
@@ -437,8 +414,7 @@
             challanSelect.dispatchEvent(new Event('change'));
         }
     });
-</script>
-<script>
+
     document.getElementById('supplier_challan_id')
         ?.addEventListener('change', function() {
             const hidden = document.getElementById('supplier_challan_hidden');
@@ -446,8 +422,7 @@
                 hidden.value = this.value;
             }
         });
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function() {
 
         const challanSelect = document.getElementById('supplier_challan_id');
@@ -469,8 +444,7 @@
         // On challan change (ADD case)
         challanSelect.addEventListener('change', lockSupplierIfChallanSelected);
     });
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function() {
 
         // 🔥 IMPORTANT: read from hidden input, NOT disabled select
@@ -527,3 +501,4 @@
 
     });
 </script>
+@endpush
