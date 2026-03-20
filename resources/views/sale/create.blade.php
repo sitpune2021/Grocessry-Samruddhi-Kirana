@@ -1,4 +1,4 @@
-@extend('layouts.app');
+@extends('layouts.app');
 @section('content')
                 <div class="content-wrapper">
 
@@ -190,7 +190,7 @@
                 </div>
            @endsection
 
-@push('script')
+@push('scripts')
 {{-- Scripts --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
