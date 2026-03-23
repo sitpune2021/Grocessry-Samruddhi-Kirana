@@ -105,7 +105,7 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
     // Razorpay
-    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrders'])
+    Route::post('/razorpay/create-order', [PaymentGetwayController::class, 'createRazorpayOrder'])
         ->name('razorpay.create.order');
 
     Route::post('/razorpay/verify', [PaymentGetwayController::class, 'verifyRazorpayPayment'])

@@ -447,6 +447,7 @@
     let razorpayOrderId = null;
 
     function openRazorpay(orderId) {
+        console.log("Opening Razorpay for order:", orderId);
 
         fetch('/razorpay/create-order', {
                 method: 'POST',
