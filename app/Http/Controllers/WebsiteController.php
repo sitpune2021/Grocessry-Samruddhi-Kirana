@@ -18,6 +18,7 @@ use App\Models\ProductBatch;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
 class WebsiteController extends Controller
 {
 
@@ -30,9 +31,17 @@ class WebsiteController extends Controller
         // categories
         $categories = Category::orderBy('name')->get();
         $cate = Category::whereNull('deleted_at')
-            ->whereHas('products', fn($q) => $q->whereNull('deleted_at'))
+            ->whereHas('products', function ($q) {
+                $q->whereNull('deleted_at')
+                    ->whereDoesntHave('sale', function ($sale) {
+                        $sale->active()->online();
+                    });
+            })
             ->with(['products' => function ($q) use ($dcId) {
                 $q->whereNull('deleted_at')
+                    ->whereDoesntHave('sale', function ($sale) {
+                        $sale->active()->online();
+                    })
                     ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
                         if ($dcId) {
                             $q->where('warehouse_id', $dcId);
@@ -82,18 +91,6 @@ class WebsiteController extends Controller
             }], 'quantity')
             ->latest()
             ->paginate(12, ['*'], 'all_page');
-
-
-        // $latestPro = Product::whereNull('deleted_at')
-        //     ->whereDoesntHave('sale', fn($q) => $q->active()->online())
-        //     ->withSum(['batches as available_stock' => function ($q) use ($dcId) {
-        //         if ($dcId) {
-        //             $q->where('warehouse_id', $dcId);
-        //         }
-        //     }], 'quantity')
-        //     ->latest()
-        //     ->take(12)
-        //     ->get();
 
         $latestPro = Product::withStock($dcId)
             ->whereNull('deleted_at')
@@ -227,6 +224,9 @@ class WebsiteController extends Controller
         $dcId = session('dc_warehouse_id');
 
         $products = $query
+            ->with(['sale' => function ($q) {
+                $q->active()->online();
+            }])
             ->withStock($dcId)
             ->latest()
             ->paginate(40);
@@ -330,7 +330,14 @@ class WebsiteController extends Controller
             'user_id' => $userId
         ]);
 
+        $product = Product::with('sale')->findOrFail($request->product_id);
+
         $price = $product->final_price;
+
+        // ✅  sale active  sale price 
+        if ($product->sale && $product->sale->active()->online()->exists()) {
+            $price = $product->sale->sale_price;
+        }
 
         // Check existing item
         $existingItem = CartItem::where('cart_id', $cart->id)
@@ -531,7 +538,9 @@ class WebsiteController extends Controller
     {
         $dcId = session('dc_warehouse_id');
 
-        $product = Product::with(['category', 'unit'])->findOrFail($id);
+        $product = Product::with(['category', 'unit', 'sale' => function ($q) {
+            $q->active()->online();
+        }])->findOrFail($id);
 
         $availableStock = 0;
 
@@ -593,55 +602,55 @@ class WebsiteController extends Controller
         ]);
     }
 
-   public function applyCoupon(Request $request)
-{
-    Log::info('applyCoupon Request:', $request->all());
+    public function applyCoupon(Request $request)
+    {
+        Log::info('applyCoupon Request:', $request->all());
 
-    $coupon = Coupon::where('code', $request->coupon_code)->first();
+        $coupon = Coupon::where('code', $request->coupon_code)->first();
 
-    if (!$coupon) {
+        if (!$coupon) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid coupon'
+            ]);
+        }
+
+        $cart = Cart::where('user_id', auth()->id())->first();
+
+        if (!$cart) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart empty'
+            ]);
+        }
+
+        $cartItems = CartItem::where('cart_id', $cart->id)->get();
+
+        $subtotal = 0;
+
+        foreach ($cartItems as $item) {
+            $subtotal += $item->price * $item->qty;
+        }
+
+        if ($subtotal < $coupon->min_amount) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
+            ]);
+        }
+
+        if ($coupon->discount_type == 'percentage') {
+            $discount = ($subtotal * $coupon->discount_value) / 100;
+        } else {
+            $discount = $coupon->discount_value;
+        }
+
+        $finalTotal = $subtotal - $discount;
+
         return response()->json([
-            'status' => false,
-            'message' => 'Invalid coupon'
+            'status' => true,
+            'discount' => $discount,
+            'final_total' => $finalTotal
         ]);
     }
-
-    $cart = Cart::where('user_id', auth()->id())->first();
-
-    if (!$cart) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Cart empty'
-        ]);
-    }
-
-    $cartItems = CartItem::where('cart_id', $cart->id)->get();
-
-    $subtotal = 0;
-
-    foreach ($cartItems as $item) {
-        $subtotal += $item->price * $item->qty;
-    }
-
-    if ($subtotal < $coupon->min_amount) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Minimum order ₹' . $coupon->min_amount . ' required'
-        ]);
-    }
-
-    if ($coupon->discount_type == 'percentage') {
-        $discount = ($subtotal * $coupon->discount_value) / 100;
-    } else {
-        $discount = $coupon->discount_value;
-    }
-
-    $finalTotal = $subtotal - $discount;
-
-    return response()->json([
-        'status' => true,
-        'discount' => $discount,
-        'final_total' => $finalTotal
-    ]);
-}
 }

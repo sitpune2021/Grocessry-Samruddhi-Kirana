@@ -1,7 +1,7 @@
 <?php
- 
+
 namespace App\Http\Controllers;
- 
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,12 +14,12 @@ use App\Models\ProductBatch;
 use App\Models\StockMovement;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
- 
+
 
 class WarehouseTransferController extends Controller
 {
-    
- 
+
+
     public function index()
     {
         $user = auth()->user();
@@ -32,21 +32,21 @@ class WarehouseTransferController extends Controller
             'product',
             'batch'
         ])
-        ->where(function ($q) use ($userWarehouseId) {
+            ->where(function ($q) use ($userWarehouseId) {
 
-            // District: show only PENDING requests they created
-            $q->where(function ($sub) use ($userWarehouseId) {
-                $sub->where('requested_by_warehouse_id', $userWarehouseId)
-                    ->where('status', 0);
+                // District: show only PENDING requests they created
+                $q->where(function ($sub) use ($userWarehouseId) {
+                    $sub->where('requested_by_warehouse_id', $userWarehouseId)
+                        ->where('status', 0);
+                })
+
+                    // Master: show all requests sent to them
+                    ->orWhere(function ($sub) use ($userWarehouseId) {
+                        $sub->where('approved_by_warehouse_id', $userWarehouseId);
+                    });
             })
-
-            // Master: show all requests sent to them
-            ->orWhere(function ($sub) use ($userWarehouseId) {
-                $sub->where('approved_by_warehouse_id', $userWarehouseId);
-            });
-        })
-        ->orderBy('created_at', 'desc')
-        ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('warehouse.index', compact('transfers'));
     }
@@ -74,8 +74,8 @@ class WarehouseTransferController extends Controller
     //         'transfer'            => null,
     //     ]);
     // }
- 
-    
+
+
     public function create()
     {
         $user = auth()->user();
@@ -119,7 +119,7 @@ class WarehouseTransferController extends Controller
     {
         return Product::where('category_id', $category_id)->get();
     }
- 
+
     public function getBatchesByProducts(Request $request)
     {
         if ($request->has('product_ids') && $request->has('warehouse_id')) {
@@ -133,8 +133,8 @@ class WarehouseTransferController extends Controller
                     ->whereDate('expiry_date', '>=', now())
                     ->groupBy('product_id');
             })
-            ->select('id', 'product_id', 'batch_no', 'quantity')
-            ->get();
+                ->select('id', 'product_id', 'batch_no', 'quantity')
+                ->get();
 
             return response()->json([
                 'type' => 'batches',
@@ -215,35 +215,35 @@ class WarehouseTransferController extends Controller
             'warehouse_id' => $warehouse_id,
             'batch_id'     => $batch_id,
         ])->first();
- 
+
         return response()->json([
             'quantity' => $stock ? $stock->quantity : 0
         ]);
     }
- 
+
     // Edit Method
     public function edit($id)
     {
         $user = auth()->user();
- 
+
         $transfer = WarehouseTransfer::with(['product', 'batch'])->findOrFail($id);
- 
+
         /* ================= TO = Login user warehouse ================= */
         $toWarehouse = Warehouse::where('status', 'active')
             ->where('id', $user->warehouse_id)
             ->first();
- 
+
         /* ================= FROM = Master Warehouses ================= */
         $fromWarehouses = Warehouse::where('status', 'active')
             ->where('id', $toWarehouse->parent_id)   // sirf parent warehouse
             ->get();
 
- 
+
         /* ================= Default FROM (selected on edit) ================= */
         $defaultFromWarehouse = $fromWarehouses
             ->where('id', $transfer->approved_by_warehouse_id)
             ->first();
- 
+
         /* ================= Categories (FROM warehouse stock) ================= */
         $categories = Category::whereIn('id', function ($q) use ($transfer) {
             $q->select('category_id')
@@ -251,19 +251,19 @@ class WarehouseTransferController extends Controller
                 ->where('warehouse_id', $transfer->approved_by_warehouse_id)
                 ->where('quantity', '>', 0);
         })->get();
- 
+
         /* ================= Products ================= */
         $products = Product::whereHas('stocks', function ($q) use ($transfer) {
             $q->where('warehouse_id', $transfer->approved_by_warehouse_id)
                 ->where('quantity', '>', 0);
         })->get();
- 
+
         /* ================= Selected ================= */
         $selectedProducts = [$transfer->product_id];
- 
+
         /* ================= Batches ================= */
         $batches = ProductBatch::where('product_id', $transfer->product_id)->get();
- 
+
         return view('warehouse.transfer', [
             'transfer'              => $transfer,
             'toWarehouse'           => $toWarehouse,
@@ -286,12 +286,12 @@ class WarehouseTransferController extends Controller
             'quantity' => $transfer->quantity ?? 0
         ]);
     }
- 
+
     // Update Method
     public function update(Request $request, $id)
     {
         $transfer = WarehouseTransfer::findOrFail($id);
- 
+
         $validated = $request->validate([
             'approved_by_warehouse_id' => 'required',
             'requested_by_warehouse_id'   => 'required|different:approved_by_warehouse_id',
@@ -300,9 +300,9 @@ class WarehouseTransferController extends Controller
             'batch_id'          => 'required|array|min:1',
             'quantity'          => 'required|integer|min:1',
         ]);
- 
+
         DB::transaction(function () use ($transfer, $validated) {
- 
+
             $transfer->update([
                 'approved_by_warehouse_id' => $validated['approved_by_warehouse_id'],
                 'requested_by_warehouse_id'   => $validated['requested_by_warehouse_id'],
@@ -314,44 +314,38 @@ class WarehouseTransferController extends Controller
                 'quantity'          => $validated['quantity'],
             ]);
         });
- 
+
         return redirect()->route('transfer.index')
             ->with('success', 'Transfer updated successfully');
     }
- 
+
     // public function destroy($id)
     // {
     //     $batch = ProductBatch::findOrFail($id);
     //     $batch->delete(); // soft delete
     //     return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
     // }
- 
-    
+
+
     public function destroy($id)
     {
         $transfer = WarehouseTransfer::find($id);
 
+        // If record not found
         if (!$transfer) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Transfer record not found'
-            ], 404);
+            return back()->with('error', 'Transfer record not found');
         }
 
-        // Sirf pending delete ho
+        // Logic: Sirf pending delete ho (Status 0)
         if ($transfer->status != 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only pending requests can be removed'
-            ], 400);
+            // This sends the error message back to the page
+            return back()->with('error', 'Only pending requests can be removed');
         }
 
-        $transfer->delete();   // ✅ Only warehouse_transfers
+        $transfer->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product removed successfully'
-        ]);
+        // Success message
+        return back()->with('success', 'Product removed successfully');
     }
 
     public function show($id)
@@ -362,54 +356,54 @@ class WarehouseTransferController extends Controller
             'approvedByWarehouse',
             'requestedByWarehouse'
         ])->findOrFail($id);
- 
+
         return view('warehouse.show', compact('transfer'));
     }
- 
+
     public function checkBatchValidity($batch_id)
     {
         $batch = ProductBatch::find($batch_id);
- 
+
         if (!$batch) {
             return response()->json([
                 'valid' => false,
                 'message' => 'Batch not found'
             ]);
         }
- 
+
         if ($batch->expiry_date < now()->toDateString()) {
             return response()->json([
                 'valid' => false,
                 'message' => "Batch {$batch->batch_no} is expired"
             ]);
         }
- 
+
         if ($batch->is_blocked) {
             return response()->json([
                 'valid' => false,
                 'message' => "Batch {$batch->batch_no} is blocked"
             ]);
         }
- 
+
         return response()->json([
             'valid' => true
         ]);
     }
- 
+
     public function getCategoriesByWarehouse($warehouse_id)
     {
         $categoryIds = WarehouseStock::where('warehouse_id', $warehouse_id)
             ->where('quantity', '>', 0)
             ->pluck('category_id')
             ->unique();
- 
+
         $categories = Category::whereIn('id', $categoryIds)
             ->select('id', 'name')
             ->get();
- 
+
         return response()->json($categories);
     }
- 
+
     public function getWarehouseStockData(Request $request)
     {
         /* -------- WAREHOUSE → PRODUCTS -------- */
@@ -418,7 +412,7 @@ class WarehouseTransferController extends Controller
             !$request->has('category_ids') &&
             !$request->has('product_ids')
         ) {
- 
+
             $products = WarehouseStock::where('warehouse_id', $request->warehouse_id)
                 ->where('quantity', '>', 0)
                 ->with('product:id,name')
@@ -426,16 +420,16 @@ class WarehouseTransferController extends Controller
                 ->pluck('product')
                 ->unique('id')
                 ->values();
- 
+
             return response()->json([
                 'type' => 'products',
                 'data' => $products
             ]);
         }
- 
+
         /* -------- CATEGORY → PRODUCTS (OPTIONAL) -------- */
         if ($request->has('warehouse_id') && $request->has('category_ids')) {
- 
+
             $products = WarehouseStock::where('warehouse_id', $request->warehouse_id)
                 ->whereIn('category_id', $request->category_ids)
                 ->where('quantity', '>', 0)
@@ -444,32 +438,32 @@ class WarehouseTransferController extends Controller
                 ->pluck('product')
                 ->unique('id')
                 ->values();
- 
+
             return response()->json([
                 'type' => 'products',
                 'data' => $products
             ]);
         }
- 
+
         /* -------- PRODUCT → BATCHES (FROM product_batches ONLY) -------- */
         if ($request->has('product_ids')) {
- 
+
             $batches = ProductBatch::whereIn('product_id', $request->product_ids)
                 ->where('warehouse_id', $request->warehouse_id)
                 ->where('is_blocked', 0)
                 ->whereDate('expiry_date', '>=', now())
                 ->select('id', 'product_id', 'batch_no', 'quantity')
                 ->get();
- 
+
             return response()->json([
                 'type' => 'batches',
                 'data' => $batches
             ]);
         }
- 
+
         return response()->json([]);
     }
- 
+
     public function getBatchStock(Request $request)
     {
         $batch = ProductBatch::where('id', $request->batch_id)
@@ -482,8 +476,4 @@ class WarehouseTransferController extends Controller
             'quantity' => $batch->quantity ?? 0
         ]);
     }
-
-
 }
- 
- 
