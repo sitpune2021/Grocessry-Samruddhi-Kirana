@@ -57,7 +57,6 @@
                                                 </option>
                                             @endforeach
                                         </select>
-
                                     </div>
 
                                     <div class="col-md-4">
@@ -78,7 +77,6 @@
                                     </div>
                                 </div>
 
-                                <hr>
                                 <hr>
 
                                 @if ($mode !== 'view')
@@ -107,6 +105,7 @@
 
                                     </div>
                                 @endif
+                                
                                 @if ($mode !== 'view')
                                     <button type="button" id="addProductBtn" class="btn btn-success mb-3">
                                         + Add Product
@@ -118,12 +117,13 @@
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
+                                                <th style="width: 50px;">SR.NO</th>
                                                 <th>Category</th>
                                                 <th>Sub Category</th>
                                                 <th>Product</th>
-                                                <th>Qty</th>
+                                                <th style="width: 150px;">Qty</th>
                                                 @if ($mode !== 'view')
-                                                    <th>Action</th>
+                                                    <th style="width: 50px;">Action</th>
                                                 @endif
                                             </tr>
                                         </thead>
@@ -149,86 +149,65 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    @if (isset($challan))
-        <script>
-            window.existingItems = @json($challan->items->load(['category', 'subCategory', 'product']));
-            window.pageMode = "{{ $mode }}";
-        </script>
-    @endif
     <script>
         $(document).ready(function() {
             let index = 0;
 
             // Select2 Initialization
-            $('#categorySelect').select2({
+            $('#categorySelect, #subCategorySelect, #productSelect').select2({
                 closeOnSelect: false,
-                placeholder: "Select Category",
+                placeholder: "Select options",
                 width: '100%'
             });
-            $('#subCategorySelect').select2({
-                closeOnSelect: false,
-                placeholder: "Select Sub Category",
-                width: '100%'
-            });
-            $('#productSelect').select2({
-                closeOnSelect: false,
-                placeholder: "Select Product",
-                width: '100%'
-            });
-
-            // --- AUTO LOAD & FILL LOGIC ---
 
             // 1. Category Change -> Load & Auto-Select ALL Sub-Categories
-            $('#categorySelect').on('change', function(e) {
+            $('#categorySelect').on('change', function() {
                 let ids = $(this).val();
                 if (!ids || ids.length === 0) {
-                    $('#subCategorySelect').val(null).trigger('change');
+                    $('#subCategorySelect').empty().trigger('change');
                     return;
                 }
 
-                $.get('/ajax/subcategories', {
-                    category_ids: ids
-                }, function(res) {
+                $.get('/ajax/subcategories', { category_ids: ids }, function(res) {
                     let subSelect = $('#subCategorySelect');
+                    let currentSelected = subSelect.val() || [];
                     let newSubIds = [];
 
                     res.data.forEach(sc => {
                         if (!subSelect.find('option[value="' + sc.id + '"]').length) {
-                            let newOpt = new Option(sc.name, sc.id, true,
-                                true); // true, true केल्याने auto-select होईल
+                            let newOpt = new Option(sc.name, sc.id, true, true);
                             $(newOpt).attr('data-category-id', sc.category_id);
                             subSelect.append(newOpt);
                         }
                         newSubIds.push(sc.id.toString());
                     });
 
-                    // फक्त निवडलेल्या कॅटेगरीच्याच सब-कॅटेगरी सिलेक्ट ठेवा
+                    // Keep only those that belong to selected categories
                     subSelect.val(newSubIds).trigger('change');
                 });
             });
 
             // 2. Sub-Category Change -> Load & Auto-Select ALL Products
-            $('#subCategorySelect').on('change', function(e) {
+            $('#subCategorySelect').on('change', function() {
                 let ids = $(this).val();
                 if (!ids || ids.length === 0) {
-                    $('#productSelect').val(null).trigger('change');
+                    $('#productSelect').empty().trigger('change');
                     return;
                 }
 
-                $.get('/ajax/products-by-subcategory', {
-                    sub_category_ids: ids
-                }, function(res) {
+                $.get('/ajax/products-by-subcategory', { sub_category_ids: ids }, function(res) {
                     let prodSelect = $('#productSelect');
                     let newProdIds = [];
 
                     res.data.forEach(p => {
                         if (!prodSelect.find('option[value="' + p.id + '"]').length) {
-                            let opt = new Option(p.name, p.id, true,
-                                true); // true, true केल्याने auto-select होईल
-                            $(opt).attr('data-category-id', p.sub_category.category.id)
-                                .attr('data-category-name', p.sub_category.category.name)
-                                .attr('data-sub-category-id', p.sub_category.id)
-                                .attr('data-sub-category-name', p.sub_category.name);
+                            let opt = new Option(p.name, p.id, true, true);
+                            $(opt).attr({
+                                'data-category-id': p.sub_category.category.id,
+                                'data-category-name': p.sub_category.category.name,
+                                'data-sub-category-id': p.sub_category.id,
+                                'data-sub-category-name': p.sub_category.name
+                            });
                             prodSelect.append(opt);
                         }
                         newProdIds.push(p.id.toString());
@@ -238,76 +217,84 @@
                 });
             });
 
-            // --- REVERSE REMOVE LOGIC (जेव्हा एखादा टॅग 'x' करून काढाल) ---
-
-            // Product काढला तर Sub-category काढा (जर त्याचे सर्व product गेले असतील तर)
+            // --- REVERSE REMOVE LOGIC ---
+            
+            // Product unselect -> update SubCategory if needed
             $('#productSelect').on('select2:unselect', function(e) {
                 let subId = $(e.params.data.element).data('sub-category-id');
-                let remainingProds = $('#productSelect option:selected').filter(function() {
+                let remainingInSub = $('#productSelect option:selected').filter(function() {
                     return $(this).data('sub-category-id') == subId;
                 }).length;
 
-                if (remainingProds === 0) {
+                if (remainingInSub === 0) {
                     let currentSubs = $('#subCategorySelect').val() || [];
                     $('#subCategorySelect').val(currentSubs.filter(id => id != subId)).trigger('change');
                 }
             });
 
-            // Sub-category काढली तर Category काढा
+            // SubCategory unselect -> remove its products and update Category if needed
             $('#subCategorySelect').on('select2:unselect', function(e) {
+                let subId = e.params.data.id;
                 let catId = $(e.params.data.element).data('category-id');
 
-                // त्या सब-कॅटेगरीचे प्रॉडक्ट्स पण काढून टाका
-                let subId = e.params.data.id;
+                // Remove related products
                 let currentProds = $('#productSelect').val() || [];
                 let filteredProds = currentProds.filter(pid => {
-                    return $('#productSelect option[value="' + pid + '"]').data(
-                        'sub-category-id') != subId;
+                    return $('#productSelect option[value="' + pid + '"]').data('sub-category-id') != subId;
                 });
                 $('#productSelect').val(filteredProds).trigger('change');
 
-                // कॅटेगरी चेक करा
-                let remainingSubs = $('#subCategorySelect option:selected').filter(function() {
+                // Check if any sub-categories left for this category
+                let remainingInCat = $('#subCategorySelect option:selected').filter(function() {
                     return $(this).data('category-id') == catId;
                 }).length;
 
-                if (remainingSubs === 0) {
+                if (remainingInCat === 0) {
                     let currentCats = $('#categorySelect').val() || [];
-                    $('#categorySelect').val(currentCats.filter(id => id != catId)).trigger(
-                        'change.select2');
+                    $('#categorySelect').val(currentCats.filter(id => id != catId)).trigger('change.select2');
                 }
             });
 
-            // --- बाकीचे Add Product आणि Table लॉजिक ---
+            // --- Table Logic ---
             $('#addProductBtn').on('click', function() {
                 let ids = $('#productSelect').val();
                 if (!ids || ids.length === 0) return;
+                
                 $('#itemsSection').removeClass('d-none');
                 ids.forEach(pid => {
-                    if ($('#itemsBody input[value="' + pid + '"]').length) return;
+                    if ($(`#itemsBody input[value="${pid}"][name*="product_id"]`).length > 0) return;
                     let opt = $('#productSelect option[value="' + pid + '"]');
-                    appendItemRow(opt.data('category-name'), opt.data('sub-category-name'), opt
-                        .text(), opt.data('category-id'), opt.data('sub-category-id'), pid, '');
+                    appendItemRow(opt.data('category-name'), opt.data('sub-category-name'), opt.text(), opt.data('category-id'), opt.data('sub-category-id'), pid);
                 });
+                updateSrNo();
             });
 
-            function appendItemRow(catName, subName, prodName, catId, subId, prodId, qty) {
-                $('#itemsBody').append(`
+            function appendItemRow(catName, subName, prodName, catId, subId, prodId) {
+                let html = `
                 <tr>
-                    <td>${catName}</td><td>${subName}</td><td>${prodName}</td>
-                    <td><input type="number" name="items[${index}][received_qty]" class="form-control" value="${qty}" required></td>
+                    <td class="sr-no"></td>
+                    <td>${catName}</td>
+                    <td>${subName}</td>
+                    <td>${prodName}</td>
+                    <td><input type="number" name="items[${index}][received_qty]" class="form-control" placeholder="Qty" required min="1"></td>
                     <td><button type="button" class="btn btn-danger btn-sm removeRow">X</button></td>
                     <input type="hidden" name="items[${index}][category_id]" value="${catId}">
                     <input type="hidden" name="items[${index}][sub_category_id]" value="${subId}">
                     <input type="hidden" name="items[${index}][product_id]" value="${prodId}">
-                </tr>`);
+                </tr>`;
+                $('#itemsBody').append(html);
                 index++;
+            }
+
+            function updateSrNo() {
+                $('#itemsBody tr').each(function(i) { $(this).find('.sr-no').text(i + 1); });
             }
 
             $(document).on('click', '.removeRow', function() {
                 $(this).closest('tr').remove();
+                updateSrNo();
+                if ($('#itemsBody tr').length === 0) $('#itemsSection').addClass('d-none');
             });
         });
     </script>
-
 </body>

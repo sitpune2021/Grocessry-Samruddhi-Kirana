@@ -28,7 +28,7 @@
                 <!-- Search -->
                 <x-datatable-search />
 
-                @if (session('success'))
+                {{-- @if (session('success'))
                     <div id="successAlert"
                         class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
                         role="alert">
@@ -45,8 +45,34 @@
                             }
                         }, 10000); // 15 seconds
                     </script>
+                @endif --}}
+                @if (session('success'))
+                    <div id="successAlert"
+                        class="alert alert-success alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                        role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 @endif
 
+                @if (session('error'))
+                    <div id="errorAlert"
+                        class="alert alert-danger alert-dismissible fade show mx-auto mt-3 w-100 w-sm-75 w-md-50 w-lg-25 text-center"
+                        role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <script>
+                        setTimeout(function() {
+                            let alertElem = document.getElementById('errorAlert');
+                            if (alertElem) {
+                                let bsAlert = new bootstrap.Alert(alertElem);
+                                bsAlert.close();
+                            }
+                        }, 5000); // Closes after 5 seconds
+                    </script>
+                @endif
                 <div class="table-responsive mt-5 p-3">
                     <table id="transfersTable"
                         class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">

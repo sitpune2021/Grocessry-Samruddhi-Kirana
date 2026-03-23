@@ -261,7 +261,7 @@ class MasterWarehouseController extends Controller
 
             return redirect()
                 ->route('warehouse.index')
-                ->with('success', 'Warehouse & user created successfully');
+                ->with('success', 'Warehouse created successfully');
         } catch (\Illuminate\Validation\ValidationException $ve) {
 
             Log::warning('Warehouse Validation Failed', [
