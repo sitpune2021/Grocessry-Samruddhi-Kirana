@@ -81,7 +81,6 @@
 
                                 @if ($mode !== 'view')
                                     <div class="row mb-3 align-items-end" id="selectionSection">
-
                                         <div class="col-md-3">
                                             <label class="form-label">Category <span
                                                     class="text-danger">*</span></label>
@@ -102,18 +101,16 @@
                                             <label class="form-label">Product <span class="text-danger">*</span></label>
                                             <select id="productSelect" class="form-select" multiple></select>
                                         </div>
-
                                     </div>
-                                @endif
-                                
-                                @if ($mode !== 'view')
+
                                     <button type="button" id="addProductBtn" class="btn btn-success mb-3">
                                         + Add Product
                                     </button>
                                 @endif
 
-                                {{-- TABLE --}}
-                                <div id="itemsSection" class="d-none mt-3">
+                                {{-- TABLE SECTION --}}
+                                <div id="itemsSection"
+                                    class="{{ isset($challan) && count($challan->items) > 0 ? '' : 'd-none' }} mt-3">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
@@ -127,12 +124,50 @@
                                                 @endif
                                             </tr>
                                         </thead>
-                                        <tbody id="itemsBody"></tbody>
+                                        <tbody id="itemsBody">
+                                            @if (isset($challan) && $challan->items)
+                                                @foreach ($challan->items as $item)
+                                                    <tr>
+                                                        <td class="sr-no">{{ $loop->iteration }}</td>
+                                                        <td>{{ $item->category->name ?? 'N/A' }}</td>
+                                                        <td>{{ $item->subCategory->name ?? 'N/A' }}</td>
+                                                        <td>{{ $item->product->name ?? 'N/A' }}</td>
+                                                        <td>
+                                                            <input type="number"
+                                                                name="items[{{ $loop->index }}][received_qty]"
+                                                                class="form-control"
+                                                                value="{{ old('items.' . $loop->index . '.received_qty', $item->received_qty) }}"
+                                                                {{ $mode === 'view' ? 'readonly' : '' }} required
+                                                                min="1">
+                                                        </td>
+                                                        @if ($mode !== 'view')
+                                                            <td><button type="button"
+                                                                    class="btn btn-danger btn-sm removeRow">X</button>
+                                                            </td>
+                                                        @endif
+                                                        {{-- Hidden Inputs to preserve IDs during Update --}}
+                                                        <input type="hidden"
+                                                            name="items[{{ $loop->index }}][category_id]"
+                                                            value="{{ $item->category_id }}">
+                                                        <input type="hidden"
+                                                            name="items[{{ $loop->index }}][sub_category_id]"
+                                                            value="{{ $item->sub_category_id }}">
+                                                        <input type="hidden"
+                                                            name="items[{{ $loop->index }}][product_id]"
+                                                            value="{{ $item->product_id }}">
+                                                    </tr>
+                                                @endforeach
+                                            @endif
+                                        </tbody>
                                     </table>
                                     <br>
                                     @if ($mode !== 'view')
                                         <button type="submit" class="btn btn-success">
-                                            Save Supplier Challan
+                                            @if ($mode === 'edit')
+                                                Update Supplier Challan
+                                            @else
+                                                Save Supplier Challan
+                                            @endif
                                         </button>
                                     @endif
                                 </div>
@@ -151,7 +186,8 @@
 
     <script>
         $(document).ready(function() {
-            let index = 0;
+            // Important: Start index from existing row count to prevent overwriting data
+            let index = $('#itemsBody tr').length;
 
             // Select2 Initialization
             $('#categorySelect, #subCategorySelect, #productSelect').select2({
@@ -168,9 +204,10 @@
                     return;
                 }
 
-                $.get('/ajax/subcategories', { category_ids: ids }, function(res) {
+                $.get('/ajax/subcategories', {
+                    category_ids: ids
+                }, function(res) {
                     let subSelect = $('#subCategorySelect');
-                    let currentSelected = subSelect.val() || [];
                     let newSubIds = [];
 
                     res.data.forEach(sc => {
@@ -181,8 +218,6 @@
                         }
                         newSubIds.push(sc.id.toString());
                     });
-
-                    // Keep only those that belong to selected categories
                     subSelect.val(newSubIds).trigger('change');
                 });
             });
@@ -195,7 +230,9 @@
                     return;
                 }
 
-                $.get('/ajax/products-by-subcategory', { sub_category_ids: ids }, function(res) {
+                $.get('/ajax/products-by-subcategory', {
+                    sub_category_ids: ids
+                }, function(res) {
                     let prodSelect = $('#productSelect');
                     let newProdIds = [];
 
@@ -212,14 +249,11 @@
                         }
                         newProdIds.push(p.id.toString());
                     });
-
                     prodSelect.val(newProdIds).trigger('change');
                 });
             });
 
             // --- REVERSE REMOVE LOGIC ---
-            
-            // Product unselect -> update SubCategory if needed
             $('#productSelect').on('select2:unselect', function(e) {
                 let subId = $(e.params.data.element).data('sub-category-id');
                 let remainingInSub = $('#productSelect option:selected').filter(function() {
@@ -232,26 +266,25 @@
                 }
             });
 
-            // SubCategory unselect -> remove its products and update Category if needed
             $('#subCategorySelect').on('select2:unselect', function(e) {
                 let subId = e.params.data.id;
                 let catId = $(e.params.data.element).data('category-id');
 
-                // Remove related products
                 let currentProds = $('#productSelect').val() || [];
                 let filteredProds = currentProds.filter(pid => {
-                    return $('#productSelect option[value="' + pid + '"]').data('sub-category-id') != subId;
+                    return $('#productSelect option[value="' + pid + '"]').data(
+                        'sub-category-id') != subId;
                 });
                 $('#productSelect').val(filteredProds).trigger('change');
 
-                // Check if any sub-categories left for this category
                 let remainingInCat = $('#subCategorySelect option:selected').filter(function() {
                     return $(this).data('category-id') == catId;
                 }).length;
 
                 if (remainingInCat === 0) {
                     let currentCats = $('#categorySelect').val() || [];
-                    $('#categorySelect').val(currentCats.filter(id => id != catId)).trigger('change.select2');
+                    $('#categorySelect').val(currentCats.filter(id => id != catId)).trigger(
+                        'change.select2');
                 }
             });
 
@@ -259,12 +292,14 @@
             $('#addProductBtn').on('click', function() {
                 let ids = $('#productSelect').val();
                 if (!ids || ids.length === 0) return;
-                
+
                 $('#itemsSection').removeClass('d-none');
                 ids.forEach(pid => {
-                    if ($(`#itemsBody input[value="${pid}"][name*="product_id"]`).length > 0) return;
+                    if ($(`#itemsBody input[value="${pid}"][name*="product_id"]`).length > 0)
+                return;
                     let opt = $('#productSelect option[value="' + pid + '"]');
-                    appendItemRow(opt.data('category-name'), opt.data('sub-category-name'), opt.text(), opt.data('category-id'), opt.data('sub-category-id'), pid);
+                    appendItemRow(opt.data('category-name'), opt.data('sub-category-name'), opt
+                        .text(), opt.data('category-id'), opt.data('sub-category-id'), pid);
                 });
                 updateSrNo();
             });
@@ -287,7 +322,9 @@
             }
 
             function updateSrNo() {
-                $('#itemsBody tr').each(function(i) { $(this).find('.sr-no').text(i + 1); });
+                $('#itemsBody tr').each(function(i) {
+                    $(this).find('.sr-no').text(i + 1);
+                });
             }
 
             $(document).on('click', '.removeRow', function() {

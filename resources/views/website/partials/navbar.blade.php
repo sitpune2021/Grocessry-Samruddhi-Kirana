@@ -205,7 +205,7 @@
  <div class="container-fluid fixed-top">
 
      <!-- TOP LOCATION BAR -->
-     <div class="container-fluid text-white  " style="z-index:1050; background-color: #1b764c;">
+     <div class="container-fluid text-white container topbar bg-primary d-none d-lg-block">
          <div class="container">
              <div class="d-flex justify-content-between align-items-center py-1">
 
