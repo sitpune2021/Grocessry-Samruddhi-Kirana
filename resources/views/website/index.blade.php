@@ -80,6 +80,8 @@
     </div>
 
     <!-- sell product  -->
+    @if($saleproduct->count())
+    <!-- sell product  -->
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">
@@ -114,8 +116,8 @@
                         <div class="fruite-img">
                             <a href="{{ route('productdetails', $product->id) }}">
                                 <img src="{{ $image
-                                ? asset('storage/products/'.$image)
-                                : asset('website/img/no-image.png') }}"
+                            ? asset('storage/products/'.$image)
+                            : asset('website/img/no-image.png') }}"
                                     class="img-fluid w-100 rounded-top"
                                     style="height:200px;object-fit:cover;">
                             </a>
@@ -160,6 +162,7 @@
             <button class="slider-arrow right">&#10095;</button>
         </div>
     </div>
+    @endif
 
 
     <!-- Fruits Shop Start-->
@@ -424,12 +427,34 @@
                                     {{ rtrim(rtrim(number_format($product->unit_value, 2), '0'), '.') }}
                                     {{ Str::title(optional($product->unit)->name) }}
                                 </p>
-
                                 <div class="price-row">
+                                    @if(($product->available_stock ?? 0) > 0)
+
                                     <div class="price-box">
-                                        <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
-                                        <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
+
+                                        @if(isset($product->sale) && $product->sale)
+                                        {{-- SALE PRICE --}}
+                                        <span class="price-new">
+                                            ₹{{ number_format($product->sale->sale_price, 0) }}
+                                        </span><br>
+
+                                        <span class="price-old">
+                                            ₹{{ number_format($product->sale->mrp, 0) }}
+                                        </span>
+
+                                        @else
+                                        {{-- NORMAL PRICE --}}
+                                        <span class="price-new">
+                                            ₹{{ number_format($product->final_price, 0) }}
+                                        </span><br>
+
+                                        <span class="price-old">
+                                            ₹{{ number_format($product->mrp, 0) }}
+                                        </span>
+                                        @endif
+
                                     </div>
+                                    @endif
 
                                     @include('website.partials.add-to-cart-btn', ['product' => $product])
                                 </div>
@@ -505,11 +530,31 @@
                                 </p>
 
                                 <div class="price-row">
+                                    @if(($product->available_stock ?? 0) > 0)
                                     <div class="price-box">
-                                        <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
-                                        <span class="price-old">₹{{ number_format($product->mrp, 0) }}</span>
-                                    </div>
+                                        @if(isset($product->sale) && $product->sale)
+                                        {{-- SALE PRICE --}}
+                                        <span class="price-new">
+                                            ₹{{ number_format($product->sale->sale_price, 0) }}
+                                        </span><br>
 
+                                        <span class="price-old">
+                                            ₹{{ number_format($product->sale->mrp, 0) }}
+                                        </span>
+
+                                        @else
+                                        {{-- NORMAL PRICE --}}
+                                        <span class="price-new">
+                                            ₹{{ number_format($product->final_price, 0) }}
+                                        </span><br>
+
+                                        <span class="price-old">
+                                            ₹{{ number_format($product->mrp, 0) }}
+                                        </span>
+                                        @endif
+
+                                    </div>
+                                    @endif
                                     @include('website.partials.add-to-cart-btn', ['product' => $product])
                                 </div>
                             </form>
