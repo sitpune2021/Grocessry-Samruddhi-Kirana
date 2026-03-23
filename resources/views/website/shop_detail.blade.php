@@ -38,6 +38,7 @@
                         {{ Str::title(optional($product->unit)->name) }}
                     </div>
                     <!-- Price -->
+                    @if(($product->available_stock ?? 0) > 0)
                     <div class="mb-2">
 
                         @if($product->sale)
@@ -64,6 +65,7 @@
                         @endif
 
                     </div>
+                    @endif
 
                     <!-- Discount -->
                     @if($product->mrp > $product->final_price)
@@ -187,11 +189,32 @@
                         </p>
 
                         <div class="price-row">
+                            @if(($product->available_stock ?? 0) > 0)
                             <div class="price-box">
-                                <span class="price-new">₹{{ number_format($related->final_price, 0) }}</span><br>
-                                <span class="price-old">₹{{ number_format($related->mrp, 0) }}</span>
-                            </div>
 
+                                @if(isset($related->sale) && $related->sale)
+                                {{-- SALE PRICE --}}
+                                <span class="price-new">
+                                    ₹{{ number_format($related->sale->sale_price, 0) }}
+                                </span><br>
+
+                                <span class="price-old">
+                                    ₹{{ number_format($related->sale->mrp, 0) }}
+                                </span>
+
+                                @else
+                                {{-- NORMAL PRICE --}}
+                                <span class="price-new">
+                                    ₹{{ number_format($related->final_price, 0) }}
+                                </span><br>
+
+                                <span class="price-old">
+                                    ₹{{ number_format($related->mrp, 0) }}
+                                </span>
+                                @endif
+
+                            </div>
+                            @endif
                             @include('website.partials.add-to-cart-btn', ['product' => $related])
                         </div>
                     </form>

@@ -1,218 +1,229 @@
 @extends('layouts.app');
 @section('content')
-                <div class="content-wrapper">
+<div class="content-wrapper">
 
 
-                    @if(session('error'))
-                    <div class="alert alert-danger col-6 ms-6 mt-6">
-                        {{ session('error') }}
-                    </div>
-                    @endif
+    @if(session('error'))
+    <div class="alert alert-danger col-6 ms-6 mt-6">
+        {{ session('error') }}
+    </div>
+    @endif
 
-                    @if($errors->any())
-                    <div class="alert alert-danger col-6 ms-6 mt-6">
-                        {{ $errors->first() }}
-                    </div>
-                    @endif
+    @if($errors->any())
+    <div class="alert alert-danger col-6 ms-6 mt-6">
+        {{ $errors->first() }}
+    </div>
+    @endif
 
-                    @if(session('success'))
-                    <div class="alert alert-success col-6 ms-6 mt-6">
-                        {{ session('success') }}
-                    </div>
-                    @endif
+    @if(session('success'))
+    <div class="alert alert-success col-6 ms-6 mt-6">
+        {{ session('success') }}
+    </div>
+    @endif
 
-                    <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="container-xxl flex-grow-1 container-p-y">
 
-                        <div class="row justify-content-center">
-                            <div class="col-md-12">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
 
-                                <div class="card">
-                                    <h4 class="card-header">
-                                        🛒 Near Expiry Online Sale
-                                    </h4>
+                <div class="card">
+                    <h4 class="card-header">
+                        🛒 Near Expiry Online Sale
+                    </h4>
 
-                                    <div class="card-body">
-                                        <form method="POST" action="{{ route('sale.store') }}">
-                                            @csrf
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('sale.store') }}">
+                            @csrf
 
-                                            {{-- hidden batch --}}
-                                            <input type="hidden" name="product_batch_id" value="{{ $batch->id }}">
+                            {{-- hidden batch --}}
+                            <input type="hidden" name="product_batch_id" value="{{ $batch->id }}">
 
-                                            {{-- Product Info --}}
-                                            <div class="row mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Product</label>
-                                                    <input type="text" class="form-control"
-                                                        value="{{ $batch->product->name }}"
-                                                        readonly>
-                                                </div>
+                            {{-- Product Info --}}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Product</label>
+                                    <input type="text" class="form-control"
+                                        value="{{ $batch->product->name }}"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-3">
-                                                    <label class="form-label">Batch No</label>
-                                                    <input type="text" class="form-control"
-                                                        value="{{ $batch->batch_no }}"
-                                                        readonly>
-                                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Batch No</label>
+                                    <input type="text" class="form-control"
+                                        value="{{ $batch->batch_no }}"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-3">
-                                                    <label class="form-label">Available Qty</label>
-                                                    <input type="text" class="form-control"
-                                                        value="{{ $batch->quantity }}"
-                                                        readonly>
-                                                </div>
-                                            </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Available Qty</label>
+                                    <input type="text" class="form-control"
+                                        value="{{ $batch->quantity }}"
+                                        readonly>
+                                </div>
+                            </div>
 
-                                            {{-- Dates --}}
-                                            <div class="row mb-3">
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Expiry Date</label>
-                                                    <input type="text" class="form-control"
-                                                        value="{{ \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') }}"
-                                                        readonly>
-                                                </div>
+                            {{-- Dates --}}
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="text" class="form-control"
+                                        value="{{ \Carbon\Carbon::parse($batch->expiry_date)->format('d/m/Y') }}"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Days Left</label>
-                                                    <input type="text" class="form-control text-danger fw-bold"
-                                                        value="{{ (int)$daysLeft }} days"
-                                                        readonly>
-                                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Days Left</label>
+                                    <input type="text" class="form-control text-danger fw-bold"
+                                        value="{{ (int)$daysLeft }} days"
+                                        readonly>
+                                </div>
 
-                                                <!-- <div class="col-md-4">
+                                <!-- <div class="col-md-4">
                                                     <label class="form-label">Original Price (₹)</label>
                                                     <input type="text" class="form-control"
                                                         id="original_price"
                                                         value="{{ $batch->product->final_price }}"
                                                         readonly>
                                                 </div> -->
-                                            </div>
+                            </div>
 
-                                            {{-- Discount --}}
+                            {{-- Discount --}}
 
-                                            <div class="col-md-4">
-                                                <label class="form-label">
-                                                    Discount % <span class="text-danger">*</span>
-                                                </label>
-                                                <input type="number"
-                                                    name="discount_percent"
-                                                    id="discount_percent"
-                                                    class="form-control"
-                                                    min="5" max="80"
-                                                    required>
-                                                @error('discount_percent')
-                                                <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    Discount % <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                    name="discount_percent"
+                                    id="discount_percent"
+                                    class="form-control"
+                                    required>
+                                @error('discount_percent')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
 
-                                            <hr>
+                            <hr>
 
-                                            {{-- Prices --}}
-                                            <div class="row mb-3">
-                                                <div class="col-md-3">
-                                                    <label class="form-label">MRP (₹)</label>
-                                                    <input type="text"
-                                                        class="form-control"
-                                                        id="mrp"
-                                                        value="{{ $batch->product->mrp }}"
-                                                        readonly>
-                                                </div>
+                            {{-- Prices --}}
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">MRP (₹)</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="mrp"
+                                        value="{{ $batch->product->mrp }}"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-3">
-                                                    <label class="form-label">Selling Price (₹)</label>
-                                                    <input type="text"
-                                                        class="form-control"
-                                                        id="original_price"
-                                                        value="{{ $batch->product->final_price }}"
-                                                        readonly>
-                                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Selling Price (₹)</label>
+                                    <input type="text"
+                                        class="form-control"
+                                        id="original_price"
+                                        value="{{ $batch->product->final_price }}"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-3">
-                                                    <label class="form-label text-success">Discount on MRP (₹)</label>
-                                                    <input type="text"
-                                                        class="form-control text-success fw-bold"
-                                                        id="discount_on_mrp"
-                                                        readonly>
-                                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-success">Discount on MRP (₹)</label>
+                                    <input type="text"
+                                        class="form-control text-success fw-bold"
+                                        id="discount_on_mrp"
+                                        readonly>
+                                </div>
 
-                                                <div class="col-md-3">
-                                                    <label class="form-label text-danger fw-bold">Final Sale Price (₹)</label>
-                                                    <input type="text"
-                                                        name="sale_price"
-                                                        id="sale_price"
-                                                        class="form-control text-danger fw-bold"
-                                                        readonly>
-                                                </div>
-                                            </div>
-
-
-                                            <div class="col-md-4">
-                                                <label class="form-label">
-                                                    Sale End Date <span class="text-danger">*</span>
-                                                </label>
-                                                {{-- Visible (for user) --}}
-                                                <input type="text"
-                                                    class="form-control"
-                                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('d/m/Y') }}"
-                                                    readonly>
-
-                                                {{-- Hidden (for backend) --}}
-                                                <input type="hidden"
-                                                    name="sale_end_date"
-                                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('Y-m-d') }}">
-                                                @error('sale_end_date')
-                                                <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-danger fw-bold">Final Sale Price (₹)</label>
+                                    <input type="text"
+                                        name="sale_price"
+                                        id="sale_price"
+                                        class="form-control text-danger fw-bold"
+                                        readonly>
+                                </div>
+                            </div>
 
 
-                                            {{-- Note --}}
-                                            <!-- <div class="alert alert-warning small">
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    Sale End Date <span class="text-danger">*</span>
+                                </label>
+                                {{-- Visible (for user) --}}
+                                <input type="text"
+                                    class="form-control"
+                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('d/m/Y') }}"
+                                    readonly>
+
+                                {{-- Hidden (for backend) --}}
+                                <input type="hidden"
+                                    name="sale_end_date"
+                                    value="{{ \Carbon\Carbon::parse($batch->expiry_date)->subDay()->format('Y-m-d') }}">
+                                @error('sale_end_date')
+                                <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+
+
+                            {{-- Note --}}
+                            <!-- <div class="alert alert-warning small">
                                                 ⚠ This product will be visible <b>ONLINE ONLY</b> (Website / App).
                                                 It will NOT appear in POS or offline sales.
                                             </div> -->
 
-                                            {{-- Actions --}}
-                                            <div class="text-end mt-6">
-                                                <a href="{{ route('batches.expiry') }}" class="btn btn-outline-success">
-                                                    Back
-                                                </a>
-                                                <button type="submit" class="btn btn-success">
-                                                    Put on Sale
-                                                </button>
-                                            </div>
-
-                                        </form>
-                                    </div>
-                                </div>
+                            {{-- Actions --}}
+                            <div class="text-end mt-6">
+                                <a href="{{ route('batches.expiry') }}" class="btn btn-outline-success">
+                                    Back
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    Put on Sale
+                                </button>
                             </div>
-                        </div>
+
+                        </form>
                     </div>
                 </div>
-           @endsection
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
 
 @push('scripts')
 {{-- Scripts --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
-    $('#discount_percent').on('input', function() {
+$('#discount_percent').on('input', function () {
 
-        let discountPercent = parseFloat($(this).val());
-        let mrp = parseFloat($('#mrp').val()); // 🔥 use MRP
+    // ✅ allow only numbers
+    let value = this.value.replace(/[^0-9]/g, '');
 
-        if (!discountPercent || discountPercent <= 0) {
-            $('#sale_price').val('');
-            $('#discount_on_mrp').val('');
-            return;
-        }
+    let discountPercent = parseInt(value || 0);
 
-        // ✅ Discount on MRP
-        let discountAmount = mrp * discountPercent / 100;
-        let salePrice = mrp - discountAmount;
+    // ✅ limit to 100
+    if (discountPercent > 100) {
+        discountPercent = 100;
+    }
 
-        $('#sale_price').val(salePrice.toFixed(2));
-        $('#discount_on_mrp').val(discountAmount.toFixed(2));
-    });
+    // update input field
+    this.value = discountPercent;
+
+    let mrp = parseFloat($('#mrp').val());
+
+    // reset if empty or zero
+    if (!discountPercent || discountPercent <= 0) {
+        $('#sale_price').val('');
+        $('#discount_on_mrp').val('');
+        return;
+    }
+
+    // ✅ calculate on MRP
+    let discountAmount = mrp * discountPercent / 100;
+    let salePrice = mrp - discountAmount;
+
+    $('#sale_price').val(salePrice.toFixed(2));
+    $('#discount_on_mrp').val(discountAmount.toFixed(2));
+});
 </script>
 <!-- <script>
     $('#discount_percent').on('input', function() {
