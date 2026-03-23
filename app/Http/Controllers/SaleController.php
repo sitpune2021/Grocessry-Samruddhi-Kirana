@@ -108,13 +108,13 @@ class SaleController extends Controller
             $discountAmount = $selling * ($request->discount_percent / 100);
             $salePrice      = $selling - $discountAmount;
 
-            if ($salePrice < $basePrice) {
-                return back()
-                    ->withErrors([
-                        'discount_percent' => 'Discount too high. Sale price cannot be below base price.'
-                    ])
-                    ->withInput();
-            }
+            // if ($salePrice < $basePrice) {
+            //     return back()
+            //         ->withErrors([
+            //             'discount_percent' => 'Discount too high. Sale price cannot be below base price.'
+            //         ])
+            //         ->withInput();
+            // }
 
 
             /* ---------- SAVE ---------- */
