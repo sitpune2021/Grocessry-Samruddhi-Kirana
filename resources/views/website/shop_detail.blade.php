@@ -40,15 +40,28 @@
                     <!-- Price -->
                     <div class="mb-2">
 
+                        @if($product->sale)
+                        {{-- SALE PRICE --}}
+                        <span class="text-muted text-decoration-line-through">
+                            ₹{{ number_format($product->sale->mrp, 0) }}
+                        </span>
+
+                        <span class="fs-4 fw-bold text-success ms-2">
+                            ₹{{ number_format($product->sale->sale_price, 0) }}
+                        </span>
+
+                        @else
+                        {{-- NORMAL PRICE --}}
                         @if($product->mrp > $product->final_price)
                         <span class="text-muted text-decoration-line-through">
-                            ₹{{ number_format($product->mrp,0) }}
+                            ₹{{ number_format($product->mrp, 0) }}
                         </span>
                         @endif
 
                         <span class="fs-4 fw-bold text-success ms-2">
-                            ₹{{ number_format($product->final_price,0) }}
+                            ₹{{ number_format($product->final_price, 0) }}
                         </span>
+                        @endif
 
                     </div>
 

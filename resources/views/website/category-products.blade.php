@@ -110,8 +110,30 @@
 
                     <div class="price-row d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="price-new">₹{{ number_format($product->final_price, 0) }}</span><br>
-                            <span class="price-old text-muted text-decoration-line-through">₹{{ number_format($product->mrp, 0) }}</span>
+
+                            @if($product->sale)
+                            {{-- SALE PRICE --}}
+                            <span class="price-new">
+                                ₹{{ number_format($product->sale->sale_price, 0) }}
+                            </span><br>
+
+                            <span class="price-old text-muted text-decoration-line-through">
+                                ₹{{ number_format($product->sale->mrp, 0) }}
+                            </span>
+
+                            @else
+                            {{-- NORMAL PRICE --}}
+                            <span class="price-new">
+                                ₹{{ number_format($product->final_price, 0) }}
+                            </span><br>
+
+                            @if($product->mrp > $product->final_price)
+                            <span class="price-old text-muted text-decoration-line-through">
+                                ₹{{ number_format($product->mrp, 0) }}
+                            </span>
+                            @endif
+                            @endif
+
                         </div>
 
                         @include('website.partials.add-to-cart-btn', ['product' => $product])
