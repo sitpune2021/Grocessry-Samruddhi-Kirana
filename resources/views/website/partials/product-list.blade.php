@@ -9,29 +9,29 @@
 
             {{-- DISCOUNT --}}
             @if($product->mrp > $product->final_price)
-                @php
-                    $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
-                @endphp
-                <div class="offer-badge">{{ $discount }}% OFF</div>
+            @php
+            $discount = round((($product->mrp - $product->final_price) / $product->mrp) * 100);
+            @endphp
+            <div class="offer-badge">{{ $discount }}% OFF</div>
             @endif
 
             @php
-                $images = $product->product_images;
-                $image = $images[0] ?? null;
+            $images = $product->product_images;
+            $image = $images[0] ?? null;
             @endphp
 
             <div class="fruite-img">
                 <a href="{{ route('productdetails', $product->id) }}">
                     @if($image)
-                        <img src="{{ asset('storage/products/'.$image) }}"
-                            class="img-fluid w-100 rounded-top"
-                            alt="{{ $product->name }}"
-                            style="height:200px; object-fit:cover;">
+                    <img src="{{ asset('storage/products/'.$image) }}"
+                        class="img-fluid w-100 rounded-top"
+                        alt="{{ $product->name }}"
+                        style="height:200px; object-fit:cover;">
                     @else
-                        <img src="{{ asset('website/img/no-image.png') }}"
-                            class="img-fluid w-100 rounded-top"
-                            alt="No Image"
-                            style="height:200px; object-fit:cover;">
+                    <img src="{{ asset('website/img/no-image.png') }}"
+                        class="img-fluid w-100 rounded-top"
+                        alt="No Image"
+                        style="height:200px; object-fit:cover;">
                     @endif
                 </a>
             </div>
@@ -52,15 +52,34 @@
                     </p>
 
                     <div class="d-flex justify-content-between align-items-center">
+                        @if(($product->available_stock ?? 0) > 0)
                         <div>
+
+                            @if($product->sale)
+                            {{-- SALE PRICE --}}
+                            <span class="fw-bold text-success">
+                                ₹{{ number_format($product->sale->sale_price, 0) }}
+                            </span><br>
+
+                            <small class="text-decoration-line-through text-muted">
+                                ₹{{ number_format($product->sale->mrp, 0) }}
+                            </small>
+
+                            @else
+                            {{-- NORMAL PRICE --}}
                             <span class="fw-bold text-success">
                                 ₹{{ number_format($product->final_price, 0) }}
                             </span><br>
+
+                            @if($product->mrp > $product->final_price)
                             <small class="text-decoration-line-through text-muted">
                                 ₹{{ number_format($product->mrp, 0) }}
                             </small>
-                        </div>
+                            @endif
+                            @endif
 
+                        </div>
+                        @endif
                         @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </div>
                 </form>
@@ -96,25 +115,24 @@
 
 <style>
     .empty-wrapper {
-    width: 100%;
-    min-height: 60vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        width: 100%;
+        min-height: 60vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-.empty-img {
-    width: 200px;
-    opacity: 0.9;
-}
+    .empty-img {
+        width: 200px;
+        opacity: 0.9;
+    }
 
-.fruite-item {
-    transition: 0.3s;
-}
+    .fruite-item {
+        transition: 0.3s;
+    }
 
-.fruite-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
-}
-
+    .fruite-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+    }
 </style>

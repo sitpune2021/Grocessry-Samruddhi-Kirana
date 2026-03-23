@@ -15,7 +15,7 @@
                 <div class="col-md-3">
                     <select name="warehouse_id" class="form-select">
                         <option value="">Warehouse (All)</option>
-                        @foreach (DB::table('warehouses')->get() as $wh)
+                        @foreach (DB::table('warehouses')->where('type','distribution_center')->get() as $wh)
                             <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>
                                 {{ $wh->name }}
                             </option>
@@ -61,6 +61,7 @@
                     </thead>
 
                     <tbody>
+                        
                         @forelse($rows as $i => $row)
                             <tr>
                                 <td>{{ $i + 1 }}</td>
