@@ -135,7 +135,7 @@ $stock = $product->available_stock ?? 0;
 </div>
 
 @else
-<button type="button" class="btn btn-danger btn-out-stock" disabled>
+<button type="button" class="btn btn-danger btn-out-stock  mt-2 text-center" disabled>
     Out of Stock
 </button>
 @endif

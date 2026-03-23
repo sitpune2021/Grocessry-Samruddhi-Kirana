@@ -538,9 +538,13 @@ class WebsiteController extends Controller
     {
         $dcId = session('dc_warehouse_id');
 
-        $product = Product::with(['category', 'unit', 'sale' => function ($q) {
-            $q->active()->online();
-        }])->findOrFail($id);
+        $product = Product::with([
+            'category',
+            'unit',
+            'sale' => function ($q) {
+                $q->active()->online();
+            }
+        ])->findOrFail($id);
 
         $availableStock = 0;
 
@@ -552,6 +556,9 @@ class WebsiteController extends Controller
 
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $id)
+            ->with(['sale' => function ($q) {
+                $q->active()->online();
+            }])
             ->limit(4)
             ->get();
 
