@@ -25,7 +25,7 @@ return [
                     'route' => 'taxes.index',
                     'roles' => [1, 2] // Only visible for role_id 1 & 2
                 ],
-                ['title' => 'Permission Management', 'route' => 'RolePermission', 'roles' => [1, 2, 3, 4]],
+                ['title' => 'Permission Management', 'route' => 'RolePermission', 'roles' => [1]],
                 ['title' => 'User Management', 'route' => 'user.profile'],
 
             ],
