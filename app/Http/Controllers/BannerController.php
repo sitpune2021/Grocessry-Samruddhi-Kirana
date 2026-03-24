@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\ContactDetail;
 use App\Models\AboutPage;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 
 
 class BannerController extends Controller
@@ -28,43 +29,73 @@ class BannerController extends Controller
             'products' => Product::select('id', 'name')->orderBy('name')->get()
         ]);
     }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name'       => 'required|string|max:255',
-            'product_id' => 'nullable|exists:products,id', // 👈 added
-            'image'      => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        Log::info('Banner Store Started', [
+            'request_data' => $request->all(),
+            'has_file' => $request->hasFile('image')
         ]);
 
-        $imagePath = $request->file('image')->store('banner', 'public');
+        try {
 
-        Banner::create([
-            'name'       => $request->name,
-            'product_id' => $request->product_id, // 👈 added
-            'image'      => $imagePath,
-        ]);
+            // 🔹 VALIDATION
+            $validated = $request->validate([
+                'name'       => 'required|string|max:255',
+                'product_id' => 'nullable|exists:products,id',
+                'image'      => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+            ]);
 
-        return redirect()
-            ->route('banners.index')
-            ->with('success', 'Banner added successfully');
+            Log::info('Validation Passed', $validated);
+
+            // 🔹 CHECK FILE
+            if (!$request->hasFile('image')) {
+                Log::error('Image file not found in request');
+                return back()->with('error', 'Image not found')->withInput();
+            }
+
+            $file = $request->file('image');
+
+            Log::info('Image File Details', [
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType(),
+            ]);
+
+            // 🔹 STORE IMAGE
+            $imagePath = $file->store('banner', 'public');
+
+            Log::info('Image Stored Successfully', [
+                'path' => $imagePath
+            ]);
+
+            // 🔹 SAVE DATA
+            Banner::create([
+                'name'       => $validated['name'],
+                'product_id' => $validated['product_id'] ?? null,
+                'image'      => $imagePath,
+            ]);
+
+            Log::info('Banner Created Successfully');
+
+            return redirect()
+                ->route('banners.index')
+                ->with('success', 'Banner added successfully');
+
+        } catch (\Throwable $e) {
+
+            Log::error('Banner Store Failed', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'trace'   => $e->getTraceAsString(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Image upload failed: ' . $e->getMessage());
+        }
     }
-
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'name'  => 'required|string|max:255',
-    //         'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //     ]);
-
-    //     $imagePath = $request->file('image')->store('banner', 'public');
-
-    //     Banner::create([
-    //         'name'  => $request->name,
-    //         'image' => $imagePath,
-    //     ]);
-
-    //     return redirect()->route('banners.index')->with('success', 'Banner added successfully');
-    // }
 
     public function edit($id)
     {
