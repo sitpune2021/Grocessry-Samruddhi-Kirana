@@ -376,7 +376,7 @@
                         transfer_id: transferId
                     }, function(res) {
                         if (res.quantity) {
-                            qtyEl.val(res.quantity);   // ✅ Yahin 200 aayega
+                            qtyEl.val(res.quantity); 
                         }
                     });
                 }

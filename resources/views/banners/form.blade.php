@@ -38,7 +38,7 @@
 
                                         <div class="mb-3">
                                             <label>Banner Image</label>
-                                            <input type="file" name="image" class="form-control"
+                                            <input type="file" name="image" class="form-control" accept="image/*"
                                                 {{ $banner ? '' : 'required' }}>
                                         </div>
 

@@ -161,10 +161,10 @@
                         Column A: <code>name</code> &nbsp;|&nbsp;
                         Column B: <code>slug</code> (optional) &nbsp;|&nbsp;
                         Column C: <code>image_url</code> (optional)<br>
-                        <small class="text-muted">Image URL = internet वरील direct image link</small>
+                        <small class="text-muted">Image URL = internet - direct image link</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">File Select करा <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold">File Select <span class="text-danger">*</span></label>
                         <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
                         <small class="text-muted">Allowed: .xlsx, .xls, .csv — Max: 5MB</small>
                     </div>
