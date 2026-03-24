@@ -27,10 +27,10 @@
                         Upload CSV
                     </button>
                     <!-- <a href="{{ route('brands.sample-excel') }}" class="btn btn-outline-secondary"> -->
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#csvModal">
+                    <a class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#csvModal">
                         Download Csv
-                        </a>
-                        @endif
+                    </a>
+                    @endif
                 </div>
             </div>
 
@@ -234,7 +234,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Upload Brands Excel</h5>
+                <h5 class="modal-title">Upload Brands Csv</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -247,19 +247,19 @@
                     @endif
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Excel / CSV File <span
+                        <label class="form-label fw-semibold">CSV File <span
                                 class="text-danger">*</span></label>
-                        <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
-                        <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        <input type="file" name="excel_file" class="form-control" accept=".csv" required>
+                        <!-- <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small> -->
                     </div>
 
-                    <div class="alert alert-info py-2 mb-0">
+                    <!-- <div class="alert alert-info py-2 mb-0">
                         <small>
                             <strong>Format:</strong> Category Name | Sub Category Name | Brand Name | Logo URL<br>
                             <a href="{{ route('brands.sample-excel') }}" class="text-decoration-underline">Download
                                 Sample</a>
                         </small>
-                    </div>
+                    </div> -->
 
                 </div>
 
@@ -327,44 +327,44 @@
         }
     });
 
-document.getElementById('downloadBtn').addEventListener('click', function () {
+    document.getElementById('downloadBtn').addEventListener('click', function() {
 
-    let form = document.getElementById('csvForm');
-    let formData = new FormData(form);
+        let form = document.getElementById('csvForm');
+        let formData = new FormData(form);
 
-    fetch("{{ route('brands.sample-excel') }}", {
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: formData
-    })
-    .then(response => response.blob())
-    .then(blob => {
+        fetch("{{ route('brands.sample-excel') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
 
-        // ✅ Download file
-        let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = "brand_sample.csv";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+                // ✅ Download file
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = "brand_sample.csv";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
 
-        // ✅ Close modal
-        let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
-        modal.hide();
+                // ✅ Close modal
+                let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+                modal.hide();
 
-        // ✅ Reset form (optional)
-        form.reset();
+                // ✅ Reset form (optional)
+                form.reset();
 
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Download failed');
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Download failed');
+            });
+
     });
-
-});
 </script>
 
 

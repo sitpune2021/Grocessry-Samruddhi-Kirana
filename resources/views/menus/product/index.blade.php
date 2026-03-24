@@ -234,7 +234,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Upload Products Excel</h5>
+                <h5 class="modal-title">Upload Products Csv</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('product.bulk-upload') }}" method="POST" enctype="multipart/form-data">
@@ -244,19 +244,19 @@
                     <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Excel / CSV File <span
+                        <label class="form-label fw-semibold">CSV File <span
                                 class="text-danger">*</span></label>
-                        <input type="file" name="csv_file" class="form-control" accept=".xlsx,.xls,.csv" required>
-                        <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                        <!-- <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small> -->
                     </div>
-                    <div class="alert alert-info py-2 mb-0">
+                    <!-- <div class="alert alert-info py-2 mb-0">
                         <small>
                             <strong>Format:</strong> Category | Sub Category | Brand | Product Name | Barcode |
                             Description | Unit | Unit Value | Base Price | Selling Price | MRP | GST | Image URL<br>
                             <a href="{{ route('product.sample-excel') }}" class="text-decoration-underline">Download
                                 Sample</a>
                         </small>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
