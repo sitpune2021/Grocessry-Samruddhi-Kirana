@@ -246,7 +246,8 @@ class DeliveryAgentController extends Controller
 
             /* ---------------- Validation ---------------- */
             $validated = $request->validate([
-                'shop_id'       => 'required|exists:grocery_shops,id',
+                //'shop_id'       => 'required|exists:grocery_shops,id',
+                'shop_id' => 'required|exists:warehouses,id',
                 'name'          => 'required|string|max:255',
                 'last_name'     => 'required|string|max:255',
                 'dob'           => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
@@ -540,4 +541,6 @@ class DeliveryAgentController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
+
+    
 }

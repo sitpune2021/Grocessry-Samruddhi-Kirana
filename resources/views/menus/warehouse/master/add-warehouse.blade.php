@@ -222,7 +222,7 @@
                                                     </small>
                                                 </div>
 
-                                                @if($mode !== 'add' && $mode !== 'edit')
+                                                @if($mode !== 'add' && $mode !== 'edit' && $mode !== 'view')
                                                 {{-- GSTIN --}}
                                                 {{-- Contact Person --}}
                                                 <div class="col-md-4 mb-3">
