@@ -22,6 +22,8 @@ use Illuminate\Validation\Rule;
 
 class stockWarehouseController extends Controller
 {
+
+
     public function indexWarehouse(Request $request)
     {
         $user = Auth::user();
@@ -174,17 +176,30 @@ class stockWarehouseController extends Controller
         );
     }
 
-
     public function byCategory($categoryId)
     {
         return SubCategory::where('category_id', $categoryId)
             ->select('id', 'name')
             ->get();
     }
+
     public function addStock(Request $request)
     {
-        Log::info('🟢 AddStock START', [
+        Log::info('AddStock START', [
             'request' => $request->all()
+        ]);
+
+        $request->validate([
+            'supplier_challan_id' => 'required|exists:supplier_challans,id',
+            'warehouse_id'        => 'required|exists:warehouses,id',
+            'bill_no'             => 'required|string|max:100',
+            'batch_no'            => 'required|string|max:100',
+
+            'products'                    => 'required|array|min:1',
+            'products.*.category_id'      => 'required|exists:categories,id',
+            'products.*.sub_category_id'  => 'required|exists:sub_categories,id',
+            'products.*.product_id'       => 'required|exists:products,id',
+            'products.*.quantity'         => 'required|numeric|min:1',
         ]);
 
         DB::beginTransaction();
@@ -193,7 +208,7 @@ class stockWarehouseController extends Controller
 
             foreach ($request->products as $index => $item) {
 
-                Log::info('🔍 Processing Product', [
+                Log::info('Processing Product', [
                     'index' => $index,
                     'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
@@ -211,27 +226,27 @@ class stockWarehouseController extends Controller
 
                 if ($stock) {
 
-                    Log::info('✏️ Existing stock found', [
+                    Log::info('Existing stock found', [
                         'stock_id' => $stock->id,
                         'old_qty' => $stock->quantity
                     ]);
 
-                    // ✅ Total qty
+                    // Total qty
                     $stock->quantity += $item['quantity'];
 
-                    // ✅ Batch array
+                    // Batch array
                     $batches = $stock->batch_no ?? [];
                     if (!in_array($request->batch_no, $batches)) {
                         $batches[] = $request->batch_no;
                     }
 
-                    // ✅ Challan array
+                    // Challan array
                     $challans = $stock->supplier_challan_id ?? [];
                     if (!in_array($request->supplier_challan_id, $challans)) {
                         $challans[] = $request->supplier_challan_id;
                     }
 
-                    // ✅ Batch-wise qty
+                    // Batch-wise qty
                     $batchQty = $stock->batch_qty ?? [];
 
                     if (isset($batchQty[$request->batch_no])) {
@@ -240,14 +255,14 @@ class stockWarehouseController extends Controller
                         $batchQty[$request->batch_no] = $item['quantity'];
                     }
 
-                    Log::info('📊 Updating stock', [
+                    Log::info('Updating stock', [
                         'new_total_qty' => $stock->quantity,
                         'batches' => $batches,
                         'challans' => $challans,
                         'batch_qty' => $batchQty
                     ]);
 
-                    // ✅ Save
+                    // Save
                     $stock->batch_no = $batches;
                     $stock->supplier_challan_id = $challans;
                     $stock->batch_qty = $batchQty;
@@ -255,12 +270,12 @@ class stockWarehouseController extends Controller
 
                     $stock->save();
 
-                    Log::info('✅ Stock Updated', [
+                    Log::info('Stock Updated', [
                         'stock_id' => $stock->id
                     ]);
                 } else {
 
-                    Log::info('🆕 Creating new stock');
+                    Log::info('Creating new stock');
 
                     $newStock = WarehouseStock::create([
                         'warehouse_id' => $request->warehouse_id,
@@ -277,7 +292,7 @@ class stockWarehouseController extends Controller
                         ],
                     ]);
 
-                    Log::info('✅ New Stock Created', [
+                    Log::info('New Stock Created', [
                         'stock_id' => $newStock->id
                     ]);
                 }
@@ -344,7 +359,6 @@ class stockWarehouseController extends Controller
         ));
     }
 
-
     public function editStockForm(Request $request, $id)
     {
         $mode = 'edit';
@@ -394,7 +408,6 @@ class stockWarehouseController extends Controller
             'selectedChallan'    // ✅ important
         ));
     }
-
 
     public function updateStock(Request $request, $id)
     {
@@ -486,9 +499,6 @@ class stockWarehouseController extends Controller
         return response()->json($categories);
     }
 
-    /**
-     * Get products by sub category (AJAX)
-     */
     public function getProductBySubCategory($subCategoryId)
     {
         return Product::where('sub_category_id', $subCategoryId)
@@ -529,4 +539,6 @@ class stockWarehouseController extends Controller
             }),
         ]);
     }
+
+
 }
