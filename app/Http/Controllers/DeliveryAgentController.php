@@ -232,21 +232,20 @@ class DeliveryAgentController extends Controller
 
         try {
 
-            Log::info('Delivery Agent Update Started', [
-                'delivery_agent_id' => $id,
-                'request_data' => $request->all(),
+            Log::info('===== Delivery Agent Update START =====', [
+                'agent_id' => $id,
+                'request' => $request->all()
             ]);
 
             $agent = DeliveryAgent::with('user')->findOrFail($id);
 
-            Log::info('Delivery Agent Found', [
-                'agent_id' => $agent->id,
-                'user_id'  => optional($agent->user)->id,
+            Log::info('Agent fetched', [
+                'agent' => $agent->toArray()
             ]);
 
             /* ---------------- Validation ---------------- */
             $validated = $request->validate([
-                'shop_id'       => 'required|exists:grocery_shops,id',
+                'shop_id' => 'required|exists:warehouses,id',
                 'name'          => 'required|string|max:255',
                 'last_name'     => 'required|string|max:255',
                 'dob'           => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
@@ -259,37 +258,39 @@ class DeliveryAgentController extends Controller
                 'driving_license' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
-            Log::info('Validation Passed', $validated);
+            Log::info('Validation success', $validated);
 
-            /* ---------------- Update User ---------------- */
+            /* ---------------- USER ---------------- */
             $user = $agent->user;
 
             if (!$user) {
-                Log::error('User not linked with delivery agent', [
-                    'agent_id' => $agent->id,
-                ]);
-                throw new \Exception('User not linked with delivery agent');
+                Log::error('User not found for agent', ['agent_id' => $id]);
+                throw new \Exception('User not linked');
             }
 
-            // ---------------- Profile Image ----------------
-            $profilePhotoName = $agent->user->profile_photo;
+            Log::info('User found', ['user_id' => $user->id]);
+
+            /* ---------------- PROFILE IMAGE ---------------- */
+            $profilePhotoName = $user->profile_photo;
+
             if ($request->hasFile('profile_image')) {
 
-                // delete old image
-                if ($agent->user->profile_photo) {
-                    Storage::disk('public')
-                        ->delete('profile_photos/' . $agent->user->profile_photo);
+                Log::info('Uploading profile image...');
+
+                if ($profilePhotoName) {
+                    Storage::disk('public')->delete('profile_photos/' . $profilePhotoName);
+                    Log::info('Old profile image deleted', ['old' => $profilePhotoName]);
                 }
 
                 $file = $request->file('profile_image');
-                $profilePhotoName = $file->getClientOriginalName();
+                $profilePhotoName = time() . '_' . $file->getClientOriginalName();
 
                 $file->storeAs('profile_photos', $profilePhotoName, 'public');
 
-                Log::info('Profile image uploaded', ['file' => $profilePhotoName]);
+                Log::info('New profile image stored', ['file' => $profilePhotoName]);
             }
 
-            // ---------------- Update User ----------------
+            /* ---------------- UPDATE USER ---------------- */
             $user->update([
                 'first_name'    => $validated['name'],
                 'last_name'     => $validated['last_name'],
@@ -298,51 +299,49 @@ class DeliveryAgentController extends Controller
                 'profile_photo' => $profilePhotoName,
             ]);
 
+            Log::info('User updated');
 
-            Log::info('User Updated Successfully', [
-                'user_id' => $user->id,
-            ]);
+            /* ---------------- FILES ---------------- */
 
-            /* ---------------- File Uploads ---------------- */
-
-            // Aadhaar Card
+            // Aadhaar
             if ($request->hasFile('aadhaar_card')) {
 
+                Log::info('Uploading Aadhaar...');
+
                 if ($agent->aadhaar_card) {
-                    Storage::disk('public')
-                        ->delete('delivery_agents/aadhaar/' . $agent->aadhaar_card);
+                    Storage::disk('public')->delete('delivery_agents/aadhaar/' . $agent->aadhaar_card);
                 }
 
                 $file = $request->file('aadhaar_card');
-                $fileName = $file->getClientOriginalName();
+                $aadhaarName = time() . '_aadhaar_' . $file->getClientOriginalName();
 
-                $file->storeAs('delivery_agents/aadhaar/', $fileName, 'public');
+                $file->storeAs('delivery_agents/aadhaar/', $aadhaarName, 'public');
 
-                $agent->aadhaar_card = $fileName;
+                $agent->aadhaar_card = $aadhaarName;
 
-                Log::info('Aadhaar uploaded', ['file' => $fileName]);
+                Log::info('Aadhaar uploaded', ['file' => $aadhaarName]);
             }
 
-            // Driving License
+            // License
             if ($request->hasFile('driving_license')) {
 
+                Log::info('Uploading License...');
+
                 if ($agent->driving_license) {
-                    Storage::disk('public')
-                        ->delete('delivery_agents/license/' . $agent->driving_license);
+                    Storage::disk('public')->delete('delivery_agents/license/' . $agent->driving_license);
                 }
 
                 $file = $request->file('driving_license');
-                $fileName = $file->getClientOriginalName();
+                $licenseName = time() . '_license_' . $file->getClientOriginalName();
 
-                $file->storeAs('delivery_agents/license/', $fileName, 'public');
+                $file->storeAs('delivery_agents/license/', $licenseName, 'public');
 
-                $agent->driving_license = $fileName;
+                $agent->driving_license = $licenseName;
 
-                Log::info('Driving license uploaded', ['file' => $fileName]);
+                Log::info('License uploaded', ['file' => $licenseName]);
             }
 
-
-            /* ---------------- Update Agent ---------------- */
+            /* ---------------- UPDATE AGENT ---------------- */
             $data = [
                 'shop_id'       => $validated['shop_id'],
                 'dob'           => $validated['dob'] ?? null,
@@ -352,24 +351,21 @@ class DeliveryAgentController extends Controller
                 'updated_by'    => Auth::id(),
             ];
 
-
-            if ($request->hasFile('aadhaar_card')) {
-                $data['aadhaar_card'] = $fileName;
+            if (isset($aadhaarName)) {
+                $data['aadhaar_card'] = $aadhaarName;
             }
 
-            if ($request->hasFile('driving_license')) {
-                $data['driving_license'] = $fileName;
+            if (isset($licenseName)) {
+                $data['driving_license'] = $licenseName;
             }
+
+            Log::info('Updating agent with data', $data);
 
             $agent->update($data);
 
-            Log::info('Delivery Agent Updated Successfully', [
-                'agent_id' => $agent->id,
-            ]);
-
             DB::commit();
 
-            Log::info('Delivery Agent Update Completed');
+            Log::info('===== Delivery Agent Update SUCCESS =====');
 
             return redirect()
                 ->route('delivery-agents.index')
@@ -378,12 +374,11 @@ class DeliveryAgentController extends Controller
 
             DB::rollBack();
 
-            Log::error('Delivery Agent Update Failed', [
+            Log::error('===== Delivery Agent Update FAILED =====', [
                 'agent_id' => $id,
-                'error'    => $e->getMessage(),
-                'file'     => $e->getFile(),
+                'message'  => $e->getMessage(),
                 'line'     => $e->getLine(),
-                'trace'    => $e->getTraceAsString(),
+                'file'     => $e->getFile(),
             ]);
 
             return back()
@@ -391,7 +386,6 @@ class DeliveryAgentController extends Controller
                 ->with('error', 'Something went wrong');
         }
     }
-
     public function destroy(string $id)
     {
         try {
