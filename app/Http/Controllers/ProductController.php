@@ -251,33 +251,27 @@ class ProductController extends Controller
         $request->validate([
             'category_id' => 'required',
             'subcategory_id' => 'required',
-            'brand_id' => 'required',
+            'brand_id' => 'required|array',
             'unit' => 'required',
             'gst' => 'required'
         ]);
 
         $category = Category::findOrFail($request->category_id);
         $subcategory = SubCategory::findOrFail($request->subcategory_id);
-        $brand = Brand::findOrFail($request->brand_id);
+        $brands = Brand::whereIn('id', $request->brand_id)->get();
         $unit = Unit::findOrFail($request->unit);
         $gst = Tax::findOrFail($request->gst);
 
-        $fileName = 'product_sample_' . time() . '.csv';
-
         $headers = [
             "Content-Type" => "text/csv; charset=UTF-8",
-            "Content-Disposition" => "attachment; filename=$fileName",
+            "Content-Disposition" => "attachment; filename=product_sample.csv",
         ];
 
-        // ✅ IMPORTANT: pass $unit here
-        return response()->stream(function () use ($category, $subcategory, $brand, $unit, $gst) {
+        return response()->stream(function () use ($category, $subcategory, $brands, $unit, $gst) {
 
             $file = fopen('php://output', 'w');
-
-            // ✅ Fix Excel encoding
             echo "\xEF\xBB\xBF";
 
-            // Header
             fputcsv($file, [
                 'Category',
                 'SubCategory',
@@ -294,22 +288,25 @@ class ProductController extends Controller
                 'Image Name'
             ]);
 
-            for ($i = 0; $i < 10; $i++) {
-                fputcsv($file, [
-                    $this->clean($category->name),
-                    $this->clean($subcategory->name),
-                    $this->clean($brand->name),
-                    '',
-                    '',
-                    '',
-                    $this->clean($unit->name), // ✅ now works
-                    '',
-                    '',
-                    '',
-                    '',
-                    $this->clean($gst->gst),
-                    ''
-                ]);
+            foreach ($brands as $brand) {
+
+                for ($i = 0; $i < 5; $i++) {
+                    fputcsv($file, [
+                        $category->name,
+                        $subcategory->name,
+                        $brand->name,
+                        '',
+                        '',
+                        '',
+                        $unit->name,
+                        '',
+                        '',
+                        '',
+                        '',
+                        $gst->gst,
+                        ''
+                    ]);
+                }
             }
 
             fclose($file);

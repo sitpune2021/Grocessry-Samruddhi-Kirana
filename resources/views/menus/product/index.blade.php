@@ -162,10 +162,6 @@
 </div>
 
 <!-- bulk download model -->
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#csvModal">
-    Download CSV
-</button>
-
 <div class="modal fade" id="csvModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -188,15 +184,24 @@
                         @endforeach
                     </select>
 
-                    <!-- SubCategory -->
+                    <!-- SubCategory (Single) -->
                     <select id="subcategory" name="subcategory_id" class="form-control mb-2" required>
                         <option value="">Select SubCategory</option>
                     </select>
 
-                    <!-- Brand -->
-                    <select id="brand" name="brand_id" class="form-control mb-2" required>
-                        <option value="">Select Brand</option>
-                    </select>
+                    <!-- Brand Dropdown with Checkbox -->
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-secondary w-100 text-start dropdown-toggle"
+                            type="button" id="brandDropdown" data-bs-toggle="dropdown">
+                            Select Brand
+                        </button>
+
+                        <div class="dropdown-menu w-100 p-2"
+                            style="max-height: 200px; overflow-y: auto;"
+                            id="brandDropdownMenu">
+                            <p class="text-muted">Select Brand</p>
+                        </div>
+                    </div>
 
                     <!-- UNIT -->
                     <select id="unit" name="unit" class="form-control mb-2" required>
@@ -234,7 +239,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Upload Products Excel</h5>
+                <h5 class="modal-title">Upload Products Csv</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('product.bulk-upload') }}" method="POST" enctype="multipart/form-data">
@@ -244,19 +249,19 @@
                     <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Excel / CSV File <span
+                        <label class="form-label fw-semibold">CSV File <span
                                 class="text-danger">*</span></label>
-                        <input type="file" name="csv_file" class="form-control" accept=".xlsx,.xls,.csv" required>
-                        <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                        <!-- <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small> -->
                     </div>
-                    <div class="alert alert-info py-2 mb-0">
+                    <!-- <div class="alert alert-info py-2 mb-0">
                         <small>
                             <strong>Format:</strong> Category | Sub Category | Brand | Product Name | Barcode |
                             Description | Unit | Unit Value | Base Price | Selling Price | MRP | GST | Image URL<br>
                             <a href="{{ route('product.sample-excel') }}" class="text-decoration-underline">Download
                                 Sample</a>
                         </small>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -304,90 +309,140 @@
     });
 </script>
 <script>
-    const categories = @json($categories);
+const categories = @json($categories);
 
-    // Load SubCategory
-    document.getElementById('category').addEventListener('change', function() {
-        let cat = categories.find(c => c.id == this.value);
-        let sub = document.getElementById('subcategory');
+// ✅ Load SubCategory
+document.getElementById('category').addEventListener('change', function () {
 
-        sub.innerHTML = '<option value="">Select SubCategory</option>';
+    let cat = categories.find(c => c.id == this.value);
+    let sub = document.getElementById('subcategory');
 
-        if (cat) {
-            cat.sub_categories.forEach(s => {
-                sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    sub.innerHTML = '<option value="">Select SubCategory</option>';
+
+    if (cat) {
+        cat.sub_categories.forEach(s => {
+            sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        });
+    }
+
+    // Reset brands
+    document.getElementById('brandDropdownMenu').innerHTML = '<p class="text-muted">Select Brand</p>';
+    document.getElementById('brandDropdown').innerText = 'Select Brand';
+});
+
+
+// ✅ Load Brands (Checkbox dropdown)
+document.getElementById('subcategory').addEventListener('change', function () {
+
+    let cat = categories.find(c => c.id == document.getElementById('category').value);
+    let subId = this.value;
+    let dropdown = document.getElementById('brandDropdownMenu');
+
+    dropdown.innerHTML = '';
+
+    if (cat) {
+        let sub = cat.sub_categories.find(s => s.id == subId);
+
+        if (sub && sub.brands.length > 0) {
+
+            dropdown.innerHTML += `
+                <input type="text" class="form-control mb-2" placeholder="Search..." id="brandSearch">
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllBrands">
+                    <label class="form-check-label fw-bold">Select All</label>
+                </div>
+                <hr>
+            `;
+
+            sub.brands.forEach(b => {
+                dropdown.innerHTML += `
+                    <div class="form-check">
+                        <input class="form-check-input brand-checkbox" type="checkbox"
+                            name="brand_id[]" value="${b.id}" id="brand_${b.id}">
+                        <label class="form-check-label">${b.name}</label>
+                    </div>
+                `;
             });
+
+        } else {
+            dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
         }
+    }
+});
+
+
+// ✅ Select All + Count
+document.addEventListener('change', function (e) {
+
+    if (e.target.id === 'selectAllBrands') {
+        document.querySelectorAll('.brand-checkbox').forEach(cb => {
+            cb.checked = e.target.checked;
+        });
+    }
+
+    if (e.target.classList.contains('brand-checkbox')) {
+
+        let selected = document.querySelectorAll('.brand-checkbox:checked');
+        let btn = document.getElementById('brandDropdown');
+
+        btn.innerText = selected.length > 0
+            ? selected.length + " brand(s) selected"
+            : "Select Brand";
+    }
+});
+
+
+// ✅ Search Brand
+document.addEventListener('keyup', function (e) {
+    if (e.target.id === 'brandSearch') {
+
+        let value = e.target.value.toLowerCase();
+
+        document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
+            div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
+        });
+    }
+});
+
+
+// ✅ Download CSV
+document.getElementById('downloadBtn').addEventListener('click', function () {
+
+    let category = document.getElementById('category').value;
+    let subcategory = document.getElementById('subcategory').value;
+    let unit = document.getElementById('unit').value;
+    let gst = document.getElementById('gst').value;
+    let brands = document.querySelectorAll('.brand-checkbox:checked');
+
+    if (!category || !subcategory || brands.length === 0 || !unit || !gst) {
+        alert('Please select all fields');
+        return;
+    }
+
+    let form = document.getElementById('csvForm');
+    let formData = new FormData(form);
+
+    fetch("{{ route('product.sample-excel') }}", {
+        method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        },
+        body: formData
+    })
+    .then(res => res.blob())
+    .then(blob => {
+
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = "product_sample.csv";
+        a.click();
+
+        let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+        modal.hide();
     });
-
-    // Load Brand
-    document.getElementById('subcategory').addEventListener('change', function() {
-        let cat = categories.find(c => c.id == document.getElementById('category').value);
-        let brand = document.getElementById('brand');
-
-        brand.innerHTML = '<option value="">Select Brand</option>';
-
-        if (cat) {
-            let sub = cat.sub_categories.find(s => s.id == this.value);
-            if (sub) {
-                sub.brands.forEach(b => {
-                    brand.innerHTML += `<option value="${b.id}">${b.name}</option>`;
-                });
-            }
-        }
-    });
-
-    // Download CSV + Close Modal
-    document.getElementById('downloadBtn').addEventListener('click', function() {
-
-        let category = document.getElementById('category').value;
-        let subcategory = document.getElementById('subcategory').value;
-        let brand = document.getElementById('brand').value;
-        let unit = document.getElementById('unit').value; // ✅ added
-        let gst = document.getElementById('gst').value;
-
-        if (!category || !subcategory || !brand || !unit || !gst) {
-            alert('Please select all fields including GST');
-            return;
-        }
-
-        let form = document.getElementById('csvForm');
-        let formData = new FormData(form);
-
-        fetch("{{ route('product.sample-excel') }}", {
-                method: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                },
-                body: formData
-            })
-            .then(async res => {
-
-                // ❗ Handle validation / error response
-                if (!res.ok) {
-                    let text = await res.text();
-                    alert("Error: " + text);
-                    throw new Error("Download failed");
-                }
-
-                return res.blob();
-            })
-            .then(blob => {
-
-                let url = window.URL.createObjectURL(blob);
-                let a = document.createElement('a');
-                a.href = url;
-                a.download = "product_sample.csv";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-
-                // ✅ Close modal
-                let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
-                modal.hide();
-            })
-            .catch(err => console.error(err));
-    });
+});
 </script>
 
 

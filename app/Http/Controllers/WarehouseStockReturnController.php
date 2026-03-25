@@ -85,7 +85,7 @@ class WarehouseStockReturnController extends Controller
          * FILTER TO WAREHOUSE BASED ON LEVEL
          */
         if ($fromWarehouse?->type === 'distribution_center' || $fromWarehouse?->type === 'taluka' || $fromWarehouse?->type === 'district') {
-            $warehouses = Warehouse::where('type', 'master')->get();
+            $warehouses = Warehouse::where('id', $fromWarehouse->parent_id)->get();
         } else {
             // Master → No return allowed
             $warehouses = collect();
