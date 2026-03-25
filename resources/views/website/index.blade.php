@@ -20,7 +20,7 @@
 
                 <div id="carouselId" class="carousel slide carousel-fade" data-bs-ride="carousel" style="padding-top: 70px;">
 
-                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 25px;">
+                    <div class="carousel-inner rounded-4 overflow-hidden" style="margin-top: 60px;">
 
                         @foreach($banners as $key => $banner)
                         <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">

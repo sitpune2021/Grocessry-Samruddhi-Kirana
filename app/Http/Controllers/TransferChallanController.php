@@ -68,7 +68,6 @@ class TransferChallanController extends Controller
         return 'TC-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 
-
     public function store(Request $request)
     {
         // 🔍 LOG REQUEST DATA
@@ -190,7 +189,6 @@ class TransferChallanController extends Controller
         }
     }
 
-
     public function edit($id)
     {
         $transferChallan = TransferChallan::with('items')->findOrFail($id);
@@ -282,7 +280,7 @@ class TransferChallanController extends Controller
 
     public function downloadPdf(TransferChallan $transferChallan)
     {
-        $transferChallan->load(['items.product', 'items.batch', 'fromWarehouse', 'toWarehouse']);
+        $transferChallan->load(['items.product', 'items.batch', 'fromWarehouse', 'toWarehouse', 'creator']);
 
         return view('Transfer_Challan.challen_pdf', [
             'challan' => $transferChallan
