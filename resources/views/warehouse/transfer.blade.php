@@ -376,7 +376,7 @@
                         transfer_id: transferId
                     }, function(res) {
                         if (res.quantity) {
-                            qtyEl.val(res.quantity);   // ✅ Yahin 200 aayega
+                            qtyEl.val(res.quantity); 
                         }
                     });
                 }
@@ -454,10 +454,9 @@
                         <td>${batch.batch_no}</td>
                         <td>
                             
-                                   <input type="number"
+                                   <input type="text"
                                     class="form-control form-control-sm qty-input"
                                     value="${qtyArr[i] ?? 1}"
-                                    min="1"
                                     data-index="${rid}"
                                     data-stock="${batch.quantity}">
 

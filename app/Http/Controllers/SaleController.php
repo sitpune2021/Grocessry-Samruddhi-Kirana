@@ -105,16 +105,20 @@ class SaleController extends Controller
             $basePrice  = (float) $batch->product->base_price;
 
             // Discount on SELLING PRICE
-            $discountAmount = $selling * ($request->discount_percent / 100);
-            $salePrice      = $selling - $discountAmount;
+            $mrp        = (float) $batch->product->mrp;
+            $selling    = (float) $batch->product->final_price;
 
-            if ($salePrice < $basePrice) {
-                return back()
-                    ->withErrors([
-                        'discount_percent' => 'Discount too high. Sale price cannot be below base price.'
-                    ])
-                    ->withInput();
-            }
+            // Discount on MRP
+            $discountAmount = $mrp * ($request->discount_percent / 100);
+            $salePrice      = $mrp - $discountAmount;
+
+            // if ($salePrice < $basePrice) {
+            //     return back()
+            //         ->withErrors([
+            //             'discount_percent' => 'Discount too high. Sale price cannot be below base price.'
+            //         ])
+            //         ->withInput();
+            // }
 
 
             /* ---------- SAVE ---------- */

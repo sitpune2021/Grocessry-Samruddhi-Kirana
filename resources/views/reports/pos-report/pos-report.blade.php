@@ -50,9 +50,7 @@
                             <th>Order No</th>
                             <th>Warehouse</th>
                             <th>Product</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Line Total</th>
+                            
                             <th>Order Total</th>
                             <th>Payment</th>
                             <th>Status</th>
@@ -60,7 +58,7 @@
                         </tr>
                     </thead>
 
-                    <tbody>
+                   {{-- <tbody>
                         
                         @forelse($rows as $i => $row)
                             <tr>
@@ -88,7 +86,66 @@
                             </tr>
                         @endforelse
                     </tbody>
+--}}
 
+@php
+    $orders = isset($rows) ? $rows->groupBy('order_number') : collect();
+@endphp
+<tbody>
+@forelse($orders as $orderNumber => $items)
+    @php
+        $first = $items->first();
+    @endphp
+
+    <tr>
+        <td>{{ $loop->iteration }}</td>
+
+        <td>{{ $orderNumber }}</td>
+
+        <td>{{ $first->warehouse_name ?? '-' }}</td>
+
+        {{-- ✅ ITEM LIST --}}
+        <td class="text-start">
+            <ul class="mb-0 ps-3">
+@foreach($items as $item)
+    @php
+        $lineTotal = $item->quantity * $item->price;
+    @endphp
+
+    <li>
+        {{ $item->product_name }} 
+        ({{ $item->quantity }} × ₹{{ number_format($item->price, 2) }}) 
+        = <strong>₹{{ number_format($lineTotal, 2) }}</strong>
+    </li>
+@endforeach
+</ul>
+        </td>
+
+        <td class="fw-bold">
+            ₹{{ number_format($first->total_amount, 2) }}
+        </td>
+
+        <td>{{ $first->payment_method ?? '-' }}</td>
+
+        <td>
+            <span class="badge bg-{{ $first->payment_status == 'paid' ? 'success' : 'warning' }}">
+                {{ strtoupper($first->payment_status) }}
+            </span>
+        </td>
+
+        <td>
+            {{ \Carbon\Carbon::parse($first->created_at)->format('d-m-Y') }}
+        </td>
+    </tr>
+
+@empty
+    <tr>
+        <td colspan="11" class="text-muted text-center">
+            No walk-in POS data found
+        </td>
+    </tr>
+@endforelse
+</tbody>
                 </table>
             </div>
 

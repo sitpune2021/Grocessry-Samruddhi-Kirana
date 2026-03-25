@@ -74,7 +74,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/products/bulk-upload', [ProductController::class, 'bulkUpload'])->name('product.bulk-upload');
-    Route::get('/products/sample-excel', [ProductController::class, 'downloadSampleExcel'])->name('product.sample-excel');
+    Route::post('/products/sample-excel', [ProductController::class, 'downloadSampleExcel'])->name('product.sample-excel');
     // Product CRUD
     Route::resource('products', ProductController::class)
         ->middleware([
@@ -187,8 +187,10 @@ Route::middleware(['auth:admin'])->group(function () {
             Route::delete('service-areas/{pincode}', [WarehouseServicePincodeController::class, 'destroy'])
                 ->name('warehouse.service-areas.destroy');
         });
+
+    Route::get('/brand/csv-modal', [BrandController::class, 'openCsvModal']);
     Route::post('/brands/bulk-upload', [BrandController::class, 'bulkUpload'])->name('brands.bulk-upload');
-    Route::get('/brands/sample-excel', [BrandController::class, 'downloadSampleExcel'])->name('brands.sample-excel');
+    Route::post('/brands/sample-excel', [BrandController::class, 'downloadSampleExcel'])->name('brands.sample-excel');
 
     Route::resource('brands', BrandController::class);
     Route::get(
@@ -813,8 +815,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('user/userstatus', [UserController::class, 'userstatus'])->name('userstatus');
 
 
-
-
     /////////////////////////////////////////  SHEKHAR DEVELOP - WEBSITE START   ////////////////////////////////////////////////////////////
 
 
@@ -848,9 +848,9 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
     });
-//Website User Order History Report 
+    //Website User Order History Report 
     Route::get('/orders', [CustomerOrderController::class, 'userorder'])
-    ->name('userorder');
+        ->name('userorder');
 });
 // end admin auth 
 
@@ -937,7 +937,7 @@ Route::post(
     [CheckoutController::class, 'createRazorpayOrder']
 )->name('checkout.razorpay.create')->middleware('auth');
 
-Route::post('/apply-coupon', [WebsiteController::class,'applyCoupon'])->name('apply_coupon');
+Route::post('/apply-coupon', [WebsiteController::class, 'applyCoupon'])->name('apply_coupon');
 
 Route::post('/save-address', [LocationController::class, 'saveAddress'])
     ->name('save.address');

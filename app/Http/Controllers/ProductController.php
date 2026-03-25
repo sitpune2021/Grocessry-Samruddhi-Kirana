@@ -25,7 +25,15 @@ class ProductController extends Controller
         Log::info('Product Index Page Loaded');
         try {
             $products = Product::with(['category', 'tax'])->latest()->paginate(20);
-            return view('menus.product.index', compact('products'));
+
+            $categories = Category::with([
+                'subCategories.brands' => function ($q) {
+                    $q->where('status', 1);
+                }
+            ])->get();
+            $units = Unit::orderBy('name')->get();
+            $taxes = Tax::all();
+            return view('menus.product.index', compact('products', 'categories', 'units', 'taxes'));
         } catch (\Throwable $e) {
             Log::error('Product Index Error', ['message' => $e->getMessage(), 'line' => $e->getLine()]);
             return redirect()->back()->with('error', 'Unable to load products');
@@ -238,203 +246,90 @@ class ProductController extends Controller
     }
 
 
-
-    public function downloadSampleExcel()
+    public function downloadSampleExcel(Request $request)
     {
-        Log::info('Product Sample Excel Download Started');
+        $request->validate([
+            'category_id' => 'required',
+            'subcategory_id' => 'required',
+            'brand_id' => 'required',
+            'unit' => 'required',
+            'gst' => 'required'
+        ]);
 
-        $categories = Category::with(['subCategories.brands' => function ($q) {
-            $q->where('status', 1);
-        }])->orderBy('name')->get();
+        $category = Category::findOrFail($request->category_id);
+        $subcategory = SubCategory::findOrFail($request->subcategory_id);
+        $brand = Brand::findOrFail($request->brand_id);
+        $unit = Unit::findOrFail($request->unit);
+        $gst = Tax::findOrFail($request->gst);
 
-        $units = Unit::orderBy('name')->get();
-        $taxes = Tax::where('is_active', 1)->get();
+        $fileName = 'product_sample_' . time() . '.csv';
 
-        // ── 1. Shared Strings Management ──────────────────────────────────
-        $allStrings = [
-            'Category Name',
-            'Sub Category Name',
-            'Brand Name',
-            'Product Name',
-            'Barcode',
-            'Description',
-            'Unit',
-            'Unit Value',
-            'Base Price',
-            'Selling Price',
-            'MRP',
-            'GST',
-            'Image URL'
+        $headers = [
+            "Content-Type" => "text/csv; charset=UTF-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
         ];
 
-        foreach ($categories as $cat) {
-            $catUnderscore = preg_replace('/[^A-Za-z0-9_]/', '_', $cat->name);
-            $allStrings[] = $catUnderscore;
+        // ✅ IMPORTANT: pass $unit here
+        return response()->stream(function () use ($category, $subcategory, $brand, $unit, $gst) {
 
-            foreach ($cat->subCategories as $sub) {
-                $subUnderscore = preg_replace('/[^A-Za-z0-9_]/', '_', $sub->name);
-                $allStrings[] = $subUnderscore;
-                foreach ($sub->brands as $brand) {
-                    $allStrings[] = $brand->name;
-                }
-            }
-        }
-        foreach ($units as $u) {
-            $allStrings[] = $u->name . ' (' . strtoupper($u->short_name) . ')';
-        }
-        foreach ($taxes as $t) {
-            $allStrings[] = $t->name . ' (' . $t->gst . '%)';
-        }
+            $file = fopen('php://output', 'w');
 
-        $strIndex = [];
-        foreach (array_unique($allStrings) as $s) {
-            if (!isset($strIndex[$s])) $strIndex[$s] = count($strIndex);
-        }
+            // ✅ Fix Excel encoding
+            echo "\xEF\xBB\xBF";
 
-        $siXml = '';
-        foreach (array_keys($strIndex) as $s) {
-            $siXml .= '<si><t xml:space="preserve">' . htmlspecialchars($s, ENT_XML1) . '</t></si>';
-        }
+            // Header
+            fputcsv($file, [
+                'Category',
+                'SubCategory',
+                'Brand',
+                'Product Name',
+                'Barcode',
+                'Description',
+                'Unit',
+                'Unit Value',
+                'Base Price',
+                'Selling Price',
+                'MRP',
+                'GST',
+                'Image Name'
+            ]);
 
-        // ── 2. Sheets Data Generation (Removing Blanks) ───────────────────
-
-        // Sheet 2: CategoryList
-        $catRows = '';
-        foreach ($categories as $i => $cat) {
-            $name = preg_replace('/[^A-Za-z0-9_]/', '_', $cat->name);
-            $catRows .= '<row r="' . ($i + 1) . '"><c r="A' . ($i + 1) . '" t="s"><v>' . $strIndex[$name] . '</v></c></row>';
-        }
-
-        // Sheet 3: SubCategoryList (Each Category gets a Column)
-        $subRows = [];
-        $subNamedRanges = '';
-        $colNum = 1;
-
-        foreach ($categories as $cat) {
-            $subs = $cat->subCategories->map(fn($s) => preg_replace('/[^A-Za-z0-9_]/', '_', $s->name))
-                ->filter()->values()->toArray(); // Crucial: Remove blanks & Re-index
-
-            if (empty($subs)) continue;
-
-            $colLetter = $this->getColLetter($colNum);
-            foreach ($subs as $si => $subName) {
-                $r = $si + 1;
-                $subRows[$r][] = '<c r="' . $colLetter . $r . '" t="s"><v>' . $strIndex[$subName] . '</v></c>';
+            for ($i = 0; $i < 10; $i++) {
+                fputcsv($file, [
+                    $this->clean($category->name),
+                    $this->clean($subcategory->name),
+                    $this->clean($brand->name),
+                    '',
+                    '',
+                    '',
+                    $this->clean($unit->name), // ✅ now works
+                    '',
+                    '',
+                    '',
+                    '',
+                    $this->clean($gst->gst),
+                    ''
+                ]);
             }
 
-            $rangeName = preg_replace('/[^A-Za-z0-9_]/', '_', $cat->name);
-            $subNamedRanges .= '<definedName name="' . htmlspecialchars($rangeName) . '">SubCategoryList!$' . $colLetter . '$1:$' . $colLetter . '$' . count($subs) . '</definedName>';
-            $colNum++;
-        }
-        $subSheetData = '';
-        foreach ($subRows as $rNum => $cells) {
-            $subSheetData .= '<row r="' . $rNum . '">' . implode('', $cells) . '</row>';
-        }
-
-        // Sheet 4: BrandList (Each SubCategory gets a Column)
-        $brandRowsArr = [];
-        $brandNamedRanges = '';
-        $bColNum = 1;
-
-        foreach ($categories as $cat) {
-            foreach ($cat->subCategories as $sub) {
-                $brands = $sub->brands->pluck('name')->filter()->values()->toArray();
-                if (empty($brands)) continue;
-
-                $bColLetter = $this->getColLetter($bColNum);
-                foreach ($brands as $bi => $bName) {
-                    $r = $bi + 1;
-                    $brandRowsArr[$r][] = '<c r="' . $bColLetter . $r . '" t="s"><v>' . $strIndex[$bName] . '</v></c>';
-                }
-
-                $bRangeName = 'brand_' . preg_replace('/[^A-Za-z0-9_]/', '_', $sub->name);
-                $brandNamedRanges .= '<definedName name="' . htmlspecialchars($bRangeName) . '">BrandList!$' . $bColLetter . '$1:$' . $bColLetter . '$' . count($brands) . '</definedName>';
-                $bColNum++;
-            }
-        }
-        $brandSheetData = '';
-        foreach ($brandRowsArr as $rNum => $cells) {
-            $brandSheetData .= '<row r="' . $rNum . '">' . implode('', $cells) . '</row>';
-        }
-
-        // ── 3. Headers & Data Validations ────────────────────────────────
-        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
-        $headerRow = '';
-        foreach (array_slice($allStrings, 0, 13) as $hi => $h) {
-            $headerRow .= '<c r="' . $cols[$hi] . '1" t="s" s="1"><v>' . $strIndex[$h] . '</v></c>';
-        }
-
-        $dvXml = '<dataValidation type="list" allowBlank="1" sqref="A2:A500"><formula1>CategoryList!$A$1:$A$' . count($categories) . '</formula1></dataValidation>';
-        $dvXml .= '<dataValidation type="list" allowBlank="1" sqref="B2:B500"><formula1>INDIRECT(A2)</formula1></dataValidation>';
-        $dvXml .= '<dataValidation type="list" allowBlank="1" sqref="C2:C500"><formula1>INDIRECT("brand_"&amp;B2)</formula1></dataValidation>';
-        $dvXml .= '<dataValidation type="list" allowBlank="1" sqref="G2:G500"><formula1>UnitList!$A$1:$A$' . $units->count() . '</formula1></dataValidation>';
-        $dvXml .= '<dataValidation type="list" allowBlank="1" sqref="L2:L500"><formula1>GSTList!$A$1:$A$' . $taxes->count() . '</formula1></dataValidation>';
-
-        // ── 4. Final Assembly ───────────────────────────────────────────
-        $zipPath = sys_get_temp_dir() . '/sample_' . time() . '.xlsx';
-        $zip = new \ZipArchive();
-        $zip->open($zipPath, \ZipArchive::CREATE);
-
-        // Standard XLSX Files
-        $zip->addFromString('xl/sharedStrings.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="' . count($strIndex) . '" uniqueCount="' . count($strIndex) . '">' . $siXml . '</sst>');
-        $zip->addFromString('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Worksheet" sheetId="1" r:id="rId1"/><sheet name="CategoryList" sheetId="2" r:id="rId2" state="hidden"/><sheet name="SubCategoryList" sheetId="3" r:id="rId3" state="hidden"/><sheet name="BrandList" sheetId="4" r:id="rId4" state="hidden"/><sheet name="UnitList" sheetId="5" r:id="rId5" state="hidden"/><sheet name="GSTList" sheetId="6" r:id="rId6" state="hidden"/></sheets><definedNames>' . $subNamedRanges . $brandNamedRanges . '</definedNames></workbook>');
-
-        // Worksheet 1 with Data Validations
-        $zip->addFromString('xl/worksheets/sheet1.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" state="frozen"/></sheetView></sheetViews><sheetData><row r="1">' . $headerRow . '</row></sheetData><dataValidations count="5">' . $dvXml . '</dataValidations></worksheet>');
-
-        // Data Sheets
-        $zip->addFromString('xl/worksheets/sheet2.xml', $this->wrapSheet($catRows));
-        $zip->addFromString('xl/worksheets/sheet3.xml', $this->wrapSheet($subSheetData));
-        $zip->addFromString('xl/worksheets/sheet4.xml', $this->wrapSheet($brandSheetData));
-
-        // Unit & GST Sheets
-        $uRows = '';
-        foreach ($units as $i => $u) {
-            $label = $u->name . ' (' . strtoupper($u->short_name) . ')';
-            $uRows .= '<row r="' . ($i + 1) . '"><c r="A' . ($i + 1) . '" t="s"><v>' . $strIndex[$label] . '</v></c></row>';
-        }
-        $zip->addFromString('xl/worksheets/sheet5.xml', $this->wrapSheet($uRows));
-
-        $gRows = '';
-        foreach ($taxes as $i => $t) {
-            $label = $t->name . ' (' . $t->gst . '%)';
-            $gRows .= '<row r="' . ($i + 1) . '"><c r="A' . ($i + 1) . '" t="s"><v>' . $strIndex[$label] . '</v></c></row>';
-        }
-        $zip->addFromString('xl/worksheets/sheet6.xml', $this->wrapSheet($gRows));
-
-        // Common XMLs (styles, rels, [Content_Types]) - assuming you have standard ones
-        $this->addStandardXlsxFiles($zip);
-
-        $zip->close();
-
-        return response()->download($zipPath, 'product_sample.xlsx')->deleteFileAfterSend(true);
+            fclose($file);
+        }, 200, $headers);
     }
 
-    // Helpers sathi khali dilyapramane methods add kara
-    private function getColLetter($n)
+    private function clean($value)
     {
-        $letters = "";
-        while ($n > 0) {
-            $m = ($n - 1) % 26;
-            $letters = chr(65 + $m) . $letters;
-            $n = intval(($n - $m) / 26);
+        // Remove HTML
+        $value = strip_tags($value);
+
+        // Prevent Excel formula injection
+        if (preg_match('/^[-+=@]/', $value)) {
+            $value = "'" . $value;
         }
-        return $letters;
+
+        return $value;
     }
 
-    private function wrapSheet($rows)
-    {
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>' . $rows . '</sheetData></worksheet>';
-    }
 
-    private function addStandardXlsxFiles($zip)
-    {
-        // Styles, Rels, and Content Types (Standard boilerplate)
-        $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
-        $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet4.xml"/><Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet5.xml"/><Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet6.xml"/><Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
-        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet4.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet5.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet6.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
-        $zip->addFromString('xl/styles.xml', '<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/></font><font><b/><color rgb="FFFFFFFF"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF4472C4"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/></border></borders><cellXfs count="2"><xf fontId="0" fillId="0"/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/></cellXfs></styleSheet>');
-    }
 
     /**
      * Bulk Upload Products from Excel (XLSX/CSV)
@@ -442,159 +337,176 @@ class ProductController extends Controller
     public function bulkUpload(Request $request)
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,csv,txt|max:5120',
+            'csv_file' => 'required|mimes:csv,txt|max:5120',
         ]);
 
-        try {
-            Log::info('Product Bulk Upload Started', [
-                'user_id' => auth()->id(),
-                'file'    => $request->file('excel_file')->getClientOriginalName(),
-            ]);
+        Log::info('Bulk Upload Started', [
+            'user_id' => auth()->id(),
+            'file_name' => $request->file('csv_file')->getClientOriginalName()
+        ]);
 
-            $file      = $request->file('excel_file');
-            $extension = strtolower($file->getClientOriginalExtension());
-            $data      = [];
+        $success = 0;
+        $errors = [];
 
-            // --- 1. Extraction Logic ---
-            if ($extension === 'xlsx') {
-                $zip = new \ZipArchive();
-                $zip->open($file->getRealPath());
-                $sharedStrings = [];
-                $ssXml = $zip->getFromName('xl/sharedStrings.xml');
-                if ($ssXml) {
-                    $ss = simplexml_load_string($ssXml);
-                    foreach ($ss->si as $si) {
-                        $sharedStrings[] = isset($si->r) ? implode('', array_map(fn($r) => (string)$r->t, iterator_to_array($si->r))) : (string)$si->t;
-                    }
-                }
-                $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-                $zip->close();
+        $filePath = $request->file('csv_file')->getRealPath();
+        $file = fopen($filePath, 'r');
 
-                if ($sheetXml) {
-                    $sheet = simplexml_load_string($sheetXml);
-                    foreach ($sheet->sheetData->row as $row) {
-                        $rowData = [];
-                        foreach ($row->c as $cell) {
-                            $type = (string)$cell['t'];
-                            $value = (string)$cell->v;
-                            $rowData[] = ($type === 's') ? ($sharedStrings[(int)$value] ?? '') : $value;
-                        }
-                        $data[] = $rowData;
-                    }
+        // ✅ Detect delimiter (comma or tab)
+        $firstLine = fgets($file);
+        $delimiter = str_contains($firstLine, "\t") ? "\t" : ",";
+
+        rewind($file);
+
+        // Skip header
+        fgetcsv($file, 1000, $delimiter);
+
+        $rowNumber = 1;
+
+        while (($row = fgetcsv($file, 1000, $delimiter)) !== false) {
+
+            $rowNumber++;
+
+            try {
+                if (empty(array_filter($row))) {
+                    Log::warning("Row $rowNumber skipped: Empty row");
+                    continue;
                 }
-                array_shift($data); // Remove Header
-            } else {
-                $handle = fopen($file->getRealPath(), 'r');
-                fgetcsv($handle);
-                while (($row = fgetcsv($handle)) !== false) {
-                    $data[] = $row;
+
+                Log::info("Parsed Row $rowNumber", $row);
+
+                // ✅ Map fields properly
+                $categoryName    = trim(strip_tags($row[0] ?? ''));
+                $subCategoryName = trim(strip_tags($row[1] ?? ''));
+                $brandName       = trim(strip_tags($row[2] ?? ''));
+                $productName     = trim(strip_tags($row[3] ?? ''));
+
+                $unitName = trim($row[6] ?? '');
+                $gstValue = trim($row[11] ?? '');
+
+                if (!$productName) {
+                    $msg = "Row $rowNumber: Product name missing";
+                    Log::warning($msg);
+                    $errors[] = $msg;
+                    continue;
                 }
-                fclose($handle);
+
+                // ✅ Fetch relations
+                $category = Category::where('name', $categoryName)->first();
+                $subCategory = SubCategory::where('name', $subCategoryName)
+                    ->where('category_id', $category?->id)
+                    ->first();
+                $brand = Brand::where('name', $brandName)->first();
+
+                if (!$category || !$subCategory || !$brand) {
+                    $msg = "Row $rowNumber: Invalid category/subcategory/brand";
+                    Log::warning($msg, compact('categoryName', 'subCategoryName', 'brandName'));
+                    $errors[] = $msg;
+                    continue;
+                }
+
+                // ✅ Find Unit
+                $unit = Unit::where('name', $unitName)->first();
+                if (!$unit) {
+                    $msg = "Row $rowNumber: Invalid Unit ($unitName)";
+                    Log::warning($msg);
+                    $errors[] = $msg;
+                    continue;
+                }
+
+                // ✅ Find GST (Tax)
+                $tax = Tax::where('gst', $gstValue)->first();
+                if (!$tax) {
+                    $msg = "Row $rowNumber: Invalid GST ($gstValue)";
+                    Log::warning($msg);
+                    $errors[] = $msg;
+                    continue;
+                }
+
+                // ✅ Prices
+                $basePrice = (float)($row[8] ?? 0);
+                $retailerPrice = (float)($row[9] ?? 0);
+                $mrp = (float)($row[10] ?? 0);
+
+                // ✅ GST Calculation
+                $gstAmount = ($retailerPrice * $tax->gst) / 100;
+                $finalPrice = $retailerPrice + $gstAmount;
+
+                // ✅ Duplicate check
+                if (Product::where('name', $productName)
+                    ->where('category_id', $category->id)
+                    ->where('sub_category_id', $subCategory->id)
+                    ->where('brand_id', $brand->id)
+                    ->exists()
+                ) {
+
+                    $msg = "Row $rowNumber: Duplicate product";
+                    Log::warning($msg);
+                    $errors[] = $msg;
+                    continue;
+                }
+
+                // ✅ Insert product
+                Product::create([
+                    'category_id'     => $category->id,
+                    'sub_category_id' => $subCategory->id,
+                    'brand_id'        => $brand->id,
+                    'name'            => $productName,
+                    'unit_id'         => $unit->id, // ✅ FIXED
+                    'unit_value'      => (float)($row[7] ?? 0),
+                    'sku'             => null,
+                    'barcode'         => $row[4] ?? null,
+                    'description'     => $row[5] ?? null,
+                    'base_price'      => $basePrice,
+                    'retailer_price'  => $retailerPrice,
+                    'mrp'             => $mrp,
+                    'tax_id'          => $tax->id, // ✅ FIXED
+                    'gst_percentage'  => $tax->gst,
+                    'gst_amount'      => $gstAmount,
+                    'final_price'     => $finalPrice,
+                    'stock'           => 0,
+                ]);
+
+                Log::info("Row $rowNumber inserted successfully");
+
+                $success++;
+            } catch (\Exception $e) {
+
+                Log::error("Row $rowNumber failed", [
+                    'error' => $e->getMessage(),
+                    'line'  => $e->getLine()
+                ]);
+
+                $errors[] = "Row $rowNumber: " . $e->getMessage();
             }
-
-            // --- 2. Processing Logic ---
-            $successCount = 0;
-            $skippedCount = 0;
-
-            foreach ($data as $rowIndex => $row) {
-                if (empty(array_filter($row))) continue;
-
-                try {
-                    $categoryName    = trim($row[0] ?? '');
-                    $subCategoryName = trim($row[1] ?? '');
-                    $brandName       = trim($row[2] ?? '');
-                    $unitLabel       = trim($row[6] ?? '');
-                    $gstLabel        = trim($row[11] ?? '');
-                    $imageUrl        = trim($row[12] ?? '');
-
-                    // Map Category (Underscores handle karne)
-                    $category = Category::where('name', $categoryName)
-                        ->orWhere('name', str_replace('_', ' ', $categoryName))
-                        ->first();
-
-                    // Map Sub-Category
-                    $subCategory = SubCategory::where('category_id', $category?->id)
-                        ->where(function ($q) use ($subCategoryName) {
-                            $q->where('name', $subCategoryName)
-                                ->orWhere('name', str_replace('_', ' ', $subCategoryName));
-                        })->first();
-
-                    $brand = Brand::where('name', $brandName)->first();
-
-                    // Extract Short Name from "Kilogram (KG)"
-                    preg_match('/\((.*?)\)/', $unitLabel, $unitMatches);
-                    $unitShortName = $unitMatches[1] ?? null;
-                    $unit = Unit::where('short_name', $unitShortName)->first();
-
-                    // Extract GST % from "GST 5% (5%)"
-                    preg_match('/(\d+)%/', $gstLabel, $taxMatches);
-                    $gstValue = $taxMatches[1] ?? null;
-                    $tax = Tax::where('gst', $gstValue)->first();
-
-                    if (!$category || !$subCategory || !$brand || !$unit || !$tax) {
-                        Log::warning("Skipping Row #$rowIndex: Data mismatch", ['cat' => $categoryName, 'sub' => $subCategoryName]);
-                        $skippedCount++;
-                        continue;
-                    }
-
-                    // Calculations
-                    $retailerPrice = (float)($row[9] ?? 0);
-                    $gstAmount     = ($retailerPrice * ($tax->gst ?? 0)) / 100;
-                    $finalPrice    = $retailerPrice + $gstAmount;
-
-                    // --- Image Handling (Base64 + URL) ---
-                    $savedImages = [];
-                    if (!empty($imageUrl)) {
-                        $imgName = time() . '_' . uniqid();
-
-                        if (str_starts_with($imageUrl, 'data:image')) {
-                            // Base64 process
-                            $parts = explode(";base64,", $imageUrl);
-                            $imgData = base64_decode($parts[1]);
-                            $ext = str_contains($parts[0], 'png') ? 'png' : 'jpg';
-                            $fileName = $imgName . '.' . $ext;
-                            Storage::disk('public')->put('products/' . $fileName, $imgData);
-                            $savedImages[] = $fileName;
-                        } elseif (filter_var($imageUrl, FILTER_VALIDATE_URL)) {
-                            // URL process
-                            $contents = file_get_contents($imageUrl);
-                            $fileName = $imgName . '.jpg';
-                            Storage::disk('public')->put('products/' . $fileName, $contents);
-                            $savedImages[] = $fileName;
-                        }
-                    }
-
-                    Product::create([
-                        'category_id'     => $category->id,
-                        'sub_category_id' => $subCategory->id,
-                        'brand_id'        => $brand->id,
-                        'name'            => trim($row[3] ?? 'Unnamed'),
-                        'barcode'         => trim($row[4] ?? null),
-                        'description'     => trim($row[5] ?? null),
-                        'unit_id'         => $unit->id,
-                        'unit_value'      => (float)($row[7] ?? 0),
-                        'base_price'      => (float)($row[8] ?? 0),
-                        'retailer_price'  => $retailerPrice,
-                        'mrp'             => (float)($row[10] ?? 0),
-                        'tax_id'          => $tax->id,
-                        'gst_percentage'  => $tax->gst,
-                        'gst_amount'      => round($gstAmount, 2),
-                        'final_price'     => round($finalPrice, 2),
-                        'product_images'  => $savedImages,
-                    ]);
-
-                    $successCount++;
-                } catch (\Exception $e) {
-                    Log::error("Row $rowIndex failed: " . $e->getMessage());
-                    $skippedCount++;
-                }
-            }
-
-            return redirect()->route('product.index')
-                ->with('success', "$successCount products added, $skippedCount skipped.");
-        } catch (\Throwable $e) {
-            Log::error('Critical Upload Error: ' . $e->getMessage());
-            return back()->with('error', 'File process karta yet nahi ahe.');
         }
+
+        fclose($file);
+
+        Log::info('Bulk Upload Finished', [
+            'success' => $success,
+            'errors'  => count($errors)
+        ]);
+
+        // ✅ Generate error CSV
+        if (!empty($errors)) {
+
+            $fileName = 'error_report_' . time() . '.csv';
+            $path = storage_path('app/public/' . $fileName);
+
+            $f = fopen($path, 'w');
+
+            foreach ($errors as $err) {
+                fputcsv($f, [$err]);
+            }
+
+            fclose($f);
+
+            return back()->with([
+                'success' => "$success products uploaded",
+                'error_file' => asset('storage/' . $fileName)
+            ]);
+        }
+
+        return back()->with('success', "$success products uploaded successfully");
     }
 }

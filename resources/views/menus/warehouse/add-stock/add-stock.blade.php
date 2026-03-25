@@ -33,6 +33,7 @@
                                             @endif
 
                                             <div class="row">
+                                                
                                                 {{-- Supplier Challan --}}
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
@@ -62,14 +63,11 @@
                                                                 id="supplier_challan_hidden">
                                                         @endif
 
-                                                        @if (session('error'))
-                                                            <span class="text-danger mt-1 d-block">
-                                                                {{ session('error') }}
-                                                            </span>
-                                                        @endif
+                                                        @error('supplier_challan_id')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                        @enderror
                                                     </div>
                                                 </div>
-
 
                                                 <div class="col-md-3">
                                                     <div class="mb-3">

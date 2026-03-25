@@ -534,4 +534,6 @@ class DeliveryAgentController extends Controller
             return back()->with('error', 'Something went wrong');
         }
     }
+
+    
 }

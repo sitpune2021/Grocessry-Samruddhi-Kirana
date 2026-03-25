@@ -109,6 +109,7 @@
                     </p>
 
                     <div class="price-row d-flex justify-content-between align-items-center">
+                        @if(($product->available_stock ?? 0) > 0)
                         <div>
 
                             @if($product->sale)
@@ -135,7 +136,7 @@
                             @endif
 
                         </div>
-
+                        @endif
                         @include('website.partials.add-to-cart-btn', ['product' => $product])
                     </div>
 

@@ -449,4 +449,5 @@ class ReportsController extends Controller
 
         return view('reports.pos-report.pos-report', compact('rows'));
     }
+    
 }
