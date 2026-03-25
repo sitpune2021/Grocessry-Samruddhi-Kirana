@@ -121,37 +121,70 @@ class ProductBatchController extends Controller
                 'requested_quantity' => $request->quantity
             ]);
 
+            // $validated = $request->validate([
+            //     'warehouse_id' => $isSuperAdmin
+            //         ? 'required|exists:warehouses,id'
+            //         : 'nullable',
+            //     'category_id'      => 'required|exists:categories,id',
+            //     'sub_category_id'  => 'required|exists:sub_categories,id',
+            //     'product_id'       => 'required|exists:products,id',
+            //     // 'batch_no'         => 'required|string|max:50',
+            //     'batch_no' => [
+            //         'required',
+            //         'string',
+            //         'max:50',
+            //         Rule::unique('product_batches')->where(function ($query) use ($request) {
+            //             return $query->where('product_id', $request->product_id);
+            //         })
+            //     ],
+            //     'mfg_date'         => 'nullable|date',
+            //     'expiry_date'      => 'nullable|date|after:mfg_date',
+            //     // 'quantity'         => 'required|integer|min:1',
+            //     'quantity' => [
+            //         'required',
+            //         'integer',
+            //         'min:1',
+            //         function ($attribute, $value, $fail) use ($remainingStock) {
+
+            //             if ($value > $remainingStock) {
+            //                 $fail('Only ' . $remainingStock . ' stock available for batch creation.');
+            //             }
+            //         }
+            //     ],
+            //     'unit_id'          => 'required|exists:units,id',
+            // ]);
+
+            
             $validated = $request->validate([
                 'warehouse_id' => $isSuperAdmin
                     ? 'required|exists:warehouses,id'
                     : 'nullable',
+
                 'category_id'      => 'required|exists:categories,id',
                 'sub_category_id'  => 'required|exists:sub_categories,id',
                 'product_id'       => 'required|exists:products,id',
-                // 'batch_no'         => 'required|string|max:50',
-                'batch_no' => [
-                    'required',
-                    'string',
-                    'max:50',
-                    Rule::unique('product_batches')->where(function ($query) use ($request) {
-                        return $query->where('product_id', $request->product_id);
-                    })
-                ],
+
+                'batch_no' => 'required|string|max:50|unique:product_batches,batch_no',
+
                 'mfg_date'         => 'nullable|date',
                 'expiry_date'      => 'nullable|date|after:mfg_date',
-                // 'quantity'         => 'required|integer|min:1',
+
                 'quantity' => [
                     'required',
                     'integer',
                     'min:1',
                     function ($attribute, $value, $fail) use ($remainingStock) {
-
                         if ($value > $remainingStock) {
                             $fail('Only ' . $remainingStock . ' stock available for batch creation.');
                         }
                     }
                 ],
-                'unit_id'          => 'required|exists:units,id',
+
+                'unit_id' => 'required|exists:units,id',
+
+                ], [
+                    // Custom messages (SECOND PARAMETER)
+                    'batch_no.unique' => 'This batch number already exists. Please use a different batch number.',
             ]);
 
             Log::info('Batch validation successful', [
