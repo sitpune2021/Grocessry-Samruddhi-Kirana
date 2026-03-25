@@ -705,7 +705,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::delete(
             '/warehouse-transfer/{id}',
-            [WarehouseTransferController::class, 'deleteTransfer']
+            [TransferChallanController::class, 'deleteTransfer']
         )->name('warehouse.transfer.delete');
     });
 

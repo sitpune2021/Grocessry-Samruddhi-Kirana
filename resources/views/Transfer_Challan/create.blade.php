@@ -31,6 +31,12 @@
                                         @method('PUT')
                                     @endif
 
+                                    @if(session('error'))
+                                        <div class="alert alert-danger">
+                                            {{ session('error') }}
+                                        </div>
+                                    @endif
+
                                     <div class="row g-3">
 
                                         {{-- Challan No --}}
@@ -42,8 +48,8 @@
                                                 value="{{ $transferChallan->challan_no ?? old('challan_no') }}"
                                                 {{ $readonly ? 'readonly' : '' }}>
                                             @error('challan_no')
-    <div class="text-danger mt-1">{{ $message }}</div>
-@enderror
+                                                <div class="text-danger mt-1">{{ $message }}</div>
+                                            @enderror
                                         </div> -->
 
                                         {{-- Transfer Date --}}
@@ -128,7 +134,6 @@
                                                         <td>
                                                             <input type="text" class="form-control"
                                                                 value="{{ $item->batch->batch_no ?? '' }}" readonly>
-
                                                         </td>
                                                         <td>
                                                             <input type="text" name="quantities[]"
@@ -222,7 +227,7 @@
                 let row = e.target.closest('tr');
                 let transferId = row.dataset.transferId;
 
-                fetch(`/warehouse-transfer/${transferId}`, {
+                fetch(`/transfer-challans/warehouse-transfer/${transferId}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',

@@ -24,4 +24,9 @@ class TransferChallanItem extends Model
         return $this->belongsTo(ProductBatch::class, 'batch_no');
     }
 
+    public function challan()
+    {
+        return $this->belongsTo(TransferChallan::class, 'transfer_challan_id');
+    }
+
 }

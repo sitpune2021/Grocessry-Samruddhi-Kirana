@@ -87,14 +87,7 @@ class TransferChallanController extends Controller
         DB::beginTransaction();
 
         try {
-            // 🔍 LOG CHALLAN CREATE DATA
-            Log::info('Creating TransferChallan', [
-                'from_warehouse_id' => $request->from_warehouse_id,
-                'to_warehouse_id'   => $request->to_warehouse_id,
-                'transfer_date'     => $request->transfer_date,
-                'created_by'        => auth()->id(),
-            ]);
-
+           
             $challan = TransferChallan::create([
                 'challan_no'        => $this->generateChallanNumber(),
                 'from_warehouse_id' => $request->from_warehouse_id,
@@ -103,10 +96,29 @@ class TransferChallanController extends Controller
                 'status'            => 'pending',
                 'created_by'        => auth()->id(),
             ]);
-
-            Log::info('TransferChallan Created', $challan->toArray());
-
             foreach ($request->products as $index => $productId) {
+
+            // AVAILABLE STOCK CHECK (MASTER WAREHOUSE)
+            $availableStock = \App\Models\WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
+                ->where('product_id', $productId)
+                ->sum('quantity');
+
+            // Already dispatched qty
+            $alreadyDispatched = TransferChallanItem::whereHas('challan', function ($q) use ($request) {
+                    $q->where('from_warehouse_id', $request->from_warehouse_id)
+                    ->where('status', 'dispatched');
+                })
+                ->where('product_id', $productId)
+                ->sum('quantity');
+
+            $remainingStock = $availableStock;
+
+            // ❌ VALIDATION FAIL
+            if ($request->quantities[$index] > $remainingStock) {
+                return back()->withInput()->with('error',
+                    "Only {$remainingStock} qty available for this product. Cannot dispatch more."
+                );
+            }
 
                 // 🔍 LOG PRODUCT LOOP
                 Log::info('Processing Product', [
@@ -351,4 +363,6 @@ class TransferChallanController extends Controller
             'message' => 'Product removed successfully'
         ]);
     }
+
+    
 }
