@@ -21,15 +21,32 @@ class SupplierChallenController extends Controller
 {
 
 
+    // public function index()
+    // {
+    //     $challans = SupplierChallan::with([
+    //         // 'purchaseOrder',
+    //         'supplier',
+    //         'warehouse'
+    //     ])
+    //         ->orderBy('id', 'desc')
+    //         ->paginate(10);
+
+    //     return view('supplier_challan.index', compact('challans'));
+    // }
+
     public function index()
     {
+        $user = auth()->user();
+
         $challans = SupplierChallan::with([
-            // 'purchaseOrder',
             'supplier',
             'warehouse'
         ])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        ->when($user->role_id != 1, function ($query) use ($user) {
+            $query->where('warehouse_id', $user->warehouse_id);
+        })
+        ->orderBy('id', 'desc')
+        ->paginate(10);
 
         return view('supplier_challan.index', compact('challans'));
     }

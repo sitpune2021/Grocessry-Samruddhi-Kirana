@@ -27,6 +27,7 @@
                                         @endif
 
                                         <div class="row g-3 mb-3">
+
                                             {{-- Warehouse --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">
@@ -51,7 +52,6 @@
                                                 @enderror
                                             </div>
 
-
                                             {{-- Category --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Category <span
@@ -73,17 +73,28 @@
                                                 @enderror
                                             </div>
 
-
                                             {{-- Sub Category --}}
                                             <div class="col-md-4">
                                                 <label class="form-label">Sub Category <span
                                                         class="text-danger">*</span></label>
-                                                <select name="sub_category_id" id="sub_category_id" class="form-select">
+                                                <select name="sub_category_id" id="sub_category_id" class="form-select"
+                                                    {{ $mode === 'view' ? 'disabled' : '' }}>
+
                                                     <option value="">Select Sub Category</option>
+
+                                                    @foreach ($subCategories as $sub)
+                                                        <option value="{{ $sub->id }}"
+                                                            {{ old('sub_category_id', $batch->sub_category_id ?? '') == $sub->id ? 'selected' : '' }}>
+                                                            {{ $sub->name }}
+                                                        </option>
+                                                    @endforeach
+
                                                 </select>
-                                                @error('sub_category_id')
-                                                <span class="text-danger">{{ $message }}</span>
-                                                @enderror
+
+                                                {{-- disabled select submit nahi hota --}}
+                                                @if($mode === 'view')
+                                                    <input type="hidden" name="sub_category_id" value="{{ $batch->sub_category_id }}">
+                                                @endif
                                             </div>
 
                                             {{-- Product --}}
@@ -124,8 +135,10 @@
                                                     Unit <span class="text-danger">*</span>
                                                 </label>
 
-                                                <select name="unit_id" id="unit_id" class="form-select"
-                                                    {{ $readonly ?? false ? 'disabled' : '' }}>
+                                                <!-- <select name="unit_id" id="unit_id" class="form-select"
+                                                    {{ $readonly ?? false ? 'disabled' : '' }}> -->
+                                                    <select name="unit_id" id="unit_id" class="form-select"
+                                                        {{ $mode === 'view' ? 'disabled' : '' }}>
                                                     <option value="">Select Unit</option>
 
                                                     @foreach ($units as $unit)
@@ -190,6 +203,7 @@
                                                 <span class="text-danger">{{ $message }}</span>
                                                 @enderror
                                             </div>
+                                            
                                         </div>
 
                                         {{-- Buttons --}}

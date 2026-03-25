@@ -29,5 +29,10 @@ class TransferChallan extends Model
     {
         return $this->belongsTo(Warehouse::class, 'to_warehouse_id');
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
     
 }

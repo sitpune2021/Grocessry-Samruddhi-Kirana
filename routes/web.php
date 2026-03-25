@@ -114,9 +114,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/razorpay/failure', [PaymentGetwayController::class, 'razorpayFailure'])
         ->name('razorpay.failure');
 
-
-
-
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
 
@@ -705,7 +702,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::delete(
             '/warehouse-transfer/{id}',
-            [WarehouseTransferController::class, 'deleteTransfer']
+            [TransferChallanController::class, 'deleteTransfer']
         )->name('warehouse.transfer.delete');
     });
 

@@ -27,10 +27,10 @@
                         Upload CSV
                     </button>
                     <!-- <a href="{{ route('brands.sample-excel') }}" class="btn btn-outline-secondary"> -->
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#csvModal">
+                    <a class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#csvModal">
                         Download Csv
-                        </a>
-                        @endif
+                    </a>
+                    @endif
                 </div>
             </div>
 
@@ -193,7 +193,7 @@
                     <!-- Category -->
                     <div class="mb-3">
                         <label>Category</label>
-                        <select id="category" name="category_id" class="form-control" required>
+                        <select id="category" name="category_id" class="form-control">
                             <option value="">Select Category</option>
                             @foreach($categories as $cat)
                             <option value="{{ $cat->id }}">
@@ -204,25 +204,30 @@
                     </div>
 
                     <!-- SubCategory -->
+                    <!-- SubCategory Multi Select Dropdown -->
                     <div class="mb-3">
                         <label>SubCategory</label>
-                        <select id="subcategory" name="subcategory_id" class="form-control" required>
-                            <option value="">Select SubCategory</option>
-                        </select>
+
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary w-100 text-start dropdown-toggle"
+                                type="button" id="subDropdown" data-bs-toggle="dropdown">
+                                Select SubCategory
+                            </button>
+
+                            <div class="dropdown-menu w-100 p-2"
+                                style="max-height: 200px; overflow-y: auto;"
+                                id="subDropdownMenu">
+                                <p class="text-muted">Select SubCategory</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Brand -->
-                    <!-- <div class="mb-3">
-                        <label>Brand Name</label>
-                        <input type="text" name="brand_name" class="form-control" required>
-                    </div> -->
 
                 </div>
 
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success" id="downloadBtn">Download</button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -234,7 +239,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Upload Brands Excel</h5>
+                <h5 class="modal-title">Upload Brands Csv</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -247,19 +252,19 @@
                     @endif
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Excel / CSV File <span
+                        <label class="form-label fw-semibold">CSV File <span
                                 class="text-danger">*</span></label>
-                        <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
-                        <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small>
+                        <input type="file" name="excel_file" class="form-control" accept=".csv" required>
+                        <!-- <small class="text-muted">Only .xlsx, .xls, .csv allowed. Max 5MB.</small> -->
                     </div>
 
-                    <div class="alert alert-info py-2 mb-0">
+                    <!-- <div class="alert alert-info py-2 mb-0">
                         <small>
                             <strong>Format:</strong> Category Name | Sub Category Name | Brand Name | Logo URL<br>
                             <a href="{{ route('brands.sample-excel') }}" class="text-decoration-underline">Download
                                 Sample</a>
                         </small>
-                    </div>
+                    </div> -->
 
                 </div>
 
@@ -268,7 +273,6 @@
                     <button type="submit" class="btn btn-primary">Upload</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
@@ -311,61 +315,151 @@
 <script>
     const categories = @json($categories);
 
+    // ✅ Load SubCategories as checkbox
     document.getElementById('category').addEventListener('change', function() {
-        let categoryId = this.value;
-        let subDropdown = document.getElementById('subcategory');
 
-        subDropdown.innerHTML = '<option value="">Select SubCategory</option>';
+        let cat = categories.find(c => c.id == this.value);
+        let dropdown = document.getElementById('subDropdownMenu');
+        let btn = document.getElementById('subDropdown');
 
-        let selected = categories.find(c => c.id == categoryId);
+        dropdown.innerHTML = '';
+        btn.innerText = 'Select SubCategory';
 
-        if (selected) {
-            selected.sub_categories.forEach(sub => {
-                let option = `<option value="${sub.id}">${sub.name}</option>`;
-                subDropdown.innerHTML += option;
+        if (cat && cat.sub_categories.length > 0) {
+
+            dropdown.innerHTML += `
+            <input type="text" class="form-control mb-2" placeholder="Search..." id="subSearch">
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAllSub">
+                <label class="form-check-label fw-bold">Select All</label>
+            </div>
+            <hr>
+        `;
+
+            cat.sub_categories.forEach(s => {
+                dropdown.innerHTML += `
+                <div class="form-check">
+                    <input class="form-check-input sub-checkbox"
+                        type="checkbox"
+                        name="subcategory_id[]"
+                        value="${s.id}"
+                        id="sub_${s.id}">
+                    <label class="form-check-label">${s.name}</label>
+                </div>
+            `;
+            });
+
+        } else {
+            dropdown.innerHTML = `<p class="text-danger">No subcategories found</p>`;
+        }
+    });
+
+
+    // ✅ Select All + Count
+    document.addEventListener('change', function(e) {
+
+        // Select All
+        if (e.target.id === 'selectAllSub') {
+            document.querySelectorAll('.sub-checkbox').forEach(cb => {
+                cb.checked = e.target.checked;
+            });
+        }
+
+        // Update count
+        if (e.target.classList.contains('sub-checkbox')) {
+
+            let selected = document.querySelectorAll('.sub-checkbox:checked');
+            let btn = document.getElementById('subDropdown');
+
+            btn.innerText = selected.length > 0 ?
+                selected.length + " selected" :
+                "Select SubCategory";
+        }
+    });
+
+
+    // ✅ Search filter
+    document.addEventListener('keyup', function(e) {
+        if (e.target.id === 'subSearch') {
+
+            let value = e.target.value.toLowerCase();
+
+            document.querySelectorAll('#subDropdownMenu .form-check').forEach(div => {
+                div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
             });
         }
     });
 
-document.getElementById('downloadBtn').addEventListener('click', function () {
 
-    let form = document.getElementById('csvForm');
-    let formData = new FormData(form);
+    // ✅ Validate before submit
+    document.getElementById('csvForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-    fetch("{{ route('brands.sample-excel') }}", {
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: formData
-    })
-    .then(response => response.blob())
-    .then(blob => {
+        let category = document.getElementById('category').value;
+        let subcategories = document.querySelectorAll('.sub-checkbox:checked');
+        let errorBox = document.getElementById('errorBox');
 
-        // ✅ Download file
-        let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = "brand_sample.csv";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        let errors = [];
 
-        // ✅ Close modal
-        let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
-        modal.hide();
+        // ✅ Category validation
+        if (!category || subcategories.length === 0) {
+            alert('Please select all fields');
 
-        // ✅ Reset form (optional)
-        form.reset();
+            errors.push("Please select category");
+            return;
+        }
+        // ❌ If error exists → show
+        if (errors.length > 0) {
+            errorBox.classList.remove('d-none');
+            errorBox.innerHTML = errors.join('<br>');
+            return;
+        }
 
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Download failed');
+        // ✅ Hide error if valid
+        errorBox.classList.add('d-none');
+        errorBox.innerHTML = '';
+
+        let formData = new FormData(this);
+
+        // ✅ Disable button (prevent double click)
+        let btn = document.getElementById('downloadBtn');
+        btn.disabled = true;
+        btn.innerText = "Downloading...";
+
+        fetch("{{ route('brands.sample-excel') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: formData
+            })
+            .then(res => res.blob())
+            .then(blob => {
+
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = "brand.csv";
+                a.click();
+
+                // ✅ Close modal
+                let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+                modal.hide();
+
+                // ✅ Reset form
+                document.getElementById('csvForm').reset();
+
+                // Reset dropdown text
+                document.getElementById('subDropdown').innerText = "Select SubCategory";
+            })
+            .catch(() => {
+                alert("Something went wrong!");
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Download";
+            });
     });
-
-});
 </script>
-
-
 @endpush
