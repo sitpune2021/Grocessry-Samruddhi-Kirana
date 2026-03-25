@@ -37,12 +37,44 @@
                                     @method('PUT')
                                 @endif
 
+                                @if ($errors->any())
+                                    <div class="alert alert-danger">
+                                        @foreach ($errors->all() as $error)
+                                            <div>{{ $error }}</div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
                                 <div class="row mb-4">
+
                                     <div class="col-md-4">
-                                        <label class="form-label">Warehouse <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" value="{{ $warehouse->name ?? '' }}"
-                                            readonly>
-                                        <input type="hidden" name="warehouse_id" value="{{ $warehouse->id ?? '' }}">
+                                        <label class="form-label">Warehouse <span class="text-danger">*</span></label>                                      
+
+                                        @if(auth()->user()->role_id == 1 && $mode !== 'view')
+                                            {{-- SUPER ADMIN → dropdown --}}
+                                                <select name="warehouse_id" class="form-select">
+                                                    <option value="">Select Warehouse</option>
+                                                    @foreach($warehouses as $w)
+                                                        <option value="{{ $w->id }}"
+                                                            {{ old('warehouse_id', $challan->warehouse_id ?? '') == $w->id ? 'selected' : '' }}>
+                                                            {{ $w->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                        @else
+                                            {{-- MASTER USER → readonly --}}
+
+                                                <input type="text" class="form-control"
+                                                    value="{{ $warehouse->name ?? '' }}" readonly>
+                                                <input type="hidden" name="warehouse_id"
+                                                    value="{{ $warehouse->id ?? '' }}">
+
+                                        @endif
+
+                                        @error('warehouse_id')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
                                     </div>
 
                                     <div class="col-md-4">
@@ -57,6 +89,9 @@
                                                 </option>
                                             @endforeach
                                         </select>
+                                        @error('supplier_id')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
                                     </div>
 
                                     <div class="col-md-4">
@@ -64,7 +99,11 @@
                                         <input type="text" name="challan_no" class="form-control"
                                             value="{{ old('challan_no', $challan->challan_no ?? $autoChallanNo) }}"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+                                        @error('challan_no')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
                                     </div>
+
                                 </div>
 
                                 <div class="row mb-4">
@@ -74,6 +113,9 @@
                                         <input type="date" name="challan_date" class="form-control"
                                             value="{{ old('challan_date', isset($challan) ? $challan->challan_date->format('Y-m-d') : date('Y-m-d')) }}"
                                             {{ $mode === 'view' ? 'disabled' : '' }}>
+                                        @error('challan_date')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
                                     </div>
                                 </div>
 
@@ -137,8 +179,11 @@
                                                                 name="items[{{ $loop->index }}][received_qty]"
                                                                 class="form-control"
                                                                 value="{{ old('items.' . $loop->index . '.received_qty', $item->received_qty) }}"
-                                                                {{ $mode === 'view' ? 'readonly' : '' }} required
+                                                                {{ $mode === 'view' ? 'readonly' : '' }}
                                                                 min="1">
+                                                                @error('items.' . $loop->index . '.received_qty')
+                                                                    <small class="text-danger">{{ $message }}</small>
+                                                                @enderror
                                                         </td>
                                                         @if ($mode !== 'view')
                                                             <td><button type="button"
@@ -174,6 +219,7 @@
 
                             </form>
                         </div>
+
                     </div>
                 </div>
 
@@ -181,8 +227,11 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</body>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -334,4 +383,3 @@
             });
         });
     </script>
-</body>

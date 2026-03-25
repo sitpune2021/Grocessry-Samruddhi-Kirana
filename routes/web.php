@@ -114,9 +114,6 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/razorpay/failure', [PaymentGetwayController::class, 'razorpayFailure'])
         ->name('razorpay.failure');
 
-
-
-
     // USER PROFILE / ADMIN USERS (SAFE GROUPED VERSION)
     Route::prefix('user')->group(function () {
 

@@ -65,10 +65,10 @@ class ProductBatchController extends Controller
             'categories' => $categories,
             'products'   => collect(),
             'units'      => $units,
-            'user'       => $user, // 🔥 pass user
+            'user'       => $user,
+            'subCategories' => collect(),
         ]);
     }
-
 
     public function getProductsByCategory($category_id)
     {
@@ -98,9 +98,7 @@ class ProductBatchController extends Controller
 
 
         try {
-            // Get product
-            $product = Product::findOrFail($request->product_id);
-
+            
             // Get warehouse stock
             $warehouseStock = WarehouseStock::where('product_id', $request->product_id)
                 ->where('warehouse_id', $warehouseId)
@@ -160,6 +158,8 @@ class ProductBatchController extends Controller
                 'validated_data' => $validated,
             ]);
 
+            // Get product
+            $product = Product::findOrFail($request->product_id);
 
             $warehouseId = $isSuperAdmin
                 ? $request->warehouse_id
@@ -374,7 +374,6 @@ class ProductBatchController extends Controller
         return view('batches.expiry', compact('batches'));
     }
 
-
     public function getCategoriesByWarehouse($warehouseId)
     {
         return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
@@ -446,4 +445,6 @@ class ProductBatchController extends Controller
             'quantity' => $availableStock
         ]);
     }
+
+    
 }
