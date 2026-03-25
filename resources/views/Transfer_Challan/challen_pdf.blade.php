@@ -109,7 +109,7 @@
             <td><strong>To Warehouse:</strong> {{ $challan->toWarehouse->name ?? 'N/A' }}</td>
         </tr>
         <tr>
-            <td><strong>Created By:</strong> {{ $challan->created_by }}</td>
+            <td><strong>Created By:</strong>{{ ($challan->creator->first_name ?? '') . ' ' . ($challan->creator->last_name ?? '') }}</td>
             <td><strong>Status:</strong> {{ ucfirst($challan->status) }}</td>
         </tr>
     </table>

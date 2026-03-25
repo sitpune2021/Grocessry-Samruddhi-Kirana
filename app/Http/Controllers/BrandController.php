@@ -425,44 +425,49 @@ class BrandController extends Controller
         return view('brand.csv_modal', compact('categories'));
     }
 
+    public function downloadSampleExcel(Request $request)
+    {
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'required|array',
+            'subcategory_id.*' => 'exists:sub_categories,id',
+        ]);
 
-   public function downloadSampleExcel(Request $request)
-{
-    $request->validate([
-        'category_id' => 'required|exists:categories,id',
-        'subcategory_id' => 'required|exists:sub_categories,id',
-    ]);
+        $category = Category::findOrFail($request->category_id);
 
-    $category = Category::find($request->category_id);
-    $subcategory = SubCategory::find($request->subcategory_id);
+        // ✅ FIX: get multiple subcategories
+        $subcategories = SubCategory::whereIn('id', $request->subcategory_id)->get();
 
-    $fileName = 'brand_sample_' . time() . '.csv';
+        $fileName = 'brand_sample_' . time() . '.csv';
 
-    $headers = [
-        "Content-type" => "text/csv",
-        "Content-Disposition" => "attachment; filename=$fileName",
-    ];
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+        ];
 
-    $callback = function () use ($category, $subcategory) {
+        $callback = function () use ($category, $subcategories) {
 
-        $file = fopen('php://output', 'w');
+            $file = fopen('php://output', 'w');
 
-        // ✅ Header Row
-        fputcsv($file, ['Category Name', 'Sub Category Name', 'Brand Name']);
+            // ✅ Header
+            fputcsv($file, ['Category Name', 'Sub Category Name', 'Brand Name']);
 
-        // ✅ Sample Rows (Brand empty for user input)
-        for ($i = 0; $i < 10; $i++) {
-            fputcsv($file, [
-                $category->name,
-                $subcategory->name,
-                '' // user will fill brand name
-            ]);
-        }
+            // ✅ Loop each subcategory
+            foreach ($subcategories as $subcategory) {
 
-        fclose($file);
-    };
+                // Add 5 rows per subcategory (you can change count)
+                for ($i = 0; $i < 5; $i++) {
+                    fputcsv($file, [
+                        $category->name,
+                        $subcategory->name,
+                        '' // user fills brand
+                    ]);
+                }
+            }
 
-    return response()->stream($callback, 200, $headers);
-}
+            fclose($file);
+        };
 
+        return response()->stream($callback, 200, $headers);
+    }
 }

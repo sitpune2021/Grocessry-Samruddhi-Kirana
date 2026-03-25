@@ -76,8 +76,9 @@
                                 </td>
 
                                 <td class="text-uppercase fw-bold">
-                                    {{ $row['type'] }}
+                                    {{ $row['type'] == 'transfer' ? 'RECEIVED' : strtoupper($row['type']) }}
                                 </td>
+                                
                                 <td>
                                     {{ $row['product_name'] }}
                                 </td>
