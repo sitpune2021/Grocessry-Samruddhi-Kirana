@@ -70,7 +70,7 @@ class WarehouseServicePincodeController extends Controller
         $distributionCenters = collect();
         $pincodes = collect();
 
-        if (Auth::user()->role_id == 1) {
+        if (Auth::user()->role_id == 1 || Auth::user()->role_id == 2) {
             $distributionCenters = Warehouse::where('type', 'distribution_center')
                 ->where('status', 'active')
                 ->orderBy('name')

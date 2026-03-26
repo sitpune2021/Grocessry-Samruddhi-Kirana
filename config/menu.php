@@ -81,6 +81,7 @@ return [
             'type'  => 'single',
             'title' => 'DC Service Area',
             'icon'  => 'bx bx-map-pin',
+            'roles' => [1,2,5],
             'route'   => 'warehouse.service-areas.index',
         ],
     
