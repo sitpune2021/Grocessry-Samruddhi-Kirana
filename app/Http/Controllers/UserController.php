@@ -295,14 +295,14 @@ class UserController extends Controller
     }
 
     public function userstatus(Request $request)
-{
-    $user = User::findOrFail($request->id);
+    {
+        $user = User::findOrFail($request->id);
 
-    $user->status = $request->has('status') ? 1 : 0;
-    $user->save();
+        $user->status = $request->has('status') ? 1 : 0;
+        $user->save();
 
-    return back()->with('success', 'Status updated!');
-}
+        return back()->with('success', 'Status updated!');
+    }
 
 
 }

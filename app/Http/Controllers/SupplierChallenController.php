@@ -21,15 +21,32 @@ class SupplierChallenController extends Controller
 {
 
 
+    // public function index()
+    // {
+    //     $challans = SupplierChallan::with([
+    //         // 'purchaseOrder',
+    //         'supplier',
+    //         'warehouse'
+    //     ])
+    //         ->orderBy('id', 'desc')
+    //         ->paginate(10);
+
+    //     return view('supplier_challan.index', compact('challans'));
+    // }
+
     public function index()
     {
+        $user = auth()->user();
+
         $challans = SupplierChallan::with([
-            // 'purchaseOrder',
             'supplier',
             'warehouse'
         ])
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        ->when($user->role_id != 1, function ($query) use ($user) {
+            $query->where('warehouse_id', $user->warehouse_id);
+        })
+        ->orderBy('id', 'desc')
+        ->paginate(10);
 
         return view('supplier_challan.index', compact('challans'));
     }
@@ -42,27 +59,37 @@ class SupplierChallenController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
 
-        $warehouse = Warehouse::where('type', 'master')
-            ->where('status', 1)
-            ->first();
+        // SUPER ADMIN (role_id = 1)
+        if ($user->role_id == 1) {
 
-        //     if (!$warehouse) {
-        //     abort(500, 'Master warehouse not configured');
-        // }
+            $warehouses = Warehouse::where('type', 'master')
+                ->where('status', 1)
+                ->get();
+
+            $selectedWarehouse = null;
+
+        } else {
+
+            // MASTER USER →  warehouse
+            $selectedWarehouse = Warehouse::where('id', $user->warehouse_id)
+                ->where('status', 1)
+                ->first();
+
+            $warehouses = collect([$selectedWarehouse]); // single array convert
+        }
 
         return view('supplier_challan.create', [
             'mode' => 'add',
-            'warehouse' => $warehouse,   // ✅ SINGLE warehouse
+            'warehouse' => $selectedWarehouse,
+            'warehouses' => $warehouses,
             'suppliers' => Supplier::all(),
             'categories' => Category::all(),
-            'products'      => Product::all(), // ✅ ADD THIS
-
+            'products' => Product::all(),
             'autoChallanNo' => $this->generateChallanNo(),
         ]);
     }
-
-
 
     public function store(Request $request)
     {
@@ -75,9 +102,7 @@ class SupplierChallenController extends Controller
             'route'   => request()->route()->getName(),
         ]);
 
-        try {
-
-            // 🔹 VALIDATION
+        // 🔹 VALIDATION
             $validated = $request->validate([
                 'warehouse_id' => 'required',
                 'supplier_id'  => 'required',
@@ -94,6 +119,8 @@ class SupplierChallenController extends Controller
             Log::info('SupplierChallan | Validation passed', [
                 'items_count' => count($validated['items']),
             ]);
+
+        try {
 
             DB::beginTransaction();
 
@@ -122,6 +149,7 @@ class SupplierChallenController extends Controller
                     'product_id'          => $item['product_id'],
                     'ordered_qty'         => $item['received_qty'],
                     'received_qty'        => $item['received_qty'],
+                    'rate'                => $item['rate'] ?? 0,
                 ]);
 
                 Log::info('SupplierChallan | Item created', [
@@ -160,7 +188,6 @@ class SupplierChallenController extends Controller
         }
     }
 
-
     public function show(string $id)
     {
         $challan = SupplierChallan::with([
@@ -171,26 +198,46 @@ class SupplierChallenController extends Controller
             'warehouse'
         ])->findOrFail($id);
 
+        $user = auth()->user();
+
+        if ($user->role_id == 1) {
+            $warehouses = Warehouse::where('type', 'master')
+                ->where('status', 1)
+                ->get();
+        } else {
+            $warehouses = collect([$challan->warehouse]);
+        }
+
         return view('supplier_challan.create', [
             'mode'          => 'view',
             'challan'       => $challan,
             'warehouse'     => $challan->warehouse,
             'suppliers'     => Supplier::all(),
             'categories'    => Category::all(),
+            'warehouses'    => $warehouses,
             'autoChallanNo' => $challan->challan_no,
         ]);
     }
 
-
     public function edit(string $id)
     {
         $challan = SupplierChallan::with([
-            'items.category',      // ✅ ADD
-            'items.subCategory',   // ✅ ADD
-            'items.product',       // ✅ already there
+            'items.category',      
+            'items.subCategory',  
+            'items.product',   
             'supplier',
             'warehouse',
         ])->findOrFail($id);
+
+        $user = auth()->user();
+
+        if ($user->role_id == 1) {
+            $warehouses = Warehouse::where('type', 'master')
+                ->where('status', 1)
+                ->get();
+        } else {
+            $warehouses = collect([$challan->warehouse]);
+        }
 
         return view('supplier_challan.create', [
             'mode' => 'edit',
@@ -198,12 +245,11 @@ class SupplierChallenController extends Controller
             'warehouse' => $challan->warehouse,
             'suppliers' => Supplier::all(),
             'categories' => Category::all(),
-            'products' => Product::all(),   // ✅ ADD THIS
-
+            'products' => Product::all(), 
+            'warehouses'    => $warehouses,
             'purchaseOrders' => PurchaseOrder::all()
         ]);
     }
-
 
     public function update(Request $request, string $id)
     {
@@ -344,6 +390,7 @@ class SupplierChallenController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
     public function subcategories(Request $request)
     {
         $categoryIds = is_array($request->category_ids)
@@ -365,4 +412,6 @@ class SupplierChallenController extends Controller
             'data' => $products
         ]);
     }
+
+
 }
