@@ -10,12 +10,10 @@
     @endphp
 
     <div class="cart-item-box">
-       
         <div class="d-flex align-items-center">
-
             <img src="{{ $firstImage 
-? asset('storage/products/'.$firstImage) 
-: asset('website/img/no-image.png') }}"
+            ? asset('storage/products/'.$firstImage) 
+            : asset('website/img/no-image.png') }}"
                 class="cart-img">
 
             <div class="flex-grow-1 ms-3">
