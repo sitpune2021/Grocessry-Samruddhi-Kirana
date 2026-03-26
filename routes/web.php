@@ -831,8 +831,6 @@ Route::middleware(['auth:admin'])->group(function () {
             ->name('admin.aboutus.store');
     });
 
-
-
     // Banners admin route
     Route::prefix('banners')->group(function () {
         Route::get('/', [BannerController::class, 'index'])->name('banners.index');
@@ -845,9 +843,14 @@ Route::middleware(['auth:admin'])->group(function () {
 
         Route::delete('/delete/{id}', [BannerController::class, 'destroy'])->name('banners.delete');
     });
+
     //Website User Order History Report 
     Route::get('/orders', [CustomerOrderController::class, 'userorder'])
         ->name('userorder');
+
+    Route::get('/orders/export/csv', [CustomerOrderController::class, 'exportCsv'])
+    ->name('orders.export.csv');
+    
 });
 // end admin auth 
 

@@ -17,6 +17,12 @@
             <!-- Search -->
             <x-datatable-search />
 
+            <div class="col-md-auto ms-auto">
+                <a href="{{ route('orders.export.csv') }}" class="btn btn-success">
+                    Download CSV
+                </a>
+            </div>
+
             <div class="table-responsive mt-3">
 
                 @if(session('success'))
