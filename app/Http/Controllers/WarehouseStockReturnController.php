@@ -235,7 +235,6 @@ class WarehouseStockReturnController extends Controller
 
                 $available = $batch->quantity;
 
-
                 Log::info('Checking batch stock', [
                     'stock_return_id' => $return->id,
                     'row' => $index,
@@ -282,6 +281,7 @@ class WarehouseStockReturnController extends Controller
                 }
 
                 if ($item['return_qty'] > $available) {
+              
                     Log::warning('Return qty exceeds available batch stock', [
                         'product_id' => $item['product_id'],
                         'batch_id' => $item['batch_no'],
@@ -320,7 +320,113 @@ class WarehouseStockReturnController extends Controller
             ->with('success', 'Stock return created successfully');
     }
 
+// public function store(Request $request)
+// {
+//     Log::info('Stock return request initiated', [
+//         'user_id' => auth()->id(),
+//         'warehouse_id' => auth()->user()->warehouse_id,
+//         'payload' => $request->all(),
+//     ]);
 
+//     $request->validate([
+//         'transfer_challan_id' => 'required|exists:transfer_challans,id',
+//         'to_warehouse_id' => 'required|exists:warehouses,id',
+//         'items' => 'required|array|min:1',
+//         'items.*.product_id' => 'required|exists:products,id',
+//         'items.*.batch_no' => 'required|integer|exists:product_batches,id',
+//         'items.*.return_qty' => 'required|numeric|min:1',
+//     ]);
+
+//     try {
+//         DB::transaction(function () use ($request) {
+
+//             $user = auth()->user();
+//             $fromWarehouse = $user->warehouse;
+
+//             if ($fromWarehouse->type === 'master') {
+//                 abort(403);
+//             }
+
+//             // ✅ Validate challan
+//             $challan = TransferChallan::where('id', $request->transfer_challan_id)
+//                 ->where('status', 'received')
+//                 ->where('to_warehouse_id', $fromWarehouse->id)
+//                 ->firstOrFail();
+
+//             // ✅ Create return entry
+//             $return = WarehouseStockReturn::create([
+//                 'from_warehouse_id' => $fromWarehouse->id,
+//                 'to_warehouse_id' => $request->to_warehouse_id,
+//                 'status' => 'draft',
+//                 'return_reason' => $request->return_reason,
+//                 'created_by' => $user->id,
+//             ]);
+
+//             foreach ($request->items as $index => $item) {
+
+//                 // ✅ Get batch
+//                 $batch = ProductBatch::where('id', $item['batch_no'])
+//                     ->where('product_id', $item['product_id'])
+//                     ->where('warehouse_id', $fromWarehouse->id)
+//                     ->first();
+
+//                 if (!$batch) {
+//                     throw ValidationException::withMessages([
+//                         'error' => ['Invalid batch selected']
+//                     ]);
+//                 }
+
+//                 $available = $batch->quantity;
+
+//                 // ✅ Challan qty per batch
+//                 $challanQty = TransferChallanItem::where('transfer_challan_id', $request->transfer_challan_id)
+//                     ->where('product_id', $item['product_id'])
+//                     ->where('batch_no', $item['batch_no'])
+//                     ->sum('quantity');
+
+//                 // ✅ Check: return > challan
+//                 if ($item['return_qty'] > $challanQty) {
+//                     throw ValidationException::withMessages([
+//                         'error' => ['Return quantity exceeds challan quantity']
+//                     ]);
+//                 }
+
+//                 // ✅ Check: return > available stock
+//                 if ($item['return_qty'] > $available) {
+//                     throw ValidationException::withMessages([
+//                         'error' => ['Return quantity exceeds available batch stock']
+//                     ]);
+//                 }
+
+//                 // ✅ Save item
+//                 WarehouseStockReturnItem::create([
+//                     'stock_return_id' => $return->id,
+//                     'batch_no' => $item['batch_no'],
+//                     'product_id' => $item['product_id'],
+//                     'return_qty' => $item['return_qty'],
+//                 ]);
+//             }
+//         });
+
+//         return redirect()->route('stock-returns.index')
+//             ->with('success', 'Stock return created successfully');
+
+//     } catch (ValidationException $e) {
+
+//         return redirect()->back()
+//             ->withErrors($e->errors())
+//             ->withInput();
+//     } catch (\Exception $e) {
+
+//         Log::error('Stock return failed', [
+//             'error' => $e->getMessage()
+//         ]);
+
+//         return redirect()->back()
+//             ->with('error', 'Something went wrong')
+//             ->withInput();
+//     }
+// }
 
 
     /**
