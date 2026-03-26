@@ -462,6 +462,7 @@ class ProductBatchController extends Controller
             ->distinct()
             ->get();
     }
+    
     public function getProductQuantity($warehouseId, $productId)
     {
         $warehouseStock = WarehouseStock::where('warehouse_id', $warehouseId)
