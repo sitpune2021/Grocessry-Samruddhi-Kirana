@@ -48,13 +48,23 @@
             </script>
             @endif
 
+
+            @php
+                $isSuperAdmin = Auth::user()->role_id == 1;
+            @endphp
+
             <div class="table-responsive p-3">
                 <table id="batchTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
                     <thead class="table-light">
                         <tr>
                             <th>Sr.no</th>
                             <th>Product</th>
-                            <th>Unit</th>
+                            @if($isSuperAdmin)
+                                <th>Unit</th>
+                            @endif
+                            @if($isSuperAdmin)
+                                <th>Warehouse</th>
+                            @endif
                             <th>Batch</th>
                             <th>Qty</th>
                             <th>MFG</th>
@@ -69,29 +79,34 @@
                         <tr>
                             <td style="width: 30px;">{{ $loop->iteration }}</td>
                             <td>{{ $batch->product?->name }}</td>
-                            <td>{{ $batch->unit?->name }}</td>
+                            @if($isSuperAdmin)
+                                <td>{{ $batch->unit?->name }}</td>
+                            @endif
+
+                            @if($isSuperAdmin)
+                                <td>{{ $batch->warehouse?->name }}</td>
+                            @endif
                             <td>{{ $batch->batch_no }}</td>
                             <td>{{ $batch->quantity }}</td>
                             <td>{{ $batch->mfg_date }}</td>
                             <td>{{ $batch->expiry_date }}</td>
 
-
                             @if($canView || $canEdit || $canDelete)
                             <td class="text-center" style="white-space:nowrap;">
-                                @if(hasPermission('batches.view'))
-                                <a href="{{ route('batches.show', $batch->id) }}" class="btn btn-sm btn-primary">View</a>
+                                @if(hasPermission('batches.view') && in_array(Auth::user()->role_id, [1,2]))
+                                    <a href="{{ route('batches.show', $batch->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
                                 @if(hasPermission('batches.edit'))
-                                <a href="{{ route('batches.edit', $batch->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{{ route('batches.edit', $batch->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
                                 @if(hasPermission('batches.delete'))
-                                <form action="{{ route('batches.destroy', $batch->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button onclick="return confirm('Delete batch?')" class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
-                                </form>
+                                    <form action="{{ route('batches.destroy', $batch->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Delete batch?')" class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                             @endif

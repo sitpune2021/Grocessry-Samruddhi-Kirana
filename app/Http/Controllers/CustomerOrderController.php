@@ -55,6 +55,69 @@ class CustomerOrderController extends Controller
         return view('website.user_order', compact('orders'));
     }
 
+    public function exportCsv()
+    {
+        $orders = Order::where('channel', 'web')
+            ->with(['items.product', 'deliveryAgent.user', 'user'])
+            ->latest()
+            ->get();
+
+        $filename = "website_orders_" . date('Ymd_His') . ".csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $columns = [
+            'Order ID',
+            'User Name',
+            'Order Number',
+            'Product Names',
+            'Total Amount',
+            'Delivery Agent',
+            'Status'
+        ];
+
+        $callback = function () use ($orders, $columns) {
+
+            $file = fopen('php://output', 'w');
+
+            // Header row
+            fputcsv($file, $columns);
+
+            foreach ($orders as $order) {
+
+                // Products combine
+                $products = [];
+                foreach ($order->items as $item) {
+                    $products[] = ($item->product->name ?? 'N/A') . " (Qty: " . $item->quantity . ")";
+                }
+
+                $productList = implode(' | ', $products);
+
+                $row = [
+                    $order->id,
+                    $order->user->first_name ?? 'N/A',
+                    $order->order_number,
+                    $productList,
+                    $order->total_amount,
+                    ($order->deliveryAgent->user->first_name ?? 'N/A') . ' ' .
+                    ($order->deliveryAgent->user->last_name ?? ''),
+                    $order->status
+                ];
+
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 
     public function orderapprove($id)
     {
