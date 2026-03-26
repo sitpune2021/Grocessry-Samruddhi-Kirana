@@ -427,6 +427,7 @@ class BrandController extends Controller
 
     public function downloadSampleExcel(Request $request)
     {
+   
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'subcategory_id' => 'required|array',

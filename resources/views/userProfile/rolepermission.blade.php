@@ -74,7 +74,7 @@
                             // 'disribution_center' => 'Distribution Center / Shop',
                             'delivery_agent' => 'Delivery Agent',
                             'vehical_assignment' => 'Vehical Assignment',
-                            'offers' => 'Offers',
+                            // 'offers' => 'Offers',
                             'coupons' => 'Coupons',
                             'retailer_offers' => 'Retailer Offers',
                             //'website_orders' => 'Website Orders',

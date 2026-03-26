@@ -81,6 +81,7 @@ return [
             'type'  => 'single',
             'title' => 'DC Service Area',
             'icon'  => 'bx bx-map-pin',
+            'roles' => [1,2,5],
             'route'   => 'warehouse.service-areas.index',
         ],
     
@@ -190,18 +191,26 @@ return [
         ],
 
         /* ================= Offer / Scheme Management ================= */
+
         [
-            'type'  => 'dropdown',
-            'key'   => 'OfferMenu',
-            'title' => 'Offer / Scheme Management',
+            'type'  => 'single',
+            'title' => 'Coupon Management',
             'icon'  => 'bx bx-package',
-            'exclude_roles' => [3, 4],
-            'children' => [
-                ['title' => 'Offer Management', 'route' => 'offers.index'],
-                //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
-                ['title' => 'Coupon Management', 'route' => 'coupons.index'],
-            ],
+            'roles' => [1, 2,5],
+            'route'  => 'coupons.index',
         ],
+        // [
+        //     'type'  => 'dropdown',
+        //     'key'   => 'OfferMenu',
+        //     'title' => 'Offer / Scheme Management',
+        //     'icon'  => 'bx bx-package',
+        //     'exclude_roles' => [3, 4],
+        //     'children' => [
+        //         ['title' => 'Offer Management', 'route' => 'offers.index'],
+        //         //['title' => 'Retailer Offer Management','route' => 'retailer-offers.index'],
+        //         ['title' => 'Coupon Management', 'route' => 'coupons.index'],
+        //     ],
+        // ],
 
         /* ================= Customer Management ================= */
         [

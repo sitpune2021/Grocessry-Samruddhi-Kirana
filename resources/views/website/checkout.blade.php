@@ -184,7 +184,7 @@
                                 <tr class="border-top">
                                     <th colspan="2" class="fs-5">Total</th>
                                     <th class="text-end text-success fs-5">
-                                        ₹<span id="finalTotal">{{ $cart->subtotal }}</span>
+                                        ₹<span id="finalTotal">{{ number_format($cart->subtotal, 2) }}</span>
                                     </th>
                                 </tr>
                             </tbody>
