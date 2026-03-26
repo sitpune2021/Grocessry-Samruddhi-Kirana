@@ -202,8 +202,6 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <!-- SubCategory -->
                     <!-- SubCategory Multi Select Dropdown -->
                     <div class="mb-3">
                         <label>SubCategory</label>
@@ -361,9 +359,22 @@
 
         // Select All
         if (e.target.id === 'selectAllSub') {
-            document.querySelectorAll('.sub-checkbox').forEach(cb => {
-                cb.checked = e.target.checked;
+            let isChecked = e.target.checked;
+
+            let allCheckboxes = document.querySelectorAll('.sub-checkbox');
+            let dropdownBtn = document.getElementById('subDropdown');
+
+            // Check / Uncheck all
+            allCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
             });
+
+            // ✅ Update dropdown text
+            if (isChecked) {
+                dropdownBtn.innerText = "All Selected";
+            } else {
+                dropdownBtn.innerText = "Select SubCategory";
+            }
         }
 
         // Update count
@@ -391,38 +402,22 @@
         }
     });
 
-
-    // ✅ Validate before submit
-    document.getElementById('csvForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // ✅ Download Brand CSV
+    document.getElementById('downloadBtn').addEventListener('click', function() {
 
         let category = document.getElementById('category').value;
         let subcategories = document.querySelectorAll('.sub-checkbox:checked');
-        let errorBox = document.getElementById('errorBox');
 
-        let errors = [];
-
-        // ✅ Category validation
+        // ✅ Validation
         if (!category || subcategories.length === 0) {
-            alert('Please select all fields');
-
-            errors.push("Please select category");
-            return;
-        }
-        // ❌ If error exists → show
-        if (errors.length > 0) {
-            errorBox.classList.remove('d-none');
-            errorBox.innerHTML = errors.join('<br>');
+            alert('Please select category and subcategory');
             return;
         }
 
-        // ✅ Hide error if valid
-        errorBox.classList.add('d-none');
-        errorBox.innerHTML = '';
+        let form = document.getElementById('csvForm');
+        let formData = new FormData(form);
 
-        let formData = new FormData(this);
-
-        // ✅ Disable button (prevent double click)
+        // ✅ Disable button
         let btn = document.getElementById('downloadBtn');
         btn.disabled = true;
         btn.innerText = "Downloading...";
@@ -434,13 +429,18 @@
                 },
                 body: formData
             })
-            .then(res => res.blob())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Failed to download");
+                }
+                return res.blob();
+            })
             .then(blob => {
 
                 let url = window.URL.createObjectURL(blob);
                 let a = document.createElement('a');
                 a.href = url;
-                a.download = "brand.csv";
+                a.download = "brand_sample.csv";
                 a.click();
 
                 // ✅ Close modal
@@ -448,18 +448,143 @@
                 modal.hide();
 
                 // ✅ Reset form
-                document.getElementById('csvForm').reset();
+                form.reset();
 
-                // Reset dropdown text
+                // Reset dropdown text (if custom UI)
                 document.getElementById('subDropdown').innerText = "Select SubCategory";
             })
-            .catch(() => {
+            .catch(err => {
+                console.error(err);
                 alert("Something went wrong!");
             })
             .finally(() => {
                 btn.disabled = false;
                 btn.innerText = "Download";
             });
+
     });
 </script>
+
+<!-- <script>
+    let selectedSubcategories = [];
+
+    // ===============================
+    // 1. Load subcategories on category change
+    // ===============================
+    document.getElementById('category').addEventListener('change', function() {
+
+        let categoryId = this.value;
+        alert(categoryId)
+        let menu = document.getElementById('subDropdownMenu');
+
+        selectedSubcategories = []; // reset
+        menu.innerHTML = 'Loading...';
+
+        if (!categoryId) {
+            menu.innerHTML = '<p class="text-muted">Select SubCategory</p>';
+            return;
+        }
+
+        fetch(`/get-subcategories/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                menu.innerHTML = '';
+
+                if (data.length === 0) {
+                    menu.innerHTML = '<p class="text-danger">No Subcategories Found</p>';
+                    return;
+                }
+
+                data.forEach(sub => {
+
+                    let item = document.createElement('div');
+
+                    item.innerHTML = `
+                    <label class="d-block">
+                        <input type="checkbox" class="sub-checkbox" value="${sub.id}">
+                        ${sub.name}
+                    </label>
+                `;
+
+                    menu.appendChild(item);
+                });
+
+            })
+            .catch(err => {
+                console.error(err);
+                menu.innerHTML = '<p class="text-danger">Error loading data</p>';
+            });
+    });
+
+
+    // ===============================
+    // 2. Handle checkbox selection
+    // ===============================
+    document.addEventListener('change', function(e) {
+
+        if (e.target.classList.contains('sub-checkbox')) {
+
+            let id = e.target.value;
+
+            if (e.target.checked) {
+                if (!selectedSubcategories.includes(id)) {
+                    selectedSubcategories.push(id);
+                }
+            } else {
+                selectedSubcategories = selectedSubcategories.filter(val => val !== id);
+            }
+
+            // Optional: Update button text
+            document.getElementById('subDropdown').innerText =
+                selectedSubcategories.length > 0 ?
+                selectedSubcategories.length + ' selected' :
+                'Select SubCategory';
+        }
+    });
+
+
+    // ===============================
+    // 3. Submit form & download CSV
+    // ===============================
+    document.getElementById('csvForm').addEventListener('submit', function(e) {
+
+        e.preventDefault();
+
+        let category = document.getElementById('category').value;
+
+        if (!category) {
+            alert('Please select category');
+            return;
+        }
+
+        if (selectedSubcategories.length === 0) {
+            alert('Please select at least one subcategory');
+            return;
+        }
+
+        let form = this;
+
+        // Remove old dynamic inputs
+        document.querySelectorAll('.dynamic-sub').forEach(el => el.remove());
+
+        // Add subcategory_id[] inputs dynamically
+        selectedSubcategories.forEach(id => {
+
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'subcategory_id[]';
+            input.value = id;
+            input.classList.add('dynamic-sub');
+
+            form.appendChild(input);
+        });
+
+        // IMPORTANT: Set action manually (since form doesn't have one)
+        form.action = '/brands.sample-excel'; // 👈 your route
+        form.method = 'POST';
+
+        form.submit(); // ✅ triggers CSV download
+    });
+</script> -->
 @endpush
