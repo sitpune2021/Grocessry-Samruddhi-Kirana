@@ -189,20 +189,20 @@ $stock = $product->available_stock ?? 0;
                     btn.classList.add('d-none');
                     qtyBox.classList.remove('d-none');
 
-                    wrapper.querySelector('.qty').innerText = data.qty;
+                    wrapper.querySelector('.qty').innerText = data.qty ?? 1;
+
+                    // 🔥🔥 MAIN FIX
+                    wrapper.dataset.cartItemId = data.cart_item_id;
 
                     updateCartIcon(data.cart_count);
                     updateShipmentCount(data.cart_count);
                     refreshCartDrawer();
 
                 } else {
-
                     showCustomAlert(data.message);
-
                 }
 
                 btn.dataset.loading = "false";
-
             })
             .catch(err => {
 
@@ -215,14 +215,20 @@ $stock = $product->available_stock ?? 0;
     function changeQty(btn, delta) {
 
         const wrapper = btn.closest('.qty-wrapper');
-        const form = btn.closest('form');
         const qtySpan = wrapper.querySelector('.qty');
 
         let qty = parseInt(qtySpan.innerText);
         qty += delta;
 
-        const cartItemId = wrapper.dataset.cartItemId;
+        let cartItemId = wrapper.dataset.cartItemId;
 
+        // 🔥 SAFETY CHECK
+        if (!cartItemId || cartItemId === "undefined") {
+            console.error("CartItemId missing");
+            return;
+        }
+
+        // 🔴 REMOVE ITEM
         if (qty <= 0) {
 
             fetch("/cart/remove/" + cartItemId, {
@@ -244,6 +250,8 @@ $stock = $product->available_stock ?? 0;
                         updateCartIcon(data.cart_count);
                         updateShipmentCount(data.cart_count);
                         refreshCartDrawer();
+
+                        syncCartButtons(); // 🔥 IMPORTANT
                     }
 
                 });
@@ -251,6 +259,7 @@ $stock = $product->available_stock ?? 0;
             return;
         }
 
+        // 🟢 UPDATE QTY
         fetch("/cart/update/" + cartItemId, {
                 method: "POST",
                 headers: {
@@ -263,15 +272,24 @@ $stock = $product->available_stock ?? 0;
                     qty: qty
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+
+                if (res.status === 404) {
+                    console.error("Route not found (check route)");
+                    return;
+                }
+
+                return res.json();
+            })
             .then(data => {
+
+                if (!data) return;
 
                 if (data.success) {
 
                     qtySpan.innerText = data.qty;
 
                     updateCartIcon(data.cart_count);
-
                     updateShipmentCount(data.cart_count);
 
                     refreshCartDrawer();
@@ -279,11 +297,11 @@ $stock = $product->available_stock ?? 0;
 
                 } else {
 
-                    showCustomAlert(data.message); // custom alert
-
+                    showCustomAlert(data.message);
                 }
 
-            });
+            })
+            .catch(err => console.error(err));
     }
 
     function updateCartIcon(count) {
