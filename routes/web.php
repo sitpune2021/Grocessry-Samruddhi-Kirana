@@ -198,7 +198,7 @@ Route::middleware(['auth:admin'])->group(function () {
 
 
     Route::post('/brand/status', [BrandController::class, 'updateStatus'])->name('updateStatus');
-    // Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
+    Route::get('/get-subcategories-by-category/{categoryId}', [ProductController::class, 'getSubCategoriesByCategory']);
 
     Route::get('get-sub-categories/{category}', [SubCategoryController::class, 'getSubCategories']);
     Route::get('/get-categories', [ProductController::class, 'getCategories']);

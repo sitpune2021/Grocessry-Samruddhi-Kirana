@@ -309,43 +309,43 @@
     });
 </script>
 <script>
-const categories = @json($categories);
+    const categories = @json($categories);
 
-// ✅ Load SubCategory
-document.getElementById('category').addEventListener('change', function () {
+    // ✅ Load SubCategory
+    document.getElementById('category').addEventListener('change', function() {
 
-    let cat = categories.find(c => c.id == this.value);
-    let sub = document.getElementById('subcategory');
+        let cat = categories.find(c => c.id == this.value);
+        let sub = document.getElementById('subcategory');
 
-    sub.innerHTML = '<option value="">Select SubCategory</option>';
+        sub.innerHTML = '<option value="">Select SubCategory</option>';
 
-    if (cat) {
-        cat.sub_categories.forEach(s => {
-            sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-        });
-    }
+        if (cat) {
+            cat.sub_categories.forEach(s => {
+                sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
+        }
 
-    // Reset brands
-    document.getElementById('brandDropdownMenu').innerHTML = '<p class="text-muted">Select Brand</p>';
-    document.getElementById('brandDropdown').innerText = 'Select Brand';
-});
+        // Reset brands
+        document.getElementById('brandDropdownMenu').innerHTML = '<p class="text-muted">Select Brand</p>';
+        document.getElementById('brandDropdown').innerText = 'Select Brand';
+    });
 
 
-// ✅ Load Brands (Checkbox dropdown)
-document.getElementById('subcategory').addEventListener('change', function () {
+    // ✅ Load Brands (Checkbox dropdown)
+    document.getElementById('subcategory').addEventListener('change', function() {
 
-    let cat = categories.find(c => c.id == document.getElementById('category').value);
-    let subId = this.value;
-    let dropdown = document.getElementById('brandDropdownMenu');
+        let cat = categories.find(c => c.id == document.getElementById('category').value);
+        let subId = this.value;
+        let dropdown = document.getElementById('brandDropdownMenu');
 
-    dropdown.innerHTML = '';
+        dropdown.innerHTML = '';
 
-    if (cat) {
-        let sub = cat.sub_categories.find(s => s.id == subId);
+        if (cat) {
+            let sub = cat.sub_categories.find(s => s.id == subId);
 
-        if (sub && sub.brands.length > 0) {
+            if (sub && sub.brands.length > 0) {
 
-            dropdown.innerHTML += `
+                dropdown.innerHTML += `
                 <input type="text" class="form-control mb-2" placeholder="Search..." id="brandSearch">
 
                 <div class="form-check">
@@ -355,94 +355,107 @@ document.getElementById('subcategory').addEventListener('change', function () {
                 <hr>
             `;
 
-            sub.brands.forEach(b => {
-                dropdown.innerHTML += `
+                sub.brands.forEach(b => {
+                    dropdown.innerHTML += `
                     <div class="form-check">
                         <input class="form-check-input brand-checkbox" type="checkbox"
                             name="brand_id[]" value="${b.id}" id="brand_${b.id}">
                         <label class="form-check-label">${b.name}</label>
                     </div>
                 `;
+                });
+
+            } else {
+                dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
+            }
+        }
+    });
+
+
+    // ✅ Select All + Count
+    document.addEventListener('change', function(e) {
+
+        if (e.target.id === 'selectAllBrands') {
+            let isChecked = e.target.checked;
+
+            let allCheckboxes = document.querySelectorAll('.brand-checkbox');
+            let dropdownBtn = document.getElementById('brandDropdown'); // 👈 your brand button id
+
+            // Check / Uncheck all
+            allCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
             });
 
-        } else {
-            dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
+            // ✅ Update text
+            if (isChecked) {
+                dropdownBtn.innerText = "All Brands Selected";
+            } else {
+                dropdownBtn.innerText = "Select Brand";
+            }
         }
-    }
-});
 
+        if (e.target.classList.contains('brand-checkbox')) {
 
-// ✅ Select All + Count
-document.addEventListener('change', function (e) {
+            let selected = document.querySelectorAll('.brand-checkbox:checked');
+            let btn = document.getElementById('brandDropdown');
 
-    if (e.target.id === 'selectAllBrands') {
-        document.querySelectorAll('.brand-checkbox').forEach(cb => {
-            cb.checked = e.target.checked;
-        });
-    }
-
-    if (e.target.classList.contains('brand-checkbox')) {
-
-        let selected = document.querySelectorAll('.brand-checkbox:checked');
-        let btn = document.getElementById('brandDropdown');
-
-        btn.innerText = selected.length > 0
-            ? selected.length + " brand(s) selected"
-            : "Select Brand";
-    }
-});
-
-
-// ✅ Search Brand
-document.addEventListener('keyup', function (e) {
-    if (e.target.id === 'brandSearch') {
-
-        let value = e.target.value.toLowerCase();
-
-        document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
-            div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
-        });
-    }
-});
-
-
-// ✅ Download CSV
-document.getElementById('downloadBtn').addEventListener('click', function () {
-
-    let category = document.getElementById('category').value;
-    let subcategory = document.getElementById('subcategory').value;
-    let unit = document.getElementById('unit').value;
-    let gst = document.getElementById('gst').value;
-    let brands = document.querySelectorAll('.brand-checkbox:checked');
-
-    if (!category || !subcategory || brands.length === 0 || !unit || !gst) {
-        alert('Please select all fields');
-        return;
-    }
-
-    let form = document.getElementById('csvForm');
-    let formData = new FormData(form);
-
-    fetch("{{ route('product.sample-excel') }}", {
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: formData
-    })
-    .then(res => res.blob())
-    .then(blob => {
-
-        let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = "product_sample.csv";
-        a.click();
-
-        let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
-        modal.hide();
+            btn.innerText = selected.length > 0 ?
+                selected.length + " brand(s) selected" :
+                "Select Brand";
+        }
     });
-});
+
+
+    // ✅ Search Brand
+    document.addEventListener('keyup', function(e) {
+        if (e.target.id === 'brandSearch') {
+
+            let value = e.target.value.toLowerCase();
+
+            document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
+                div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
+            });
+        }
+    });
+
+
+    // ✅ Download CSV
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+
+        let category = document.getElementById('category').value;
+        let subcategory = document.getElementById('subcategory').value;
+        let unit = document.getElementById('unit').value;
+        let gst = document.getElementById('gst').value;
+        let brands = document.querySelectorAll('.brand-checkbox:checked');
+
+        if (!category || !subcategory || brands.length === 0 || !unit || !gst) {
+            alert('Please select all fields');
+            return;
+        }
+
+        let form = document.getElementById('csvForm');
+        let formData = new FormData(form);
+
+        fetch("{{ route('product.sample-excel') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: formData
+            })
+            .then(res => res.blob())
+            .then(blob => {
+
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = "product_sample.csv";
+                a.click();
+
+                let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+                modal.hide();
+            });
+    });
 </script>
 
 
