@@ -280,12 +280,8 @@ class WebsiteController extends Controller
     }
     public function addToCart(Request $request)
     {
-
         if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Please login first'
-            ], 401);
+            return response()->json(['success' => false, 'message' => 'Please login first'], 401);
         }
 
         $request->validate([
@@ -293,98 +289,63 @@ class WebsiteController extends Controller
             'qty' => 'required|integer|min:1'
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $productId = $request->product_id;
         $qty = (int)$request->qty;
-
         $dcId = session('dc_warehouse_id');
 
         if (!$dcId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Delivery location not selected'
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Delivery location not selected'], 422);
         }
 
-        // Check available stock
-        $availableQty = ProductBatch::where('product_id', $product->id)
+        $availableQty = ProductBatch::where('product_id', $productId)
             ->where('warehouse_id', $dcId)
             ->sum('quantity');
 
-        \Log::info('Stock Debug', [
-            'product_id' => $product->id,
-            'warehouse_id' => $dcId,
-            'available_stock' => $availableQty
-        ]);
-
         if ($availableQty <= 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Product out of stock'
-            ], 422);
+            return response()->json(['success' => false, 'message' => 'Product out of stock'], 422);
         }
 
         $userId = Auth::id();
+        $cart = Cart::firstOrCreate(['user_id' => $userId]);
 
-        // Get or create cart
-        $cart = Cart::firstOrCreate([
-            'user_id' => $userId
-        ]);
-
-        $product = Product::with('sale')->findOrFail($request->product_id);
-
-        $price = $product->final_price;
-
-        // ✅  sale active  sale price 
-        if ($product->sale && $product->sale->active()->online()->exists()) {
-            $price = $product->sale->sale_price;
-        }
-
-        // Check existing item
         $existingItem = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
+            ->where('product_id', $productId)
             ->first();
 
-        $newQty = $qty;
+        $newQty = $existingItem ? $existingItem->qty + $qty : $qty;
 
-        if ($existingItem) {
-            $newQty = $existingItem->qty + $qty;
-        }
-
-        // Stock validation with existing qty
         if ($newQty > $availableQty) {
-            return response()->json([
-                'success' => false,
-                'message' => "Only {$availableQty} items available in stock"
-            ], 422);
+            return response()->json(['success' => false, 'message' => "Only {$availableQty} items available in stock"], 422);
         }
 
-        // Create or update cart item
-        $item = CartItem::updateOrCreate(
-            [
-                'cart_id' => $cart->id,
-                'product_id' => $product->id,
-            ],
+        $product = Product::with('sale')->findOrFail($productId);
+
+        $price = $product->sale && $product->sale->active()->online()->exists()
+            ? $product->sale->sale_price
+            : $product->final_price;
+
+        $cartItem = CartItem::updateOrCreate(
+            ['cart_id' => $cart->id, 'product_id' => $productId],
             [
                 'qty' => $newQty,
                 'price' => $price,
-                'line_total' => $price * $newQty,
+                'line_total' => $price * $newQty
             ]
         );
 
-        // Recalculate cart totals
-        $cart->subtotal = $cart->items()->sum('line_total');
-        $cart->quantity = $cart->items()->sum('qty');
-        $cart->total = $cart->subtotal;
-        $cart->save();
+        $cart->update([
+            'subtotal' => $cart->items()->sum('line_total'),
+            'quantity' => $cart->items()->sum('qty'),
+            'total'    => $cart->items()->sum('line_total')
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Product added to cart',
-            'qty' => $item->qty,
-            'line_total' => number_format($item->line_total, 2),
+            'cart_count' => $cart->quantity,
             'cart_total' => number_format($cart->total, 2),
-            'subtotal' => number_format($cart->subtotal, 2),
-            'cart_count' => $cart->quantity
+            'qty' => $cartItem->qty ,// FINAL FIX
+             'cart_item_id' => $cartItem->id 
         ]);
     }
 
