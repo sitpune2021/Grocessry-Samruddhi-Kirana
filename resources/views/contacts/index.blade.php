@@ -12,10 +12,12 @@
                 <div class="col-md-auto me-auto">
                     <h4 class="card-title">User Contact List</h4>
                 </div>
-            </div><br><br>
+            </div>
 
             <!-- Search -->
-            <x-datatable-search />
+            <div class="px-3 pt-2">
+                <x-datatable-search />
+            </div>
 
             @if(session('success'))
             <div id="successAlert"
@@ -37,11 +39,10 @@
             @endif
 
             <div class="table-responsive mt-3">
-
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr class="bg-light ">
-                            <th>#</th>
+                <table id="contactTable" class="table table-bordered table-striped mb-0">
+                    <thead class="table-light ">
+                        <tr>
+                            <th>Sr no</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Message</th>
@@ -67,12 +68,12 @@
 
                 <!-- Pagination -->
                 <div class="mt-3 d-flex justify-content-end">
-                    {{ $contacts->links('pagination::bootstrap-5') }}
+                    {{ $contacts->onEachSide(0)->links('pagination::bootstrap-5') }}
                 </div>
 
-                <div class="text-muted mt-2">
+                <!-- <div class="text-muted mt-2">
                     {{ $contacts->firstItem() }}{{ $contacts->lastItem() }} {{ $contacts->total() }}
-                </div>
+                </div> -->
             </div>
 
         </div>
@@ -81,3 +82,40 @@
 </div>
 
 @endsection
+
+
+@push('scripts')
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+
+<!-- table search box script -->
+
+<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("batchTable");
+
+        if (!searchInput || !table) return;
+
+        const rows = table.querySelectorAll("tbody tr");
+
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
+
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
+        });
+
+    });
+</script>
+@endpush
