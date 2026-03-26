@@ -82,8 +82,6 @@
 </div>
 
 @endsection
-
-
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 
@@ -93,8 +91,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        const searchInput = document.getElementById("dt-search-1");
-        const table = document.getElementById("batchTable");
+    const searchInput = document.getElementById("dt-search-1");
+    
+        const table = document.getElementById("contactTable");
 
         if (!searchInput || !table) return;
 
