@@ -186,7 +186,7 @@ return [
             'type'  => 'single',
             'title' => 'POS System',
             'icon'  => 'bx bx-package',
-            'exclude_roles' => [3, 4],
+            'roles' => [5],
             'route'   => 'pos.create',
         ],
 
