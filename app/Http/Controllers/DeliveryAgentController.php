@@ -26,21 +26,41 @@ class DeliveryAgentController extends Controller
 
     public function index()
     {
-        $agents = DeliveryAgent::with(['user', 'shop'])
-            ->latest()
-            ->paginate(10);
+        $user = auth()->user();
+
+        $query = DeliveryAgent::with(['shop', 'user']);
+
+        if ($user->role_id == 1 || $user->role_id == 2) {
+            $agents = $query->latest()->paginate(10);
+        } else {
+            $agents = $query->where('shop_id', $user->warehouse_id)
+                ->latest()
+                ->paginate(10);
+        }
+
 
         return view('menus.delivery-agent.delivery-agent.index', compact('agents'));
     }
 
+
     public function create()
-    {
-        $mode = 'add';
-        $agent = null;
-        $shops = Warehouse::where('status', 'active')
-            ->where('type', 'distribution_center')->get();
-        return view('menus.delivery-agent.delivery-agent.add-delivery-agent', compact('mode', 'agent', 'shops'));
-    }
+{
+    $mode = 'add';
+    $agent = null;
+
+    $user = auth()->user();
+
+      $shops = Warehouse::where('id', $user->warehouse_id)
+        ->where('type', 'distribution_center')
+        ->where('status', 'active')
+        ->get();
+
+
+    return view(
+        'menus.delivery-agent.delivery-agent.add-delivery-agent',
+        compact('mode', 'agent', 'shops')
+    );
+}
 
     public function store(Request $request)
     {
