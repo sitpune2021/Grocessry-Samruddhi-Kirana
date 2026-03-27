@@ -28,8 +28,8 @@
         </div>
 
         <div class="card-body">
-            {{-- SUPER ADMIN and Master admin DC SELECTOR --}}
-            @if(auth()->user()->role_id == 1 || auth()->user()->role_id == 2 )
+            {{-- SUPER ADMIN DC SELECTOR --}}
+            @if(auth()->user()->role_id == 1)
                 <form method="GET" class="mb-4">
                     <div class="row">
                         <div class="col-md-4">

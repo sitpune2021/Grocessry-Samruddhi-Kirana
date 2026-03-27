@@ -116,33 +116,57 @@ class RoleController extends Controller
     }
 
     public function destroy(string $id)
-    {
-        Log::info('Role Delete Request Received', ['role_id' => $id]);
+{
+    Log::info('Role Delete Request Received', ['role_id' => $id]);
 
-        $role = Role::find($id); // normal find for web requests
+    $user = auth()->user();
+    $role = Role::find($id);
 
-        if (!$role) {
-            Log::warning('Role Not Found for Delete', ['role_id' => $id]);
-            return redirect()->route('roles.index')
-                ->with('error', 'Role not found');
-        }
-
-        try {
-            // Soft Delete
-            $role->delete();
-
-            Log::info('Role Soft Deleted Successfully', ['role_id' => $id]);
-
-            return redirect()->route('roles.index')
-                ->with('success', 'Role deleted successfully.');
-        } catch (\Exception $e) {
-            Log::error('Role Delete Error', [
-                'role_id' => $id,
-                'error'   => $e->getMessage()
-            ]);
-
-            return redirect()->route('roles.index')
-                ->with('error', 'Something went wrong: ' . $e->getMessage());
-        }
+    if (!$role) {
+        Log::warning('Role Not Found for Delete', ['role_id' => $id]);
+        return redirect()->route('roles.index')
+            ->with('error', 'Role not found');
     }
+
+    try {
+
+        // ❌ Prevent Master Admin deleting Super Admin
+        if ($user->role_id == 2 && strtolower($role->name) === 'super admin') {
+            return back()->withErrors([
+                'error' => 'You are not allowed to delete Super Admin role'
+            ]);
+        }
+
+        // ❌ Prevent deleting own role
+        if ($user->role_id == $role->id) {
+            return back()->withErrors([
+                'error' => 'You cannot delete your own role'
+            ]);
+        }
+
+        // ❌ Prevent deleting Super Admin by anyone except maybe system
+        if (strtolower($role->name) === 'super admin') {
+            return back()->withErrors([
+                'error' => 'Super Admin role cannot be deleted'
+            ]);
+        }
+
+        // Soft Delete
+        $role->delete();
+
+        Log::info('Role Soft Deleted Successfully', ['role_id' => $id]);
+
+        return redirect()->route('roles.index')
+            ->with('success', 'Role deleted successfully.');
+
+    } catch (\Exception $e) {
+        Log::error('Role Delete Error', [
+            'role_id' => $id,
+            'error'   => $e->getMessage()
+        ]);
+
+        return redirect()->route('roles.index')
+            ->with('error', 'Something went wrong: ' . $e->getMessage());
+    }
+}
 }

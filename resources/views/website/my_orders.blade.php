@@ -134,7 +134,7 @@
     }
 </style>
 
-<div class="container account-wrapper">
+<div class="container account-wrapper p-5">
     <div class="row g-4">
 
         <!-- Sidebar -->
