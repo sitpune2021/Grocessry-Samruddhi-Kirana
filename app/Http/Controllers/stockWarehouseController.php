@@ -153,11 +153,20 @@ class stockWarehouseController extends Controller
             ->values()
             ->toArray();
 
-        $challans = SupplierChallan::where('status', 'received')
-            ->whereNotIn('id', $usedChallanIds)
-            ->orderBy('id', 'desc')
-            ->get();
+        // $challans = SupplierChallan::where('status', 'received')
+        //     ->whereNotIn('id', $usedChallanIds)
+        //     ->orderBy('id', 'desc')
+        //     ->get();
 
+        $challansQuery = SupplierChallan::where('status', 'received')
+            ->whereNotIn('id', $usedChallanIds);
+
+        // If NOT admin → restrict by warehouse
+        if ($user->role_id != 1) {
+            $challansQuery->where('warehouse_id', $userWarehouse->id);
+        }
+
+        $challans = $challansQuery->orderBy('id', 'desc')->get();
 
         return view(
             'menus.warehouse.add-stock.add-stock',
