@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $user = auth()->user();
+@endphp
 <div class="container-xxl flex-grow-1 container-p-y">
 
     <div class="card">
@@ -79,10 +82,9 @@
                                 @if(hasPermission('roles.show'))
                                 <a href="{{ route('roles.show', $role->id) }}" class="btn btn-sm btn-primary">View</a>
                                 @endif
-                                @if(hasPermission('roles.edit'))
-                                <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-warning">Edit</a>
+@if(hasPermission('roles.edit') && !($user->role_id == 2 && $role->id == 1))                                <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-warning">Edit</a>
                                 @endif
-                                @if(hasPermission('user.delete'))
+@if(hasPermission('user.delete') && !($user->role_id == 2 && $role->id == 1))
                                 <form action="{{ route('roles.destroy', $role->id)}}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
