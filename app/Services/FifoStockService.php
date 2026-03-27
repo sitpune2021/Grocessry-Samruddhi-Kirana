@@ -54,14 +54,14 @@ class FifoStockService
             }
 
             /* ---------- STOCK MOVEMENT ---------- */
-            StockMovement::create([
-                'product_batch_id' => $batch->id,
-                'warehouse_id'     => $warehouseId,
-                'quantity'         => -$take,
-                'reference_type'   => 'order',
-                'reference_id'     => $orderId,
-                'created_by'       => $userId,
-            ]);
+            // StockMovement::create([
+            //     'product_batch_id' => $batch->id,
+            //     'warehouse_id'     => $warehouseId,
+            //     'quantity'         => -$take,
+            //     'reference_type'   => 'order',
+            //     'reference_id'     => $orderId,
+            //     'created_by'       => $userId,
+            // ]);
 
             $consumed[] = [
                 'batch_id' => $batch->id,
