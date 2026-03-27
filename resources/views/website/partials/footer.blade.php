@@ -51,9 +51,9 @@
             <div class="col-lg-3 col-md-6">
                 <h5 class="footer-title">Contact Us</h5>
 
-                <p><i class="fas fa-map-marker-alt"></i><b>1429 Netus Rd, NY 48247</b></p>
-                <p><i class="fas fa-envelope"></i><b>example@gmail.com</b></p>
-                <p><i class="fas fa-phone"></i> <b>+0123 4567 8910</b></p>
+                <p><i class="fas fa-map-marker-alt"></i><b style="margin-left: 10px;">1429 Netus Rd, NY 48247</b></p>
+                <p><i class="fas fa-envelope"></i><b style="margin-left: 10px;">example@gmail.com</b></p>
+                <p><i class="fas fa-phone"></i> <b style="margin-left: 7px;">+0123 4567 8910</b></p>
 
                 <div class="mt-3">
                     <img src="{{ asset('website/img/payment.png') }}"
