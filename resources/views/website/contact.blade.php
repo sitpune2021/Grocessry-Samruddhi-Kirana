@@ -6,6 +6,7 @@
 @section('content')
 
 <body>
+
     <style>
         .contact-section {
             background: #f8f9fa;
@@ -74,12 +75,13 @@
             margin-bottom: 5px;
         }
     </style>
+
     <!-- Contact Start -->
-    <section class="contact-section py-5" >
-        <div class="container">
+    <section class="contact-section p-5" style="background-color: white;">
+        <div class="container" >
 
             <!-- SECTION TITLE -->
-            <div class="text-center mb-5">
+            <div class="text-center mb-4">
                 <h2 class="contact-title">Contact Us</h2>
                 <p class="contact-subtitle">
                     We’d love to hear from you. Please fill out the form below
@@ -183,7 +185,7 @@
 
     <!-- Contact End -->
 
-    <div class="container featurs py-4">
+    <div class="container featurs py-4" style="background-color: white;">
         <div class="container">
             <div class="row g-3">
 
@@ -244,3 +246,5 @@
     </div>
 
 </body>
+
+@endsection

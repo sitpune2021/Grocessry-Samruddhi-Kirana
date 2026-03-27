@@ -1,6 +1,6 @@
 <!-- Footer Start -->
 <!-- MAIN FOOTER -->
-<footer class="footer-section">
+<footer class="footer-section" style="background-color: gainsboro;">
     <div class="container py-5">
         <div class="row g-4">
 
@@ -11,8 +11,8 @@
                         class="mb-3 footer-logo" alt="Logo">
 
                     <p class="footer-text">
-                        Fresh groceries delivered at your doorstep with quality and trust.
-                        Your daily needs partner.
+                        <b>Fresh groceries delivered at your doorstep with quality and trust.
+                        Your daily needs partner.</b>
                     </p>
 
                     <div class="footer-social mt-3">
@@ -28,22 +28,22 @@
             <div class="col-lg-3 col-md-6">
                 <h5 class="footer-title">Shop Info</h5>
                 <ul class="footer-links">
-                    <li><a href="{{ route('about') }}">About Us</a></li>
-                    <li><a href="{{ route('contact') }}">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms & Conditions</a></li>
-                    <li><a href="#">Return Policy</a></li>
-                    <li><a href="#">FAQs</a></li>
+                    <li><a href="{{ route('about') }}"><b>About Us</b></a></li>
+                    <li><a href="{{ route('contact') }}"><b>Contact Us</b></a></li>
+                    <li><a href="#"><b>Privacy Policy</b></a></li>
+                    <li><a href="#"><b>Terms & Conditions</b></a></li>
+                    <li><a href="#"><b>Return Policy</b></a></li>
+                    <li><a href="#"><b>FAQs</b></a></li>
                 </ul>
             </div>
 
             <!-- ACCOUNT -->
             <div class="col-lg-3 col-md-6">
-                <h5 class="footer-title">My Account</h5>
+                <h5 class="footer-title"><b>My Account</b></h5>
                 <ul class="footer-links">
-                    <li><a href="#">My Account</a></li>
+                    <li><a href="#"><b>My Account</b></a></li>
                     <!-- <li><a href="{{ route('cart') }}">Shopping Cart</a></li> -->
-                    <li><a href="{{ route('my_orders') }}">Order History</a></li>
+                    <li><a href="{{ route('my_orders') }}"><b>Order History</b></a></li>
                 </ul>
             </div>
 
@@ -51,9 +51,9 @@
             <div class="col-lg-3 col-md-6">
                 <h5 class="footer-title">Contact Us</h5>
 
-                <p><i class="fas fa-map-marker-alt"></i> 1429 Netus Rd, NY 48247</p>
-                <p><i class="fas fa-envelope"></i> example@gmail.com</p>
-                <p><i class="fas fa-phone"></i> +0123 4567 8910</p>
+                <p><i class="fas fa-map-marker-alt"></i><b>1429 Netus Rd, NY 48247</b></p>
+                <p><i class="fas fa-envelope"></i><b>example@gmail.com</b></p>
+                <p><i class="fas fa-phone"></i> <b>+0123 4567 8910</b></p>
 
                 <div class="mt-3">
                     <img src="{{ asset('website/img/payment.png') }}"
@@ -66,7 +66,7 @@
 
     <!-- COPYRIGHT -->
     <div class="footer-bottom text-center py-3">
-        © 2026 <strong>Samrudhi Kirana</strong> | Designed by SIT Solutions Pvt Ltd
+        © 2026 <strong>Samrudh Kirana</strong> | Designed by SIT Solutions Pvt Ltd
     </div>
 </footer>
 
