@@ -114,9 +114,21 @@ class TransferChallanController extends Controller
             $remainingStock = $availableStock;
 
             // ❌ VALIDATION FAIL
+            // if ($request->quantities[$index] > $remainingStock) {
+            //     return back()->withInput()->with('error',
+            //         "Only {$remainingStock} qty available for this product. Cannot dispatch more."
+            //     );
+            // }
+
+            // ❌ VALIDATION FAIL
             if ($request->quantities[$index] > $remainingStock) {
-                return back()->withInput()->with('error',
-                    "Only {$remainingStock} qty available for this product. Cannot dispatch more."
+
+                $product = Product::find($productId); // fetch product
+                $productName = $product ? $product->name : 'Unknown Product';
+
+                return back()->withInput()->with(
+                    'error',
+                    "Only {$remainingStock} qty available for {$productName}. Cannot dispatch more."
                 );
             }
 
