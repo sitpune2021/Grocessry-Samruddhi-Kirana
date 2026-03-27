@@ -166,8 +166,8 @@ class ProductBatchController extends Controller
 
                 'batch_no' => 'required|string|max:50|unique:product_batches,batch_no',
 
-                'mfg_date'         => 'nullable|date',
-                'expiry_date'      => 'nullable|date|after:mfg_date',
+                'mfg_date'         => 'required|date',
+                'expiry_date'      => 'required|date|after:mfg_date',
 
                 'quantity' => [
                     'required',
