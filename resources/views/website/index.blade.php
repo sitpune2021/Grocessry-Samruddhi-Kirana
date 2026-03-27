@@ -81,7 +81,6 @@
 
     <!-- sell product  -->
     @if($saleproduct->count())
-    <!-- sell product  -->
     <div class="container py-2">
         <div class="row p-2">
             <div class="col text-start">

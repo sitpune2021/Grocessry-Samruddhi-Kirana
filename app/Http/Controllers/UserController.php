@@ -282,11 +282,10 @@ class UserController extends Controller
             $originalName = $request->file('profile_photo')->getClientOriginalName();
 
             // Store file
-            $path = $request->file('profile_photo')
-                ->storeAs('public/profiles', $originalName);
+            $path = $request->file('profile_photo')->store('profile_photos', 'public');
 
             // Save path in DB
-            $user->profile_photo = 'profiles/' . $originalName;
+           $user->profile_photo = $path;
         }
 
         $user->save();
