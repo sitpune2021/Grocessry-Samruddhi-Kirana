@@ -33,7 +33,15 @@
 
                                     @if(session('error'))
                                         <div class="alert alert-danger">
-                                            {{ session('error') }}
+                                            @if(is_array(session('error')))
+                                                <ul style="margin:0; padding-left:20px;">
+                                                    @foreach(session('error') as $err)
+                                                        <li>{{ $err }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            @else
+                                                {{ session('error') }}
+                                            @endif
                                         </div>
                                     @endif
 
