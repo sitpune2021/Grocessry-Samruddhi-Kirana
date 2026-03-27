@@ -16,16 +16,19 @@
                     <h4 class="card-title mb-0">Delivery Agent</h4>
                 </div>
                 <div class="col-md-auto ms-auto">
+                    @php
+                    $user = auth()->user();
+                    $isDC = optional($user->warehouse)->type === 'distribution_center';
+                    @endphp
+
+                    @if($isDC && !in_array($user->role_id, [1,2]))
                     <a href="{{ route('delivery-agents.create') }}"
                         class="btn btn-success d-flex align-items-center gap-1">
                         Add Agent
                     </a>
+                    @endif
                 </div>
-
             </div>
-
-
-
         </div>
 
         <!-- Search -->
@@ -51,7 +54,7 @@
             }, 10000); // 15 seconds
         </script>
         @endif
-        
+
         <!-- Table -->
         <div class="table-responsive mt-5 p-3">
             <table id="driverVehicleTable" class="table table-bordered table-striped dt-responsive nowrap w-100 mt-4 mb-5">
@@ -164,4 +167,33 @@
 
 @push('scripts')
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const searchInput = document.getElementById("dt-search-1");
+        const table = document.getElementById("driverVehicleTable");
+
+        if (!searchInput || !table) return;
+
+        const rows = table.querySelectorAll("tbody tr");
+
+        searchInput.addEventListener("keyup", function() {
+            const value = this.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+
+                // Skip "No role found" row
+                if (row.cells.length === 1) return;
+
+                row.style.display = row.textContent
+                    .toLowerCase()
+                    .includes(value) ?
+                    "" :
+                    "none";
+            });
+        });
+
+    });
+</script>
+
 @endpush
