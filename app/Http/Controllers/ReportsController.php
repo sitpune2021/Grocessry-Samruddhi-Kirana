@@ -363,6 +363,8 @@ class ReportsController extends Controller
 
     public function pos_report(Request $request)
     {
+        $user = auth()->user();
+
         $fromDate    = $request->query('from_date');
         $toDate      = $request->query('to_date');
         $warehouseId = $request->query('warehouse_id');
@@ -388,8 +390,14 @@ class ReportsController extends Controller
             ])
             ->orderBy('o.id', 'desc');
 
-        if ($warehouseId) {
-            $query->where('o.warehouse_id', $warehouseId);
+        if ($user->role_id == 1 || $user->role_id == 2) {
+            // Admin → can filter
+            if ($warehouseId) {
+                $query->where('o.warehouse_id', $warehouseId);
+            }
+        } else {
+            // DC user → force own warehouse only
+            $query->where('o.warehouse_id', $user->warehouse_id);
         }
 
         if ($fromDate && $toDate && $fromDate <= $toDate) {
@@ -449,5 +457,4 @@ class ReportsController extends Controller
 
         return view('reports.pos-report.pos-report', compact('rows'));
     }
-    
 }

@@ -13,7 +13,7 @@ class CustomerOrderController extends Controller
 
     public function index()
     {
-        
+
         $orders = Order::with([
             'items',
             'user',
@@ -45,17 +45,41 @@ class CustomerOrderController extends Controller
     }
 
 
-    public function userorder()
-    {
-        $orders = Order::where('channel', 'web')
-            ->with(['items.product', 'deliveryAgent.user'])
-            ->latest()
-            ->get();
+public function userorder(Request $request)
+{
+    $user = auth()->user();
 
-        return view('website.user_order', compact('orders'));
+    $warehouseId = $request->query('warehouse_id');
+    $fromDate = $request->query('from_date');
+    $toDate = $request->query('to_date');
+
+    $query = Order::where('channel', 'web')
+        ->with(['items.product', 'deliveryAgent.user', 'warehouse'])
+        ->latest();
+
+    // 🔐 SAME AS POS LOGIC
+    if ($user->role_id == 1 || $user->role_id == 2) {
+        // Admin → can filter
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+    } else {
+        // DC user → force own warehouse
+        $query->where('warehouse_id', $user->warehouse_id);
     }
 
-    public function exportCsv()
+    // 📅 Date filter
+    if ($fromDate && $toDate && $fromDate <= $toDate) {
+        $query->whereBetween('created_at', [
+            $fromDate . ' 00:00:00',
+            $toDate . ' 23:59:59'
+        ]);
+    }
+
+    $orders = $query->get();
+
+    return view('website.user_order', compact('orders'));
+}    public function exportCsv()
     {
         $orders = Order::where('channel', 'web')
             ->with(['items.product', 'deliveryAgent.user', 'user'])
@@ -106,7 +130,7 @@ class CustomerOrderController extends Controller
                     $productList,
                     $order->total_amount,
                     ($order->deliveryAgent->user->first_name ?? 'N/A') . ' ' .
-                    ($order->deliveryAgent->user->last_name ?? ''),
+                        ($order->deliveryAgent->user->last_name ?? ''),
                     $order->status
                 ];
 
