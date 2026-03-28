@@ -60,6 +60,7 @@
                             <th style="width: 25%;">total</th>
                             <th style="width: 25%;">order type</th>
                             <th style="width: 15%;">Payment Method</th>
+                            <th style="width: 15%;">Payment Status</th>
                             <th style="width: 25%;">Status</th>
                             <th class="text-center" style="width: 150px;">Actions</th>
                         </tr>
@@ -120,7 +121,7 @@
                             </td>
 
                             <td>
-                               ₹{{ number_format($order->orderItems->sum('total'), 2) }}
+                                ₹{{ number_format($order->orderItems->sum('total'), 2) }}
                             </td>
 
                             <td>
@@ -134,6 +135,17 @@
                                     {{ ucfirst($order->payment_method) }}
                                 </span>
                             </td>
+                            <td>
+                                @if($order->payment_status == 'paid')
+                                <span class="badge bg-success">
+                                    Paid
+                                </span>
+                                @else
+                                <span class="badge bg-warning  ">
+                                    Pending
+                                </span>
+                                @endif
+                            </td>
 
                             <td>
                                 <span class="badge bg-info">
@@ -144,7 +156,13 @@
 
 
                             <td class="text-center">
-                                @if($order->status === 'pending')
+                                @if(
+                                in_array($order->status, ['pending', 'confirmed']) &&
+                                (
+                                $order->payment_method == 'cash'
+                                || $order->payment_status == 'paid'
+                                )
+                                )
                                 <button class="btn btn-sm btn-success"
                                     data-bs-toggle="modal"
                                     data-bs-target="#assignAgentModal"

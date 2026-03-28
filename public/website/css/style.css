@@ -167,7 +167,7 @@
         }
     }
 
-    
+
     .navbar .nav-item:hover .dropdown-menu {
         transform: rotateX(0deg);
         visibility: visible;
@@ -635,8 +635,28 @@
         font-size: 14px;
     }
 
+    .status-pending {
+        background-color: #ffc107;
+        /* yellow */
+        color: #000;
+    }
 
-    
+    .status-assigned {
+        background-color: #fd7e14;
+        /* ORANGE 🔥 */
+        color: #fff;
+    }
+
+    .status-completed {
+        background-color: #198754;
+        /* green */
+        color: #fff;
+    }
+
+    .status-cancelled {
+        background-color: #dc3545;
+        /* red */
+        color: #fff;
+    }
+
     /* card mesg alrt */
-
-    

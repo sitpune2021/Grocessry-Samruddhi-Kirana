@@ -138,7 +138,7 @@
     <div class="row g-4">
 
         <!-- Sidebar -->
-        <div class="col-lg-3 col-md-4">
+        <div class="col-lg-3 col-md-4  ">
             <div class="account-sidebar">
                 <ul class="list-group list-group-flush">
 
@@ -183,20 +183,33 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            Order #: <strong>{{ $order->order_number }}</strong>
+                            Order ID: <strong>#{{ $order->order_number }}</strong>
                         </div>
 
                         @php
                         $statusClass = match($order->status) {
                         'pending' => 'status-pending',
-                        'completed' => 'status-completed',
-                        'cancelled' => 'status-cancelled',
+                        'confirmed' => 'status-confirmed',
+                        'assigned' => 'status-assigned',
+                        'delivered' => 'status-completed',
+                        'rejected' => 'status-cancelled',
                         default => 'bg-primary'
                         };
                         @endphp
 
+                        @php
+                        $statusText = match($order->status) {
+                        'pending' => 'Order Confirmed',
+                        'assigned' => 'Out for Delivery',
+                        'confirmed' => 'Delivered',
+                        'delivered' => 'Delivered',
+                        'rejected' => 'Cancelled',
+                        default => ucfirst($order->status)
+                        };
+                        @endphp
+
                         <span class="badge-status {{ $statusClass }}">
-                            {{ ucfirst($order->status) }}
+                            {{ $statusText }}
                         </span>
                     </div>
 
@@ -213,7 +226,7 @@
                             <tbody>
                                 @foreach($order->items as $item)
                                 <tr>
-                                    <td>{{ $item->product->name ?? 'N/A' }}</td>
+                                    {{ $item->product->name ?? 'Product removed' }}
                                     <td class="text-center">{{ $item->quantity }}</td>
                                     <td class="text-end">₹{{ number_format($item->price,2) }}</td>
                                     <td class="text-end fw-semibold">
@@ -265,7 +278,7 @@
                         {{ $address->city }} - {{ $address->postcode }}
                     </p>
                     <p class="mb-0">
-                        {{ $address->phone }} 
+                        {{ $address->phone }}
                     </p>
                 </div>
                 @empty
