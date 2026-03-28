@@ -10,6 +10,13 @@
 </div>
 @endif
 
+@if ($errors->any())
+    <script>
+        alert("{{ $errors->first() }}");
+    </script>
+@endif
+
+
 <!-- Content wrapper -->
 <div class="content-wrapper">
     <!-- Content -->
@@ -372,44 +379,43 @@
             $(this).closest('tr').remove();
         });
 
-
         // alert for error
-        $('#stockReturnForm').on('submit', function(e) {
-            e.preventDefault();
+        // $('#stockReturnForm').on('submit', function(e) {
+        //     e.preventDefault();
 
-            let form = this;
-            let formData = new FormData(form);
+        //     let form = this;
+        //     let formData = new FormData(form);
 
-            fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: formData
-                })
-                .then(async res => {
-                    let data = await res.json();
+        //     fetch(form.action, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        //                 'Accept': 'application/json'
+        //             },
+        //             body: formData
+        //         })
+        //         .then(async res => {
+        //             let data = await res.json();
 
-                    if (!res.ok) {
+        //             if (!res.ok) {
 
-                        let msg = data.message;
+        //                 let msg = data.message;
 
-                        if (data.errors) {
-                            msg = Object.values(data.errors)[0][0];
-                        }
+        //                 if (data.errors) {
+        //                     msg = Object.values(data.errors)[0][0];
+        //                 }
 
-                        alert(msg);
-                        return;
-                    }
+        //                 alert(msg);
+        //                 return;
+        //             }
 
-                    alert(data.message || 'Success');
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Return quantity exceeds available batch stock');
-                });
-        });
+        //             alert(data.message || 'Success');
+        //         })
+        //         .catch(err => {
+        //             console.error(err);
+        //             alert('Return quantity exceeds available batch stock');
+        //         });
+        // });
 
     });
 </script>

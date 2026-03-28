@@ -185,9 +185,23 @@
                     </select>
 
                     <!-- SubCategory (Single) -->
-                    <select id="subcategory" name="subcategory_id" class="form-control mb-2" required>
+                    <!-- <select id="subcategory" name="subcategory_id" class="form-control mb-2" required>
                         <option value="">Select SubCategory</option>
-                    </select>
+                    </select> -->
+
+                    <!-- SubCategory Multi Select -->
+                    <div class="dropdown mb-2">
+                        <button class="btn btn-outline-secondary w-100 text-start dropdown-toggle"
+                            type="button" id="subcategoryDropdown" data-bs-toggle="dropdown">
+                            Select SubCategory
+                        </button>
+
+                        <div class="dropdown-menu w-100 p-2"
+                            style="max-height: 200px; overflow-y: auto;"
+                            id="subcategoryDropdownMenu">
+                            <p class="text-muted">Select SubCategory</p>
+                        </div>
+                    </div>
 
                     <!-- Brand Dropdown with Checkbox -->
                     <div class="dropdown mb-2">
@@ -308,44 +322,58 @@
 
     });
 </script>
-<script>
-const categories = @json($categories);
+<!-- <script>
+    const categories = @json($categories);
 
-// ✅ Load SubCategory
-document.getElementById('category').addEventListener('change', function () {
+    // ✅ Load SubCategory
+    document.getElementById('category').addEventListener('change', function() {
 
-    let cat = categories.find(c => c.id == this.value);
-    let sub = document.getElementById('subcategory');
+        let categoryId = this.value;
 
-    sub.innerHTML = '<option value="">Select SubCategory</option>';
+        fetch(`/get-sub-categories/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
 
-    if (cat) {
-        cat.sub_categories.forEach(s => {
-            sub.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-        });
-    }
+                let menu = document.getElementById('subcategoryDropdownMenu');
+                menu.innerHTML = '';
 
-    // Reset brands
-    document.getElementById('brandDropdownMenu').innerHTML = '<p class="text-muted">Select Brand</p>';
-    document.getElementById('brandDropdown').innerText = 'Select Brand';
-});
+                // Select All Option
+                menu.innerHTML += `
+                <div class="form-check">
+                    <input type="checkbox" id="selectAllSubcategory" class="form-check-input">
+                    <label class="form-check-label">Select All</label>
+                </div>
+                <hr>
+            `;
+
+                data.forEach(sub => {
+                    menu.innerHTML += `
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input subcategory-checkbox"
+                            value="${sub.id}">
+                        <label class="form-check-label">${sub.name}</label>
+                    </div>
+                `;
+                });
+            });
+    });
 
 
-// ✅ Load Brands (Checkbox dropdown)
-document.getElementById('subcategory').addEventListener('change', function () {
+    // ✅ Load Brands (Checkbox dropdown)
+    document.getElementById('subcategory').addEventListener('change', function() {
 
-    let cat = categories.find(c => c.id == document.getElementById('category').value);
-    let subId = this.value;
-    let dropdown = document.getElementById('brandDropdownMenu');
+        let cat = categories.find(c => c.id == document.getElementById('category').value);
+        let subId = this.value;
+        let dropdown = document.getElementById('brandDropdownMenu');
 
-    dropdown.innerHTML = '';
+        dropdown.innerHTML = '';
 
-    if (cat) {
-        let sub = cat.sub_categories.find(s => s.id == subId);
+        if (cat) {
+            let sub = cat.sub_categories.find(s => s.id == subId);
 
-        if (sub && sub.brands.length > 0) {
+            if (sub && sub.brands.length > 0) {
 
-            dropdown.innerHTML += `
+                dropdown.innerHTML += `
                 <input type="text" class="form-control mb-2" placeholder="Search..." id="brandSearch">
 
                 <div class="form-check">
@@ -355,95 +383,333 @@ document.getElementById('subcategory').addEventListener('change', function () {
                 <hr>
             `;
 
-            sub.brands.forEach(b => {
-                dropdown.innerHTML += `
+                sub.brands.forEach(b => {
+                    dropdown.innerHTML += `
                     <div class="form-check">
                         <input class="form-check-input brand-checkbox" type="checkbox"
                             name="brand_id[]" value="${b.id}" id="brand_${b.id}">
                         <label class="form-check-label">${b.name}</label>
                     </div>
                 `;
+                });
+
+            } else {
+                dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
+            }
+        }
+    });
+
+
+    // ✅ Select All + Count
+    document.addEventListener('change', function(e) {
+
+        if (e.target.id === 'selectAllBrands') {
+            let isChecked = e.target.checked;
+
+            let allCheckboxes = document.querySelectorAll('.brand-checkbox');
+            let dropdownBtn = document.getElementById('brandDropdown'); // 👈 your brand button id
+
+            // Check / Uncheck all
+            allCheckboxes.forEach(cb => {
+                cb.checked = isChecked;
             });
 
-        } else {
-            dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
+            // ✅ Update text
+            if (isChecked) {
+                dropdownBtn.innerText = "All Brands Selected";
+            } else {
+                dropdownBtn.innerText = "Select Brand";
+            }
         }
-    }
-});
 
+        if (e.target.classList.contains('brand-checkbox')) {
 
-// ✅ Select All + Count
-document.addEventListener('change', function (e) {
+            let selected = document.querySelectorAll('.brand-checkbox:checked');
+            let btn = document.getElementById('brandDropdown');
 
-    if (e.target.id === 'selectAllBrands') {
-        document.querySelectorAll('.brand-checkbox').forEach(cb => {
-            cb.checked = e.target.checked;
-        });
-    }
-
-    if (e.target.classList.contains('brand-checkbox')) {
-
-        let selected = document.querySelectorAll('.brand-checkbox:checked');
-        let btn = document.getElementById('brandDropdown');
-
-        btn.innerText = selected.length > 0
-            ? selected.length + " brand(s) selected"
-            : "Select Brand";
-    }
-});
-
-
-// ✅ Search Brand
-document.addEventListener('keyup', function (e) {
-    if (e.target.id === 'brandSearch') {
-
-        let value = e.target.value.toLowerCase();
-
-        document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
-            div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
-        });
-    }
-});
-
-
-// ✅ Download CSV
-document.getElementById('downloadBtn').addEventListener('click', function () {
-
-    let category = document.getElementById('category').value;
-    let subcategory = document.getElementById('subcategory').value;
-    let unit = document.getElementById('unit').value;
-    let gst = document.getElementById('gst').value;
-    let brands = document.querySelectorAll('.brand-checkbox:checked');
-
-    if (!category || !subcategory || brands.length === 0 || !unit || !gst) {
-        alert('Please select all fields');
-        return;
-    }
-
-    let form = document.getElementById('csvForm');
-    let formData = new FormData(form);
-
-    fetch("{{ route('product.sample-excel') }}", {
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        },
-        body: formData
-    })
-    .then(res => res.blob())
-    .then(blob => {
-
-        let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a');
-        a.href = url;
-        a.download = "product_sample.csv";
-        a.click();
-
-        let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
-        modal.hide();
+            btn.innerText = selected.length > 0 ?
+                selected.length + " brand(s) selected" :
+                "Select Brand";
+        }
     });
-});
-</script>
 
+
+    // ✅ Search Brand
+    document.addEventListener('keyup', function(e) {
+        if (e.target.id === 'brandSearch') {
+
+            let value = e.target.value.toLowerCase();
+
+            document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
+                div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
+            });
+        }
+    });
+
+
+    // ✅ Download CSV
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+
+        let category = document.getElementById('category').value;
+        let subcategory = document.getElementById('subcategory').value;
+        let unit = document.getElementById('unit').value;
+        let gst = document.getElementById('gst').value;
+        let brands = document.querySelectorAll('.brand-checkbox:checked');
+
+        if (!category || !subcategory || brands.length === 0 || !unit || !gst) {
+            alert('Please select all fields');
+            return;
+        }
+
+        let form = document.getElementById('csvForm');
+        let formData = new FormData(form);
+
+        fetch("{{ route('product.sample-excel') }}", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                },
+                body: formData
+            })
+            .then(res => res.blob())
+            .then(blob => {
+
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = "product_sample.csv";
+                a.click();
+
+                let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+                modal.hide();
+            });
+    });
+</script> -->
+
+<script>
+    const categories = @json($categories);
+
+    // =========================
+    // ✅ LOAD SUBCATEGORIES
+    // =========================
+    document.getElementById('category').addEventListener('change', function () {
+
+        let categoryId = this.value;
+
+        fetch(`/get-sub-categories/${categoryId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                let menu = document.getElementById('subcategoryDropdownMenu');
+                menu.innerHTML = '';
+
+                // Select All
+                menu.innerHTML += `
+                    <div class="form-check">
+                        <input type="checkbox" id="selectAllSubcategory" class="form-check-input">
+                        <label class="form-check-label fw-bold">Select All</label>
+                    </div>
+                    <hr>
+                `;
+
+                data.forEach(sub => {
+                    menu.innerHTML += `
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input subcategory-checkbox"
+                                value="${sub.id}">
+                            <label class="form-check-label">${sub.name}</label>
+                        </div>
+                    `;
+                });
+
+                // Reset brand dropdown
+                document.getElementById('brandDropdownMenu').innerHTML =
+                    '<p class="text-muted">Select SubCategory first</p>';
+            });
+    });
+
+
+    // =========================
+    // ✅ HANDLE SUBCATEGORY + BRAND LOAD
+    // =========================
+    document.addEventListener('change', function (e) {
+
+        // ✅ Select All Subcategory
+        if (e.target.id === 'selectAllSubcategory') {
+            document.querySelectorAll('.subcategory-checkbox').forEach(cb => {
+                cb.checked = e.target.checked;
+            });
+        }
+
+        // ✅ When subcategory changes → load brands
+        if (e.target.classList.contains('subcategory-checkbox') || e.target.id === 'selectAllSubcategory') {
+
+            let selectedSubIds = [];
+
+            document.querySelectorAll('.subcategory-checkbox:checked').forEach(cb => {
+                selectedSubIds.push(cb.value);
+            });
+
+            // Update button text
+            let subBtn = document.getElementById('subcategoryDropdown');
+            subBtn.innerText = selectedSubIds.length > 0
+                ? selectedSubIds.length + " subcategory(s) selected"
+                : "Select SubCategory";
+
+            let cat = categories.find(c => c.id == document.getElementById('category').value);
+            let dropdown = document.getElementById('brandDropdownMenu');
+
+            dropdown.innerHTML = '';
+
+            if (!cat || selectedSubIds.length === 0) {
+                dropdown.innerHTML = '<p class="text-muted">Select SubCategory first</p>';
+                return;
+            }
+
+            let brandsMap = {};
+
+            selectedSubIds.forEach(subId => {
+
+                let sub = cat.sub_categories.find(s => s.id == subId);
+
+                if (sub && sub.brands) {
+                    sub.brands.forEach(b => {
+                        brandsMap[b.id] = b; // remove duplicates
+                    });
+                }
+            });
+
+            let brands = Object.values(brandsMap);
+
+            if (brands.length > 0) {
+
+                dropdown.innerHTML += `
+                    <input type="text" class="form-control mb-2" placeholder="Search..." id="brandSearch">
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllBrands">
+                        <label class="form-check-label fw-bold">Select All</label>
+                    </div>
+                    <hr>
+                `;
+
+                brands.forEach(b => {
+                    dropdown.innerHTML += `
+                        <div class="form-check">
+                            <input class="form-check-input brand-checkbox" type="checkbox"
+                                name="brand_id[]" value="${b.id}">
+                            <label class="form-check-label">${b.name}</label>
+                        </div>
+                    `;
+                });
+
+            } else {
+                dropdown.innerHTML = '<p class="text-danger">No brands found</p>';
+            }
+        }
+
+        // =========================
+        // ✅ SELECT ALL BRANDS
+        // =========================
+        if (e.target.id === 'selectAllBrands') {
+
+            let isChecked = e.target.checked;
+
+            document.querySelectorAll('.brand-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+
+            let btn = document.getElementById('brandDropdown');
+            btn.innerText = isChecked ? "All Brands Selected" : "Select Brand";
+        }
+
+        // =========================
+        // ✅ BRAND COUNT
+        // =========================
+        if (e.target.classList.contains('brand-checkbox')) {
+
+            let selected = document.querySelectorAll('.brand-checkbox:checked');
+            let btn = document.getElementById('brandDropdown');
+
+            btn.innerText = selected.length > 0
+                ? selected.length + " brand(s) selected"
+                : "Select Brand";
+        }
+    });
+
+
+    // =========================
+    // ✅ SEARCH BRAND
+    // =========================
+    document.addEventListener('keyup', function (e) {
+
+        if (e.target.id === 'brandSearch') {
+
+            let value = e.target.value.toLowerCase();
+
+            document.querySelectorAll('#brandDropdownMenu .form-check').forEach(div => {
+                div.style.display = div.innerText.toLowerCase().includes(value) ? '' : 'none';
+            });
+        }
+    });
+
+
+    // =========================
+    // ✅ DOWNLOAD CSV
+    // =========================
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+
+        let category = document.getElementById('category').value;
+        let unit = document.getElementById('unit').value;
+        let gst = document.getElementById('gst').value;
+
+        // ✅ Multiple subcategories
+        let subcategories = [];
+        document.querySelectorAll('.subcategory-checkbox:checked').forEach(cb => {
+            subcategories.push(cb.value);
+        });
+
+        // ✅ Brands
+        let brands = [];
+        document.querySelectorAll('.brand-checkbox:checked').forEach(cb => {
+            brands.push(cb.value);
+        });
+
+        if (!category || subcategories.length === 0 || brands.length === 0 || !unit || !gst) {
+            alert('Please select all fields');
+            return;
+        }
+
+        let form = document.getElementById('csvForm');
+        let formData = new FormData(form);
+
+        // ✅ Append multiple subcategories
+        formData.delete('subcategory_id');
+
+        subcategories.forEach(id => {
+            formData.append('subcategory_ids[]', id);
+        });
+
+        fetch("{{ route('product.sample-excel') }}", {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            },
+            body: formData
+        })
+        .then(res => res.blob())
+        .then(blob => {
+
+            let url = window.URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = "product_sample.csv";
+            a.click();
+
+            let modal = bootstrap.Modal.getInstance(document.getElementById('csvModal'));
+            modal.hide();
+        });
+    });
+</script>
 
 @endpush

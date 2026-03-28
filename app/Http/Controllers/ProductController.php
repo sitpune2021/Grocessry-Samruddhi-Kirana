@@ -246,19 +246,90 @@ class ProductController extends Controller
     }
 
 
+    // public function downloadSampleExcel(Request $request)
+    // {
+    //     $request->validate([
+    //         'category_id' => 'required',
+    //         'subcategory_id' => 'required',
+    //         'brand_id' => 'required|array',
+    //         'unit' => 'required',
+    //         'gst' => 'required'
+    //     ]);
+
+    //     $category = Category::findOrFail($request->category_id);
+    //     $subcategory = SubCategory::findOrFail($request->subcategory_id);
+    //     $brands = Brand::whereIn('id', $request->brand_id)->get();
+    //     $unit = Unit::findOrFail($request->unit);
+    //     $gst = Tax::findOrFail($request->gst);
+
+    //     $headers = [
+    //         "Content-Type" => "text/csv; charset=UTF-8",
+    //         "Content-Disposition" => "attachment; filename=product_sample.csv",
+    //     ];
+
+    //     return response()->stream(function () use ($category, $subcategory, $brands, $unit, $gst) {
+
+    //         $file = fopen('php://output', 'w');
+    //         echo "\xEF\xBB\xBF";
+
+    //         fputcsv($file, [
+    //             'Category',
+    //             'SubCategory',
+    //             'Brand',
+    //             'Product Name',
+    //             'Barcode',
+    //             'Description',
+    //             'Unit',
+    //             'Unit Value',
+    //             'Base Price',
+    //             'Selling Price',
+    //             'MRP',
+    //             'GST',
+    //             'Image Name'
+    //         ]);
+
+    //         foreach ($brands as $brand) {
+
+    //             for ($i = 0; $i < 5; $i++) {
+    //                 fputcsv($file, [
+    //                     $category->name,
+    //                     $subcategory->name,
+    //                     $brand->name,
+    //                     '',
+    //                     '',
+    //                     '',
+    //                     $unit->name,
+    //                     '',
+    //                     '',
+    //                     '',
+    //                     '',
+    //                     $gst->gst,
+    //                     ''
+    //                 ]);
+    //             }
+    //         }
+
+    //         fclose($file);
+    //     }, 200, $headers);
+    // }
+
     public function downloadSampleExcel(Request $request)
     {
         $request->validate([
             'category_id' => 'required',
-            'subcategory_id' => 'required',
+            'subcategory_ids' => 'required|array',
             'brand_id' => 'required|array',
             'unit' => 'required',
             'gst' => 'required'
         ]);
 
         $category = Category::findOrFail($request->category_id);
-        $subcategory = SubCategory::findOrFail($request->subcategory_id);
+
+        // ✅ MULTIPLE subcategories
+        $subcategories = SubCategory::whereIn('id', $request->subcategory_ids)->get();
+
         $brands = Brand::whereIn('id', $request->brand_id)->get();
+
         $unit = Unit::findOrFail($request->unit);
         $gst = Tax::findOrFail($request->gst);
 
@@ -267,11 +338,12 @@ class ProductController extends Controller
             "Content-Disposition" => "attachment; filename=product_sample.csv",
         ];
 
-        return response()->stream(function () use ($category, $subcategory, $brands, $unit, $gst) {
+        return response()->stream(function () use ($category, $subcategories, $brands, $unit, $gst) {
 
             $file = fopen('php://output', 'w');
             echo "\xEF\xBB\xBF";
 
+            // ✅ Header Row
             fputcsv($file, [
                 'Category',
                 'SubCategory',
@@ -288,30 +360,36 @@ class ProductController extends Controller
                 'Image Name'
             ]);
 
-            foreach ($brands as $brand) {
+            // ✅ LOOP: Subcategory → Brand → Rows
+            foreach ($subcategories as $subcategory) {
 
-                for ($i = 0; $i < 5; $i++) {
-                    fputcsv($file, [
-                        $category->name,
-                        $subcategory->name,
-                        $brand->name,
-                        '',
-                        '',
-                        '',
-                        $unit->name,
-                        '',
-                        '',
-                        '',
-                        '',
-                        $gst->gst,
-                        ''
-                    ]);
+                foreach ($brands as $brand) {
+
+                    for ($i = 0; $i < 5; $i++) {
+
+                        fputcsv($file, [
+                            $category->name,
+                            $subcategory->name,
+                            $brand->name,
+                            '',
+                            '',
+                            '',
+                            $unit->name,
+                            '',
+                            '',
+                            '',
+                            '',
+                            $gst->gst,
+                            ''
+                        ]);
+                    }
                 }
             }
 
             fclose($file);
         }, 200, $headers);
     }
+
 
     private function clean($value)
     {

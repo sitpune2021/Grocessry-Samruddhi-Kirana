@@ -96,6 +96,15 @@ class TransferChallanController extends Controller
                 'status'            => 'pending',
                 'created_by'        => auth()->id(),
             ]);
+            
+
+            // ✅ ADD THIS LINE
+            $errors = [];
+
+            // ✅ OPTIONAL (optimized product names)
+            $productNames = Product::whereIn('id', $request->products)
+                ->pluck('name', 'id');
+
             foreach ($request->products as $index => $productId) {
 
             // AVAILABLE STOCK CHECK (MASTER WAREHOUSE)
@@ -114,10 +123,28 @@ class TransferChallanController extends Controller
             $remainingStock = $availableStock;
 
             // ❌ VALIDATION FAIL
+            // if ($request->quantities[$index] > $remainingStock) {
+            //     return back()->withInput()->with('error',
+            //         "Only {$remainingStock} qty available for this product. Cannot dispatch more."
+            //     );
+            // }
+
+            // ❌ VALIDATION FAIL
             if ($request->quantities[$index] > $remainingStock) {
-                return back()->withInput()->with('error',
-                    "Only {$remainingStock} qty available for this product. Cannot dispatch more."
-                );
+
+                $product = Product::find($productId); // fetch product
+                $productName = $product ? $product->name : 'Unknown Product';
+
+                // return back()->withInput()->with(
+                //     'error',
+                //     "Only {$remainingStock} qty available for {$productName}. Cannot dispatch more."
+                // );
+                $productName = $productNames[$productId] ?? 'Unknown Product';
+
+if ($request->quantities[$index] > $remainingStock) {
+    $errors[] = "Only {$remainingStock} qty available for {$productName}. Cannot dispatch more.";
+    continue; // ✅ IMPORTANT: skip this product but continue loop
+}
             }
 
                 // 🔍 LOG PRODUCT LOOP
@@ -174,6 +201,12 @@ class TransferChallanController extends Controller
                     'challan_id' => $challan->id,
                     'status'     => 0,
                 ]);
+            }
+
+            // ❌ STOP if any errors found
+            if (!empty($errors)) {
+                DB::rollBack(); // rollback transaction
+                return back()->withInput()->with('error', $errors);
             }
 
             DB::commit();

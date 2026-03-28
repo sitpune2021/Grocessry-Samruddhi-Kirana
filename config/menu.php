@@ -185,23 +185,31 @@ return [
             'type'  => 'single',
             'title' => 'POS System',
             'icon'  => 'bx bx-package',
-            'exclude_roles' => [3, 4],
+            'roles' => [5],
             'route'   => 'pos.create',
         ],
 
         /* ================= Offer / Scheme Management ================= */
         [
-            'type'  => 'dropdown',
-            'key'   => 'OfferMenu',
-            'title' => 'Offer / Scheme Management',
+            'type'  => 'single',
+            'title' => 'Coupon Management',
             'icon'  => 'bx bx-package',
-            'exclude_roles' => [3, 4],
-            'children' => [
-                ['title' => 'Offer Management', 'route' => 'offers.index'],
-                //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
-                ['title' => 'Coupon Management', 'route' => 'coupons.index'],
-            ],
+            'roles' => [5],
+            'route'   => 'coupons.index',
         ],
+       
+        // [
+        //     'type'  => 'dropdown',
+        //     'key'   => 'OfferMenu',
+        //     'title' => 'Offer / Scheme Management',
+        //     'icon'  => 'bx bx-package',
+        //     'exclude_roles' => [3, 4],
+        //     'children' => [
+        //         ['title' => 'Offer Management', 'route' => 'offers.index'],
+        //         //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
+        //         ['title' => 'Coupon Management', 'route' => 'coupons.index'],
+        //     ],
+        // ],
 
         /* ================= Customer Management ================= */
         [
