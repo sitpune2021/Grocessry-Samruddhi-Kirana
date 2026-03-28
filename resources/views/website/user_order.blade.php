@@ -14,14 +14,48 @@
                 </div>
             </div><br><br>
 
-            <!-- Search -->
-            <x-datatable-search />
+            @php $user = auth()->user(); @endphp
 
-            <div class="col-md-auto ms-auto">
-                <a href="{{ route('orders.export.csv') }}" class="btn btn-success">
-                    Download CSV
-                </a>
-            </div>
+            <form method="GET" class="row g-2 mb-3">
+
+                {{-- Warehouse --}}
+                <div class="col-md-3">
+                    <select name="warehouse_id" class="form-select"
+                        {{ !in_array($user->role_id, [1,2]) ? 'disabled' : '' }}>
+
+                        <option value="">All Warehouses</option>
+
+                        @foreach(\App\Models\Warehouse::where('type','distribution_center')->get() as $wh)
+                        <option value="{{ $wh->id }}"
+                            {{ request('warehouse_id', $user->warehouse_id) == $wh->id ? 'selected' : '' }}>
+                            {{ $wh->name }}
+                        </option>
+                        @endforeach
+                    </select>
+
+                    @if(!in_array($user->role_id, [1,2]))
+                    <input type="hidden" name="warehouse_id" value="{{ $user->warehouse_id }}">
+                    @endif
+                </div>
+
+                {{-- Dates --}}
+                <div class="col-md-2">
+                    <input type="date" name="from_date" class="form-control" value="{{ request('from_date') }}">
+                </div>
+
+                <div class="col-md-2">
+                    <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
+                </div>
+
+                <div class="col-md-12 d-flex gap-2 mt-2">
+                    <button class="btn btn-primary btn-sm">Filter</button>
+                    <a href="" class="btn btn-secondary btn-sm">Reset</a>
+                    <a href="{{ route('orders.export.csv') }}" class="btn btn-success btn-sm">
+                        Download CSV
+                    </a>
+                </div>
+
+            </form>
 
             <div class="table-responsive mt-3">
 

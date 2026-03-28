@@ -93,4 +93,9 @@ class Order extends Model
     {
         return $this->belongsTo(UserAddress::class, 'address_id');
     }
+
+    public function warehouse()
+{
+    return $this->belongsTo(\App\Models\Warehouse::class, 'warehouse_id');
+}
 }
