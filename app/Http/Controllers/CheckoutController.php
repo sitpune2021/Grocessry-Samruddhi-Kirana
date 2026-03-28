@@ -253,10 +253,11 @@ class CheckoutController extends Controller
 
 
             /* ----ORDER CREATE-------*/
-
+            Log::info('DC ID:', ['dc_id' => $dcId]);
             $order = Order::create([
                 'user_id'        => auth()->id(),
                 'address_id' => $addressId,
+                'warehouse_id'   => $dcId,
                 'order_number'   => 'ORD' . date('Ymd') . rand(1000, 9999),
                 'channel'        => 'web',
                 'subtotal'       => $cart->subtotal,
@@ -344,7 +345,7 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                // ❗ SAFETY CHECK (VERY IMPORTANT)
+                //  SAFETY CHECK (VERY IMPORTANT)
                 if ($remainingQty > 0) {
 
                     DB::rollBack();
