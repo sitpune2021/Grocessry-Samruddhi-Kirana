@@ -300,7 +300,7 @@ class CheckoutController extends Controller
 
                 $remainingQty = $item->qty;
 
-                // 🔥 IMPORTANT: lockForUpdate  (race condition fix)
+                //  IMPORTANT: lockForUpdate  (race condition fix)
                 $batches = ProductBatch::where('product_id', $item->product_id)
                     ->where('warehouse_id', $dcId)
                     ->where('quantity', '>', 0)
