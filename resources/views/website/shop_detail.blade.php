@@ -11,18 +11,68 @@
 
 <!-- Product Detail -->
 
+<style>
+    .image-box {
+        position: relative;
+        width: 100%;
+        max-width: 450px;
+    }
 
+    #productImage {
+        width: 100%;
+        display: block;
+    }
+
+    #lens {
+        position: absolute;
+        border: 1px solid #000;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.3);
+        display: none;
+        pointer-events: none;
+        /* 🔥 important fix */
+    }
+
+    .product-image-wrapper {
+        position: relative;
+    }
+
+    #zoomResult {
+        position: absolute;
+        left:34%;
+        top: 0;
+        /* adjust based on layout */
+        width: 750px;
+        height: 310px;
+        border: 1px solid #ddd;
+        background-repeat: no-repeat;
+        display: none;
+        z-index: 9999;
+
+        background-color: #fff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
 <div class="container mb-5" style="margin-top:220px;">
-    <div class="row g-4">
+    <div class="row g-4 position-relative">
 
         <!-- Product Images -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm product-image-wrapper">
-                <img src="{{ asset('storage/products/'.$product->product_images[0]) }}"
-                    class="img-fluid product-main-img"
-                    alt="{{ $product->name }}">
+        <div class="col-lg-4">
+            <div class="card shadow-sm product-image-wrapper d-flex">
+                <div class="image-box position-relative">
+                    <img id="productImage"
+                        src="{{ asset('storage/products/'.$product->product_images[0]) }}"
+                        class="img-fluid product-main-img"
+                        alt="{{ $product->name }}">
+
+                    <div id="lens"></div>
+
+                </div>
             </div>
         </div>
+        <!-- MOVE HERE -->
+        <div id="zoomResult"></div>
 
         <!-- Product Info -->
         <div class="col-lg-7">
@@ -229,6 +279,65 @@
 <div id="custom-alert-container"></div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<script>
+    const img = document.getElementById("productImage");
+    const lens = document.getElementById("lens");
+    const result = document.getElementById("zoomResult");
+
+    if (img) {
+
+        img.addEventListener("mouseenter", () => {
+            lens.style.display = "block";
+            result.style.display = "block";
+            result.style.backgroundImage = `url('${img.src}')`;
+        });
+
+        img.addEventListener("mouseleave", () => {
+            lens.style.display = "none";
+            result.style.display = "none";
+        });
+
+        img.addEventListener("mousemove", moveLens);
+        lens.addEventListener("mousemove", moveLens);
+
+        function moveLens(e) {
+            e.preventDefault();
+
+            const rect = img.getBoundingClientRect();
+
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+
+            const displayWidth = rect.width;
+            const displayHeight = rect.height;
+
+            const ratioX = img.naturalWidth / displayWidth;
+            const ratioY = img.naturalHeight / displayHeight;
+
+            // 👉 CENTER FIX (main issue solved here)
+            let lensX = x - (lens.offsetWidth / 2);
+            let lensY = y - (lens.offsetHeight / 2);
+
+            // 👉 boundaries
+            lensX = Math.max(0, Math.min(lensX, displayWidth - lens.offsetWidth));
+            lensY = Math.max(0, Math.min(lensY, displayHeight - lens.offsetHeight));
+
+            lens.style.left = lensX + "px";
+            lens.style.top = lensY + "px";
+
+            // 👉 ZOOM SCALE (important fix)
+            const zoomLevel = 2; // 🔥 change this (2 = normal, 3 = more zoom)
+
+            result.style.backgroundSize =
+                (img.naturalWidth * zoomLevel) + "px " +
+                (img.naturalHeight * zoomLevel) + "px";
+
+            result.style.backgroundPosition =
+                "-" + (lensX * ratioX * zoomLevel) + "px -" +
+                (lensY * ratioY * zoomLevel) + "px";
+        }
+    }
+</script>
 <script>
     $(document).ready(function() {
 
