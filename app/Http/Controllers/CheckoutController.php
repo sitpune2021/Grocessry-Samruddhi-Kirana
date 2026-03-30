@@ -51,10 +51,23 @@ class CheckoutController extends Controller
 
         $address = UserAddress::where('user_id', $userId)->first();
 
+        // $coupons = Coupon::where('status', 1)
+        //     ->whereDate('start_date', '<=', now())
+        //     ->whereDate('end_date', '>=', now())
+        //     ->get();
+
         $coupons = Coupon::where('status', 1)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
-            ->get();
+            ->get()
+            ->filter(function ($coupon) {
+
+                $userUsageCount = Order::where('user_id', auth()->id())
+                    ->where('coupon_code', $coupon->code)
+                    ->count();
+
+                return !$coupon->max_usage || $userUsageCount < $coupon->max_usage;
+            });
 
         return view('website.checkout', compact('cart', 'address', 'coupons', 'userAddresses', 'deliveryPincode', 'defaultAddress'));
     }
@@ -235,6 +248,16 @@ class CheckoutController extends Controller
 
                 if ($coupon) {
 
+                    // ✅ MAX USAGE CHECK (per user)
+                    $userUsageCount = Order::where('user_id', auth()->id())
+                        ->where('coupon_code', $coupon->code)
+                        ->count();
+
+                    if ($coupon->max_usage && $userUsageCount >= $coupon->max_usage) {
+                        return back()->with('error', 'You have already used this coupon maximum times');
+                    }
+
+                    // ✅ Existing discount logic (unchanged)
                     if ($coupon->discount_type === 'percentage') {
                         $couponDiscount = ($cart->subtotal * $coupon->discount_value) / 100;
                     } else {
@@ -250,7 +273,6 @@ class CheckoutController extends Controller
             }
 
             $finalTotal = $cart->subtotal - $couponDiscount;
-
 
             /* ----ORDER CREATE-------*/
             Log::info('DC ID:', ['dc_id' => $dcId]);
@@ -271,7 +293,6 @@ class CheckoutController extends Controller
                 'order_type'     => 'delivery',
             ]);
 
-
             /* ------PAYMENT-----*/
             Payment::create([
                 'order_id'        => $order->id,
@@ -280,7 +301,6 @@ class CheckoutController extends Controller
                 'amount'          => $order->total_amount,
                 'status'          => 'pending'
             ]);
-
 
             /* --ORDER ITEMS + STOCK REDUCTION-----*/
             foreach ($cart->items as $item) {

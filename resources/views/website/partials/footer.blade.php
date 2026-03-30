@@ -39,7 +39,7 @@
 
             <!-- ACCOUNT -->
             <div class="col-lg-3 col-md-6">
-                <h5 class="footer-title"><b>My Account</b></h5>
+                <h5 class="footer-title">My Account</h5>
                 <ul class="footer-links">
                     <li><a href="#"><b>My Account</b></a></li>
                     <!-- <li><a href="{{ route('cart') }}">Shopping Cart</a></li> -->
@@ -52,8 +52,8 @@
                 <h5 class="footer-title">Contact Us</h5>
 
                 <p><i class="fas fa-map-marker-alt"></i><b style="margin-left: 10px;">1429 Netus Rd, NY 48247</b></p>
-                <p><i class="fas fa-envelope"></i><b style="margin-left: 10px;">example@gmail.com</b></p>
-                <p><i class="fas fa-phone"></i> <b style="margin-left: 7px;">+0123 4567 8910</b></p>
+                <p><i class="fas fa-envelope"></i><b style="margin-left: 10px;">samrudhkirana@gmail.com</b></p>
+                <p><i class="fas fa-phone"></i> <b style="margin-left: 7px;">+096 4582 8852</b></p>
 
                 <div class="mt-3">
                     <img src="{{ asset('website/img/payment.png') }}"
