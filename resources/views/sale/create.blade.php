@@ -172,7 +172,7 @@
 
                             {{-- Actions --}}
                             <div class="text-end mt-6">
-                                <a href="{{ route('batches.expiry') }}" class="btn btn-outline-success">
+                                <a href="{{ route('batches.expiry') }}" class="btn btn-success">
                                     Back
                                 </a>
                                 <button type="submit" class="btn btn-success">
