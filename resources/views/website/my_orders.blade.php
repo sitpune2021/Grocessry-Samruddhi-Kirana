@@ -226,7 +226,7 @@
                             <tbody>
                                 @foreach($order->items as $item)
                                 <tr>
-                                    {{ $item->product->name ?? 'Product removed' }}
+                                    <td>{{ $item->product->name ?? 'N/A' }}</td>
                                     <td class="text-center">{{ $item->quantity }}</td>
                                     <td class="text-end">₹{{ number_format($item->price,2) }}</td>
                                     <td class="text-end fw-semibold">

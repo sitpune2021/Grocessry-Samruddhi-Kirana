@@ -1,22 +1,5 @@
- @include('layouts.header')
- 
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
- 
-            <!-- Menu -->
-                <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                    @include('layouts.sidebar')
-                </aside>
-            <!-- / Menu -->
- 
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
-                    @include('layouts.navbar')
-                <!-- / Navbar -->
- 
+@extends('layouts.app')
+@section('content')
                 @if(session('error'))
                 <div class="alert alert-danger">
                     {{ session('error') }}
@@ -153,22 +136,24 @@
  
                                         @if (request()->is('warehouse-transfer/*/edit'))
                                             <div class="text-end mt-3">
-                                                <button type="submit" class="btn btn-success" style="">
+                                                <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                                <button type="submit" class="btn btn-success" >
                                                     Update
                                                 </button>
                                             </div>
-                                            <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+                                            
                                         @else
  
                                         <div class="d-flex justify-content-between align-items-center mb-3">
                                             <div class="d-flex gap-2">
-                                                <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
- 
+                                               
                                                 <button type="button" class="btn btn-success" id="addItemBtn">
                                                     Add Stock
                                                 </button>
                                             </div>
                                             <div class="text-end mt-3">
+                                                 <a href="{{ route('transfer.index') }}" class="btn btn-success">Back</a>
+ 
                                                 <button type="submit" class="btn btn-success" style="">
                                                     Product Stock Request
                                                 </button>
@@ -211,14 +196,9 @@
                     </div>
                 </div>
                 <!-- / Content wrapper -->
-            </div>
-            <!-- / Layout page -->
-        </div>
-    </div>
-    <!-- / Layout wrapper -->
-</body>
+          @endsection
  
-
+@push('scripts')
 <!-- jQuery + Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -539,4 +519,4 @@
     });
 </script>
  
- 
+ @endpush

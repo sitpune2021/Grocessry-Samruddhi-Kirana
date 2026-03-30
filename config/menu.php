@@ -194,7 +194,7 @@ return [
             'type'  => 'single',
             'title' => 'Coupon Management',
             'icon'  => 'bx bx-package',
-            'roles' => [5],
+            'roles' => [1, 2, 5],
             'route'   => 'coupons.index',
         ],
        

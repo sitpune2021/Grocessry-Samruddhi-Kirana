@@ -94,6 +94,9 @@ class WebsiteController extends Controller
 
         $latestPro = Product::withStock($dcId)
             ->whereNull('deleted_at')
+            ->whereDoesntHave('sale', function ($q) {
+                $q->active()->online();
+            })
             ->latest()
             ->take(12)
             ->get();
@@ -344,8 +347,8 @@ class WebsiteController extends Controller
             'message' => 'Product added to cart',
             'cart_count' => $cart->quantity,
             'cart_total' => number_format($cart->total, 2),
-            'qty' => $cartItem->qty ,// FINAL FIX
-             'cart_item_id' => $cartItem->id 
+            'qty' => $cartItem->qty, // FINAL FIX
+            'cart_item_id' => $cartItem->id
         ]);
     }
 

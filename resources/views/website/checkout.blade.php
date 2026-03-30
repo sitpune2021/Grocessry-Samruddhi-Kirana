@@ -215,7 +215,65 @@
                             </div>
                         </div>
 
+
                         <div class="card border-0 shadow-sm rounded-4 mb-3">
+                            <div class="card-body p-3">
+
+                                <!-- Toggle Header -->
+                                <div class="d-flex justify-content-between align-items-center cursor-pointer"
+                                    onclick="toggleCoupons()">
+
+                                    <h6 class="fw-bold mb-0">Available Coupons</h6>
+                                    <i id="couponIcon" class="fa fa-chevron-down"></i>
+                                </div>
+
+                                <!-- Coupon List -->
+                                <div id="couponList" class="mt-3" style="max-height:0; overflow:hidden; transition:0.3s;">
+
+                                    @forelse($coupons as $coupon)
+
+                                    <div class="coupon-card border rounded-3 p-3 mb-2 d-flex justify-content-between align-items-center">
+
+                                        <div>
+                                            <div class="fw-bold text-success">
+                                                {{ $coupon->code }}
+                                            </div>
+                                            <small class="text-muted">
+
+                                                @if($coupon->discount_type == 'percentage')
+                                                {{ $coupon->discount_value }}% OFF
+                                                @else
+                                                ₹{{ $coupon->discount_value }} OFF
+                                                @endif
+                                                • Min Order ₹{{ $coupon->min_amount }}
+
+                                            </small>
+                                        </div>
+
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            onclick="copyCoupon('{{ $coupon->code }}')">
+                                            Copy
+                                        </button>
+
+                                    </div>
+
+                                    @empty
+
+                                    <!--  No Coupon Message -->
+                                    <div class="text-center text-muted py-3">
+                                        <i class="fa fa-ticket fa-2x mb-2"></i>
+                                        <p class="mb-0">No coupons available</p>
+                                    </div>
+
+                                    @endforelse
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- <div class="card border-0 shadow-sm rounded-4 mb-3">
                             <div class="card-body p-3">
 
                                 <h6 class="fw-bold mb-3">Available Coupons</h6>
@@ -255,7 +313,7 @@
                                 @endforeach
 
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Payment Professional -->
                         <div class="mb-4">
@@ -932,5 +990,22 @@
             .addClass('text-success')
             .html("Coupon <b>" + code + "</b> copied. Click Apply to use.");
 
+    }
+</script>
+
+<script>
+    function toggleCoupons() {
+        let list = document.getElementById('couponList');
+        let icon = document.getElementById('couponIcon');
+
+        if (list.style.maxHeight && list.style.maxHeight !== "0px") {
+            list.style.maxHeight = "0px";
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            list.style.maxHeight = list.scrollHeight + "px";
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
     }
 </script>
