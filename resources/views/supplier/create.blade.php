@@ -155,7 +155,7 @@
                             </div>
 
                             {{-- Buttons --}}
-                            <div class="mt-4 d-flex justify-content-end gap-2">
+                            <div class="col-lg-12 text-end">
                                 <a href="{{ route('supplier.index') }}" class="btn btn-success">
                                     Back
                                 </a>

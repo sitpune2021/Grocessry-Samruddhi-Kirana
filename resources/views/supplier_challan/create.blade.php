@@ -1,17 +1,6 @@
-@include('layouts.header')
-
+@extends('layouts.app')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-<body>
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-
-            <div class="layout-page">
-                @include('layouts.navbar')
+@section('content')
 
                 <div class="container-xxl flex-grow-1 container-p-y">
                     <div class="card">
@@ -145,9 +134,11 @@
                                         </div>
                                     </div>
 
-                                    <button type="button" id="addProductBtn" class="btn btn-success mb-3">
+                                    <div class="col-lg-12 text-end">
+                                    <button type="button" id="addProductBtn" class="btn btn-success  mb-3">
                                         + Add Product
                                     </button>
+                                    </div>
                                 @endif
 
                                 {{-- TABLE SECTION --}}
@@ -175,7 +166,7 @@
                                                         <td>{{ $item->subCategory->name ?? 'N/A' }}</td>
                                                         <td>{{ $item->product->name ?? 'N/A' }}</td>
                                                         <td>
-                                                            <input type="number"
+                                                            <input type="text"
                                                                 name="items[{{ $loop->index }}][received_qty]"
                                                                 class="form-control"
                                                                 value="{{ old('items.' . $loop->index . '.received_qty', $item->received_qty) }}"
@@ -206,6 +197,7 @@
                                         </tbody>
                                     </table>
                                     <br>
+                                    <div class="col-lg-12 text-end">
                                     @if ($mode !== 'view')
                                         <button type="submit" class="btn btn-success">
                                             @if ($mode === 'edit')
@@ -215,6 +207,7 @@
                                             @endif
                                         </button>
                                     @endif
+                                    </div>
                                 </div>
 
                             </form>
@@ -223,13 +216,9 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-    </div>
+            @endsection
 
-</body>
-
-
+@push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -360,7 +349,7 @@
                     <td>${catName}</td>
                     <td>${subName}</td>
                     <td>${prodName}</td>
-                    <td><input type="number" name="items[${index}][received_qty]" class="form-control" placeholder="Qty" required min="1"></td>
+                    <td><input type="text" name="items[${index}][received_qty]" class="form-control" placeholder="Qty" required min="1"></td>
                     <td><button type="button" class="btn btn-danger btn-sm removeRow">X</button></td>
                     <input type="hidden" name="items[${index}][category_id]" value="${catId}">
                     <input type="hidden" name="items[${index}][sub_category_id]" value="${subId}">
@@ -383,3 +372,4 @@
             });
         });
     </script>
+@endpush

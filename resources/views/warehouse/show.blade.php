@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid py-4" style="background:#f5f6fa; min-height:100vh;">
+<div class="container-xxl flex-grow-1 container-p-y">
 
-    <div class="container">
+
         <div class="card shadow-sm border-0 rounded-3">
             <div class="card-body p-4">
 
@@ -61,16 +61,16 @@
 
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4 text-end">
                     <a href="{{ route('transfer.index') }}"
                         class="btn btn-success">
-                        ⬅ Back
+                        Back
                     </a>
                 </div>
 
             </div>
         </div>
-    </div>
+    
 
 </div>
 @endsection

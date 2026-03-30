@@ -199,6 +199,7 @@
 
                             {{-- Footer --}}
                             <div class="card-footer text-end">
+                                <a href="{{ route('stock-returns.index') }}" class="btn btn-success">Back</a>
                                 <button type="submit" class="btn btn-success ">
                                     Save as Draft
                                 </button>
