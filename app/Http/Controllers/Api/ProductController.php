@@ -35,7 +35,7 @@ class ProductController extends Controller
         $qty = $request->quantity ?? 1;
         $product = Product::with('tax')->findOrFail($request->product_id);
 
-        // 🔹 REAL STOCK
+        // REAL STOCK
         $availableStock = WarehouseStock::where('product_id', $product->id)
             ->sum('quantity');
 
@@ -46,7 +46,7 @@ class ProductController extends Controller
             ], 400);
         }
 
-        // 🔹 Get or create cart
+        // Get or create cart
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->id],
             [
@@ -57,7 +57,7 @@ class ProductController extends Controller
             ]
         );
 
-        // 🔹 Existing cart item
+        // Existing cart item
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
@@ -117,11 +117,11 @@ class ProductController extends Controller
         $cart->update([
             'subtotal'  => $subtotal,
             'tax_total' => $taxTotal,
-            'total'     => $subtotal + $taxTotal // ✅ ADD THIS
+            'total'     => $subtotal + $taxTotal
 
         ]);
 
-        // 🔥 AUTO APPLY OFFER
+        // AUTO APPLY OFFER
         // $this->autoApplyOffer($cart);
 
 
@@ -224,8 +224,7 @@ class ProductController extends Controller
             ], 404);
         }
 
-
-        // ✅ FIXED qty
+        // FIXED qty
         if ($cartItem->qty > 1) {
             $cartItem->qty -= 1;
             $cartItem->save();
@@ -242,49 +241,49 @@ class ProductController extends Controller
             ]
         ]);
     }
-    public function checkout(Request $request)
+      public function checkout(Request $request)
     {
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
-
+ 
         $request->validate([
             'address_id' => 'required|exists:user_addresses,id'
         ]);
-
+ 
         $address = UserAddress::where('id', $request->address_id)
             ->where('user_id', $user->id)
             ->first();
-
+ 
         if (!$address) {
             return response()->json(['status' => false, 'message' => 'Invalid address'], 400);
         }
-
+ 
         DB::beginTransaction();
         try {
             $cart = Cart::where('user_id', $user->id)->first();
-
+ 
             if (!$cart || $cart->items->isEmpty()) {
                 return response()->json(['status' => false, 'message' => 'Cart is empty'], 400);
             }
-
+ 
             $cartItems = CartItem::with('product')->where('cart_id', $cart->id)->get();
-
+ 
             // 1. Calculate Subtotal from items
             $subtotal = $cartItems->sum(function ($item) {
                 return $item->price * $item->qty;
             });
-
+ 
             // 2. Get tax and coupon details from cart
             $taxTotal       = $cart->tax_total ?? 0;
             $couponDiscount = (float)($cart->discount ?? 0); // This should be ₹80 in your example
-
+ 
             // 3. SET DELIVERY CHARGE TO 0
             $deliveryCharge = 0;
-
+ 
             // 4. Calculate Final Total: (Subtotal + Tax + 0) - Discount
             $totalAmount = ($subtotal + $taxTotal + $deliveryCharge) - $couponDiscount;
             $totalAmount = max($totalAmount, 0);
-
+ 
             // 5. Create Order
             $order = Order::create([
                 'user_id'         => $user->id,
@@ -302,14 +301,45 @@ class ProductController extends Controller
                 'channel'         => 'app',
             ]);
 
-            // ... (OrderItem creation and Stock deduction logic remains the same) ...
-
+            // Order Items + FIFO stock deduction
+            foreach ($cartItems as $item) {
+ 
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->qty,
+                    'price' => $item->price,
+                    'total' => $item->qty * $item->price
+                ]);
+ 
+                $remainingQty = $item->qty;
+ 
+                $stocks = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('quantity', '>', 0)
+                    ->orderBy('created_at')
+                    ->get();
+ 
+                foreach ($stocks as $stock) {
+                    if ($remainingQty <= 0) break;
+ 
+                    if ($stock->quantity >= $remainingQty) {
+                        $stock->quantity -= $remainingQty;
+                        $stock->save();
+                        $remainingQty = 0;
+                    } else {
+                        $remainingQty -= $stock->quantity;
+                        $stock->quantity = 0;
+                        $stock->save();
+                    }
+                }
+            }
+ 
             // Clear Cart
             CartItem::where('cart_id', $cart->id)->delete();
             $cart->delete();
-
+ 
             DB::commit();
-
+ 
             return response()->json([
                 'status' => true,
                 'message' => 'Order placed successfully',
@@ -332,6 +362,7 @@ class ProductController extends Controller
             ], 500);
         }
     }
+ 
     protected function checkCustomer($user)
     {
         if (!$user) {
@@ -456,7 +487,7 @@ class ProductController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json([
+            return response()->json([
             'status' => true,
             'data' => $orders
         ]);
