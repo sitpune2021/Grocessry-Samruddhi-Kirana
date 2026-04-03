@@ -59,7 +59,7 @@
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Minimum Amt</th>
-                            <th>Maximum Amt</th>
+                            <th>Maximum Usage</th>
                             <th>Status</th>
                             @if($canView || $canEdit || $canDelete)
                             <th class="text-center" style="width: 150px;">Actions</th>

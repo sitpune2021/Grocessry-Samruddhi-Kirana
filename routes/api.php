@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\DeliveryAgentDutyController;
 use App\Http\Controllers\Api\DeliveryPartnerReturnController;
+use App\Http\Controllers\Api\PaymentController;
 
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
@@ -105,6 +106,13 @@ Route::middleware('auth:sanctum')->group(function () {
         [CustomerProductReturnController::class, 'getOrderReturnProducts']
     );
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/payment/create', [PaymentController::class, 'create']);
+    Route::post('/payment/verify', [PaymentController::class, 'verify']);
+    Route::post('/payment/failure', [PaymentController::class, 'failure']);
+});
+
 
 //---------------------Delivery Agent Api Routes-----------------------------------------------
 Route::prefix('auth')->group(function () {
