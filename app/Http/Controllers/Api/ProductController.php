@@ -172,21 +172,93 @@ class ProductController extends Controller
     //     ]);
     // }
 
+    // public function viewCart(Request $request)
+    // {
+    //     $user = $request->user();
+    //     if ($res = $this->checkCustomer($user)) return $res;
+
+    //     $cart = Cart::with([
+    //         'items.product.tax',
+    //         'coupon'
+    //     ])->where('user_id', $user->id)->first();
+
+    //     if ($cart && $cart->coupon) {
+    //     $cart->coupon_details = [
+    //         'id' => $cart->coupon->id,
+    //         'title' => $cart->coupon->title,
+    //         'code' => $cart->coupon->code,
+    //         'discount_type' => $cart->coupon->discount_type,
+    //         'discount_value' => $cart->coupon->discount_value,
+    //     ];
+    // } else {
+    //     $cart->coupon_details = null;
+    // }
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'data'   => $cart
+    //     ]);
+    // }
+
+    
     public function viewCart(Request $request)
-    {
-        $user = $request->user();
-        if ($res = $this->checkCustomer($user)) return $res;
+{
+    $user = $request->user();
+    if ($res = $this->checkCustomer($user)) return $res;
 
-        $cart = Cart::with([
-            'items.product.tax'
-        ])->where('user_id', $user->id)->first();
+    $today = now();
 
-        return response()->json([
-            'status' => true,
-            'data'   => $cart
-        ]);
-    }
+    $cart = Cart::with([
+        'items.product.tax'
+    ])->where('user_id', $user->id)->first();
 
+    // Step 1: Get valid coupons
+    $coupons = Coupon::where('status', 1)
+        ->whereDate('start_date', '<=', $today)
+        ->whereDate('end_date', '>=', $today)
+        ->get();
+
+    // Step 2: Format coupons
+    $couponList = $coupons->map(function ($coupon) use ($cart) {
+
+        // Check applicable
+        $isApplicable = $cart && $cart->subtotal >= $coupon->min_amount;
+
+        return [
+            'id' => $coupon->id,
+            'title' => $coupon->title,
+            'code' => $coupon->code,
+            'description' => $coupon->description,
+
+            'discount_text' => $coupon->discount_type == 'flat'
+                ? '₹' . $coupon->discount_value . ' OFF'
+                : $coupon->discount_value . '% OFF',
+
+            'min_amount' => (float)$coupon->min_amount,
+            'valid_till' => \Carbon\Carbon::parse($coupon->end_date)->format('d M Y'),
+
+            'is_applicable' => $isApplicable
+        ];
+    });
+
+    // Step 3: Best coupon logic
+    $bestCoupon = $couponList
+        ->where('is_applicable', true)
+        ->sortByDesc(function ($coupon) {
+            // extract numeric value for comparison
+            return (int) filter_var($coupon['discount_text'], FILTER_SANITIZE_NUMBER_INT);
+        })
+        ->first();
+
+    return response()->json([
+        'status' => true,
+        'data' => [
+            'cart' => $cart,
+            'available_coupons' => $couponList,
+            'best_coupon' => $bestCoupon
+        ]
+    ]);
+}
     public function clearCart(Request $request)
     {
         $user = $request->user();
