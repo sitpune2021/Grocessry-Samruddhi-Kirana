@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payment/create', [PaymentController::class, 'create']);
     Route::post('/payment/verify', [PaymentController::class, 'verify']);
+    Route::post('/confirm-order', [ProductController::class, 'confirmOrder']);
     Route::post('/payment/failure', [PaymentController::class, 'failure']);
 });
 
