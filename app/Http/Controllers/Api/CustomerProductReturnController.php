@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CustomerOrderReturn;
+use App\Models\Order;
 use App\Models\OrderItem;
 
 use Illuminate\Support\Facades\Log;
@@ -351,5 +352,47 @@ class CustomerProductReturnController extends Controller
         ]);
     }
 
+    // product list for stock return
+    public function productsList(Request $request)
+    {
+        $orders = Order::with('items.product')
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+ 
+        $data = $orders->map(function ($order) {
+ 
+            return [
+                'order_id' => $order->id,
+                'order_date' => $order->created_at,
+                'products' => $order->items->map(function ($item) {
+ 
+                    $images = is_array($item->product->product_images)
+                        ? $item->product->product_images
+                        : json_decode($item->product->product_images, true);
+                    return [
+                        'product_id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'price' => $item->product->retailer_price,
+                        // 'image' => $item->product->product_images,
+ 
+ 
+                        'image' => collect($images)->map(function ($img) {
+                            return asset('storage/products/' . $img);
+                        }),
+ 
+ 
+                        'quantity' => $item->quantity,
+                    ];
+                })
+            ];
+        });
+ 
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+ 
     
 }
