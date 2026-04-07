@@ -114,7 +114,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payment/verify', [PaymentController::class, 'verify']);
     Route::post('/confirm-order', [ProductController::class, 'confirmOrder']);
     Route::post('/payment/failure', [PaymentController::class, 'failure']);
-    
+    Route::get('/payment-options', [PaymentController::class, 'paymentOptions']);
+ 
 });
 
 
