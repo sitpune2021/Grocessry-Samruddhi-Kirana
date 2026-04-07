@@ -245,4 +245,28 @@ public function verify(Request $request)
             'message' => 'Payment marked as failed'
         ]);
     }
+
+    public function paymentOptions(Request $request)
+    {
+        $options = [
+            [
+                'id' => 1,
+                'name' => 'Cash on Delivery',
+                'code' => 'cash',
+                'is_enabled' => true,
+            ],
+            [
+                'id' => 2,
+                'name' => 'Online Payment',
+                'code' => 'online',
+                'is_enabled' => true,
+            ]
+        ];
+ 
+        return response()->json([
+            'success' => true,
+            'data' => $options
+        ]);
+    }
+ 
 }
