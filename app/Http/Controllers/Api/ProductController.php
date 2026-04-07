@@ -441,7 +441,8 @@ class ProductController extends Controller
         if ($res = $this->checkCustomer($user)) return $res;
 
         $request->validate([
-            'address_id' => 'required|exists:user_addresses,id'
+            'address_id' => 'required|exists:user_addresses,id',
+            'payment_method' => 'required|in:cash,online'
         ]);
 
         $address = UserAddress::where('id', $request->address_id)
@@ -481,6 +482,7 @@ class ProductController extends Controller
             'address_id'      => $address->id,
             'address_type'    => $address->type,
             'channel'         => 'app',
+            'payment_method'  => $request->payment_method,
         ]);
 
         return response()->json([
