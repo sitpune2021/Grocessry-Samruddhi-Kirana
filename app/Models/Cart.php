@@ -11,6 +11,8 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
+        'coupon_id',
+        'coupon_code',
         'product_id',
         'quantity',
         'price',

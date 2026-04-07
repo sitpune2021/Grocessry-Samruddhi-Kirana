@@ -352,47 +352,58 @@ class CustomerProductReturnController extends Controller
         ]);
     }
 
-    // product list for stock return
+     // product list for stock return
     public function productsList(Request $request)
     {
-        $orders = Order::with('items.product')
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->get();
+        $request->validate([
+            'order_id' => 'required|exists:orders,id'
+        ]);
  
-        $data = $orders->map(function ($order) {
+        $order = Order::with('items.product')
+            ->where('user_id', auth()->id())
+            ->where('id', $request->order_id)
+            ->first();
+ 
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+ 
+        $products = $order->items->map(function ($item) {
+ 
+            // Handle null safety
+            if (!$item->product) {
+                return null;
+            }
+ 
+            $images = is_array($item->product->product_images)
+                ? $item->product->product_images
+                : json_decode($item->product->product_images, true);
  
             return [
-                'order_id' => $order->id,
-                'order_date' => $order->created_at,
-                'products' => $order->items->map(function ($item) {
+                'product_id' => $item->product->id,
+                'name' => $item->product->name,
  
-                    $images = is_array($item->product->product_images)
-                        ? $item->product->product_images
-                        : json_decode($item->product->product_images, true);
-                    return [
-                        'product_id' => $item->product->id,
-                        'name' => $item->product->name,
-                        'price' => $item->product->retailer_price,
-                        // 'image' => $item->product->product_images,
+                'image' => !empty($images)
+                    ? collect($images)->map(function ($img) {
+                        return asset('storage/products/' . $img);
+                    })
+                    : [],
  
- 
-                        'image' => collect($images)->map(function ($img) {
-                            return asset('storage/products/' . $img);
-                        }),
- 
- 
-                        'quantity' => $item->quantity,
-                    ];
-                })
+                'quantity' => $item->quantity,
             ];
-        });
+        })->filter()->values(); // remove nulls
  
         return response()->json([
             'success' => true,
-            'data' => $data
+            'order_id' => $order->id,
+            'order_date' => $order->created_at,
+            'products' => $products
         ]);
     }
+ 
  
     
 }
