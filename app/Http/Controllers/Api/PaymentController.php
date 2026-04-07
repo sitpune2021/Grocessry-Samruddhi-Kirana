@@ -104,140 +104,129 @@ class PaymentController extends Controller
         }
     }
 
-    public function verify(Request $request)
-    {
-        DB::beginTransaction();
-        try {
-            $request->validate([
-                'order_id' => 'required|exists:orders,id',
-                'razorpay_payment_id' => 'required',
-                'razorpay_signature' => 'required'
+public function verify(Request $request)
+{
+    DB::beginTransaction();
+
+    try {
+        Log::info('Payment Verify API called', [
+            'request_data' => $request->all()
+        ]);
+
+        $request->validate([
+            'razorpay_order_id'   => 'required',
+            'razorpay_payment_id' => 'required',
+            'razorpay_signature'  => 'required'
+        ]);
+
+        Log::info('Validation passed', [
+            'razorpay_order_id' => $request->razorpay_order_id
+        ]);
+
+        // Get payment using razorpay_order_id
+        $payment = Payment::where('razorpay_order_id', $request->razorpay_order_id)
+            ->firstOrFail();
+
+        Log::info('Payment record found', [
+            'payment_id' => $payment->id,
+            'order_id'   => $payment->order_id
+        ]);
+
+        // Get order from payment
+        $order = Order::findOrFail($payment->order_id);
+
+        Log::info('Order fetched', [
+            'order_id' => $order->id,
+            'current_payment_status' => $order->payment_status
+        ]);
+
+        // Generate signature
+        $generated_signature = hash_hmac(
+            'sha256',
+            $request->razorpay_order_id . "|" . $request->razorpay_payment_id,
+            config('services.razorpay.secret')
+        );
+
+        Log::info('Generated signature', [
+            'generated_signature' => $generated_signature,
+            'received_signature'  => $request->razorpay_signature
+        ]);
+
+        // Verify signature securely
+        if (!hash_equals($generated_signature, $request->razorpay_signature)) {
+
+            Log::error('Signature verification failed', [
+                'razorpay_order_id' => $request->razorpay_order_id
             ]);
 
-            $order = Order::findOrFail($request->order_id);
+            // Mark payment failed
+            $payment->update([
+                'status' => 'failed',
+                'failure_reason' => 'Invalid signature'
+            ]);
 
-            // ✅ VERIFY SIGNATURE (important)
-            $generated_signature = hash_hmac(
-                'sha256',
-                $request->razorpay_order_id . "|" . $request->razorpay_payment_id,
-                config('services.razorpay.secret')
-            );
-
-            if ($generated_signature !== $request->razorpay_signature) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid payment signature'
-                ], 400);
-            }
-
-            // ✅ Mark payment success
             $order->update([
-                'payment_id' => $request->razorpay_payment_id,
-                'status'     => 'paid'
+                'payment_status' => 'failed'
             ]);
 
-            DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Payment successful'
-            ]);
-        } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'status' => false,
-                'message' => 'Payment failed',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Invalid payment signature'
+            ], 400);
         }
+
+        Log::info('Signature verified successfully');
+
+        // Update payment table
+        $payment->update([
+            'payment_id'         => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature,
+            'status'             => 'success'
+        ]);
+
+        Log::info('Payment updated successfully', [
+            'payment_id' => $request->razorpay_payment_id
+        ]);
+
+        // Update order table
+        $order->update([
+            'payment_status' => 'paid',
+            'status'         => 'confirmed'
+        ]);
+
+        Log::info('Order updated successfully', [
+            'order_id' => $order->id
+        ]);
+
+        DB::commit();
+
+        Log::info('Transaction committed successfully');
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Payment successful'
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        Log::error('Payment verification failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Payment failed',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
-
-    // public function verify(Request $request)
-    // {
-    //     Log::info('Payment Verify API called', [
-    //         'request_data' => $request->all()
-    //     ]);
-
-    //     try {
-    //         $request->validate([
-    //             'razorpay_payment_id' => 'required',
-    //             'razorpay_order_id' => 'required',
-    //             'razorpay_signature' => 'required',
-    //         ]);
-
-    //         Log::info('Validation passed', [
-    //             'razorpay_order_id' => $request->razorpay_order_id
-    //         ]);
-
-    //         $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
-
-    //         Log::info('Starting signature verification');
-
-    //         $api->utility->verifyPaymentSignature([
-    //             'razorpay_order_id' => $request->razorpay_order_id,
-    //             'razorpay_payment_id' => $request->razorpay_payment_id,
-    //             'razorpay_signature' => $request->razorpay_signature
-    //         ]);
-
-    //         Log::info('Signature verified successfully');
-
-    //         $payment = Payment::where('razorpay_order_id', $request->razorpay_order_id)->firstOrFail();
-
-    //         Log::info('Payment record found', [
-    //             'payment_id' => $payment->id,
-    //             'order_id' => $payment->order_id
-    //         ]);
-
-    //         $payment->update([
-    //             'payment_id' => $request->razorpay_payment_id,
-    //             'razorpay_signature' => $request->razorpay_signature,
-    //             'status' => 'success'
-    //         ]);
-
-    //         Log::info('Payment updated to success', [
-    //             'payment_id' => $payment->id
-    //         ]);
-
-    //         // Update order
-    //         Order::where('id', $payment->order_id)->update([
-    //             'payment_status' => 'paid',
-    //             'status' => 'confirmed'
-    //         ]);
-
-    //         Log::info('Order updated to paid', [
-    //             'order_id' => $payment->order_id
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Payment successful'
-    //         ]);
-
-    //     } catch (\Exception $e) {
-
-    //         Log::error('Payment verification failed', [
-    //             'error' => $e->getMessage(),
-    //             'request_data' => $request->all()
-    //         ]);
-
-    //         Payment::where('razorpay_order_id', $request->razorpay_order_id)
-    //             ->update([
-    //                 'status' => 'failed',
-    //                 'failure_reason' => $e->getMessage()
-    //             ]);
-
-    //         Log::warning('Payment marked as failed', [
-    //             'razorpay_order_id' => $request->razorpay_order_id
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Payment verification failed'
-    //         ]);
-    //     }
-    // }
-
+   
     public function failure(Request $request)
     {
         $request->validate([
