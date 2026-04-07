@@ -496,7 +496,6 @@ class ProductController extends Controller
 
     public function confirmOrder(Request $request)
     {
-
         DB::beginTransaction();
         try {
             $order = Order::findOrFail($request->order_id);

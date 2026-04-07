@@ -97,7 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('return/reasons', [CustomerProductReturnController::class, 'returnReasons']);
     Route::post('order/return', [CustomerProductReturnController::class, 'createReturn']);
-    Route::get('products-list', [CustomerProductReturnController::class, 'productsList']);
+    Route::get('order/products-list', [CustomerProductReturnController::class, 'productsList']);
 
     // Route::get(
     //     'order/{order_id}/product-stock',
