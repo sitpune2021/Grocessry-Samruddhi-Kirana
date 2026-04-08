@@ -373,8 +373,10 @@ class CategoryProductController extends Controller
     }
 
 
-    public function getProductDetails($id)
+    public function getProductDetails($id, Request $request)
     {
+      
+
         try {
             $product = Product::with([
                 'category:id,name',
@@ -391,8 +393,8 @@ class CategoryProductController extends Controller
             }
 
             //  GET warehouse from session
-            $warehouseId = Session::get('warehouse_id');
-
+            // $warehouseId = Session::get('warehouse_id');
+            $warehouseId = $request->header('warehouse_id');
             if (!$warehouseId) {
                 return response()->json([
                     'status' => false,

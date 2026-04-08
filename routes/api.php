@@ -36,7 +36,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
 Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
-Route::post('/check-pincode', [LoginController::class, 'checkPincode']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/search', [ProductController::class, 'search']);
@@ -49,6 +48,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/{id}',                 [CategoryProductController::class, 'getProductDetails']);
     Route::get('/brands/{brand_id}/products', [CategoryProductController::class, 'productsByBrand']);
     Route::get('/banners', [CategoryProductController::class, 'getBanners']);
+    Route::post('/check-pincode', [LoginController::class, 'checkPincode']);
+
 });
 
 Route::apiResource('/district-warehouses',  DistrictWarehouseController::class);
