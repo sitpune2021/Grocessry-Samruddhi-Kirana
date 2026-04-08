@@ -11,10 +11,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Role;
+use App\Models\WarehouseServicePincode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+ use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
@@ -190,7 +192,7 @@ class LoginController extends Controller
             ]
         ]);
     }
-    
+
     public function deleteAccount(Request $request)
     {
         $user = $request->user();
@@ -598,4 +600,36 @@ class LoginController extends Controller
             'message' => 'Orders allowed only between 7:00 AM and 6:00 PM'
         ], 403);
     }
+
+
+public function checkPincode(Request $request)
+{
+    $request->validate([
+        'pincode' => 'required|digits:6'
+    ]);
+
+    $pincode = $request->pincode;
+
+    $service = WarehouseServicePincode::where('pincode', $pincode)->first();
+
+    if (!$service) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Service not available in this area'
+        ]);
+    }
+
+    // STORE IN SESSION
+    Session::put('pincode', $service->pincode);
+    Session::put('warehouse_id', $service->warehouse_id);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Service available',
+        'data' => [
+            'pincode' => $service->pincode,
+            'warehouse_id' => $service->warehouse_id
+        ]
+    ]);
+}
 }
