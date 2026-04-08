@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
 Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
+Route::post('/check-pincode', [LoginController::class, 'checkPincode']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/products/search', [ProductController::class, 'search']);

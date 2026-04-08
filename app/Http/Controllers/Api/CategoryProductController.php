@@ -10,6 +10,8 @@ use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Models\WarehouseStock;
 use App\Models\Banner;
+use App\Models\WarehouseServicePincode;
+use Illuminate\Support\Facades\Session;
 
 class CategoryProductController extends Controller
 {
@@ -109,7 +111,7 @@ class CategoryProductController extends Controller
                 'message' => $brands->isEmpty()
                     ? 'No brands found'
                     : 'Brands fetched successfully',
-                'data'    => $data   // ✅ RETURN THIS
+                'data'    => $data   //  RETURN THIS
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -135,7 +137,7 @@ class CategoryProductController extends Controller
             ->get()
             ->map(function ($product) {
 
-                // ✅ REAL STOCK from warehouse_stock
+                //  REAL STOCK from warehouse_stock
                 $availableStock = WarehouseStock::where('product_id', $product->id)
                     ->sum('quantity');
                 $discountPercent = 0;
@@ -168,7 +170,7 @@ class CategoryProductController extends Controller
                     'gst_percentage' => $product->gst_percentage,
                     'discount_percentage' => $discountPercent,
                     'discount_label' => $discountPercent > 0 ? $discountPercent . '% OFF' : null,
-                    // ✅ FIX HERE
+                    //  FIX HERE
                     'stock' => $availableStock,
                     'quantity' => 1,
                     'max_quantity' => $availableStock,
@@ -220,11 +222,11 @@ class CategoryProductController extends Controller
                 ->get()
                 ->map(function ($product) {
 
-                    /* 🔹 STOCK SET (REAL STOCK FROM WAREHOUSE) */
+                    /*  STOCK SET (REAL STOCK FROM WAREHOUSE) */
                     $stock = (int) WarehouseStock::where('product_id', $product->id)
                         ->sum('quantity');
 
-                    /* 🔹 MAX STOCK SET (APP LIMIT) */
+                    /*  MAX STOCK SET (APP LIMIT) */
                     $maxStockLimit = 10; // you can change this
                     $product->stock = $stock;
                     $product->max_stock = min($stock, $maxStockLimit);
@@ -240,7 +242,7 @@ class CategoryProductController extends Controller
                         ? $discountPercent . '% OFF'
                         : null;
 
-                    /* 🔹 IMAGE URL SET */
+                    /*  IMAGE URL SET */
                     $images = is_string($product->product_images)
                         ? json_decode($product->product_images, true)
                         : $product->product_images;
@@ -388,11 +390,23 @@ class CategoryProductController extends Controller
                 ], 200);
             }
 
-            /* 🔹 REAL STOCK FROM WAREHOUSE */
+            //  GET warehouse from session
+            $warehouseId = Session::get('warehouse_id');
+
+            if (!$warehouseId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Pincode not selected'
+                ], 400);
+            }
+
+            //  STOCK ONLY FROM SELECTED WAREHOUSE
             $availableStock = (int) WarehouseStock::where('product_id', $product->id)
+                ->where('warehouse_id', $warehouseId)
+                ->whereNull('deleted_at')
                 ->sum('quantity');
 
-            /* 🔹 DISCOUNT CALCULATION */
+            //  Discount
             $discountPercent = 0;
             if ($product->mrp > 0 && $product->final_price < $product->mrp) {
                 $discountPercent = round(
@@ -400,7 +414,7 @@ class CategoryProductController extends Controller
                 );
             }
 
-            /* 🔹 IMAGE HANDLING */
+            // Images
             $images = is_string($product->product_images)
                 ? json_decode($product->product_images, true)
                 : ($product->product_images ?? []);
@@ -431,11 +445,12 @@ class CategoryProductController extends Controller
                     'max_quantity' => $availableStock,
                     'quantity' => 1,
 
+                    'in_stock' => $availableStock > 0, // useful for frontend
+
                     'expiry_date' => optional($product->expiry_date)->format('Y-m-d'),
 
                     'images' => collect($images)->map(
-                        fn($img) =>
-                        asset('storage/products/' . $img)
+                        fn($img) => asset('storage/products/' . $img)
                     )->values(),
 
                     'category' => $product->category,
@@ -450,6 +465,86 @@ class CategoryProductController extends Controller
             ], 500);
         }
     }
+
+    // public function getProductDetails($id)
+    // {
+    //     try {
+    //         $product = Product::with([
+    //             'category:id,name',
+    //             'subCategory:id,name',
+    //             'brand:id,name'
+    //         ])->find($id);
+
+    //         if (!$product) {
+    //             return response()->json([
+    //                 'status' => true,
+    //                 'message' => 'Product not found',
+    //                 'data' => null
+    //             ], 200);
+    //         }
+
+    //         /*  REAL STOCK FROM WAREHOUSE */
+    //         $availableStock = (int) WarehouseStock::where('product_id', $product->id)
+    //             ->sum('quantity');
+
+    //         /*  DISCOUNT CALCULATION */
+    //         $discountPercent = 0;
+    //         if ($product->mrp > 0 && $product->final_price < $product->mrp) {
+    //             $discountPercent = round(
+    //                 (($product->mrp - $product->final_price) / $product->mrp) * 100
+    //             );
+    //         }
+
+    //         /*  IMAGE HANDLING */
+    //         $images = is_string($product->product_images)
+    //             ? json_decode($product->product_images, true)
+    //             : ($product->product_images ?? []);
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Product fetched successfully',
+    //             'data' => [
+    //                 'id' => $product->id,
+    //                 'name' => $product->name,
+    //                 'description' => $product->description,
+    //                 'sku' => $product->sku,
+
+    //                 'pricing' => [
+    //                     'base_price' => (float) $product->base_price,
+    //                     'retailer_price' => (float) $product->retailer_price,
+    //                     'final_price' => (float) $product->final_price,
+    //                     'mrp' => (float) $product->mrp,
+    //                     'gst_percentage' => (float) $product->gst_percentage,
+    //                 ],
+
+    //                 'discount_percentage' => $discountPercent,
+    //                 'discount_label' => $discountPercent > 0
+    //                     ? $discountPercent . '% OFF'
+    //                     : null,
+
+    //                 'stock' => $availableStock,
+    //                 'max_quantity' => $availableStock,
+    //                 'quantity' => 1,
+
+    //                 'expiry_date' => optional($product->expiry_date)->format('Y-m-d'),
+
+    //                 'images' => collect($images)->map(
+    //                     fn($img) =>
+    //                     asset('storage/products/' . $img)
+    //                 )->values(),
+
+    //                 'category' => $product->category,
+    //                 'sub_category' => $product->subCategory,
+    //                 'brand' => $product->brand,
+    //             ]
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Internal server error'
+    //         ], 500);
+    //     }
+    // }
 
 
     public function productsByBrand($brand_id)
@@ -479,16 +574,16 @@ class CategoryProductController extends Controller
             ->get()
             ->map(function ($product) {
 
-                /* 🔹 STOCK SET (FROM WAREHOUSE) */
+                /*  STOCK SET (FROM WAREHOUSE) */
                 $stock = (int) WarehouseStock::where('product_id', $product->id)
                     ->sum('quantity');
 
-                /* 🔹 MAX STOCK SET (APP LIMIT) */
+                /*  MAX STOCK SET (APP LIMIT) */
                 $maxStockLimit = 10; // change if needed
                 $product->stock = $stock;
                 $product->max_stock = min($stock, $maxStockLimit);
 
-                /* 🔹 IMAGE URL SET */
+                /*  IMAGE URL SET */
                 $images = is_string($product->product_images)
                     ? json_decode($product->product_images, true)
                     : $product->product_images;
