@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\UserAddress;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
 use Validator;
 
 class AddressController extends Controller
@@ -34,10 +34,11 @@ class AddressController extends Controller
                     'id'           => $a->id,
                     'name'         => $a->first_name,
                     'mobile'       => $a->phone,
-                    'address_line' => $a->address,
+                    'flat_no'      => $a->flat_house,
+                    'floor'        =>$a->floor,
+                    'building_area'=>$a->area,
                     'landmark'     => $a->landmark,
                     'city'         => $a->city,
-                    'state'        => $a->country,
                     'pincode'      => $a->postcode,
                     'latitude'     => $a->latitude,
                     'longitude'    => $a->longitude,
@@ -52,26 +53,47 @@ class AddressController extends Controller
             'data'   => $addresses
         ]);
     }
+
     public function add(Request $request)
-    {
+{
+    try {
+        Log::info('Address Add API called', [
+            'user_id' => optional($request->user())->id,
+            'request' => $request->all()
+        ]);
+
         $user = $request->user();
-        if ($res = $this->checkCustomer($user)) return $res;
+
+        if ($res = $this->checkCustomer($user)) {
+            Log::warning('Customer check failed', ['user_id' => $user->id]);
+            return $res;
+        }
 
         $count = UserAddress::where('user_id', $user->id)->count();
+
+        Log::info('User address count', [
+            'user_id' => $user->id,
+            'count' => $count
+        ]);
+
         if ($count >= 5) {
+            Log::warning('Address limit reached', ['user_id' => $user->id]);
+
             return response()->json([
                 'status' => false,
                 'message' => 'You can add maximum 5 addresses only'
             ], 400);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'name'         => 'required|string',
             'mobile'       => 'required|digits:10',
-            'address_line' => 'required|string',
+            'flat_no'      => 'required|string',
+            'floor'        => 'required|string',
+            'building_area'=> 'required|string',
             'landmark'     => 'nullable|string',
             'city'         => 'required|string',
-            'state'        => 'required|string',
+            
             'pincode'      => 'required|digits:6',
             'type'         => 'required|in:1,2,3',
             'latitude'     => 'nullable|numeric',
@@ -79,24 +101,30 @@ class AddressController extends Controller
             'is_default'   => 'nullable|boolean'
         ]);
 
-        // ⭐ Decide default (BOOLEAN)
+        Log::info('Validation passed', $validated);
+
+        // ⭐ Decide default
         $isDefault = false;
 
         if ($count === 0) {
-            // first address → auto default
             $isDefault = true;
+            Log::info('First address - auto default');
         } elseif ($request->is_default === true) {
-            // reset previous default
             UserAddress::where('user_id', $user->id)
                 ->update(['is_default' => false]);
+
             $isDefault = true;
+
+            Log::info('User selected default - resetting previous');
         }
 
         $address = UserAddress::create([
             'user_id'    => $user->id,
             'first_name' => $request->name,
             'phone'      => $request->mobile,
-            'address'    => $request->address_line,
+            'flat_house'    => $request->flat_no,
+            'floor'      =>$request->floor,
+            'area'      =>$request->building_area,
             'landmark'   => $request->landmark,
             'city'       => $request->city,
             'country'    => $request->state,
@@ -108,12 +136,31 @@ class AddressController extends Controller
             'is_default' => $isDefault
         ]);
 
+        Log::info('Address created successfully', [
+            'address_id' => $address->id,
+            'user_id' => $user->id
+        ]);
+
         return response()->json([
             'status' => true,
             'message' => 'Address added successfully',
             'data' => $address
         ]);
+
+    } catch (\Exception $e) {
+
+        Log::error('Address Add API Error', [
+            'message' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Internal server error'
+        ], 500);
     }
+}
 
     public function update(Request $request, $id)
     {
@@ -134,7 +181,9 @@ class AddressController extends Controller
         $request->validate([
             'name'         => 'required|string',
             'mobile'       => 'required|digits:10',
-            'address_line' => 'required|string',
+            'flat_no'      => 'required|string',
+            'floor'        => 'required|string',
+            'building_area'=> 'required|string',
             'landmark'     => 'nullable|string',
             'city'         => 'required|string',
             'type'         => 'required|in:1,2,3',
@@ -154,7 +203,9 @@ class AddressController extends Controller
         $address->update([
             'first_name' => $request->name,
             'phone'      => $request->mobile,
-            'address'    => $request->address_line,
+            'flat_house'    => $request->flat_no,
+            'floor'      =>$request->floor,
+            'area'      =>$request->building_area,
             'landmark'   => $request->landmark,
             'city'       => $request->city,
             'country'    => $request->state,
