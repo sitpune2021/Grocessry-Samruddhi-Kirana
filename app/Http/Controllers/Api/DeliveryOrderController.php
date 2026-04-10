@@ -295,7 +295,7 @@ class DeliveryOrderController extends Controller
             ], 404);
         }
 
-        // ✅ FIX HERE
+        // FIX HERE
         if (!$order->customerAddress) {
             return response()->json([
                 'status' => false,
@@ -303,24 +303,24 @@ class DeliveryOrderController extends Controller
             ], 422);
         }
 
-        $address = $order->customerAddress;
-
+        $addresses = $order->customerAddress;
+        $address = $order->customerAddress->flat_house . " " . $order->customerAddress->floor . " " . $order->customerAddress->area;
         return response()->json([
             'status' => true,
             'data' => [
                 'order_id' => $order->id,
                 'customer' => $order->user,
                 'delivery_address' => [
-                    'name'     => $address->first_name,
-                    'phone'    => $address->phone,
-                    'address'  => $address->address,
-                    'landmark' => $address->landmark,
-                    'city'     => $address->city,
-                    'state'    => $address->country,
-                    'postcode' => $address->postcode,
-                    'lat'      => $address->latitude,
-                    'lng'      => $address->longitude,
-                    'type'     => $address->type,
+                    'name'     => $addresses->first_name,
+                    'phone'    => $addresses->phone,
+                    'address'  => $address,
+                    'landmark' => $addresses->landmark,
+                    'city'     => $addresses->city,
+                    'state'    => $addresses->country,
+                    'postcode' => $addresses->postcode,
+                    'lat'      => $addresses->latitude,
+                    'lng'      => $addresses->longitude,
+                    'type'     => $addresses->type,
                 ]
             ]
         ]);
