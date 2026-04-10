@@ -960,6 +960,9 @@ Route::middleware('auth')->group(function () {
 
 
 
+     Route::get('/privacy-policy', function () {
+        return view('privacy-policy');
+    });
 
 /////////////////////////////////////////   SHEKHAR DEVELOP - WEBSITE END   ////////////////////////////////////////////////////////////
 
@@ -1008,10 +1011,5 @@ Route::get('/dev/run/{action}', function ($action) {
         }
     } catch (\Exception $e) {
         return "Error running action [$action]: " . $e->getMessage();
-    }
-
-     Route::get('/privacy-policy', function () {
-        return view('privacy-policy');
-    });
- 
+    } 
 });
