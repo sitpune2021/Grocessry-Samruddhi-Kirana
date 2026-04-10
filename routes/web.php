@@ -1009,4 +1009,9 @@ Route::get('/dev/run/{action}', function ($action) {
     } catch (\Exception $e) {
         return "Error running action [$action]: " . $e->getMessage();
     }
+
+     Route::get('/privacy-policy', function () {
+        return view('privacy-policy');
+    });
+ 
 });
