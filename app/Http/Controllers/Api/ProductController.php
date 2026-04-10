@@ -726,6 +726,7 @@ class ProductController extends Controller
         ])
             ->where('user_id', $user->id)
             ->whereNotIn('status', ['delivered', 'cancelled'])
+            ->whereIn('payment_method', ['cash', 'online'])
             ->orderBy('created_at', 'desc')
             ->get();
 
