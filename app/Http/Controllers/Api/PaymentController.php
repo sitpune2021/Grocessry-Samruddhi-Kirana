@@ -193,7 +193,7 @@ public function verify(Request $request)
         // Update order table
         $order->update([
             'payment_status' => 'paid',
-            'status'         => 'confirmed'
+            'status'         => 'processing'
         ]);
 
         Log::info('Order updated successfully', [
