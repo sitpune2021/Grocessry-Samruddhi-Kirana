@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\User;
 use Illuminate\Http\Request;
 // use Illuminate\Support\Carbon;
@@ -12,11 +14,13 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Role;
 use App\Models\WarehouseServicePincode;
+use App\Models\WarehouseStock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
- use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
@@ -601,35 +605,67 @@ class LoginController extends Controller
         ], 403);
     }
 
+    public function checkPincode(Request $request)
+    {
+        $request->validate([
+            'pincode' => 'required|digits:6'
+        ]);
 
-public function checkPincode(Request $request)
-{
-    $request->validate([
-        'pincode' => 'required|digits:6'
-    ]);
+        $user = $request->user();
 
-    $pincode = $request->pincode;
+        $service = WarehouseServicePincode::where('pincode', $request->pincode)->first();
 
-    $service = WarehouseServicePincode::where('pincode', $pincode)->first();
+        if (!$service) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Service not available in this area'
+            ]);
+        }
 
-    if (!$service) {
+        $newWarehouseId = $service->warehouse_id;
+
+        $cart = Cart::with('items')->where('user_id', $user->id)->first();
+
+        $updatedItems = [];
+        $removedItems = [];
+
+        if ($cart && $cart->warehouse_id != $newWarehouseId) {
+
+            foreach ($cart->items as $item) {
+
+                $stock = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('warehouse_id', $newWarehouseId)
+                    ->sum('quantity');
+
+                // Remove item if no stock
+                if ($stock <= 0) {
+                    $removedItems[] = $item->product_id;
+                    $item->delete();
+                    continue;
+                }
+
+                // 🔧 Adjust quantity
+                if ($item->qty > $stock) {
+                    $item->update(['qty' => $stock]);
+                    $updatedItems[] = [
+                        'product_id' => $item->product_id,
+                        'new_qty' => $stock
+                    ];
+                }
+            }
+
+            //Update cart warehouse
+            $cart->update(['warehouse_id' => $newWarehouseId]);
+        }
+
         return response()->json([
-            'status' => false,
-            'message' => 'Service not available in this area'
+            'status' => true,
+            'message' => 'Cart updated based on new location',
+            'data' => [
+                'warehouse_id' => $newWarehouseId,
+                'removed_items' => $removedItems,
+                'updated_items' => $updatedItems
+            ]
         ]);
     }
-
-    // STORE IN SESSION
-    Session::put('pincode', $service->pincode);
-    Session::put('warehouse_id', $service->warehouse_id);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Service available',
-        'data' => [
-            'pincode' => $service->pincode,
-            'warehouse_id' => $service->warehouse_id
-        ]
-    ]);
-}
 }

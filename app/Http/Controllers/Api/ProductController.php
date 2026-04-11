@@ -24,6 +24,15 @@ class ProductController extends Controller
 
     public function addToCart(Request $request)
     {
+        $warehouseId = $request->header('warehouse-id');
+
+        if (!$warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Warehouse not selected'
+            ], 400);
+        }
+
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
@@ -37,6 +46,7 @@ class ProductController extends Controller
 
         // REAL STOCK
         $availableStock = WarehouseStock::where('product_id', $product->id)
+            ->where('warehouse_id', $warehouseId)
             ->sum('quantity');
 
         if ($availableStock <= 0) {
@@ -46,9 +56,22 @@ class ProductController extends Controller
             ], 400);
         }
 
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if ($cart && $cart->warehouse_id != $warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your cart belongs to a different location. Please clear cart.'
+            ], 400);
+        }
+
+
         // Get or create cart
         $cart = Cart::firstOrCreate(
-            ['user_id' => $user->id],
+            [
+                'user_id' => $user->id,
+                'warehouse_id' => $warehouseId
+            ],
             [
                 'subtotal'  => 0,
                 'tax_total' => 0,
@@ -106,8 +129,6 @@ class ProductController extends Controller
             ]);
         }
 
-        // 🔹 RECALCULATE CART TOTALS
-        // 🔹 RECALCULATE CART TOTALS
         $subtotal = CartItem::where('cart_id', $cart->id)
             ->sum(DB::raw('price * qty'));
 
@@ -264,7 +285,17 @@ class ProductController extends Controller
         $user = $request->user();
         if ($res = $this->checkCustomer($user)) return $res;
 
-        Cart::where('user_id', $user->id)->delete();
+        $cart=Cart::where('user_id', $user->id)->first();
+        $cart->delete();
+
+        $warehouseId = $request->header('warehouse-id');
+
+        if ($cart->warehouse_id != $warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart belongs to different warehouse'
+            ], 400);
+        }
 
         return response()->json([
             'status' => true,
@@ -313,128 +344,6 @@ class ProductController extends Controller
             ]
         ]);
     }
-    // public function checkout(Request $request)
-    // {
-    //     $user = $request->user();
-    //     if ($res = $this->checkCustomer($user)) return $res;
-
-    //     $request->validate([
-    //         'address_id' => 'required|exists:user_addresses,id'
-    //     ]);
-
-    //     $address = UserAddress::where('id', $request->address_id)
-    //         ->where('user_id', $user->id)
-    //         ->first();
-
-    //     if (!$address) {
-    //         return response()->json(['status' => false, 'message' => 'Invalid address'], 400);
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         $cart = Cart::where('user_id', $user->id)->first();
-
-    //         if (!$cart || $cart->items->isEmpty()) {
-    //             return response()->json(['status' => false, 'message' => 'Cart is empty'], 400);
-    //         }
-
-    //         $cartItems = CartItem::with('product')->where('cart_id', $cart->id)->get();
-
-    //         // 1. Calculate Subtotal from items
-    //         $subtotal = $cartItems->sum(function ($item) {
-    //             return $item->price * $item->qty;
-    //         });
-
-    //         // 2. Get tax and coupon details from cart
-    //         $taxTotal       = $cart->tax_total ?? 0;
-    //         $couponDiscount = (float)($cart->discount ?? 0); // This should be ₹80 in your example
-
-    //         // 3. SET DELIVERY CHARGE TO 0
-    //         $deliveryCharge = 0;
-
-    //         // 4. Calculate Final Total: (Subtotal + Tax + 0) - Discount
-    //         $totalAmount = ($subtotal + $taxTotal + $deliveryCharge) - $couponDiscount;
-    //         $totalAmount = max($totalAmount, 0);
-
-    //         // 5. Create Order
-    //         $order = Order::create([
-    //             'user_id'         => $user->id,
-    //             'order_number'    => 'ORD-' . time(),
-    //             'subtotal'        => $subtotal,
-    //             'tax_total'       => $taxTotal,
-    //             'delivery_charge' => 0, // No delivery charge
-    //             'coupon_discount' => $couponDiscount,
-    //             'coupon_code'     => $cart->coupon_code,
-    //             'coupon_id'       => $cart->coupon_id,
-    //             'total_amount'    => $totalAmount,
-    //             'status'          => 'pending',
-    //             'address_id'      => $address->id,
-    //             'address_type'    => $address->type,
-    //             'channel'         => 'app',
-    //         ]);
-
-    //         // Order Items + FIFO stock deduction
-    //         foreach ($cartItems as $item) {
-
-    //             OrderItem::create([
-    //                 'order_id' => $order->id,
-    //                 'product_id' => $item->product_id,
-    //                 'quantity' => $item->qty,
-    //                 'price' => $item->price,
-    //                 'total' => $item->qty * $item->price
-    //             ]);
-
-    //             $remainingQty = $item->qty;
-
-    //             $stocks = WarehouseStock::where('product_id', $item->product_id)
-    //                 ->where('quantity', '>', 0)
-    //                 ->orderBy('created_at')
-    //                 ->get();
-
-    //             foreach ($stocks as $stock) {
-    //                 if ($remainingQty <= 0) break;
-
-    //                 if ($stock->quantity >= $remainingQty) {
-    //                     $stock->quantity -= $remainingQty;
-    //                     $stock->save();
-    //                     $remainingQty = 0;
-    //                 } else {
-    //                     $remainingQty -= $stock->quantity;
-    //                     $stock->quantity = 0;
-    //                     $stock->save();
-    //                 }
-    //             }
-    //         }
-
-    //         // Clear Cart
-    //         CartItem::where('cart_id', $cart->id)->delete();
-    //         $cart->delete();
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'Order placed successfully',
-    //             'data' => [
-    //                 'order_id'        => $order->id,
-    //                 'order_number'    => $order->order_number,
-    //                 'subtotal'        => round($subtotal, 2),
-    //                 'delivery_charge' => 0, // Return 0 to App
-    //                 'coupon_discount' => round($couponDiscount, 2),
-    //                 'total_amount'    => round($totalAmount, 2),
-    //                 'address_type'    => $address->type
-    //             ]
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Checkout failed',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function checkout(Request $request)
     {
         $user = $request->user();
@@ -454,6 +363,22 @@ class ProductController extends Controller
         }
 
         $cart = Cart::with('items')->where('user_id', $user->id)->first();
+
+        $warehouseId = $request->header('warehouse-id');
+
+        if (!$warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Warehouse not selected'
+            ], 400);
+        }
+
+        if ($cart->warehouse_id != $warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Your location changed. Please review your cart.'
+            ], 400);
+        }
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'Cart is empty'], 400);
@@ -497,122 +422,125 @@ class ProductController extends Controller
     }
 
     public function confirmOrder(Request $request)
-{
-    DB::beginTransaction();
+    {
+        DB::beginTransaction();
 
-    try {
-        $order = Order::findOrFail($request->order_id);
+        try {
+            $order = Order::findOrFail($request->order_id);
 
-        // Already confirmed
-        if ($order->status === 'confirmed') {
-            return response()->json([
-                'status' => true,
-                'message' => 'Order already confirmed'
-            ]);
-        }
-
-        // FIXED PAYMENT CHECK
-        if (
-            $order->payment_method === 'online' &&
-            $order->status !== 'paid'
-        ) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Payment not completed'
-            ], 400);
-        }
-
-        $warehouseId = $request->header('warehouse-id');
-
-        if (!$warehouseId) {
-            throw new \Exception('Warehouse not provided');
-        }
-
-        $cart = Cart::where('user_id', $order->user_id)->first();
-
-        if (!$cart) {
-            throw new \Exception('Cart not found');
-        }
-
-        $cartItems = CartItem::with('product')
-            ->where('cart_id', $cart->id)
-            ->get();
-
-        if ($cartItems->isEmpty()) {
-            throw new \Exception('Cart is empty');
-        }
-
-        foreach ($cartItems as $item) {
-
-            //STOCK CHECK (WAREHOUSE BASED)
-            $totalStock = WarehouseStock::where('product_id', $item->product_id)
-                ->where('warehouse_id', $warehouseId)
-                ->sum('quantity');
-
-            if ($totalStock < $item->qty) {
-                throw new \Exception("Insufficient stock for product ID: {$item->product_id}");
+            // Already confirmed
+            if ($order->status === 'confirmed') {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Order already confirmed'
+                ]);
             }
 
-            // CREATE ORDER ITEM (INSIDE LOOP)
-            OrderItem::create([
-                'order_id'   => $order->id,
-                'product_id' => $item->product_id,
-                'quantity'   => $item->qty,
-                'price'      => $item->price,
-                'total'      => $item->qty * $item->price
-            ]);
+            // FIXED PAYMENT CHECK
+            if (
+                $order->payment_method === 'online' &&
+                $order->status !== 'paid'
+            ) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Payment not completed'
+                ], 400);
+            }
 
-            // FIFO STOCK DEDUCTION (WAREHOUSE BASED)
-            $remainingQty = $item->qty;
+            $warehouseId = $request->header('warehouse-id');
 
-            $stocks = WarehouseStock::where('product_id', $item->product_id)
-                ->where('warehouse_id', $warehouseId)
-                ->where('quantity', '>', 0)
-                ->orderBy('created_at')
-                ->lockForUpdate()
+            if (!$warehouseId) {
+                throw new \Exception('Warehouse not provided');
+            }
+
+            $cart = Cart::where('user_id', $order->user_id)->first();
+
+            if ($cart->warehouse_id != $warehouseId) {
+                throw new \Exception('Cart warehouse mismatch');
+            }
+
+            if (!$cart) {
+                throw new \Exception('Cart not found');
+            }
+
+            $cartItems = CartItem::with('product')
+                ->where('cart_id', $cart->id)
                 ->get();
 
-            foreach ($stocks as $stock) {
+            if ($cartItems->isEmpty()) {
+                throw new \Exception('Cart is empty');
+            }
 
-                if ($remainingQty <= 0) break;
+            foreach ($cartItems as $item) {
 
-                if ($stock->quantity >= $remainingQty) {
-                    $stock->quantity -= $remainingQty;
-                    $stock->save();
-                    $remainingQty = 0;
-                } else {
-                    $remainingQty -= $stock->quantity;
-                    $stock->quantity = 0;
-                    $stock->save();
+                //STOCK CHECK (WAREHOUSE BASED)
+                $totalStock = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->sum('quantity');
+
+                if ($totalStock < $item->qty) {
+                    throw new \Exception("Insufficient stock for product ID: {$item->product_id}");
+                }
+
+                // CREATE ORDER ITEM (INSIDE LOOP)
+                OrderItem::create([
+                    'order_id'   => $order->id,
+                    'product_id' => $item->product_id,
+                    'quantity'   => $item->qty,
+                    'price'      => $item->price,
+                    'total'      => $item->qty * $item->price
+                ]);
+
+                // FIFO STOCK DEDUCTION (WAREHOUSE BASED)
+                $remainingQty = $item->qty;
+
+                $stocks = WarehouseStock::where('product_id', $item->product_id)
+                    ->where('warehouse_id', $warehouseId)
+                    ->where('quantity', '>', 0)
+                    ->orderBy('created_at')
+                    ->lockForUpdate()
+                    ->get();
+
+                foreach ($stocks as $stock) {
+
+                    if ($remainingQty <= 0) break;
+
+                    if ($stock->quantity >= $remainingQty) {
+                        $stock->quantity -= $remainingQty;
+                        $stock->save();
+                        $remainingQty = 0;
+                    } else {
+                        $remainingQty -= $stock->quantity;
+                        $stock->quantity = 0;
+                        $stock->save();
+                    }
                 }
             }
+
+            CartItem::where('cart_id', $cart->id)->delete();
+            $cart->delete();
+
+            $order->update([
+                'status' => 'confirmed'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order confirmed successfully'
+            ]);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Order confirmation failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        CartItem::where('cart_id', $cart->id)->delete();
-        $cart->delete();
-
-        $order->update([
-            'status' => 'confirmed'
-        ]);
-
-        DB::commit();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Order confirmed successfully'
-        ]);
-
-    } catch (\Exception $e) {
-
-        DB::rollBack();
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Order confirmation failed',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
     protected function checkCustomer($user)
     {
         if (!$user) {
@@ -793,8 +721,20 @@ class ProductController extends Controller
 
         $product = Product::with('tax')->findOrFail($request->product_id);
 
-        // 🔹 Stock check
-        $availableStock = WarehouseStock::where('product_id', $product->id)->sum('quantity');
+        $warehouseId = $request->header('warehouse-id');
+
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if ($cart && $cart->warehouse_id != $warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart belongs to different warehouse'
+            ], 400);
+        }
+
+        $availableStock = WarehouseStock::where('product_id', $product->id)
+            ->where('warehouse_id', $warehouseId)
+            ->sum('quantity');
 
         if ($availableStock <= 0) {
             return response()->json([
@@ -861,7 +801,14 @@ class ProductController extends Controller
         ]);
 
         $cart = Cart::where('user_id', $user->id)->first();
+        $warehouseId = $request->header('warehouse-id');
 
+        if ($cart->warehouse_id != $warehouseId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart belongs to different warehouse'
+            ], 400);
+        }
         if (!$cart) {
             return response()->json([
                 'status' => false,
