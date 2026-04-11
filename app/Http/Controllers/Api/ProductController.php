@@ -496,13 +496,13 @@ class ProductController extends Controller
         ]);
     }
 
-     public function confirmOrder(Request $request)
+    public function confirmOrder(Request $request)
     {
         DB::beginTransaction();
- 
+
         try {
             $order = Order::findOrFail($request->order_id);
- 
+
             // duplicate confirmation
             if ($order->status === 'confirmed') {
                 return response()->json([
@@ -510,39 +510,41 @@ class ProductController extends Controller
                     'message' => 'Order already confirmed'
                 ]);
             }
- 
+
             //  Allow COD OR Paid Orders
-            if ($order->payment_method !== 'cash' && $order->status !== 'paid') {
+            if (($order->payment_method === 'cash') ||
+                ($order->payment_method === 'online' && $order->status === 'paid')
+            ) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Payment not completed'
                 ], 400);
             }
- 
+
             $cart = Cart::where('user_id', $order->user_id)->first();
- 
+
             if (!$cart) {
                 throw new \Exception('Cart not found');
             }
- 
+
             $cartItems = CartItem::with('product')
                 ->where('cart_id', $cart->id)
                 ->get();
- 
+
             if ($cartItems->isEmpty()) {
                 throw new \Exception('Cart is empty');
             }
- 
+
             foreach ($cartItems as $item) {
- 
+
                 //  Check total stock before deduction
                 $totalStock = WarehouseStock::where('product_id', $item->product_id)
                     ->sum('quantity');
- 
+
                 if ($totalStock < $item->qty) {
                     throw new \Exception("Insufficient stock for product ID: {$item->product_id}");
                 }
- 
+
                 // Create Order Item
                 OrderItem::create([
                     'order_id'   => $order->id,
@@ -551,22 +553,22 @@ class ProductController extends Controller
                     'price'      => $item->price,
                     'total'      => $item->qty * $item->price
                 ]);
- 
+
                 // FIFO Stock Deduction
                 $remainingQty = $item->qty;
- 
+
                 $stocks = WarehouseStock::where('product_id', $item->product_id)
                     ->where('quantity', '>', 0)
                     ->orderBy('created_at') // FIFO
                     ->lockForUpdate()
                     ->get();
- 
+
                 foreach ($stocks as $stock) {
- 
+
                     if ($remainingQty <= 0) {
                         break;
                     }
- 
+
                     if ($stock->quantity >= $remainingQty) {
                         $stock->quantity -= $remainingQty;
                         $stock->save();
@@ -578,25 +580,25 @@ class ProductController extends Controller
                     }
                 }
             }
- 
+
             CartItem::where('cart_id', $cart->id)->delete();
             $cart->delete();
- 
+
             // Update Order Status
             $order->update([
                 'status' => 'confirmed'
             ]);
- 
+
             DB::commit();
- 
+
             return response()->json([
                 'status' => true,
                 'message' => 'Order confirmed successfully'
             ]);
         } catch (\Exception $e) {
- 
+
             DB::rollBack();
- 
+
             return response()->json([
                 'status' => false,
                 'message' => 'Order confirmation failed',

@@ -962,7 +962,7 @@ Route::middleware('auth')->group(function () {
 
      Route::get('/privacy-policy', function () {
         return view('privacy-policy');
-    });
+    });     
 
 /////////////////////////////////////////   SHEKHAR DEVELOP - WEBSITE END   ////////////////////////////////////////////////////////////
 
