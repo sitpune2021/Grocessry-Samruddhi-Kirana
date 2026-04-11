@@ -663,6 +663,7 @@ class LoginController extends Controller
             'message' => 'Cart updated based on new location',
             'data' => [
                 'warehouse_id' => $newWarehouseId,
+                'pincode'       =>$request->pincode,
                 'removed_items' => $removedItems,
                 'updated_items' => $updatedItems
             ]
