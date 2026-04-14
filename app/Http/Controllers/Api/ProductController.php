@@ -886,23 +886,79 @@ class ProductController extends Controller
         ]);
     }
 
-    public function search(Request $request)
-    {
-        // dd($request->all());
-        $search = trim($request->query('search'));
+ public function search(Request $request)
+{
+    $search = trim($request->query('search'));
+    $warehouseId = $request->header('warehouse-id');
 
-        $products = Product::query()
-            ->when($search, function ($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%');
-            })
-            ->paginate(10);
-
+    if (!$warehouseId) {
         return response()->json([
-            'status' => true,
-            'count'  => $products->total(),
-            'data'   => $products
-        ]);
+            'status' => false,
+            'message' => 'Warehouse not selected'
+        ], 400);
     }
+
+    $products = Product::select('products.*')
+
+        // ✅ STOCK SUBQUERY
+        ->selectSub(function ($query) use ($warehouseId) {
+            $query->from('warehouse_stock')
+                ->selectRaw('COALESCE(SUM(quantity),0)')
+                ->whereColumn('warehouse_stock.product_id', 'products.id')
+                ->where('warehouse_stock.warehouse_id', $warehouseId);
+        }, 'stock')
+
+        ->when($search, function ($q) use ($search) {
+            $q->where('products.name', 'LIKE', '%' . $search . '%');
+        })
+
+        // 🔥 SORTING (BEST PRACTICE)
+        ->orderByRaw('stock > 0 DESC') // in-stock first
+        ->orderByDesc('stock')         // higher stock first
+
+        ->paginate(10);
+
+    // ✅ FORMAT RESPONSE
+    $products->getCollection()->transform(function ($product) {
+
+        $images = is_string($product->product_images)
+            ? json_decode($product->product_images, true)
+            : ($product->product_images ?? []);
+
+        $discountPercent = 0;
+        if ($product->mrp > 0 && $product->final_price < $product->mrp) {
+            $discountPercent = round(
+                (($product->mrp - $product->final_price) / $product->mrp) * 100
+            );
+        }
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+
+            'mrp' => (float) $product->mrp,
+            'final_price' => (float) $product->final_price,
+
+            'discount_percentage' => $discountPercent,
+            'discount_label' => $discountPercent > 0
+                ? $discountPercent . '% OFF'
+                : null,
+
+            'stock' => (int) $product->stock,
+            'in_stock' => $product->stock > 0,
+
+            'image_urls' => collect($images)->map(
+                fn($img) => asset('storage/products/' . $img)
+            )->values(),
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'count'  => $products->total(),
+        'data'   => $products
+    ]);
+}
     public function addBrandProductToCart(Request $request)
     {
         $request->validate([
