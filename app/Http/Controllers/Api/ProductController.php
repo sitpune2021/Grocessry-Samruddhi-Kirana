@@ -439,7 +439,7 @@ class ProductController extends Controller
             // FIXED PAYMENT CHECK
             if (
                 $order->payment_method === 'online' &&
-                $order->status !== 'paid'
+                $order->payment_status !== 'paid'
             ) {
                 return response()->json([
                     'status' => false,
@@ -541,6 +541,8 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+
     protected function checkCustomer($user)
     {
         if (!$user) {
