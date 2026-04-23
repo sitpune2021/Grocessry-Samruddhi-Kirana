@@ -641,7 +641,7 @@ class ProductController extends Controller
         $perPage = $request->per_page ?? 10;
 
         $orders = Order::with([
-            'orderItems.product:id,name,product_images',
+            'orderItems.product:id,name,product_images','deliveryAddress',
         ])
             ->where('user_id', $user->id)
             ->whereIn('status', ['delivered', 'cancelled'])
@@ -653,6 +653,7 @@ class ProductController extends Controller
             'data' => $orders
         ]);
     }
+
     public function newOrders(Request $request)
     {
         $user = $request->user();
@@ -673,6 +674,7 @@ class ProductController extends Controller
             'data' => $orders
         ]);
     }
+
     public function rateOrder(Request $request, $orderId)
     {
         $user = $request->user();
