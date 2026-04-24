@@ -588,7 +588,7 @@ class LoginController extends Controller
         $now = Carbon::now('Asia/Kolkata')->format('H:i');
 
         $start = '07:00';
-        $end   = '17:00';
+        $end   = '19:00';
 
         if ($now >= $start && $now <= $end) {
             return response()->json([
