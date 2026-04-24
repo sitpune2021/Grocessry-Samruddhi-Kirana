@@ -588,7 +588,7 @@ class LoginController extends Controller
         $now = Carbon::now('Asia/Kolkata')->format('H:i');
 
         $start = '07:00';
-        $end   = '18:00';
+        $end   = '17:00';
 
         if ($now >= $start && $now <= $end) {
             return response()->json([
@@ -601,7 +601,7 @@ class LoginController extends Controller
         return response()->json([
             'status' => false,
             'order_allowed' => false,
-            'message' => 'Orders allowed only between 7:00 AM and 6:00 PM'
+            'message' => 'Orders allowed only between 7:00 AM and 7:00 PM'
         ], 403);
     }
 
