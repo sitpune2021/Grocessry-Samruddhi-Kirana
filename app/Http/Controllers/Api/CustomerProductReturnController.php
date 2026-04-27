@@ -307,13 +307,13 @@ class CustomerProductReturnController extends Controller
         $data = $orderItems->map(function ($item) {
 
             // 🔹 Already returned quantity
-            $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
+            $returnedQty = CustomerOrderReturn::where('order_id', $item->id)
                 ->sum('quantity');
 
             $returnableQty = max(0, $item->quantity - $returnedQty);
 
             // 🔹 Fetch return images (FIXED LOGIC)
-            $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
+            $returnImages = CustomerOrderReturn::where('order_id', $item->id)
                 ->whereNotNull('product_images')
                 ->pluck('product_images') // only fetch column
                 ->flatMap(function ($img) {
