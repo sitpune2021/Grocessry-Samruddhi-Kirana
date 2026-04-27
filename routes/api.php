@@ -147,6 +147,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/partner/duty/pause', [DeliveryAgentDutyController::class, 'pauseDuty']);
     Route::post('/partner/duty/resume', [DeliveryAgentDutyController::class, 'resumeDuty']);
     Route::post('/partner/duty/stop', [DeliveryAgentDutyController::class, 'stopDuty']);
+    Route::get('/partner/duty-slots', [DeliveryAgentDutyController::class, 'getDutySlots']);
+
     Route::get('/partner/profile/summary', [DeliveryAgentDutyController::class, 'partnerSummary']);
     Route::post('partner/orders/{orderId}/delivery/verify-otp', [DeliveryAgentDutyController::class, 'verifyDeliveryOtp']);
     Route::post('/partner/orders/{orderId}/delivery/{type}-otp', [DeliveryAgentDutyController::class, 'deliveryOtp']);
