@@ -644,7 +644,7 @@ class ProductController extends Controller
             'orderItems.product:id,name,product_images','deliveryAddress',
         ])
             ->where('user_id', $user->id)
-            ->whereIn('status', ['delivered', 'cancelled'])
+            ->whereIn('status', ['delivered', 'cancelled','rejected'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
@@ -664,7 +664,7 @@ class ProductController extends Controller
             'deliveryAddress'
         ])
             ->where('user_id', $user->id)
-            ->whereNotIn('status', ['delivered', 'cancelled'])
+            ->whereNotIn('status', ['delivered', 'cancelled','rejected'])
             ->whereIn('payment_method', ['cash', 'online'])
             ->orderBy('created_at', 'desc')
             ->get();

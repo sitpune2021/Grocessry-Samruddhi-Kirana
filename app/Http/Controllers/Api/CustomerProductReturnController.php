@@ -27,28 +27,171 @@ class CustomerProductReturnController extends Controller
         ]);
     }
 
+    // public function createReturn(Request $request)
+    // {
+    //     try {
+
+    //         Log::info('Return API Hit', [
+    //             'customer_id' => auth()->id(),
+    //             'payload' => $request->except('items.*.images')
+    //         ]);
+
+    //         // ✅ VALIDATION
+    //         $validated = $request->validate([
+    //             'order_id' => 'required|integer',
+    //             'items' => 'required|array|min:1',
+
+    //             'items.*.product_id' => 'required|integer',
+    //             'items.*.quantity' => 'required|integer|min:1',
+    //             'items.*.reason_id' => 'required|in:1,2,3,4,5',
+    //             'items.*.images.*' => 'image|mimes:jpg,jpeg,png|max:2048'
+    //         ]);
+
+    //         Log::info('Validation Passed', $validated);
+
+    //         $reasonMap = [
+    //             1 => 'damaged',
+    //             2 => 'expired',
+    //             3 => 'wrong_item',
+    //             4 => 'missing_item',
+    //             5 => 'quality_issue'
+    //         ];
+
+    //         $returns = [];
+
+    //         DB::beginTransaction();
+
+    //         foreach ($validated['items'] as $index => $item) {
+
+    //             Log::info('Processing Item', $item);
+
+    //             // 🔹 Find order item
+    //             $orderItem = OrderItem::where('order_id', $validated['order_id'])
+    //                 ->where('product_id', $item['product_id'])
+    //                 ->first();
+
+    //             if (!$orderItem) {
+
+    //                 Log::warning('Product not found in order', [
+    //                     'order_id' => $validated['order_id'],
+    //                     'product_id' => $item['product_id']
+    //                 ]);
+
+    //                 DB::rollBack();
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Product not found in order'
+    //                 ], 422);
+    //             }
+
+    //             // 🔹 Qty check
+    //             $alreadyReturned = CustomerOrderReturn::where(
+    //                 'order_item_id',
+    //                 $orderItem->id
+    //             )->sum('quantity');
+
+    //             $returnable = $orderItem->quantity - $alreadyReturned;
+
+    //             Log::info('Quantity Check', [
+    //                 'ordered' => $orderItem->quantity,
+    //                 'already_returned' => $alreadyReturned,
+    //                 'returnable' => $returnable,
+    //                 'requested' => $item['quantity']
+    //             ]);
+
+    //             if ($item['quantity'] > $returnable) {
+
+    //                 Log::warning('Return qty exceeded', [
+    //                     'product_id' => $item['product_id']
+    //                 ]);
+
+    //                 DB::rollBack();
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Return qty exceeds'
+    //                 ], 422);
+    //             }
+
+    //             // 🔹 Image Upload
+    //             $images = [];
+    //             if ($request->hasFile("items.$index.images")) {
+    //                 foreach ($request->file("items.$index.images") as $file) {
+    //                     $path = $file->store('returns', 'public');
+    //                     $images[] = $path;
+    //                 }
+
+    //                 Log::info('Images Uploaded', $images);
+    //             }
+
+    //             // 🔹 Create return
+    //             $return = CustomerOrderReturn::create([
+    //                 'order_id' => $validated['order_id'],
+    //                 'order_item_id' => $orderItem->id,
+    //                 'product_id' => $item['product_id'],
+    //                 'customer_id' => auth()->id(),
+    //                 'quantity' => $item['quantity'],
+    //                 'reason' => $reasonMap[$item['reason_id']],
+    //                 'product_images' => json_encode($images),
+    //                 'status' => 'requested',
+    //                 'qc_status' => 'pending'
+    //             ]);
+
+    //             Log::info('Return Created', [
+    //                 'return_id' => $return->id,
+    //                 'product_id' => $item['product_id']
+    //             ]);
+
+    //             $returns[] = $return;
+    //         }
+
+    //         DB::commit();
+
+    //         Log::info('Return API Success', [
+    //             'customer_id' => auth()->id(),
+    //             'returns_count' => count($returns)
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Return created with images',
+    //             'data' => $returns
+    //         ]);
+    //     } catch (\Throwable $e) {
+
+    //         DB::rollBack();
+
+    //         Log::error('Return API Failed', [
+    //             'error' => $e->getMessage(),
+    //             'line' => $e->getLine(),
+    //             'file' => $e->getFile(),
+    //             'customer_id' => auth()->id()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Something went wrong'
+    //         ], 500);
+    //     }
+    // }
+
     public function createReturn(Request $request)
     {
         try {
 
-            Log::info('Return API Hit', [
-                'customer_id' => auth()->id(),
-                'payload' => $request->except('items.*.images')
-            ]);
+            $user = $request->user();
 
-            // ✅ VALIDATION
+            // ✅ Validate Request
             $validated = $request->validate([
-                'order_id' => 'required|integer',
+                'order_id' => 'required|integer|exists:orders,id',
                 'items' => 'required|array|min:1',
 
-                'items.*.product_id' => 'required|integer',
+                'items.*.product_id' => 'required|integer|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.reason_id' => 'required|in:1,2,3,4,5',
-                'items.*.images.*' => 'image|mimes:jpg,jpeg,png|max:2048'
+                'items.*.images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
             ]);
 
-            Log::info('Validation Passed', $validated);
-
+            // ✅ Reason Mapping
             $reasonMap = [
                 1 => 'damaged',
                 2 => 'expired',
@@ -63,20 +206,12 @@ class CustomerProductReturnController extends Controller
 
             foreach ($validated['items'] as $index => $item) {
 
-                Log::info('Processing Item', $item);
-
-                // 🔹 Find order item
+                // 🔒 Get Order Item
                 $orderItem = OrderItem::where('order_id', $validated['order_id'])
                     ->where('product_id', $item['product_id'])
                     ->first();
 
                 if (!$orderItem) {
-
-                    Log::warning('Product not found in order', [
-                        'order_id' => $validated['order_id'],
-                        'product_id' => $item['product_id']
-                    ]);
-
                     DB::rollBack();
                     return response()->json([
                         'status' => false,
@@ -84,61 +219,54 @@ class CustomerProductReturnController extends Controller
                     ], 422);
                 }
 
-                // 🔹 Qty check
-                $alreadyReturned = CustomerOrderReturn::where(
-                    'order_item_id',
-                    $orderItem->id
-                )->sum('quantity');
-
-                $returnable = $orderItem->quantity - $alreadyReturned;
-
-                Log::info('Quantity Check', [
-                    'ordered' => $orderItem->quantity,
-                    'already_returned' => $alreadyReturned,
-                    'returnable' => $returnable,
-                    'requested' => $item['quantity']
-                ]);
-
-                if ($item['quantity'] > $returnable) {
-
-                    Log::warning('Return qty exceeded', [
-                        'product_id' => $item['product_id']
-                    ]);
-
+                // 🔒 Ownership Check (IMPORTANT)
+                if ($orderItem->order->user_id !== $user->id) {
                     DB::rollBack();
                     return response()->json([
                         'status' => false,
-                        'message' => 'Return qty exceeds'
+                        'message' => 'Unauthorized'
+                    ], 403);
+                }
+
+                // 🔥 Calculate already returned quantity
+                $alreadyReturned = CustomerOrderReturn::where('order_item_id', $orderItem->id)
+                    ->whereIn('status', ['requested', 'approved', 'picked', 'completed'])
+                    ->sum('quantity');
+
+                $returnableQty = $orderItem->quantity - $alreadyReturned;
+
+                if ($item['quantity'] > $returnableQty) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Return quantity exceeds available quantity'
                     ], 422);
                 }
 
-                // 🔹 Image Upload
-                $images = [];
+                // 🖼 Upload Images
+                $imagePaths = [];
                 if ($request->hasFile("items.$index.images")) {
                     foreach ($request->file("items.$index.images") as $file) {
-                        $path = $file->store('returns', 'public');
-                        $images[] = $path;
-                    }
 
-                    Log::info('Images Uploaded', $images);
+                        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+                        $path = $file->storeAs('returns', $filename, 'public');
+
+                        $imagePaths[] = $path;
+                    }
                 }
 
-                // 🔹 Create return
+                // ✅ Create Return Request (NO quantity update here)
                 $return = CustomerOrderReturn::create([
                     'order_id' => $validated['order_id'],
                     'order_item_id' => $orderItem->id,
                     'product_id' => $item['product_id'],
-                    'customer_id' => auth()->id(),
+                    'customer_id' => $user->id,
                     'quantity' => $item['quantity'],
                     'reason' => $reasonMap[$item['reason_id']],
-                    'product_images' => json_encode($images),
-                    'status' => 'requested',
+                    'product_images' => !empty($imagePaths) ? json_encode($imagePaths) : null,
+                    'status' => 'requested',   // 🔥 important
                     'qc_status' => 'pending'
-                ]);
-
-                Log::info('Return Created', [
-                    'return_id' => $return->id,
-                    'product_id' => $item['product_id']
                 ]);
 
                 $returns[] = $return;
@@ -146,145 +274,21 @@ class CustomerProductReturnController extends Controller
 
             DB::commit();
 
-            Log::info('Return API Success', [
-                'customer_id' => auth()->id(),
-                'returns_count' => count($returns)
-            ]);
-
             return response()->json([
                 'status' => true,
-                'message' => 'Return created with images',
+                'message' => 'Return request created successfully',
                 'data' => $returns
             ]);
         } catch (\Throwable $e) {
 
             DB::rollBack();
 
-            Log::error('Return API Failed', [
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'customer_id' => auth()->id()
-            ]);
-
             return response()->json([
                 'status' => false,
-                'message' => 'Something went wrong'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
-
-    // public function createReturn(Request $request)
-    // {
-    //     try {
-    //         Log::info('Return request received', [
-    //             'customer_id' => auth()->id(),
-    //             'payload' => $request->all()
-    //         ]);
-
-    //         // 🔹 VALIDATION
-    //         $validated = $request->validate([
-    //             'order_id'        => 'required|integer',
-    //             // 'order_item_id'   => 'required|integer',
-    //             'product_id'      => 'required|integer',
-    //             'quantity'        => 'required|integer|min:1',
-    //             'reason_id'       => 'required|in:1,2,3,4,5',
-    //             // 'return_type'     => 'required|in:refund,exchange',
-    //             'product_images'   => 'nullable|array',
-    //             // 'product_images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-    //         ]);
-
-    //         // 🔹 REASON MAP (ID → STRING)
-    //         $reasonMap = [
-    //             1 => 'damaged',
-    //             2 => 'expired',
-    //             3 => 'wrong_item',
-    //             4 => 'missing_item',
-    //             5 => 'quality_issue',
-    //         ];
-
-    //         $reasonKey = $reasonMap[$validated['reason_id']];
-
-    //         // 🔹 VERIFY ORDER ITEM (SECURITY CHECK)
-    //         $orderItem = OrderItem::where('id', $validated['order_item_id'])
-    //             ->where('order_id', $validated['order_id'])
-    //             ->where('product_id', $validated['product_id'])
-    //             ->first();
-
-    //         if (!$orderItem) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Invalid order item'
-    //             ], 422);
-    //         }
-
-    //         // 🔹 CHECK RETURNABLE QUANTITY
-    //         $alreadyReturned = CustomerOrderReturn::where('order_item_id', $orderItem->id)
-    //             ->sum('quantity');
-
-    //         $maxReturnableQty = $orderItem->quantity - $alreadyReturned;
-
-    //         if ($validated['quantity'] > $maxReturnableQty) {
-    //             return response()->json([
-    //                 'status' => false,
-    //                 'message' => 'Return quantity exceeds ordered quantity'
-    //             ], 422);
-    //         }
-
-    //         // 🔹 HANDLE PRODUCT IMAGES
-    //         $images = [];
-    //         if ($request->hasFile('product_images')) {
-    //             foreach ($request->file('product_images') as $file) {
-    //                 $images[] = $file->store('returns', 'public');
-    //             }
-    //         }
-
-    //         // 🔹 CREATE RETURN REQUEST
-    //         $return = CustomerOrderReturn::create([
-    //             'order_id'        => $validated['order_id'],
-    //             // 'order_item_id'   => $validated['order_item_id'],
-    //             'product_id'      => $validated['product_id'],
-    //             'customer_id'     => auth()->id(),
-    //             'quantity'        => $validated['quantity'],
-    //             'reason'          => $reasonKey,
-    //             // 'return_type'     => $validated['return_type'],
-    //             'status'          => 'requested',
-    //             'qc_status'       => 'pending',
-    //             'product_images'  => $images ?: null
-    //         ]);
-
-    //         // 🔹 SUCCESS RESPONSE
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'Return request created successfully',
-    //             'data' => [
-    //                 'id'            => $return->id,
-    //                 'order_id'      => $return->order_id,
-    //                 // 'order_item_id' => $return->order_item_id,
-    //                 'product_id'    => $return->product_id,
-    //                 'quantity'      => $return->quantity,
-    //                 'reason_id'     => $validated['reason_id'], // sent back
-    //                 'reason'        => $return->reason,
-    //                 // 'return_type'   => $return->return_type,
-    //                 'status'        => $return->status,
-    //                 'qc_status'     => $return->qc_status,
-    //                 'product_images' => $return->product_images
-    //             ]
-    //         ], 200);
-    //     } catch (\Throwable $e) {
-
-    //         Log::error('Return request failed', [
-    //             'error' => $e->getMessage(),
-    //             'customer_id' => auth()->id(),
-    //             'payload' => $request->all()
-    //         ]);
-
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Something went wrong'
-    //         ], 500);
-    //     }
-    // }
 
     public function getOrderReturnProducts($orderId)
     {
@@ -352,50 +356,50 @@ class CustomerProductReturnController extends Controller
         ]);
     }
 
-     // product list for stock return
+    // product list for stock return
     public function productsList(Request $request)
     {
         $request->validate([
             'order_id' => 'required|exists:orders,id'
         ]);
- 
+
         $order = Order::with('items.product')
             ->where('user_id', auth()->id())
             ->where('id', $request->order_id)
             ->first();
- 
+
         if (!$order) {
             return response()->json([
                 'success' => false,
                 'message' => 'Order not found'
             ], 404);
         }
- 
+
         $products = $order->items->map(function ($item) {
- 
+
             // Handle null safety
             if (!$item->product) {
                 return null;
             }
- 
+
             $images = is_array($item->product->product_images)
                 ? $item->product->product_images
                 : json_decode($item->product->product_images, true);
- 
+
             return [
                 'product_id' => $item->product->id,
                 'name' => $item->product->name,
- 
+
                 'image' => !empty($images)
                     ? collect($images)->map(function ($img) {
                         return asset('storage/products/' . $img);
                     })
                     : [],
- 
+
                 'quantity' => $item->quantity,
             ];
         })->filter()->values(); // remove nulls
- 
+
         return response()->json([
             'success' => true,
             'order_id' => $order->id,
@@ -403,7 +407,4 @@ class CustomerProductReturnController extends Controller
             'products' => $products
         ]);
     }
- 
- 
-    
 }
