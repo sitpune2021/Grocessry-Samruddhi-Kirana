@@ -472,10 +472,72 @@ class DeliveryAgentDutyController extends Controller
         ]);
     }
 
+    // public function startDuty(Request $request)
+    // {
+    //     $agent = $request->user();
+    //     $now = now();
+
+    //     // FIX invalid state automatically
+    //     if ($agent->is_online == 1 && !$agent->duty_start_time) {
+    //         $agent->update([
+    //             'is_online' => 0
+    //         ]);
+    //     }
+
+    //     // Already active
+    //     if ($agent->is_online == 1 && $agent->duty_start_time) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Already online'
+    //         ], 422);
+    //     }
+
+    //     // Start / Resume duty
+    //     $agent->update([
+    //         'is_online' => 1,
+    //         'duty_start_time' => $now,
+    //         'duty_paused_at' => null
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Duty started',
+    //         'todayDutyTime' => $agent->total_duty_minutes,
+    //         'startedAt' => $now
+    //     ]);
+    // }
+
     public function startDuty(Request $request)
     {
         $agent = $request->user();
         $now = now();
+        $currentTime = $now->format('H:i');
+
+        // Define allowed slots
+        $slots = [
+            ['start' => '08:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '20:00'],
+        ];
+
+        $isAllowed = false;
+        $currentSlot = null;
+
+        foreach ($slots as $slot) {
+            if ($currentTime >= $slot['start'] && $currentTime < $slot['end']) {
+                $isAllowed = true;
+                $currentSlot = $slot;
+                break;
+            }
+        }
+
+        // ❌ Not in allowed slot
+        if (!$isAllowed) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can only start duty between 8AM–8PM in defined slots'
+            ], 422);
+        }
 
         // FIX invalid state automatically
         if ($agent->is_online == 1 && !$agent->duty_start_time) {
@@ -492,7 +554,7 @@ class DeliveryAgentDutyController extends Controller
             ], 422);
         }
 
-        // Start / Resume duty
+        // ✅ Start duty
         $agent->update([
             'is_online' => 1,
             'duty_start_time' => $now,
@@ -502,15 +564,77 @@ class DeliveryAgentDutyController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Duty started',
+            'slot' => $currentSlot,
             'todayDutyTime' => $agent->total_duty_minutes,
             'startedAt' => $now
         ]);
     }
 
+
+    // public function pauseDuty(Request $request)
+    // {
+    //     $agent = $request->user();
+
+    //     if ($agent->is_online != 1 || !$agent->duty_start_time) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Duty not active'
+    //         ], 422);
+    //     }
+
+    //     $pausedAt = now();
+
+    //     $minutes = $pausedAt->diffInMinutes(
+    //         \Carbon\Carbon::parse($agent->duty_start_time)
+    //     );
+
+    //     $agent->update([
+    //         'is_online' => 0,
+    //         'duty_start_time' => null,
+    //         'duty_paused_at' => $pausedAt,
+    //         'total_duty_minutes' => $agent->total_duty_minutes + $minutes
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Duty paused',
+    //         'todayDutyTime' => $agent->total_duty_minutes,
+    //         'pausedAt' => $pausedAt
+    //     ]);
+    // }
+
+
     public function pauseDuty(Request $request)
     {
         $agent = $request->user();
+        $now = now();
+        $currentTime = $now->format('H:i');
 
+        // Define slots
+        $slots = [
+            ['start' => '08:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '20:00'],
+        ];
+
+        $isAllowed = false;
+
+        foreach ($slots as $slot) {
+            if ($currentTime >= $slot['start'] && $currentTime < $slot['end']) {
+                $isAllowed = true;
+                break;
+            }
+        }
+
+        // ❌ Not in allowed slot
+        if (!$isAllowed) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Duty can only be paused within active time slots'
+            ], 422);
+        }
+
+        // ❌ Duty not active
         if ($agent->is_online != 1 || !$agent->duty_start_time) {
             return response()->json([
                 'status' => false,
@@ -518,7 +642,7 @@ class DeliveryAgentDutyController extends Controller
             ], 422);
         }
 
-        $pausedAt = now();
+        $pausedAt = $now;
 
         $minutes = $pausedAt->diffInMinutes(
             \Carbon\Carbon::parse($agent->duty_start_time)
@@ -538,11 +662,77 @@ class DeliveryAgentDutyController extends Controller
             'pausedAt' => $pausedAt
         ]);
     }
+
+
+    // public function resumeDuty(Request $request)
+    // {
+    //     $agent = $request->user();
+
+    //     // ❌ Cannot resume if already online
+    //     if ($agent->is_online == 1) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Duty already active'
+    //         ], 422);
+    //     }
+
+    //     // ❌ Cannot resume if never started
+    //     if (!$agent->duty_paused_at) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Duty not paused'
+    //         ], 422);
+    //     }
+
+    //     $resumedAt = now();
+
+    //     $agent->update([
+    //         'is_online' => 1,
+    //         'duty_start_time' => $resumedAt,
+    //         'duty_paused_at' => null
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Duty resumed',
+    //         'todayDutyTime' => $agent->total_duty_minutes,
+    //         'resumedAt' => $resumedAt
+    //     ]);
+    // }
+
     public function resumeDuty(Request $request)
     {
         $agent = $request->user();
+        $now = now();
+        $currentTime = $now->format('H:i');
 
-        // ❌ Cannot resume if already online
+        // Define slots
+        $slots = [
+            ['start' => '08:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '20:00'],
+        ];
+
+        $isAllowed = false;
+        $currentSlot = null;
+
+        foreach ($slots as $slot) {
+            if ($currentTime >= $slot['start'] && $currentTime < $slot['end']) {
+                $isAllowed = true;
+                $currentSlot = $slot;
+                break;
+            }
+        }
+
+        // ❌ Not in allowed slot
+        if (!$isAllowed) {
+            return response()->json([
+                'status' => false,
+                'message' => 'You can only resume duty within allowed time slots'
+            ], 422);
+        }
+
+        // ❌ Already online
         if ($agent->is_online == 1) {
             return response()->json([
                 'status' => false,
@@ -550,7 +740,7 @@ class DeliveryAgentDutyController extends Controller
             ], 422);
         }
 
-        // ❌ Cannot resume if never started
+        // ❌ Never paused
         if (!$agent->duty_paused_at) {
             return response()->json([
                 'status' => false,
@@ -558,7 +748,8 @@ class DeliveryAgentDutyController extends Controller
             ], 422);
         }
 
-        $resumedAt = now();
+        // ✅ Resume duty
+        $resumedAt = $now;
 
         $agent->update([
             'is_online' => 1,
@@ -569,15 +760,75 @@ class DeliveryAgentDutyController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Duty resumed',
+            'slot' => $currentSlot,
             'todayDutyTime' => $agent->total_duty_minutes,
             'resumedAt' => $resumedAt
         ]);
     }
+
+
+    // public function stopDuty(Request $request)
+    // {
+    //     $agent = $request->user();
+
+    //     // If already offline
+    //     if ($agent->is_online == 0 && !$agent->duty_start_time) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Already offline'
+    //         ], 422);
+    //     }
+
+    //     $endedAt = now();
+    //     $totalMinutes = $agent->total_duty_minutes;
+
+    //     // If duty currently active, calculate session time
+    //     if ($agent->is_online == 1 && $agent->duty_start_time) {
+    //         $sessionMinutes = $endedAt->diffInMinutes(
+    //             \Carbon\Carbon::parse($agent->duty_start_time)
+    //         );
+    //         $totalMinutes += $sessionMinutes;
+    //     }
+
+    //     // Stop duty completely
+    //     $agent->update([
+    //         'is_online' => 0,
+    //         'duty_start_time' => null,
+    //         'duty_paused_at' => null,
+    //         'total_duty_minutes' => $totalMinutes
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Duty stopped',
+    //         'todayDutyTime' => $totalMinutes,
+    //         'endedAt' => $endedAt
+    //     ]);
+    // }
+
     public function stopDuty(Request $request)
     {
         $agent = $request->user();
+        $now = now();
+        $currentTime = $now->format('H:i');
 
-        // If already offline
+        // Define slots
+        $slots = [
+            ['start' => '08:00', 'end' => '12:00'],
+            ['start' => '12:00', 'end' => '16:00'],
+            ['start' => '16:00', 'end' => '20:00'],
+        ];
+
+        $currentSlot = null;
+
+        foreach ($slots as $slot) {
+            if ($currentTime >= $slot['start'] && $currentTime < $slot['end']) {
+                $currentSlot = $slot;
+                break;
+            }
+        }
+
+        // ❌ Already offline
         if ($agent->is_online == 0 && !$agent->duty_start_time) {
             return response()->json([
                 'status' => false,
@@ -585,18 +836,29 @@ class DeliveryAgentDutyController extends Controller
             ], 422);
         }
 
-        $endedAt = now();
+        $endedAt = $now;
         $totalMinutes = $agent->total_duty_minutes;
 
-        // If duty currently active, calculate session time
+        // ✅ If duty active → calculate session time
         if ($agent->is_online == 1 && $agent->duty_start_time) {
-            $sessionMinutes = $endedAt->diffInMinutes(
-                \Carbon\Carbon::parse($agent->duty_start_time)
-            );
+
+            $startTime = \Carbon\Carbon::parse($agent->duty_start_time);
+
+            // 🛑 If outside slot → cap at slot end
+            if ($currentSlot) {
+                $slotEnd = \Carbon\Carbon::createFromTimeString($currentSlot['end']);
+
+                // If current time > slot end, cap it
+                if ($endedAt->gt($slotEnd)) {
+                    $endedAt = $slotEnd;
+                }
+            }
+
+            $sessionMinutes = $endedAt->diffInMinutes($startTime);
             $totalMinutes += $sessionMinutes;
         }
 
-        // Stop duty completely
+        // ✅ Stop duty completely
         $agent->update([
             'is_online' => 0,
             'duty_start_time' => null,
@@ -608,9 +870,12 @@ class DeliveryAgentDutyController extends Controller
             'status' => true,
             'message' => 'Duty stopped',
             'todayDutyTime' => $totalMinutes,
-            'endedAt' => $endedAt
+            'endedAt' => $endedAt,
+            'slot' => $currentSlot
         ]);
     }
+
+
     public function partnerSummary(Request $request)
     {
         $agent = $request->user();
