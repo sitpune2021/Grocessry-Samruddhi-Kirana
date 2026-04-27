@@ -40,7 +40,7 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $order = Order::where('id', $orderId)
-                ->where('status', 'pending')
+                ->where('payment_status', 'pending')
                 ->whereNull('delivery_agent_id')
                 ->lockForUpdate()
                 ->first();
@@ -93,7 +93,7 @@ class DeliveryOrderController extends Controller
     public function rejectOrder(Request $request, $orderId)
     {
         $order = Order::where('id', $orderId)
-            ->where('status', 'pending')
+            ->where('payment_status', 'pending')
             ->whereNull('delivery_agent_id')
             ->first();
 
@@ -119,7 +119,7 @@ class DeliveryOrderController extends Controller
         $perPage = $request->get('per_page', 10);
 
         // Get IDs of latest 2 orders (New Orders)
-        $newOrderIds = Order::where('status', 'pending')
+        $newOrderIds = Order::where('payment_status', 'pending')
             ->whereNull('delivery_agent_id')
             ->latest()
             ->take(2)
@@ -130,7 +130,7 @@ class DeliveryOrderController extends Controller
             'orderItems.product',
             'customerAddress:id,user_id,latitude,longitude'
         ])
-            ->where('status', 'pending')
+            ->where('payment_status', 'pending')
             ->whereNull('delivery_agent_id')
             ->whereNotIn('id', $newOrderIds) // 👈 important
             ->orderBy('created_at', 'asc')   // FIFO
@@ -194,7 +194,7 @@ class DeliveryOrderController extends Controller
 
         $order = Order::where('id', $orderId)
             ->where('delivery_agent_id', $user->id)
-            ->where('status', 'pending')
+            ->where('payment_status', 'pending')
             ->first();
 
         if (!$order) {
@@ -270,7 +270,7 @@ class DeliveryOrderController extends Controller
 
         $orders = Order::with('orderItems.product')
             ->where('delivery_agent_id', $user->id)
-            ->where('status', 'pending')
+            ->where('payment_status', 'pending')
             ->orderBy('updated_at', 'asc')
             ->paginate($perPage);
 
