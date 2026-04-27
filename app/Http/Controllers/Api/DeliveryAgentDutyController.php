@@ -472,41 +472,6 @@ class DeliveryAgentDutyController extends Controller
         ]);
     }
 
-    // public function startDuty(Request $request)
-    // {
-    //     $agent = $request->user();
-    //     $now = now();
-
-    //     // FIX invalid state automatically
-    //     if ($agent->is_online == 1 && !$agent->duty_start_time) {
-    //         $agent->update([
-    //             'is_online' => 0
-    //         ]);
-    //     }
-
-    //     // Already active
-    //     if ($agent->is_online == 1 && $agent->duty_start_time) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Already online'
-    //         ], 422);
-    //     }
-
-    //     // Start / Resume duty
-    //     $agent->update([
-    //         'is_online' => 1,
-    //         'duty_start_time' => $now,
-    //         'duty_paused_at' => null
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Duty started',
-    //         'todayDutyTime' => $agent->total_duty_minutes,
-    //         'startedAt' => $now
-    //     ]);
-    // }
-
     public function startDuty(Request $request)
     {
         $agent = $request->user();
@@ -570,40 +535,6 @@ class DeliveryAgentDutyController extends Controller
         ]);
     }
 
-
-    // public function pauseDuty(Request $request)
-    // {
-    //     $agent = $request->user();
-
-    //     if ($agent->is_online != 1 || !$agent->duty_start_time) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Duty not active'
-    //         ], 422);
-    //     }
-
-    //     $pausedAt = now();
-
-    //     $minutes = $pausedAt->diffInMinutes(
-    //         \Carbon\Carbon::parse($agent->duty_start_time)
-    //     );
-
-    //     $agent->update([
-    //         'is_online' => 0,
-    //         'duty_start_time' => null,
-    //         'duty_paused_at' => $pausedAt,
-    //         'total_duty_minutes' => $agent->total_duty_minutes + $minutes
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Duty paused',
-    //         'todayDutyTime' => $agent->total_duty_minutes,
-    //         'pausedAt' => $pausedAt
-    //     ]);
-    // }
-
-
     public function pauseDuty(Request $request)
     {
         $agent = $request->user();
@@ -662,43 +593,6 @@ class DeliveryAgentDutyController extends Controller
             'pausedAt' => $pausedAt
         ]);
     }
-
-
-    // public function resumeDuty(Request $request)
-    // {
-    //     $agent = $request->user();
-
-    //     // ❌ Cannot resume if already online
-    //     if ($agent->is_online == 1) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Duty already active'
-    //         ], 422);
-    //     }
-
-    //     // ❌ Cannot resume if never started
-    //     if (!$agent->duty_paused_at) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Duty not paused'
-    //         ], 422);
-    //     }
-
-    //     $resumedAt = now();
-
-    //     $agent->update([
-    //         'is_online' => 1,
-    //         'duty_start_time' => $resumedAt,
-    //         'duty_paused_at' => null
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Duty resumed',
-    //         'todayDutyTime' => $agent->total_duty_minutes,
-    //         'resumedAt' => $resumedAt
-    //     ]);
-    // }
 
     public function resumeDuty(Request $request)
     {
@@ -765,46 +659,6 @@ class DeliveryAgentDutyController extends Controller
             'resumedAt' => $resumedAt
         ]);
     }
-
-
-    // public function stopDuty(Request $request)
-    // {
-    //     $agent = $request->user();
-
-    //     // If already offline
-    //     if ($agent->is_online == 0 && !$agent->duty_start_time) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'Already offline'
-    //         ], 422);
-    //     }
-
-    //     $endedAt = now();
-    //     $totalMinutes = $agent->total_duty_minutes;
-
-    //     // If duty currently active, calculate session time
-    //     if ($agent->is_online == 1 && $agent->duty_start_time) {
-    //         $sessionMinutes = $endedAt->diffInMinutes(
-    //             \Carbon\Carbon::parse($agent->duty_start_time)
-    //         );
-    //         $totalMinutes += $sessionMinutes;
-    //     }
-
-    //     // Stop duty completely
-    //     $agent->update([
-    //         'is_online' => 0,
-    //         'duty_start_time' => null,
-    //         'duty_paused_at' => null,
-    //         'total_duty_minutes' => $totalMinutes
-    //     ]);
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Duty stopped',
-    //         'todayDutyTime' => $totalMinutes,
-    //         'endedAt' => $endedAt
-    //     ]);
-    // }
 
     public function stopDuty(Request $request)
     {
@@ -874,6 +728,40 @@ class DeliveryAgentDutyController extends Controller
             'slot' => $currentSlot
         ]);
     }
+
+    public function getDutySlots()
+    {
+        $slots = [
+            [
+                'id' => 1,
+                'label' => 'Morning Slot',
+                'start_time' => '08:00',
+                'end_time' => '12:00',
+                'display' => '8:00 AM - 12:00 PM'
+            ],
+            [
+                'id' => 2,
+                'label' => 'Afternoon Slot',
+                'start_time' => '12:00',
+                'end_time' => '16:00',
+                'display' => '12:00 PM - 4:00 PM'
+            ],
+            [
+                'id' => 3,
+                'label' => 'Evening Slot',
+                'start_time' => '16:00',
+                'end_time' => '20:00',
+                'display' => '4:00 PM - 8:00 PM'
+            ],
+        ];
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Duty slots fetched successfully',
+            'data' => $slots
+        ]);
+    }
+
 
 
     public function partnerSummary(Request $request)
