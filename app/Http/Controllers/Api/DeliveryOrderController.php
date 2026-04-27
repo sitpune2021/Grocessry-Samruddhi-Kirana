@@ -20,7 +20,7 @@ class DeliveryOrderController extends Controller
             'orderItems.product',
             'deliveryAddress:id,user_id,latitude,longitude'
         ])
-            ->where('status', 'pending')
+            ->where('payment_status', 'pending')
             ->whereNull('delivery_agent_id')
             ->latest()              // latest orders first
             ->take(2)               // ONLY 2 orders
