@@ -424,8 +424,8 @@ class CustomerProductReturnController extends Controller
                 //     }
 
                 //     return asset('storage/' . ltrim($img, '/'));
-                })
-                ->values();
+                // })
+                // ->values();
 
 
             dd($returnImages);
