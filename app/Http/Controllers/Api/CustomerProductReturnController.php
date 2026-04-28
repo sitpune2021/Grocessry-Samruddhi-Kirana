@@ -358,6 +358,7 @@ class CustomerProductReturnController extends Controller
 
     public function getOrderReturnProducts($orderId)
     {
+        // 🔹 Get order items with product
         $orderItems = OrderItem::with('product:id,name,final_price')
             ->where('order_id', $orderId)
             ->get();
@@ -370,65 +371,61 @@ class CustomerProductReturnController extends Controller
             ]);
         }
 
+        // 🔹 Get all order_item_ids
+        $orderItemIds = $orderItems->pluck('id');
 
-        $data = $orderItems->map(function ($item) {
+        // 🔹 Fetch ALL return records in one query
+        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->get();
 
-            // 🔹 Already returned quantity
-            $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
-                ->sum('quantity');
+        // 🔹 Prepare returned quantity map
+        $returnQtyMap = $returns->groupBy('order_item_id')->map(function ($items) {
+            return $items->sum('quantity');
+        });
 
+        // 🔹 Prepare return images map (ROBUST LOGIC)
+        $returnImagesMap = $returns->groupBy('order_item_id')->map(function ($items) {
+
+            return $items->flatMap(function ($return) {
+
+                $img = $return->product_images;
+
+                if (empty($img)) {
+                    return [];
+                }
+
+                // ✅ Case 1: Already array
+                if (is_array($img)) {
+                    return $img;
+                }
+
+                // ✅ Case 2: String
+                if (is_string($img)) {
+
+                    // 🔥 Fix double encoded JSON
+                    $img = trim($img, '"');
+
+                    $decoded = json_decode($img, true);
+
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        return $decoded;
+                    }
+
+                    // ✅ fallback: single image string
+                    return [$img];
+                }
+
+                return [];
+            })->values();
+        });
+
+        // 🔹 Final response mapping
+        $data = $orderItems->map(function ($item) use ($returnQtyMap, $returnImagesMap) {
+
+            $returnedQty = $returnQtyMap[$item->id] ?? 0;
             $returnableQty = max(0, $item->quantity - $returnedQty);
 
-            // 🔹 Fetch return images (FIXED LOGIC)
-            $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
-                ->pluck('product_images') // REMOVE whereNotNull
-                ->filter();
-                dd(  $returnImages); // remove null/empty
-                // ->flatMap(function ($img) {
+            $returnImages = $returnImagesMap[$item->id] ?? collect();
 
-                //     if (empty($img)) {
-                //         return [];
-                //     }
-
-                //     // Case 1: already array
-                //     if (is_array($img)) {
-                //         return $img;
-                //     }
-
-                //     // Case 2: string
-                //     if (is_string($img)) {
-
-                //         $decoded = json_decode($img, true);
-
-                //         // handle double encoded
-                //         if (is_string($decoded)) {
-                //             $decoded = json_decode($decoded, true);
-                //         }
-
-                //         if (is_array($decoded)) {
-                //             return $decoded;
-                //         }
-
-                //         // fallback single image
-                //         if (str_contains($img, 'returns/')) {
-                //             return [$img];
-                //         }
-                //     }
-
-                //     return [];
-                // })
-                // ->map(function ($img) {
-
-                //     if (filter_var($img, FILTER_VALIDATE_URL)) {
-                //         return $img;
-                //     }
-
-                //     return asset('storage/' . ltrim($img, '/'));
-                // })
-                // ->values();
-
-
-            dd($returnImages);
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
@@ -437,7 +434,15 @@ class CustomerProductReturnController extends Controller
                 'returnable_qty'  => $returnableQty,
                 'price'           => $item->price,
 
-                'return_image_urls' => $returnImages
+                'return_image_urls' => $returnImages->map(function ($img) {
+
+                    // If already full URL
+                    if (filter_var($img, FILTER_VALIDATE_URL)) {
+                        return $img;
+                    }
+
+                    return asset('storage/' . ltrim($img, '/'));
+                })->values()
             ];
         });
 
