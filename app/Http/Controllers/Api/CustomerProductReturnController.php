@@ -319,21 +319,44 @@ class CustomerProductReturnController extends Controller
                 ->pluck('product_images')
                 ->flatMap(function ($img) {
 
-                    $decoded = json_decode($img, true);
-
-                    // 🔥 Handle double encoded JSON
-                    if (is_string($decoded)) {
-                        $decoded = json_decode($decoded, true);
+                    // 🔹 Case 1: Already array
+                    if (is_array($img)) {
+                        return $img;
                     }
 
-                    return is_array($decoded) ? $decoded : [];
+                    // 🔹 Case 2: String (normal or double JSON)
+                    if (is_string($img)) {
+
+                        $decoded = json_decode($img, true);
+
+                        // If double encoded JSON
+                        if (is_string($decoded)) {
+                            $decoded = json_decode($decoded, true);
+                        }
+
+                        if (is_array($decoded)) {
+                            return $decoded;
+                        }
+
+                        // fallback → single image string
+                        return [$img];
+                    }
+
+                    return [];
                 })
                 ->map(function ($img) {
+
+                    // If already full URL
+                    if (filter_var($img, FILTER_VALIDATE_URL)) {
+                        return $img;
+                    }
+
                     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
 
-                dd( $returnImages );
+
+            dd($returnImages);
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
