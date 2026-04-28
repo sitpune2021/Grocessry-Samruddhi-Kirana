@@ -381,21 +381,25 @@ class CustomerProductReturnController extends Controller
 
             // 🔹 Fetch return images (FIXED LOGIC)
             $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
-                ->whereNotNull('product_images')
-                ->pluck('product_images')
+                ->pluck('product_images') // REMOVE whereNotNull
+                ->filter() // remove null/empty
                 ->flatMap(function ($img) {
 
-                    // 🔹 Case 1: Already array
+                    if (empty($img)) {
+                        return [];
+                    }
+
+                    // Case 1: already array
                     if (is_array($img)) {
                         return $img;
                     }
 
-                    // 🔹 Case 2: String (normal or double JSON)
+                    // Case 2: string
                     if (is_string($img)) {
 
                         $decoded = json_decode($img, true);
 
-                        // If double encoded JSON
+                        // handle double encoded
                         if (is_string($decoded)) {
                             $decoded = json_decode($decoded, true);
                         }
@@ -404,15 +408,16 @@ class CustomerProductReturnController extends Controller
                             return $decoded;
                         }
 
-                        // fallback → single image string
-                        return [$img];
+                        // fallback single image
+                        if (str_contains($img, 'returns/')) {
+                            return [$img];
+                        }
                     }
 
                     return [];
                 })
                 ->map(function ($img) {
 
-                    // If already full URL
                     if (filter_var($img, FILTER_VALIDATE_URL)) {
                         return $img;
                     }
