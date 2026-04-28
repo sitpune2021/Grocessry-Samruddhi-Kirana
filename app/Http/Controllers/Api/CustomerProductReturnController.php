@@ -353,7 +353,7 @@ class CustomerProductReturnController extends Controller
                     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
-
+    dd($returnImages);
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
