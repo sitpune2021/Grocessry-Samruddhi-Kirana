@@ -316,47 +316,48 @@ class CustomerProductReturnController extends Controller
             // 🔹 Fetch return images (FIXED LOGIC)
             $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
                 ->pluck('product_images') // REMOVE whereNotNull
-                ->filter() // remove null/empty
-                ->flatMap(function ($img) {
+                ->filter();
+                dd(  $returnImages); // remove null/empty
+                // ->flatMap(function ($img) {
 
-                    if (empty($img)) {
-                        return [];
-                    }
+                //     if (empty($img)) {
+                //         return [];
+                //     }
 
-                    // Case 1: already array
-                    if (is_array($img)) {
-                        return $img;
-                    }
+                //     // Case 1: already array
+                //     if (is_array($img)) {
+                //         return $img;
+                //     }
 
-                    // Case 2: string
-                    if (is_string($img)) {
+                //     // Case 2: string
+                //     if (is_string($img)) {
 
-                        $decoded = json_decode($img, true);
+                //         $decoded = json_decode($img, true);
 
-                        // handle double encoded
-                        if (is_string($decoded)) {
-                            $decoded = json_decode($decoded, true);
-                        }
+                //         // handle double encoded
+                //         if (is_string($decoded)) {
+                //             $decoded = json_decode($decoded, true);
+                //         }
 
-                        if (is_array($decoded)) {
-                            return $decoded;
-                        }
+                //         if (is_array($decoded)) {
+                //             return $decoded;
+                //         }
 
-                        // fallback single image
-                        if (str_contains($img, 'returns/')) {
-                            return [$img];
-                        }
-                    }
+                //         // fallback single image
+                //         if (str_contains($img, 'returns/')) {
+                //             return [$img];
+                //         }
+                //     }
 
-                    return [];
-                })
-                ->map(function ($img) {
+                //     return [];
+                // })
+                // ->map(function ($img) {
 
-                    if (filter_var($img, FILTER_VALIDATE_URL)) {
-                        return $img;
-                    }
+                //     if (filter_var($img, FILTER_VALIDATE_URL)) {
+                //         return $img;
+                //     }
 
-                    return asset('storage/' . ltrim($img, '/'));
+                //     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
 
