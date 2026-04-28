@@ -358,6 +358,7 @@ class CustomerProductReturnController extends Controller
 
     public function getOrderReturnProducts($orderId)
     {
+        dd($orderId);
         // 🔹 Get order items with product
         $orderItems = OrderItem::with('product:id,name,final_price')
             ->where('order_id', $orderId)
