@@ -376,7 +376,7 @@ class CustomerProductReturnController extends Controller
         $orderItemIds = $orderItems->pluck('id');
 
         // 🔹 Fetch ALL return records in one query
-        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->get();
+        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->pluck('product_images');
 
         // 🔹 Prepare returned quantity map
         $returnQtyMap = $returns->groupBy('order_item_id')->map(function ($items) {
