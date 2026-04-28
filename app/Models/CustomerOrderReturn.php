@@ -46,25 +46,53 @@ class CustomerOrderReturn extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+    // public function getProductImagesAttribute($value)
+    // {
+    //     // ✅ Normalize value to array
+    //     if (empty($value)) {
+    //         return [];
+    //     }
+
+    //     // If value is JSON string, decode it
+    //     if (is_string($value)) {
+    //         $value = json_decode($value, true) ?? [];
+    //     }
+
+    //     // If still not array, force empty array
+    //     if (!is_array($value)) {
+    //         return [];
+    //     }
+
+    //     return array_map(function ($img) {
+    //         return asset('storage/' . $img);
+    //     }, $value);
+    // }
+
+    // 🔥 FINAL ACCESSOR (handles everything)
     public function getProductImagesAttribute($value)
     {
-        // ✅ Normalize value to array
         if (empty($value)) {
             return [];
         }
 
-        // If value is JSON string, decode it
-        if (is_string($value)) {
-            $value = json_decode($value, true) ?? [];
+        // 🔥 Fix double encoded JSON
+        $value = trim($value, '"');
+
+        // First decode
+        $decoded = json_decode($value, true);
+
+        // If still string → decode again
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
         }
 
-        // If still not array, force empty array
-        if (!is_array($value)) {
+        if (!is_array($decoded)) {
             return [];
         }
 
         return array_map(function ($img) {
-            return asset('storage/' . $img);
-        }, $value);
+            return asset('storage/' . ltrim($img, '/'));
+        }, $decoded);
     }
+
 }
