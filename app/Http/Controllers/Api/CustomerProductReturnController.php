@@ -358,7 +358,7 @@ class CustomerProductReturnController extends Controller
 
     public function getOrderReturnProducts($orderId)
     {
-       
+
         // 🔹 Get order items with product
         $orderItems = OrderItem::with('product:id,name,final_price')
             ->where('order_id', $orderId)
@@ -376,7 +376,7 @@ class CustomerProductReturnController extends Controller
         $orderItemIds = $orderItems->pluck('id');
 
         // 🔹 Fetch ALL return records in one query
-        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->pluck('product_images');
+        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->get();
 
         // 🔹 Prepare returned quantity map
         $returnQtyMap = $returns->groupBy('order_item_id')->map(function ($items) {
@@ -385,42 +385,20 @@ class CustomerProductReturnController extends Controller
 
         // 🔹 Prepare return images map (ROBUST LOGIC)
         $returnImagesMap = $returns->groupBy('order_item_id')->map(function ($items) {
-    dd( $items->product_images);
 
             return $items->flatMap(function ($return) {
 
-                $img = $return->product_images;
+                $images = $return->product_images;
 
-                if (empty($img)) {
+                // If empty
+                if (empty($images)) {
                     return [];
                 }
 
-                // ✅ Case 1: Already array
-                if (is_array($img)) {
-                    return $img;
-                }
-
-                // ✅ Case 2: String
-                if (is_string($img)) {
-
-                    // 🔥 Fix double encoded JSON
-                    $img = trim($img, '"');
-
-                    $decoded = json_decode($img, true);
-
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                        return $decoded;
-                    }
-    
-                    // ✅ fallback: single image string
-                    return [$img];
-                }
-
-                return [];
+                // Since casted → always array
+                return is_array($images) ? $images : [];
             })->values();
         });
-
-
 
         // 🔹 Final response mapping
         $data = $orderItems->map(function ($item) use ($returnQtyMap, $returnImagesMap) {
