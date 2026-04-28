@@ -304,10 +304,8 @@ class CustomerProductReturnController extends Controller
             ]);
         }
 
-        
+
         $data = $orderItems->map(function ($item) {
-$returns = CustomerOrderReturn::where('order_item_id', $item->id)->get();
-dd($returns);
 
             // 🔹 Already returned quantity
             $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
@@ -318,45 +316,24 @@ dd($returns);
             // 🔹 Fetch return images (FIXED LOGIC)
             $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
                 ->whereNotNull('product_images')
-                ->pluck('product_images') // only fetch column
+                ->pluck('product_images')
                 ->flatMap(function ($img) {
 
-                $images = [];
+                    $decoded = json_decode($img, true);
 
-                    if (!empty($img)) {
-
-                        // If already array
-                        if (is_array($img)) {
-                            $images = $img;
-                        }
-
-                        // If string → decode JSON
-                        elseif (is_string($img)) {
-                            $decoded = json_decode($img, true);
-
-                            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                                $images = $decoded;
-                            } else {
-                                // single image string fallback
-                                $images = [$img];
-                            }
-                        }
+                    // 🔥 Handle double encoded JSON
+                    if (is_string($decoded)) {
+                        $decoded = json_decode($decoded, true);
                     }
 
-                    return $images;
-                })          
+                    return is_array($decoded) ? $decoded : [];
+                })
                 ->map(function ($img) {
-
-                    // If already full URL
-                    if (filter_var($img, FILTER_VALIDATE_URL)) {
-                        return $img;
-                    }
-
-                    // Generate proper storage URL
                     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
 
+                dd( $returnImages );
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
