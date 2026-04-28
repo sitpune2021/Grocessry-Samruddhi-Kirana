@@ -377,7 +377,7 @@ class CustomerProductReturnController extends Controller
                 ->sum('quantity');
 
             $returnableQty = max(0, $item->quantity - $returnedQty);
-
+dd($item->id);
             // 🔹 Fetch return images (FIXED LOGIC)
             $returnImages = CustomerOrderReturn::where('order_id', $item->id)
                 ->whereNotNull('product_images')
@@ -419,7 +419,7 @@ class CustomerProductReturnController extends Controller
                     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
-    dd($returnImages);
+    
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
