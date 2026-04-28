@@ -23,9 +23,9 @@ class CustomerOrderReturn extends Model
         'received_at'
     ];
 
-    protected $casts = [
-        'product_images' => 'array',
-    ];
+    // protected $casts = [
+    //     'product_images' => 'array',
+    // ];
 
     public function customer()
     {
