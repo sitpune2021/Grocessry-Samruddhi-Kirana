@@ -370,7 +370,10 @@ class CustomerProductReturnController extends Controller
             ]);
         }
 
+        
         $data = $orderItems->map(function ($item) {
+$returns = CustomerOrderReturn::where('order_item_id', $item->id)->get();
+dd($returns);
 
             // 🔹 Already returned quantity
             $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
@@ -384,7 +387,7 @@ class CustomerProductReturnController extends Controller
                 ->pluck('product_images') // only fetch column
                 ->flatMap(function ($img) {
 
-                    $images = [];
+                $images = [];
 
                     if (!empty($img)) {
 
@@ -407,7 +410,7 @@ class CustomerProductReturnController extends Controller
                     }
 
                     return $images;
-                })
+                })          
                 ->map(function ($img) {
 
                     // If already full URL
@@ -419,7 +422,7 @@ class CustomerProductReturnController extends Controller
                     return asset('storage/' . ltrim($img, '/'));
                 })
                 ->values();
-    dd($returnImages);
+
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
