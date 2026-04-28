@@ -323,7 +323,7 @@ class CustomerProductReturnController extends Controller
             return $items->flatMap(function ($return) {
 
                 $img = $return->product_images;
-
+    dd($img);
                 if (empty($img)) {
                     return [];
                 }
@@ -344,7 +344,7 @@ class CustomerProductReturnController extends Controller
                     if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                         return $decoded;
                     }
-
+    
                     // ✅ fallback: single image string
                     return [$img];
                 }
@@ -352,6 +352,8 @@ class CustomerProductReturnController extends Controller
                 return [];
             })->values();
         });
+
+
 
         // 🔹 Final response mapping
         $data = $orderItems->map(function ($item) use ($returnQtyMap, $returnImagesMap) {
