@@ -386,12 +386,21 @@ class CustomerProductReturnController extends Controller
         // 🔹 Prepare return images map (ROBUST LOGIC)
         $returnImagesMap = $returns->groupBy('order_item_id')->map(function ($items) {
 
-        dd($items->product_images);
             return $items->flatMap(function ($return) {
+
+                // $images = $return->product_images;
+
+                // 🔥 Handle if accidentally collection
+                if ($return instanceof \Illuminate\Support\Collection) {
+                    $return = $return->first();
+                }
+
+                if (!$return) {
+                    return [];
+                }
 
                 $images = $return->product_images;
 
-                // If empty
                 if (empty($images)) {
                     return [];
                 }
