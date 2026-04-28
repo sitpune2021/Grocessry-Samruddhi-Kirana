@@ -318,31 +318,22 @@ class CustomerProductReturnController extends Controller
         });
 
         // 🔹 Prepare return images map (ROBUST LOGIC)
-        $returnImagesMap = $returns->groupBy('order_item_id')->map(function ($items) {
+        $returnImagesMap = collect($returns)
+            ->groupBy('order_item_id')
+            ->map(function ($items) {
 
-            return $items->flatMap(function ($return) {
+                return collect($items)->flatMap(function ($return) {
 
-                // $images = $return->product_images;
+                    if (!is_object($return)) {
+                        return [];
+                    }
 
-                // 🔥 Handle if accidentally collection
-                if ($return instanceof \Illuminate\Support\Collection) {
-                    $return = $return->first();
-                }
+                    $images = $return->product_images ?? [];
 
-                if (!$return) {
-                    return [];
-                }
+                    return is_array($images) ? $images : [];
+                })->values();
+            });
 
-                $images = $return->product_images;
-
-                if (empty($images)) {
-                    return [];
-                }
-
-                // Since casted → always array
-                return is_array($images) ? $images : [];
-            })->values();
-        });
 
         // 🔹 Final response mapping
         $data = $orderItems->map(function ($item) use ($returnQtyMap, $returnImagesMap) {
