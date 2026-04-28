@@ -358,83 +358,53 @@ class CustomerProductReturnController extends Controller
 
     public function getOrderReturnProducts($orderId)
     {
-
-        // 🔹 Get order items with product
-        $orderItems = OrderItem::with('product:id,name,final_price')
+        // 🔹 Fetch return records with relations
+        $returns = CustomerOrderReturn::with([
+            'product:id,name,final_price',
+            'orderItem:id,order_id,quantity'
+        ])
             ->where('order_id', $orderId)
             ->get();
 
-        if ($orderItems->isEmpty()) {
+        if ($returns->isEmpty()) {
             return response()->json([
                 'status' => false,
-                'message' => 'No items found for this order',
+                'message' => 'No return products found',
                 'data' => []
             ]);
         }
 
-        // 🔹 Get all order_item_ids
-        $orderItemIds = $orderItems->pluck('id');
-
-        // 🔹 Fetch ALL return records in one query
-        $returns = CustomerOrderReturn::whereIn('order_item_id', $orderItemIds)->get();
-
-        // 🔹 Prepare returned quantity map
-        $returnQtyMap = $returns->groupBy('order_item_id')->map(function ($items) {
-            return $items->sum('quantity');
-        });
-
-        // 🔹 Prepare return images map (ROBUST LOGIC)
-        $returnImagesMap = collect($returns)
-            ->groupBy('order_item_id')
-            ->map(function ($items) {
-
-                return collect($items)->flatMap(function ($return) {
-
-                    if (!is_object($return)) {
-                        return [];
-                    }
-
-                    $images = $return->product_images ?? [];
-
-                    return is_array($images) ? $images : [];
-                })->values();
-            });
-
-
-        // 🔹 Final response mapping
-        $data = $orderItems->map(function ($item) use ($returnQtyMap, $returnImagesMap) {
-
-            $returnedQty = $returnQtyMap[$item->id] ?? 0;
-            $returnableQty = max(0, $item->quantity - $returnedQty);
-
-            $returnImages = $returnImagesMap[$item->id] ?? collect();
+        // 🔹 Format response
+        $data = $returns->map(function ($return) {
 
             return [
-                'order_item_id'   => $item->id,
-                'product_id'      => $item->product_id,
-                'product_name'    => $item->product->name ?? null,
-                'ordered_qty'     => $item->quantity,
-                'returnable_qty'  => $returnableQty,
-                'price'           => $item->price,
+                'return_id'        => $return->id,
+                'order_id'         => $return->order_id,
+                'order_item_id'    => $return->order_item_id,
+                'product_id'       => $return->product_id,
+                'product_name'     => optional($return->product)->name,
+                'price'            => optional($return->product)->final_price,
 
-                'return_image_urls' => $returnImages->map(function ($img) {
+                'quantity'         => $return->quantity,
+                'reason'           => $return->reason,
+                'return_type'      => $return->return_type,
+                'status'           => $return->status,
+                'qc_status'        => $return->qc_status,
 
-                    // If already full URL
-                    if (filter_var($img, FILTER_VALIDATE_URL)) {
-                        return $img;
-                    }
+                // 🔥 THIS WILL AUTO RETURN FULL URL (thanks to accessor)
+                'product_images'   => $return->product_images,
 
-                    return asset('storage/' . ltrim($img, '/'));
-                })->values()
+                'created_at'       => $return->created_at,
             ];
         });
 
         return response()->json([
             'status' => true,
-            'message' => 'Returnable products fetched',
+            'message' => 'Return products fetched successfully',
             'data' => $data
         ]);
     }
+
 
 
     // product list for stock return
