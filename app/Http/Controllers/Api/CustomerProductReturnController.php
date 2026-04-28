@@ -290,72 +290,6 @@ class CustomerProductReturnController extends Controller
         }
     }
 
-    // public function getOrderReturnProducts($orderId)
-    // {
-    //     $orderItems = OrderItem::with('product:id,name,final_price')
-    //         ->where('order_id', $orderId)
-    //         ->get();
-
-    //     if ($orderItems->isEmpty()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => 'No items found for this order',
-    //             'data' => []
-    //         ]);
-    //     }
-
-    //     $data = $orderItems->map(function ($item) {
-
-    //         // 🔹 Already returned quantity
-    //         $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
-    //             ->sum('quantity');
-
-    //         $returnableQty = max(0, $item->quantity - $returnedQty);
-
-    //         // 🔹 Fetch return images (NOT product images)
-    //         $returnImages = CustomerOrderReturn::where('order_item_id', $item->id)
-    //             ->whereNotNull('product_images')
-    //             ->get()
-    //             ->flatMap(function ($return) {
-    //                 if (is_string($return->product_images)) {
-    //                     return json_decode($return->product_images, true) ?? [];
-    //                 }
-
-    //                 if (is_array($return->product_images)) {
-    //                     return $return->product_images;
-    //                 }
-
-    //                 return [];
-    //             })
-    //             ->values();
-
-
-    //         return [
-    //             'order_item_id'   => $item->id,
-    //             'product_id'      => $item->product_id,
-    //             'product_name'    => $item->product->name,
-    //             'ordered_qty'     => $item->quantity,
-    //             'returnable_qty'  => $returnableQty,
-    //             'price'           => $item->price,
-
-    //             'return_image_urls' => $returnImages->map(function ($img) {
-
-    //                 if (filter_var($img, FILTER_VALIDATE_URL)) {
-    //                     return $img;
-    //                 }
-    //                 return asset('storage/' . ltrim($img, '/'));
-    //             })
-
-    //         ];
-    //     });
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Returnable products fetched',
-    //         'data' => $data
-    //     ]);
-    // }
-
     public function getOrderReturnProducts($orderId)
     {
         // 🔹 Fetch return records with relations
@@ -404,8 +338,6 @@ class CustomerProductReturnController extends Controller
             'data' => $data
         ]);
     }
-
-
 
     // product list for stock return
     public function productsList(Request $request)
