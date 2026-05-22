@@ -290,13 +290,30 @@ class CustomerProductReturnController extends Controller
         }
     }
 
-    public function getOrderReturnProducts($orderId)
-    {
+
+public function getOrderReturnProducts($orderId)
+{
+    try {
+
+        Log::info('Get Order Return Products API Hit', [
+            'order_id' => $orderId
+        ]);
+
         $orderItems = OrderItem::with('product:id,name,final_price')
             ->where('order_id', $orderId)
             ->get();
 
+        Log::info('Order Items Fetched', [
+            'count' => $orderItems->count(),
+            'sample' => $orderItems->take(1)
+        ]);
+
         if ($orderItems->isEmpty()) {
+
+            Log::warning('No order items found', [
+                'order_id' => $orderId
+            ]);
+
             return response()->json([
                 'status' => false,
                 'message' => 'No items found for this order',
@@ -306,54 +323,74 @@ class CustomerProductReturnController extends Controller
 
         $data = $orderItems->map(function ($item) {
 
+            Log::info('Processing Order Item', [
+                'order_item_id' => $item->id,
+                'product_id' => $item->product_id
+            ]);
+
             // 🔹 Already returned quantity
-            $returnedQty = CustomerOrderReturn::where('order_id', $item->id)
+            $returnedQty = CustomerOrderReturn::where('order_item_id', $item->id)
                 ->sum('quantity');
 
             $returnableQty = max(0, $item->quantity - $returnedQty);
 
-            // 🔹 Fetch return images (FIXED LOGIC)
-            $returnImages = CustomerOrderReturn::where('order_id', $item->id)
+            Log::info('Quantity Calculation', [
+                'order_item_id' => $item->id,
+                'ordered_qty' => $item->quantity,
+                'returned_qty' => $returnedQty,
+                'returnable_qty' => $returnableQty
+            ]);
+
+            // 🔹 Fetch return images
+            $returns = CustomerOrderReturn::where('order_item_id', $item->id)
                 ->whereNotNull('product_images')
-                ->pluck('product_images') // only fetch column
-                ->flatMap(function ($img) {
+                ->get();
 
-                    $images = [];
+            Log::info('Return Records Found', [
+                'order_item_id' => $item->id,
+                'count' => $returns->count(),
+                'raw_data' => $returns->pluck('product_images')
+            ]);
 
-                    if (!empty($img)) {
+            $returnImages = $returns->flatMap(function ($return) {
 
-                        // If already array
-                        if (is_array($img)) {
-                            $images = $img;
-                        }
+                Log::info('Processing Return Image', [
+                    'return_id' => $return->id,
+                    'raw_image' => $return->getRawOriginal('product_images'),
+                    'processed_image' => $return->product_images
+                ]);
 
-                        // If string → decode JSON
-                        elseif (is_string($img)) {
-                            $decoded = json_decode($img, true);
+                if (is_string($return->product_images)) {
+                    $decoded = json_decode($return->product_images, true);
 
-                            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                                $images = $decoded;
-                            } else {
-                                // single image string fallback
-                                $images = [$img];
-                            }
-                        }
-                    }
+                    Log::info('Decoded JSON Image', [
+                        'decoded' => $decoded
+                    ]);
 
-                    return $images;
-                })
-                ->map(function ($img) {
+                    return $decoded ?? [];
+                }
 
-                    // If already full URL
-                    if (filter_var($img, FILTER_VALIDATE_URL)) {
-                        return $img;
-                    }
+                if (is_array($return->product_images)) {
+                    return $return->product_images;
+                }
 
-                    // Generate proper storage URL
-                    return asset('storage/' . ltrim($img, '/'));
-                })
-                ->values();
-    dd($returnImages);
+                return [];
+            })->values();
+
+            $imageUrls = $returnImages->map(function ($img) {
+
+                if (filter_var($img, FILTER_VALIDATE_URL)) {
+                    return $img;
+                }
+
+                return asset('storage/' . ltrim($img, '/'));
+            });
+
+            Log::info('Final Image URLs', [
+                'order_item_id' => $item->id,
+                'images' => $imageUrls
+            ]);
+
             return [
                 'order_item_id'   => $item->id,
                 'product_id'      => $item->product_id,
@@ -362,16 +399,84 @@ class CustomerProductReturnController extends Controller
                 'returnable_qty'  => $returnableQty,
                 'price'           => $item->price,
 
-                'return_image_urls' => $returnImages
+                'return_image_urls' => $imageUrls
             ];
         });
+
+        Log::info('Final API Response Ready', [
+            'order_id' => $orderId,
+            'total_items' => count($data)
+        ]);
 
         return response()->json([
             'status' => true,
             'message' => 'Returnable products fetched',
             'data' => $data
         ]);
+
+    } catch (\Throwable $e) {
+
+        Log::error('Get Order Return Products API Failed', [
+            'order_id' => $orderId,
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Something went wrong'
+        ], 500);
     }
+}
+
+
+    // public function getOrderReturnProducts($orderId)
+    // {
+    //     $returns = CustomerOrderReturn::with([
+    //         'product:id,name,final_price',
+    //         'orderItem:id,order_id,quantity'
+    //     ])
+    //         ->where('order_id', $orderId)
+    //         ->get();
+
+    //     if ($returns->isEmpty()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'No return products found',
+    //             'data' => []
+    //         ]);
+    //     }
+
+    //     $data = $returns->map(function ($return) {
+
+    //         return [
+    //             'return_id'        => $return->id,
+    //             'order_id'         => $return->order_id,
+    //             'order_item_id'    => $return->order_item_id,
+    //             'product_id'       => $return->product_id,
+    //             'product_name'     => optional($return->product)->name,
+    //             'price'            => optional($return->product)->final_price,
+
+    //             'quantity'         => $return->quantity,
+    //             'reason'           => $return->reason,
+    //             'return_type'      => $return->return_type,
+    //             'status'           => $return->status,
+    //             'qc_status'        => $return->qc_status,
+
+    //             // 🔥 THIS WILL AUTO RETURN IMAGE URL
+    //             'product_images'   => $return->product_images,
+
+    //             'created_at'       => $return->created_at,
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Return products fetched successfully',
+    //         'data' => $data
+    //     ]);
+    // }
 
     // product list for stock return
     public function productsList(Request $request)

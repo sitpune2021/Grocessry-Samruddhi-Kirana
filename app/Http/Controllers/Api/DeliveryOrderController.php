@@ -20,10 +20,10 @@ class DeliveryOrderController extends Controller
             'orderItems.product',
             'deliveryAddress:id,user_id,latitude,longitude'
         ])
-            ->where('payment_status', 'pending')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->whereNull('delivery_agent_id')
-            ->latest()              // latest orders first
-            ->take(2)               // ONLY 2 orders
+            ->latest()
+            ->take(2)
             ->get();
 
         return response()->json([
@@ -37,14 +37,17 @@ class DeliveryOrderController extends Controller
     {
         $user = $request->user();
 
+
         DB::beginTransaction();
         try {
             $order = Order::where('id', $orderId)
                 ->where('payment_status', 'pending')
+                ->orWhere('payment_status','paid')
                 ->whereNull('delivery_agent_id')
                 ->lockForUpdate()
                 ->first();
 
+            
             if (!$order) {
                 DB::rollBack();
                 return response()->json([
@@ -150,8 +153,13 @@ class DeliveryOrderController extends Controller
 
         $orders = Order::with('orderItems.product')
             ->where('delivery_agent_id', $user->id)
-            ->where('status', 'queued')
-            ->orderBy('created_at', 'asc')
+            ->whereIn('status', [
+                'accepted',
+                'queued',
+                'in_progress',
+                'on_the_way'
+            ])
+            ->orderBy('updated_at', 'asc')
             ->paginate($perPage);
 
         return response()->json([
