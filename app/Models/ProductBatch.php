@@ -55,4 +55,6 @@ class ProductBatch extends Model
     {
         return $this->belongsTo(Unit::class);
     }
+
+    
 }
