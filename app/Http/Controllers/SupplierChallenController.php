@@ -96,17 +96,18 @@ class SupplierChallenController extends Controller
         $startTime = microtime(true);
 
         // 🔹 START LOG
-        Log::info('SupplierChallan | Store started', [
-            'user_id' => auth()->id(),
-            'ip'      => $request->ip(),
-            'route'   => request()->route()->getName(),
-        ]);
+            Log::info('SupplierChallan | Store started', [
+                'user_id' => auth()->id(),
+                'ip'      => $request->ip(),
+                'route'   => request()->route()->getName(),
+            ]);
 
         // 🔹 VALIDATION
             $validated = $request->validate([
                 'warehouse_id' => 'required',
                 'supplier_id'  => 'required',
                 'challan_no'   => 'required',
+                'bill_no'      => 'nullable|string',
                 'challan_date' => 'required|date',
 
                 'items' => 'required|array|min:1',
@@ -129,6 +130,7 @@ class SupplierChallenController extends Controller
                 'warehouse_id' => $validated['warehouse_id'],
                 'supplier_id'  => $validated['supplier_id'],
                 'challan_no'   => $validated['challan_no'],
+                'bill_no'      => $validated['bill_no'],
                 'challan_date' => $validated['challan_date'],
                 'status'       => 'received',
                 'created_by'   => auth()->id(),
@@ -137,6 +139,7 @@ class SupplierChallenController extends Controller
             Log::info('SupplierChallan | Master created', [
                 'challan_id' => $challan->id,
                 'challan_no' => $challan->challan_no,
+                'bill_no' => $challan->bill_no,
             ]);
 
             // 🔹 CREATE CHALLAN ITEMS
@@ -261,9 +264,10 @@ class SupplierChallenController extends Controller
         ]);
 
         $request->validate([
-            'challan_no' => 'required|string',
-            'challan_date' => 'required|date',
-            'items' => 'required|array|min:1',
+            'challan_no'    => 'required|string',
+             'bill_no'      => 'nullable|string',
+            'challan_date'  => 'required|date',
+            'items'         => 'required|array|min:1',
             'items.*.received_qty' => 'required|numeric|min:0',
         ]);
 
@@ -282,13 +286,15 @@ class SupplierChallenController extends Controller
             // 1️⃣ UPDATE CHALLAN MASTER
             $challan->update([
                 'challan_no' => $request->challan_no,
+                'bill_no'    => $request->bill_no,
                 'challan_date' => $request->challan_date,
                 'status' => 'received',
             ]);
 
             Log::info('Supplier Challan master updated', [
                 'challan_id' => $challan->id,
-                'challan_no' => $challan->challan_no,
+                'challan_no' => $request->challan_no,
+                'bill_no' => $challan->bill_no,
             ]);
 
             $isPartial = false;

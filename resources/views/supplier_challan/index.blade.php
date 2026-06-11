@@ -60,6 +60,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width:20px;">Sr No</th>
+                            <th>Bill No</th>
                             <th>Challan No</th>
                             <th>Supplier</th>
                             <th>Warehouse</th>
@@ -79,6 +80,8 @@
                                 {{ $challans->firstItem() + $index }}
                             </td>
 
+                            <td>{{ $challan->bill_no }}</td>
+                            
                             <td>{{ $challan->challan_no }}</td>
 
                             <td>
