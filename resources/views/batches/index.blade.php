@@ -155,7 +155,7 @@
                     <!-- Warehouse -->
                     <div class="mb-3">
                         <label>Warehouse</label>
-                        <select id="warehouse_id" name="warehouse_id" class="form-control">
+                        <select id="warehouse_id" name="warehouse_id" class="form-select">
                             <option value="">Select Warehouse</option>
                             @foreach($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}">
@@ -163,14 +163,20 @@
                             </option>
                             @endforeach
                         </select>
+                        <div class="invalid-feedback">
+                            This field is required.
+                        </div>
                     </div>
 
                     <!-- Category -->
                     <div class="mb-3">
                         <label>Category</label>
-                        <select id="category_id" name="category_id" class="form-control">
+                        <select id="category_id" name="category_id" class="form-select">
                             <option value="">Select Category</option>
                         </select>
+                        <div class="invalid-feedback">
+                            Please select Category
+                        </div>
                     </div>
 
                     <!-- SubCategory Dropdown -->
@@ -187,6 +193,10 @@
 
                             <p class="text-muted mb-2">Select SubCategory</p>
 
+                        </div>
+
+                        <div id="subcatError" class="text-danger mt-1 d-none">
+                            Please select at least one SubCategory
                         </div>
                     </div>
 
@@ -205,20 +215,38 @@
                             <p class="text-muted">Select Product</p>
 
                         </div>
+                        <div id="productError" class="text-danger mt-1 d-none">
+                            Please select at least one Product
+                        </div>
                     </div>
 
                     <!-- Unit -->
-                    <!-- <div class="mb-3">
+                    <div class="mb-3">
                         <label>Unit</label>
-                        <select id="unit_id" name="unit_id" class="form-control">
+                        <select id="unit_id" name="unit_id" class="form-select">
                             <option value="">Select Unit</option>
+
+                            @foreach($units as $unit)
+                            <option value="{{ $unit->id }}">
+                                {{ $unit->short_name }} ({{ $unit->name }})
+                            </option>
+                            @endforeach
                         </select>
-                    </div> -->
+                        <div class="invalid-feedback">
+                            Please select Unit
+                        </div>
+                    </div>
 
                 </div>
 
-                <div class="modal-footer">
+                <!-- <div class="modal-footer">
                     <button type="submit" class="btn btn-success">
+                        Download CSV
+                    </button>
+                </div> -->
+
+                <div class="modal-footer">
+                    <button type="button" id="downloadCsvBtn" class="btn btn-success">
                         Download CSV
                     </button>
                 </div>
@@ -520,5 +548,75 @@
                 );
             });
         }
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+
+        $('#downloadCsvBtn').on('click', function() {
+
+            let isValid = true;
+
+            // Reset Errors
+            $('.is-invalid').removeClass('is-invalid');
+            $('#subcatError').addClass('d-none');
+            $('#productError').addClass('d-none');
+
+            // Warehouse Validation
+            if ($('#warehouse_id').val() == '') {
+                $('#warehouse_id').addClass('is-invalid');
+                isValid = false;
+            }
+
+            // Category Validation
+            if ($('#category_id').val() == '') {
+                $('#category_id').addClass('is-invalid');
+                isValid = false;
+            }
+
+            // Unit Validation
+            if ($('#unit_id').val() == '') {
+                $('#unit_id').addClass('is-invalid');
+                isValid = false;
+            }
+
+            // SubCategory Validation
+            if ($('.subcat:checked').length === 0) {
+                $('#subcatError').removeClass('d-none');
+                isValid = false;
+            }
+
+            // Product Validation
+            if ($('.product:checked').length === 0) {
+                $('#productError').removeClass('d-none');
+                isValid = false;
+            }
+
+            // Submit Form
+            if (isValid) {
+                $('#csvForm')[0].submit();
+            }
+        });
+
+        // Remove select validation
+        $('#warehouse_id, #category_id, #unit_id').on('change', function() {
+            $(this).removeClass('is-invalid');
+        });
+
+        // Remove subcategory error
+        $(document).on('change', '.subcat', function() {
+            if ($('.subcat:checked').length > 0) {
+                $('#subcatError').addClass('d-none');
+            }
+        });
+
+        // Remove product error
+        $(document).on('change', '.product', function() {
+            if ($('.product:checked').length > 0) {
+                $('#productError').addClass('d-none');
+            }
+        });
+
     });
 </script>

@@ -27,7 +27,7 @@ class ProductBatchController extends Controller
     {
         $user = Auth::user();
         $isSuperAdmin = $user->role_id == 1;
-
+        $units = Unit::orderBy('name')->get();
         $batches = ProductBatch::with([
             'product.category',
             'warehouse',
@@ -54,7 +54,8 @@ class ProductBatchController extends Controller
         return view('batches.index', compact(
             'batches',
             'warehouses',
-            'categories'
+            'categories',
+            'units'
         ));
     }
 
@@ -520,13 +521,16 @@ class ProductBatchController extends Controller
 
         $query = Product::with([
             'category',
-            'subCategory'
+            'subCategory',
+            'unit'
         ]);
 
+        // Category Filter
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
+        // Sub Category Filter
         if ($request->filled('sub_category_id')) {
             $query->whereIn(
                 'sub_category_id',
@@ -534,6 +538,7 @@ class ProductBatchController extends Controller
             );
         }
 
+        // Product Filter
         if ($request->filled('product_id')) {
             $query->whereIn(
                 'id',
@@ -541,23 +546,31 @@ class ProductBatchController extends Controller
             );
         }
 
-        if ($request->filled('unit_id')) {
-            $query->where('unit_id', $request->unit_id);
-        }
+        // Unit Filter (OPTIONAL)
+        // जर unit नुसार filter करायचा असेल तर uncomment करा
+        /*
+    if ($request->filled('unit_id')) {
+        $query->where('unit_id', $request->unit_id);
+    }
+    */
 
         $products = $query->get();
 
-        $warehouseName = '-';
+        Log::info('Final CSV Records Found', [
+            'count' => $products->count()
+        ]);
+
+        $warehouseName = '';
 
         if ($request->filled('warehouse_id')) {
             $warehouse = Warehouse::find($request->warehouse_id);
-            $warehouseName = $warehouse?->name ?? '-';
+            $warehouseName = $warehouse?->name ?? '';
         }
 
         $fileName = 'product-batch.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type'        => 'text/csv',
             'Content-Disposition' => "attachment; filename={$fileName}",
         ];
 
@@ -565,6 +578,7 @@ class ProductBatchController extends Controller
 
             $file = fopen('php://output', 'w');
 
+            // Header
             fputcsv($file, [
                 'Warehouse',
                 'Category',
@@ -579,12 +593,18 @@ class ProductBatchController extends Controller
 
             foreach ($products as $product) {
 
+                Log::info('CSV Row', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                ]);
+
                 fputcsv($file, [
                     $warehouseName,
-                    $product->category?->name ?? '-',
-                    $product->subCategory?->name ?? '-',
-                    $product->name ?? '-',
-                    '', // Unit
+                    $product->category?->name ?? '',
+                    $product->subCategory?->name ?? '',
+                    $product->name ?? '',
+                    $product->unit?->short_name ?? $product->unit?->name ?? '',
+
                     '', // Batch No
                     '', // Quantity
                     '', // MFG Date
@@ -595,7 +615,11 @@ class ProductBatchController extends Controller
             fclose($file);
         };
 
-        return response()->stream($callback, 200, $headers);
+        return response()->streamDownload(
+            $callback,
+            $fileName,
+            $headers
+        );
     }
 
     public function bulkUpload(Request $request)
