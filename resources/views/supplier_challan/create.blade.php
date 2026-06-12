@@ -99,7 +99,7 @@
                     <div class="col-md-4">
                         <label class="form-label">Bill No</label>
                         <input type="text" name="bill_no" class="form-control"
-                            value="{{ old('bill_no', $challan->bill_no ?? '') }}"
+                           placeholder="Enter Bill No" value="{{ old('bill_no', $challan->bill_no ?? '') }}"
                             {{ $mode === 'view' ? 'disabled' : '' }}>
                         @error('bill_no')
                         <small class="text-danger">{{ $message }}</small>
