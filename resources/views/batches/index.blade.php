@@ -558,46 +558,57 @@
 
             let isValid = true;
 
-            // Reset Errors
             $('.is-invalid').removeClass('is-invalid');
             $('#subcatError').addClass('d-none');
             $('#productError').addClass('d-none');
 
-            // Warehouse Validation
             if ($('#warehouse_id').val() == '') {
                 $('#warehouse_id').addClass('is-invalid');
                 isValid = false;
             }
 
-            // Category Validation
             if ($('#category_id').val() == '') {
                 $('#category_id').addClass('is-invalid');
                 isValid = false;
             }
 
-            // Unit Validation
             if ($('#unit_id').val() == '') {
                 $('#unit_id').addClass('is-invalid');
                 isValid = false;
             }
 
-            // SubCategory Validation
             if ($('.subcat:checked').length === 0) {
                 $('#subcatError').removeClass('d-none');
                 isValid = false;
             }
 
-            // Product Validation
             if ($('.product:checked').length === 0) {
                 $('#productError').removeClass('d-none');
                 isValid = false;
             }
 
-            // Submit Form
             if (isValid) {
+
+                // Close Modal
+                const modalEl = document.getElementById('csvModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Submit Form
                 $('#csvForm')[0].submit();
+
+                // Reset Form
+                setTimeout(function() {
+                    $('#csvForm')[0].reset();
+                    $('#hiddenInputs').html('');
+                }, 500);
             }
         });
+
+
 
         // Remove select validation
         $('#warehouse_id, #category_id, #unit_id').on('change', function() {
