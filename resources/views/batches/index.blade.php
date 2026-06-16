@@ -187,8 +187,7 @@
                             Select SubCategory
                         </button>
 
-                        <div class="dropdown-menu w-100 p-2"
-                            style="max-height:200px; overflow-y:auto;"
+                        <div class="dropdown-menu w-100 p-2 subcategory-scroll"
                             id="subcategoryDropdownMenu">
 
                             <p class="text-muted mb-2">Select SubCategory</p>
@@ -208,8 +207,7 @@
                             Select Product
                         </button>
 
-                        <div class="dropdown-menu w-100 p-2"
-                            style="max-height:200px; overflow-y:auto;"
+                        <div class="dropdown-menu w-100 p-2 product-scroll"
                             id="productDropdownMenu">
 
                             <p class="text-muted">Select Product</p>
@@ -317,6 +315,33 @@
         </div>
     </div>
 </div>
+
+<style>
+    .subcategory-scroll {
+        max-height: 180px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .subcategory-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .subcategory-scroll::-webkit-scrollbar-thumb {
+        background: #bdbdbd;
+        border-radius: 10px;
+    }
+
+    .subcategory-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .product-scroll {
+         max-height: 180px; 
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+</style>
 @endsection
 
 
