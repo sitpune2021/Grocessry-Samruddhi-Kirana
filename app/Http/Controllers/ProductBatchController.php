@@ -471,19 +471,26 @@ class ProductBatchController extends Controller
             ->get();
     }
 
-    public function getProductsBySubCategory($warehouseId, $subCategoryId)
+    public function getProductsBySubCategory($warehouseId, $subCategoryIds)
     {
-        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
-            ->where('warehouse_stock.sub_category_id', $subCategoryId)
-            ->join(
-                'products',
-                'products.id',
-                '=',
-                'warehouse_stock.product_id'
-            )
+        Log::info('Products API', [
+            'warehouse' => $warehouseId,
+            'subcategories' => $subCategoryIds,
+        ]);
+
+        $subCategoryIds = explode(',', $subCategoryIds);
+
+        $products = WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+            ->whereIn('warehouse_stock.sub_category_id', $subCategoryIds)
+            ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
             ->select('products.id', 'products.name')
             ->distinct()
+            ->orderBy('products.name')
             ->get();
+
+        Log::info('Products Found', $products->toArray());
+
+        return response()->json($products);
     }
 
     public function getProductQuantity($warehouseId, $productId)
@@ -546,13 +553,6 @@ class ProductBatchController extends Controller
             );
         }
 
-        // Unit Filter (OPTIONAL)
-        // जर unit नुसार filter करायचा असेल तर uncomment करा
-        /*
-    if ($request->filled('unit_id')) {
-        $query->where('unit_id', $request->unit_id);
-    }
-    */
 
         $products = $query->get();
 
