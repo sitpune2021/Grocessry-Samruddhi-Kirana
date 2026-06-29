@@ -71,6 +71,7 @@
                             <th>Order Number</th>
                             <th>Product Name</th>
                             <th>Total</th>
+                            <th>Payment Method</th>
                             <th>Delivery Agent</th>
                             <th>Status</th>
                             <!-- <th>Action</th> -->
@@ -93,11 +94,33 @@
                             </td>
                             <td>₹{{ $order->total_amount }}</td>
                             <td>
+                                {{ $order->payment_method ?? 'N/A' }}
+                            </td>
+                            <td>
                                 {{ $order->deliveryAgent->user->first_name ?? 'N/A' }}
                                 {{ $order->deliveryAgent->user->last_name ?? '' }}
                             </td>
-                            <td>
+                            <!-- <td>
                                 <span class="badge bg-warning">{{ $order->status }}</span>
+                            </td> -->
+
+                            <td>
+                                @php
+                                $badgeClass = match($order->status) {
+                                'pending' => 'bg-warning',
+                                'queued' => 'bg-info',
+                                'assigned' => 'bg-primary',
+                                'on_the_way' => 'bg-secondary',
+                                'delivered' => 'bg-success',
+                                'failed' => 'bg-danger',
+                                'cancelled' => 'bg-dark',
+                                default => 'bg-light text-dark',
+                                };
+                                @endphp
+
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                </span>
                             </td>
                             <!-- <td>
                                     @if($order->status == 'pending')
