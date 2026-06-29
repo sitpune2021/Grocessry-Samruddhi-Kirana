@@ -369,6 +369,7 @@ class ReportsController extends Controller
         $toDate      = $request->query('to_date');
         $warehouseId = $request->query('warehouse_id');
         $download    = $request->query('download');
+        $paymentMethod = $request->query('payment_method');
 
         $query = DB::table('orders as o')
             ->join('order_items as oi', 'oi.order_id', '=', 'o.id')
@@ -398,6 +399,10 @@ class ReportsController extends Controller
         } else {
             // DC user → force own warehouse only
             $query->where('o.warehouse_id', $user->warehouse_id);
+        }
+
+        if ($paymentMethod) {
+            $query->where('o.payment_method', $paymentMethod);
         }
 
         if ($fromDate && $toDate && $fromDate <= $toDate) {
