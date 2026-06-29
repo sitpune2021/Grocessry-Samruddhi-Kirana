@@ -511,6 +511,14 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::post('/batches', [ProductBatchController::class, 'store'])->name('batches.store');
     Route::get('/get-products/{category_id}', [ProductBatchController::class, 'getProductsByCategory']);
 
+   Route::post('/batches/download-csv', [ProductBatchController::class, 'downloadCsv'])
+    ->name('batches.download.csv');
+
+    Route::post(
+    '/product-batches/bulk-upload',
+    [ProductBatchController::class, 'bulkUpload']
+)->name('product-batches.bulk-upload');
+
     // Edit form
     Route::get('/batches/{id}/edit', [ProductBatchController::class, 'edit'])->name('batches.edit');
     // Update
@@ -522,14 +530,24 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/batches/{batch}', [ProductBatchController::class, 'show'])
         ->name('batches.show');
 
-    Route::get('/ws/categories/{warehouse}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
-    Route::get('/ws/subcategories/{warehouse}/{category}', [ProductBatchController::class, 'getSubCategories']);
-    Route::get('/ws/products-by-sub/{warehouse}/{sub}', [ProductBatchController::class, 'getProductsBySubCategory']);
-    Route::get('/ws/quantity/{warehouse}/{product}', [ProductBatchController::class, 'getProductQuantity']);
+    
 
 
     // EXPIRY ALERT
     Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
+
+Route::prefix('ws')->group(function () {
+
+    Route::get('/categories/{warehouseId}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+
+    Route::get('/subcategories/{warehouseId}/{categoryId}', [ProductBatchController::class, 'getSubCategories']);
+
+    Route::get('/products-by-sub/{warehouseId}/{subCategoryId}', [ProductBatchController::class, 'getProductsBySubCategory']);
+
+    Route::get('/get-product-unit/{productId}', [ProductBatchController::class, 'getProductUnit']);
+
+});
+
 
 
     // SELL PRODUCT

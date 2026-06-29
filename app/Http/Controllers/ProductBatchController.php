@@ -17,6 +17,7 @@ use App\Models\SubCategory;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Unit;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ProductBatchController extends Controller
 {
@@ -26,14 +27,36 @@ class ProductBatchController extends Controller
     {
         $user = Auth::user();
         $isSuperAdmin = $user->role_id == 1;
+        $units = Unit::orderBy('name')->get();
+        $batches = ProductBatch::with([
+            'product.category',
+            'warehouse',
+            'unit'
+        ])
 
-        $batches = ProductBatch::with(['product.category', 'warehouse'])
             ->when(!$isSuperAdmin, function ($q) use ($user) {
                 $q->where('warehouse_id', $user->warehouse_id);
             })
             ->latest()
             ->get();
-        return view('batches.index', compact('batches'));
+
+
+        // ADD THIS
+        $warehouses = $isSuperAdmin
+            ? Warehouse::whereNull('parent_id')->get()
+            : Warehouse::where('id', $user->warehouse_id)->get();
+
+
+        // Categories
+        $categories = Category::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+        return view('batches.index', compact(
+            'batches',
+            'warehouses',
+            'categories',
+            'units'
+        ));
     }
 
     public function create()
@@ -98,7 +121,7 @@ class ProductBatchController extends Controller
 
 
         try {
-            
+
             // Get warehouse stock
             $warehouseStock = WarehouseStock::where('product_id', $request->product_id)
                 ->where('warehouse_id', $warehouseId)
@@ -154,7 +177,7 @@ class ProductBatchController extends Controller
             //     'unit_id'          => 'required|exists:units,id',
             // ]);
 
-            
+
             $validated = $request->validate([
                 'warehouse_id' => $isSuperAdmin
                     ? 'required|exists:warehouses,id'
@@ -182,9 +205,9 @@ class ProductBatchController extends Controller
 
                 'unit_id' => 'required|exists:units,id',
 
-                ], [
-                    // Custom messages (SECOND PARAMETER)
-                    'batch_no.unique' => 'This batch number already exists. Please use a different batch number.',
+            ], [
+                // Custom messages (SECOND PARAMETER)
+                'batch_no.unique' => 'This batch number already exists. Please use a different batch number.',
             ]);
 
             Log::info('Batch validation successful', [
@@ -448,21 +471,28 @@ class ProductBatchController extends Controller
             ->get();
     }
 
-    public function getProductsBySubCategory($warehouseId, $subCategoryId)
+    public function getProductsBySubCategory($warehouseId, $subCategoryIds)
     {
-        return WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
-            ->where('warehouse_stock.sub_category_id', $subCategoryId)
-            ->join(
-                'products',
-                'products.id',
-                '=',
-                'warehouse_stock.product_id'
-            )
+        Log::info('Products API', [
+            'warehouse' => $warehouseId,
+            'subcategories' => $subCategoryIds,
+        ]);
+
+        $subCategoryIds = explode(',', $subCategoryIds);
+
+        $products = WarehouseStock::where('warehouse_stock.warehouse_id', $warehouseId)
+            ->whereIn('warehouse_stock.sub_category_id', $subCategoryIds)
+            ->join('products', 'products.id', '=', 'warehouse_stock.product_id')
             ->select('products.id', 'products.name')
             ->distinct()
+            ->orderBy('products.name')
             ->get();
+
+        Log::info('Products Found', $products->toArray());
+
+        return response()->json($products);
     }
-    
+
     public function getProductQuantity($warehouseId, $productId)
     {
         $warehouseStock = WarehouseStock::where('warehouse_id', $warehouseId)
@@ -480,5 +510,236 @@ class ProductBatchController extends Controller
         ]);
     }
 
-    
+
+    //////// exel upload
+
+    public function getProductUnit($productId)
+    {
+        $product = Product::with('unit')->find($productId);
+
+        return response()->json([
+            'unit' => $product?->unit
+        ]);
+    }
+
+    public function downloadCsv(Request $request)
+    {
+        Log::info('CSV Download Request Started', $request->all());
+
+        $query = Product::with([
+            'category',
+            'subCategory',
+            'unit'
+        ]);
+
+        // Category Filter
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Sub Category Filter
+        if ($request->filled('sub_category_id')) {
+            $query->whereIn(
+                'sub_category_id',
+                (array) $request->sub_category_id
+            );
+        }
+
+        // Product Filter
+        if ($request->filled('product_id')) {
+            $query->whereIn(
+                'id',
+                (array) $request->product_id
+            );
+        }
+
+
+        $products = $query->get();
+
+        Log::info('Final CSV Records Found', [
+            'count' => $products->count()
+        ]);
+
+        $warehouseName = '';
+
+        if ($request->filled('warehouse_id')) {
+            $warehouse = Warehouse::find($request->warehouse_id);
+            $warehouseName = $warehouse?->name ?? '';
+        }
+
+        $fileName = 'product-batch.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$fileName}",
+        ];
+
+        $callback = function () use ($products, $warehouseName) {
+
+            $file = fopen('php://output', 'w');
+
+            // Header
+            fputcsv($file, [
+                'Warehouse',
+                'Category',
+                'SubCategory',
+                'Product',
+                'Unit',
+                'Batch No',
+                'Quantity',
+                'MFG Date',
+                'Expiry Date'
+            ]);
+
+            foreach ($products as $product) {
+
+                Log::info('CSV Row', [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                ]);
+
+                fputcsv($file, [
+                    $warehouseName,
+                    $product->category?->name ?? '',
+                    $product->subCategory?->name ?? '',
+                    $product->name ?? '',
+                    $product->unit?->short_name ?? $product->unit?->name ?? '',
+
+                    '', // Batch No
+                    '', // Quantity
+                    '', // MFG Date
+                    '', // Expiry Date
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->streamDownload(
+            $callback,
+            $fileName,
+            $headers
+        );
+    }
+
+    public function bulkUpload(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|mimes:csv,txt'
+        ]);
+
+        $file = fopen($request->file('csv_file')->getRealPath(), 'r');
+
+        // Skip Header
+        fgetcsv($file);
+
+        DB::beginTransaction();
+
+        try {
+
+            $insertedCount = 0;
+            $duplicateCount = 0;
+
+            while (($row = fgetcsv($file, 1000, ",")) !== false) {
+
+                $warehouseName = trim($row[0] ?? '');
+                $categoryName  = trim($row[1] ?? '');
+                $subCategory   = trim($row[2] ?? '');
+                $productName   = trim($row[3] ?? '');
+                $unitName      = trim($row[4] ?? '');
+                $batchNo       = trim($row[5] ?? '');
+                $quantity      = trim($row[6] ?? '');
+                $mfgDate       = trim($row[7] ?? '');
+                $expiryDate    = trim($row[8] ?? '');
+
+                $warehouse = Warehouse::where('name', $warehouseName)->first();
+
+                $product = Product::where('name', $productName)->first();
+
+                $unit = Unit::whereRaw(
+                    'UPPER(short_name) = ?',
+                    [strtoupper($unitName)]
+                )->first();
+
+                Log::info('Unit Check', [
+                    'csv_unit'   => $unitName,
+                    'unit_found' => $unit?->id
+                ]);
+
+                if (!$warehouse || !$product) {
+
+                    Log::warning('Warehouse or Product Not Found', [
+                        'warehouse' => $warehouseName,
+                        'product'   => $productName
+                    ]);
+
+                    continue;
+                }
+
+                // Duplicate Batch Check
+                $existingBatch = ProductBatch::where('batch_no', trim($batchNo))
+                    ->first();
+
+                if ($existingBatch) {
+
+                    $duplicateCount++;
+
+                    Log::warning('Duplicate Batch Skipped', [
+                        'batch_no' => $batchNo
+                    ]);
+
+                    continue;
+                }
+
+                Log::info('Creating Batch', [
+                    'product' => $product->name,
+                    'batch_no' => $batchNo,
+                    'warehouse' => $warehouse->name,
+                ]);
+                ProductBatch::create([
+                    'warehouse_id'    => $warehouse->id,
+                    'product_id'      => $product->id,
+                    'unit_id'         => $unit?->id,
+                    'category_id'     => $product->category_id,
+                    'sub_category_id' => $product->sub_category_id,
+                    'batch_no'        => $batchNo,
+                    'quantity'        => $quantity ?: 0,
+                    'mfg_date'        => !empty($mfgDate)
+                        ? date('Y-m-d', strtotime($mfgDate))
+                        : null,
+                    'expiry_date'     => !empty($expiryDate)
+                        ? date('Y-m-d', strtotime($expiryDate))
+                        : null,
+                    'is_blocked'      => 0,
+                ]);
+
+                $insertedCount++;
+            }
+
+            fclose($file);
+
+            DB::commit();
+
+            $message = "{$insertedCount} records uploaded successfully.";
+
+            if ($duplicateCount > 0) {
+                $message .= " {$duplicateCount} duplicate batch records skipped.";
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', $message);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            Log::error('CSV Upload Error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
+    }
 }

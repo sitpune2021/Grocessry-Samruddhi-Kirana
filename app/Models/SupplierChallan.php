@@ -8,7 +8,8 @@ class SupplierChallan extends Model
 {
     protected $fillable = [
         'challan_no',
-        'purchase_order_id',
+        'bill_no',
+        'purchase_order_id', 
         'supplier_id',
         'warehouse_id',
         'challan_date',
