@@ -47,9 +47,25 @@
                     <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                 </div>
 
+                <div class="col-md-2">
+                    <select name="payment_method" class="form-select">
+                        <option value="">Payment (All)</option>
+
+                        <option value="cash"
+                            {{ request('payment_method') == 'cash' ? 'selected' : '' }}>
+                            Cash
+                        </option>
+
+                        <option value="online"
+                            {{ request('payment_method') == 'online' ? 'selected' : '' }}>
+                            Online
+                        </option>
+                    </select>
+                </div>
+
                 <div class="col-md-12 d-flex gap-2 mt-2">
                     <button class="btn btn-primary btn-sm">Filter</button>
-                    <a href="" class="btn btn-secondary btn-sm">Reset</a>
+                    <a href="{{ url('orders') }}" class="btn btn-secondary btn-sm">Reset</a>
                     <a href="{{ route('orders.export.csv') }}" class="btn btn-success btn-sm">
                         Download CSV
                     </a>
@@ -71,6 +87,7 @@
                             <th>Order Number</th>
                             <th>Product Name</th>
                             <th>Total</th>
+                            <th>Payment Method</th>
                             <th>Delivery Agent</th>
                             <th>Status</th>
                             <!-- <th>Action</th> -->
@@ -93,11 +110,33 @@
                             </td>
                             <td>₹{{ $order->total_amount }}</td>
                             <td>
+                                {{ $order->payment_method ?? 'N/A' }}
+                            </td>
+                            <td>
                                 {{ $order->deliveryAgent->user->first_name ?? 'N/A' }}
                                 {{ $order->deliveryAgent->user->last_name ?? '' }}
                             </td>
-                            <td>
+                            <!-- <td>
                                 <span class="badge bg-warning">{{ $order->status }}</span>
+                            </td> -->
+
+                            <td>
+                                @php
+                                $badgeClass = match($order->status) {
+                                'pending' => 'bg-warning',
+                                'queued' => 'bg-info',
+                                'assigned' => 'bg-primary',
+                                'on_the_way' => 'bg-secondary',
+                                'delivered' => 'bg-success',
+                                'failed' => 'bg-danger',
+                                'cancelled' => 'bg-dark',
+                                default => 'bg-light text-dark',
+                                };
+                                @endphp
+
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                </span>
                             </td>
                             <!-- <td>
                                     @if($order->status == 'pending')
