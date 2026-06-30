@@ -47,9 +47,25 @@
                     <input type="date" name="to_date" class="form-control" value="{{ request('to_date') }}">
                 </div>
 
+                <div class="col-md-2">
+                    <select name="payment_method" class="form-select">
+                        <option value="">Payment (All)</option>
+
+                        <option value="cash"
+                            {{ request('payment_method') == 'cash' ? 'selected' : '' }}>
+                            Cash
+                        </option>
+
+                        <option value="online"
+                            {{ request('payment_method') == 'online' ? 'selected' : '' }}>
+                            Online
+                        </option>
+                    </select>
+                </div>
+
                 <div class="col-md-12 d-flex gap-2 mt-2">
                     <button class="btn btn-primary btn-sm">Filter</button>
-                    <a href="" class="btn btn-secondary btn-sm">Reset</a>
+                    <a href="{{ url('orders') }}" class="btn btn-secondary btn-sm">Reset</a>
                     <a href="{{ route('orders.export.csv') }}" class="btn btn-success btn-sm">
                         Download CSV
                     </a>

@@ -52,6 +52,7 @@ public function userorder(Request $request)
     $warehouseId = $request->query('warehouse_id');
     $fromDate = $request->query('from_date');
     $toDate = $request->query('to_date');
+    $paymentMethod = $request->query('payment_method');
 
     $query = Order::where('channel', 'web')
         ->with(['items.product', 'deliveryAgent.user', 'warehouse'])
@@ -66,6 +67,10 @@ public function userorder(Request $request)
     } else {
         // DC user → force own warehouse
         $query->where('warehouse_id', $user->warehouse_id);
+    }
+
+     if ($paymentMethod) {
+        $query->where('payment_method', $paymentMethod);
     }
 
     // 📅 Date filter
