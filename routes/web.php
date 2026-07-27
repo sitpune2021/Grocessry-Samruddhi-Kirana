@@ -536,19 +536,30 @@ Route::middleware(['auth:admin'])->group(function () {
     // EXPIRY ALERT
     Route::get('/expiry-alerts', [ProductBatchController::class, 'expiryAlerts'])->name('batches.expiry');
 
-Route::prefix('ws')->group(function () {
+    // Route::prefix('ws')->group(function () {
 
-    Route::get('/categories/{warehouseId}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+    //     Route::get('/categories/{warehouseId}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
 
-    Route::get('/subcategories/{warehouseId}/{categoryId}', [ProductBatchController::class, 'getSubCategories']);
+    //     Route::get('/subcategories/{warehouseId}/{categoryId}', [ProductBatchController::class, 'getSubCategories']);
 
-    Route::get('/products-by-sub/{warehouseId}/{subCategoryId}', [ProductBatchController::class, 'getProductsBySubCategory']);
+    //     Route::get('/products-by-sub/{warehouseId}/{subCategoryId}', [ProductBatchController::class, 'getProductsBySubCategory']);
 
-    Route::get('/get-product-unit/{productId}', [ProductBatchController::class, 'getProductUnit']);
+    //     Route::get('/get-product-unit/{productId}', [ProductBatchController::class, 'getProductUnit']);
 
-});
+    // });
 
+    Route::prefix('ws')->group(function () {
 
+        Route::get('/categories/{warehouseId}', [ProductBatchController::class, 'getCategoriesByWarehouse']);
+
+        Route::get('/subcategories/{warehouseId}/{categoryId}', [ProductBatchController::class, 'getSubCategories']);
+
+        Route::get('/products-by-sub/{warehouseId}/{subCategoryId}', [ProductBatchController::class, 'getProductsBySubCategory']);
+
+        Route::get('/get-product-unit/{productId}', [ProductBatchController::class, 'getProductUnit']);
+
+        Route::get('/quantity/{warehouseId}/{productId}', [ProductBatchController::class, 'getProductQuantity']); // <-- Add this
+    });
 
     // SELL PRODUCT
     Route::get('/sell', [FIFOHistoryController::class, 'index'])->name('sell.index');
