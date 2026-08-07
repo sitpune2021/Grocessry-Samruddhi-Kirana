@@ -1,118 +1,277 @@
 @include('layouts.header')
 
-<body>
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar">
-        <div class="layout-container">
-            <!-- Menu -->
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
-                @include('layouts.sidebar')
-            </aside>
-            <!-- / Menu -->
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
 
-            <!-- Layout container -->
-            <div class="layout-page">
-                <!-- Navbar -->
+        @include('layouts.sidebar')
 
-                @include('layouts.navbar')
-                <!-- / Navbar -->
+        <div class="layout-page">
 
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
-                    <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="row justify-content-center">
-                            <div class="col-12">
+            @include('layouts.navbar')
 
-                                <div class="card shadow-sm border-0 rounded-3">
+            <div class="content-wrapper">
 
-                                        <h2 class="text-xl font-semibold mb-4">
-                                            {{ isset($retailer) ? 'Edit Retailer' : 'Create Retailer' }}
-                                        </h2>
-                                    
-                                        <div class="card-body">
-                                            <form
-                                                method="POST"
-                                                action="{{ isset($retailer) 
-                                                    ? route('retailers.update', $retailer->id) 
-                                                    : route('retailers.store') }}"
-                                            >
-                                                @csrf
-                                                @if(isset($retailer))
-                                                    @method('PUT')
-                                                @endif
+                <div class="container-xxl flex-grow-1 container-p-y">
 
-                                                <div class="row">
-                                                    <!-- Name -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Name</label>
-                                                        <input type="text"
-                                                            name="name"
-                                                            class="form-control"
-                                                            value="{{ old('name', $retailer->name ?? '') }}"
-                                                            required>
-                                                    </div>
+                    <div class="row justify-content-center">
+                        <div class="col-xl-10 col-lg-11 col-md-12">
 
-                                                    <!-- Mobile -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Mobile</label>
-                                                        <input type="text"
-                                                            name="mobile"
-                                                            class="form-control"
-                                                            value="{{ old('mobile', $retailer->mobile ?? '') }}"
-                                                            required>
-                                                    </div>
+                            <div class="card">
+
+                                <div class="card-header bg-white">
+                                    <h4 class="mb-0">
+                                        {{ isset($retailer) ? 'Edit Retailer' : 'Create Retailer' }}
+                                    </h4>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <form method="POST"
+                                        action="{{ isset($retailer)
+                                                ? route('retailers.update',$retailer->id)
+                                                : route('retailers.store') }}">
+
+                                        @csrf
+
+                                        @if(isset($retailer))
+                                        @method('PUT')
+                                        @endif
+
+
+                                        <div class="row g-3">
+
+                                            {{-- Name --}}
+                                            <div class="col-lg-6 col-md-6">
+                                                <label class="form-label">
+                                                    Name
+                                                    <span class="text-danger">*</span>
+                                                </label>
+
+                                                <input type="text"
+                                                    name="name"
+                                                    class="form-control @error('name') is-invalid @enderror"
+                                                    value="{{ old('name',$retailer->name ?? '') }}"
+                                                    placeholder="Enter Retailer Name">
+
+                                                @error('name')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                                @enderror
+                                            </div>
 
-                                                <div class="row">
-                                                    <!-- Email -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Email</label>
-                                                        <input type="email"
-                                                            name="email"
-                                                            class="form-control"
-                                                            value="{{ old('email', $retailer->email ?? '') }}">
-                                                    </div>
 
-                                                    <!-- Address -->
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Address</label>
-                                                        <textarea name="address"
-                                                                class="form-control"
-                                                                rows="3">{{ old('address', $retailer->address ?? '') }}</textarea>
-                                                    </div>
+                                            {{-- Mobile --}}
+                                            <div class="col-lg-6 col-md-6">
+                                                <label class="form-label">
+                                                    Mobile
+                                                    <span class="text-danger">*</span>
+                                                </label>
+
+                                                <input type="text"
+                                                    maxlength="10"
+                                                    name="mobile"
+                                                    class="form-control @error('mobile') is-invalid @enderror"
+                                                    value="{{ old('mobile',$retailer->mobile ?? '') }}"
+                                                    placeholder="Enter Mobile Number">
+
+                                                @error('mobile')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                                @enderror
+                                            </div>
 
-                                                <!-- Buttons -->
-                                                <div class="mt-4 d-flex justify-content-end gap-2 text-end">
-                                                    <a href="{{ route('retailers.index') }}" class="btn btn-outline-secondary">
-                                                        Back
-                                                    </a>
 
-                                                    <button type="submit" class="btn btn-primary">
-                                                        {{ isset($retailer) ? 'Update' : 'Save' }}
-                                                    </button>
+                                            {{-- Email --}}
+                                            <div class="col-lg-6 col-md-6">
+                                                <label class="form-label">
+                                                    Email
+                                                </label>
+
+                                                <input type="email"
+                                                    name="email"
+                                                    class="form-control @error('email') is-invalid @enderror"
+                                                    value="{{ old('email',$retailer->email ?? '') }}"
+                                                    placeholder="Enter Email">
+
+                                                @error('email')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
-                                            </form>
+                                                @enderror
+                                            </div>
+
+
+                                            {{-- Shop Name --}}
+                                            <div class="col-lg-6 col-md-6">
+                                                <label class="form-label">
+                                                    Shop Name
+                                                    <span class="text-danger">*</span>
+                                                </label>
+
+                                                <select class="form-select" disabled>
+                                                    @foreach($shops as $shop)
+                                                        <option value="{{ $shop->id }}" selected>
+                                                            {{ $shop->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                <input type="hidden"
+                                                    name="shop_id"
+                                                    value="{{ $shops->first()->id ?? '' }}">
+
+                                                <input type="hidden"
+                                                    name="shop_name"
+                                                    value="{{ $shops->first()->name ?? '' }}">
+
+                                                @error('shop_id')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            {{-- DOB --}}
+                                            <div class="col-lg-6 col-md-6">
+                                                <label class="form-label">
+                                                    Date of Birth
+                                                </label>
+
+                                                <input type="date"
+                                                    name="dob"
+                                                    class="form-control"
+                                                    value="{{ old('dob',$retailer->dob ?? '') }}">
+                                            </div>
+
+
+                                            {{-- Gender --}}
+                                            <div class="col-lg-6 col-md-6">
+
+                                                <label class="form-label">
+                                                    Gender
+                                                </label>
+
+                                                <select name="gender" class="form-select">
+
+                                                    <option value="">Select Gender</option>
+
+                                                    <option value="male"
+                                                        {{ old('gender',$retailer->gender ?? '')=='male' ? 'selected' : '' }}>
+                                                        Male
+                                                    </option>
+
+                                                    <option value="female"
+                                                        {{ old('gender',$retailer->gender ?? '')=='female' ? 'selected' : '' }}>
+                                                        Female
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+
+                                            {{-- GST --}}
+                                            <div class="col-lg-6 col-md-6">
+
+                                                <label class="form-label">
+                                                    GST Number
+                                                </label>
+
+                                                <input type="text"
+                                                    name="gst_number"
+                                                    class="form-control"
+                                                    value="{{ old('gst_number',$retailer->gst_number ?? '') }}"
+                                                    placeholder="Enter GST Number">
+
+                                            </div>
+
+
+                                            {{-- Status --}}
+                                            <div class="col-lg-6 col-md-6">
+
+                                                <label class="form-label">
+                                                    Status
+                                                </label>
+
+                                                <select class="form-select" name="is_active">
+
+                                                    <option value="1"
+                                                        {{ old('is_active',$retailer->is_active ?? 1)==1 ? 'selected' : '' }}>
+                                                        Active
+                                                    </option>
+
+                                                    <option value="0"
+                                                        {{ old('is_active',$retailer->is_active ?? '')==0 ? 'selected' : '' }}>
+                                                        Inactive
+                                                    </option>
+
+                                                </select>
+
+                                            </div>
+
+
+                                            {{-- Address --}}
+                                            <div class="col-12">
+
+                                                <label class="form-label">
+                                                    Address
+                                                </label>
+
+                                                <textarea
+                                                    name="address"
+                                                    rows="4"
+                                                    class="form-control @error('address') is-invalid @enderror"
+                                                    placeholder="Enter Address">{{ old('address',$retailer->address ?? '') }}</textarea>
+
+                                                @error('address')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
+
+                                            </div>
+
                                         </div>
+
+
+                                        <hr class="my-4">
+
+
+                                        <div class="d-flex justify-content-end gap-2">
+
+                                            <a href="{{ route('retailers.index') }}"
+                                                class="btn btn-outline-secondary">
+
+                                                Back
+
+                                            </a>
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-success">
+
+                                                {{ isset($retailer) ? 'Update Retailer' : 'Save Retailer' }}
+
+                                            </button>
+
+                                        </div>
+
+                                    </form>
 
                                 </div>
 
                             </div>
+
                         </div>
                     </div>
+
                 </div>
 
-                    <!-- / Content -->
-                    @include('layouts.footer')
-                </div>
-                <!-- Content wrapper -->
+                @include('layouts.footer')
+
             </div>
-            <!-- / Layout page -->
+
         </div>
 
     </div>
-    <!-- / Layout wrapper -->
-</body>
-
-
+</div>

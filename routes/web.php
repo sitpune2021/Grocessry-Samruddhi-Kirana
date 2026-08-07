@@ -391,7 +391,9 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::put('/{retailer}', [RetailerController::class, 'update'])->name('update');
 
         // DELETE
-        Route::delete('/{retailer}', [RetailerController::class, 'delete']);
+        //Route::delete('/{retailer}', [RetailerController::class, 'delete']);
+        Route::delete('/{retailer}', [RetailerController::class, 'destroy'])
+            ->name('destroy');
 
         // ACTIVATE / DEACTIVATE
         Route::patch('/{retailer}/toggle-status', [RetailerController::class, 'toggleStatus'])
@@ -435,8 +437,8 @@ Route::middleware(['auth:admin'])->group(function () {
         //     '/checkout/razorpay/create-order',
         //     [CheckoutController::class, 'createRazorpayOrder']
         // )->name('checkout.razorpay.create');
-    });
 
+    });
 
 
     // RETAILER ORDER

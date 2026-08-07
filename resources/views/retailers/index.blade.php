@@ -2,125 +2,204 @@
 
 @section('content')
 
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="card">
 
-    <div class="card">
-        <div class="card-datatable text-nowrap">
+    <div class="card-header">
 
-            <!-- Header -->
-            <div class="row card-header flex-column flex-md-row pb-0">
-                <div class="col-md-auto me-auto">
-                    <h5 class="card-title">Retailer profile</h5>
-                </div>
-                <div class="col-md-auto ms-auto mt-5">
-                    <a href="{{ route('retailers.create') }}" class="btn btn-primary">
-                         Add Retailer
-                    </a>
-                </div>
-            </div><br><br>
-            <!-- Search -->
-            <x-datatable-search />
-                <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
-                                <thead class="table-light">
-                        <tr>
-                            <th>Name</th>
-                            <th>Mobile</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+        <div class="row align-items-center">
 
-                    <tbody>
-                    @foreach($retailers as $retailer)
-                        <tr>
-                            <td>{{ $retailer->name }}</td>
-                            <td>{{ $retailer->mobile }}</td>
+            <div class="col-md-6">
+                <h4 class="mb-0">
+                    Retailer List
+                </h4>
+            </div>
 
-                            <td>
-                                @if($retailer->is_active)
-                                    <span class="text-green-600">Active</span>
-                                @else
-                                    <span class="text-red-600">Inactive</span>
-                                @endif
-                            </td>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
 
-                            <td>
-                                <a href="{{ route('retailers.edit', $retailer->id) }}">Edit</a>
+                <a href="{{ route('retailers.create') }}"
+                    class="btn btn-success">
 
-                                <form method="POST" action="/retailers/{{ $retailer->id }}">
+                    <i class="bx bx-plus"></i>
+                    Add Retailer
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card-body">
+
+        <x-datatable-search />
+
+        <div class="table-responsive mt-4">
+
+            <table class="table table-bordered table-hover align-middle">
+
+                <thead class="table-light">
+
+                    <tr>
+
+                        <th width="5%">#</th>
+
+                        <th>Shop</th>
+
+                        <th>Name</th>
+
+                        <th>Mobile</th>
+
+                        <th>Email</th>
+
+                        <th>Status</th>
+
+                        <th width="220">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($retailers as $retailer)
+
+                    <tr>
+
+                        <td>
+                            {{ $loop->iteration }}
+                        </td>
+
+                        <td>
+                            {{ $retailer->shop_name }}
+                        </td>
+
+                        <td>
+                            {{ $retailer->name }}
+                        </td>
+
+                        <td>
+                            {{ $retailer->mobile }}
+                        </td>
+
+                        <td>
+                            {{ $retailer->email ?? '-' }}
+                        </td>
+
+                        <td>
+
+                            @if($retailer->is_active)
+
+                            <span class="badge bg-label-success">
+                                Active
+                            </span>
+
+                            @else
+
+                            <span class="badge bg-label-danger">
+                                Inactive
+                            </span>
+
+                            @endif
+
+                        </td>
+
+                        <td>
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                <a href="{{ route('retailers.edit',$retailer->id) }}"
+                                    class="btn btn-sm btn-warning">
+
+                                    <i class="bx bx-edit"></i>
+
+                                </a>
+
+                                <form action="{{ route('retailers.destroy',$retailer->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Delete this retailer?')">
+
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit">Delete</button>
-                                </form>
 
+                                    <button
+                                        class="btn btn-sm btn-danger">
 
-                                <form method="POST" action="{{ route('retailers.toggle.status', $retailer->id) }}">
-                                    @csrf @method('PATCH')
-                                    <button type="submit">
-                                        {{ $retailer->is_active ? 'Deactivate' : 'Activate' }}
+                                        <i class="bx bx-trash"></i>
+
                                     </button>
+
                                 </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
 
-{{ $retailers->links() }}
+                                <form action="{{ route('retailers.toggle.status',$retailer->id) }}"
+                                    method="POST">
 
- </div>
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <button
+                                        class="btn btn-sm {{ $retailer->is_active ? 'btn-secondary' : 'btn-success' }}">
+
+                                        @if($retailer->is_active)
+
+                                        <i class="bx bx-block"></i>
+
+                                        @else
+
+                                        <i class="bx bx-check-circle"></i>
+
+                                        @endif
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    @empty
+
+                    <tr>
+
+                        <td colspan="7" class="text-center">
+
+                            No Retailer Found
+
+                        </td>
+
+                    </tr>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="mt-4">
+
+            {{ $retailers->links() }}
+
+        </div>
+
     </div>
+
 </div>
 
 @endsection
 
-
-
-<script>
-    $(document).ready(function() {
-        $('#transfersTable').DataTable({
-            responsive: true,
-            pageLength: 10,
-            order: [
-                [0, 'desc']
-            ],
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search transfers..."
-            }
-        });
-    });
-</script>
-
-<!-- table search box script -->
-
 @push('scripts')
-<script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
 
-    const searchInput = document.getElementById("dt-search-1");
-    const table = document.getElementById("batchTable");
-
-    if (!searchInput || !table) return;
-
-    const rows = table.querySelectorAll("tbody tr");
-
-    searchInput.addEventListener("keyup", function () {
-        const value = this.value.toLowerCase().trim();
-
-        rows.forEach(row => {
-
-            // Skip "No role found" row
-            if (row.cells.length === 1) return;
-
-            row.style.display = row.textContent
-                .toLowerCase()
-                .includes(value)
-                ? ""
-                : "none";
-        });
-    });
+document.addEventListener('DOMContentLoaded', function(){
 
 });
+
 </script>
+
+@endpush
