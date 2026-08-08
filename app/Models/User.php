@@ -67,10 +67,6 @@ class User extends Authenticatable
         return $this->role->permissions();
     }
 
-    // public function hasRole(string $role): bool
-    // {
-    //     return $this->role === $role;
-    // }
     public function hasRole(string $role): bool
     {
         return strtolower($this->role->name ?? '') === strtolower($role);
@@ -109,4 +105,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Address::class, 'user_id', 'id');
     }
+
+    public function retailer()
+    {
+        return $this->hasOne(
+            Retailer::class,
+            'user_id'
+        );
+    }
+
+
 }
