@@ -31,9 +31,9 @@ class Warehouse extends Model
     ];
 
     protected $casts = [
-    'latitude' => 'decimal:7',
-    'longitude' => 'decimal:7',
-];
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+    ];
 
     public function servicePincodes()
     {
@@ -44,15 +44,11 @@ class Warehouse extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
     public function parent()
     {
         return $this->belongsTo(Warehouse::class, 'parent_id');
     }
-
-    // public function users()
-    // {
-    //     return $this->hasMany(User::class, 'warehouse_id');
-    // }
 
     public function users()
     {
@@ -101,4 +97,11 @@ class Warehouse extends Model
     {
         return $this->belongsTo(GroceryShop::class, 'grocery_shop_id');
     }
+
+    public function retailerPricings()
+    {
+        return $this->hasMany(RetailerPricing::class);
+    }
+
+
 }

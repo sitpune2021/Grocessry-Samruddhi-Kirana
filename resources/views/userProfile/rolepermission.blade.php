@@ -76,7 +76,7 @@
                             'vehical_assignment' => 'Vehical Assignment',
                             // 'offers' => 'Offers',
                             // 'coupons' => 'Coupons',
-                            'retailer_offers' => 'Retailer Offers',
+                            'retailer' => 'Retailer',
                             //'website_orders' => 'Website Orders',
                             'customer_orders' => 'Customer Orders',
                             'transfer_challan' => 'Transfer Challan',
