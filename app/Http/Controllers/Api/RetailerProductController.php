@@ -815,4 +815,317 @@ class RetailerProductController extends Controller
     }
 
 
+    /**
+     * Retailer Category List
+     *
+     * Returns only categories for which:
+     * - Retailer is active
+     * - Retailer belongs to the logged-in user
+     * - Retailer belongs to an active Distribution Center
+     * - Retailer has active pricing
+     * - Pricing is currently effective
+    */
+    public function categories(Request $request)
+    {
+        try {
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. Logged-in User
+            |--------------------------------------------------------------------------
+            */
+
+            $user = $request->user();
+
+            Log::info('Retailer Category List - User', [
+                'user_id' => $user->id,
+                'email'   => $user->email,
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Get Retailer
+            |--------------------------------------------------------------------------
+            */
+
+            $retailer = Retailer::where('user_id', $user->id)
+                ->where('is_active', 1)
+                ->first();
+
+
+            if (!$retailer) {
+
+                Log::warning(
+                    'Retailer Category List - Retailer Not Found',
+                    [
+                        'user_id' => $user->id,
+                    ]
+                );
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Retailer account not found or inactive.',
+                ], 404);
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. Get Distribution Center
+            |--------------------------------------------------------------------------
+            |
+            | retailers.shop_id = warehouse.id
+            |
+            */
+
+            $warehouse = Warehouse::where(
+                    'id',
+                    $retailer->shop_id
+                )
+                ->where(
+                    'type',
+                    'distribution_center'
+                )
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->first();
+
+
+            if (!$warehouse) {
+
+                Log::warning(
+                    'Retailer Category List - DC Not Found',
+                    [
+                        'retailer_id' => $retailer->id,
+                        'shop_id'     => $retailer->shop_id,
+                    ]
+                );
+
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Distribution Center not found or inactive.',
+                ], 404);
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Get Categories
+            |--------------------------------------------------------------------------
+            |
+            | Only categories having active/current retailer pricing.
+            |
+            */
+
+            $categories = RetailerPricing::query()
+
+                /*
+                |--------------------------------------------------------------------------
+                | Retailer
+                |--------------------------------------------------------------------------
+                */
+
+                ->where(
+                    'retailer_id',
+                    $retailer->id
+                )
+
+                /*
+                |--------------------------------------------------------------------------
+                | Distribution Center
+                |--------------------------------------------------------------------------
+                */
+
+                ->where(
+                    'warehouse_id',
+                    $warehouse->id
+                )
+
+                /*
+                |--------------------------------------------------------------------------
+                | Active Pricing
+                |--------------------------------------------------------------------------
+                */
+
+                ->where(
+                    'is_active',
+                    1
+                )
+
+                /*
+                |--------------------------------------------------------------------------
+                | Effective From
+                |--------------------------------------------------------------------------
+                */
+
+                ->whereDate(
+                    'effective_from',
+                    '<=',
+                    now()->toDateString()
+                )
+
+                /*
+                |--------------------------------------------------------------------------
+                | Effective To
+                |--------------------------------------------------------------------------
+                */
+
+                ->where(function ($query) {
+
+                    $query->whereNull('effective_to')
+                        ->orWhereDate(
+                            'effective_to',
+                            '>=',
+                            now()->toDateString()
+                        );
+
+                })
+
+                /*
+                |--------------------------------------------------------------------------
+                | Category Relationship
+                |--------------------------------------------------------------------------
+                */
+
+                ->with('category:id,name')
+
+                /*
+                |--------------------------------------------------------------------------
+                | Unique Categories
+                |--------------------------------------------------------------------------
+                */
+
+                ->get()
+
+                ->pluck('category')
+
+                ->filter()
+
+                ->unique('id')
+
+                ->sortBy('name')
+
+                ->values();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 5. Log
+            |--------------------------------------------------------------------------
+            */
+
+            Log::info(
+                'Retailer Category List - Success',
+                [
+                    'retailer_id' =>
+                        $retailer->id,
+
+                    'warehouse_id' =>
+                        $warehouse->id,
+
+                    'categories_count' =>
+                        $categories->count(),
+                ]
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 6. Response
+            |--------------------------------------------------------------------------
+            */
+
+            return response()->json([
+
+                'status' => true,
+
+                'message' =>
+                    'Retailer categories fetched successfully.',
+
+                'retailer' => [
+
+                    'id' =>
+                        $retailer->id,
+
+                    'name' =>
+                        $retailer->name,
+
+                    'shop_name' =>
+                        $retailer->shop_name,
+
+                ],
+
+                'distribution_center' => [
+
+                    'id' =>
+                        $warehouse->id,
+
+                    'name' =>
+                        $warehouse->name,
+
+                ],
+
+                'categories' =>
+                    $categories->map(function ($category) {
+
+                        return [
+
+                            'id' =>
+                                $category->id,
+
+                            'name' =>
+                                $category->name,
+
+                        ];
+
+                    })->values(),
+
+                'total' =>
+                    $categories->count(),
+
+            ], 200);
+
+
+        } catch (\Throwable $e) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Error Log
+            |--------------------------------------------------------------------------
+            */
+
+            Log::error(
+                'Retailer Category List - Exception',
+                [
+                    'user_id' =>
+                        $request->user()?->id,
+
+                    'message' =>
+                        $e->getMessage(),
+
+                    'file' =>
+                        $e->getFile(),
+
+                    'line' =>
+                        $e->getLine(),
+                ]
+            );
+
+
+            return response()->json([
+
+                'status' =>
+                    false,
+
+                'message' =>
+                    'Unable to fetch retailer categories.',
+
+            ], 500);
+        }
+    }
+
+
 }

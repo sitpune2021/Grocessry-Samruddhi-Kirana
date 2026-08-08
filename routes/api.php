@@ -298,4 +298,10 @@ Route::middleware('auth:sanctum')->group(function () {
                 [RetailerProductController::class, 'show']
             )->name('retailer.products.show');
 
+            // Retailer Category List
+            Route::get(
+                '/categories',
+                [RetailerProductController::class, 'categories']
+            )->name('retailer.categories.index');
+
         });
