@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class RetailerPricing extends Model
 {
+
+
     protected $fillable = [
         'retailer_id',
         'warehouse_id',
@@ -39,4 +41,6 @@ class RetailerPricing extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    
 }

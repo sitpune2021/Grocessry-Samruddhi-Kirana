@@ -11,8 +11,6 @@ use App\Http\Controllers\Api\DeliveryAgentController;
 use App\Http\Controllers\Api\CustomerProductReturnController;
 use App\Http\Controllers\Api\DeliveryOrderController;
 
-
-
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CustomerCouponsOffersController;
 use App\Http\Controllers\Api\AddressController;
@@ -21,18 +19,25 @@ use App\Http\Controllers\Api\DeliveryAgentDutyController;
 use App\Http\Controllers\Api\DeliveryPartnerReturnController;
 use App\Http\Controllers\Api\PaymentController;
 
+use App\Http\Controllers\Api\RetailerAuthController;
+use App\Http\Controllers\Api\RetailerProductController;
+
+
 Route::post('/register', [LoginController::class, 'register']);
 Route::post('/login/{type}', [LoginController::class, 'login']);
 Route::post('/forgot-password', [LoginController::class, 'forgotPassword']);
 Route::post('/verify-otp/{type}', [LoginController::class, 'verifyOtp']);
 Route::post('/reset-password', [LoginController::class, 'resetPassword']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile', [LoginController::class, 'userprofiledetails']);
     Route::delete('/user/account', [LoginController::class, 'deleteAccount']);
 });
+
 Route::post('/customer/update-profile', [LoginController::class, 'updateProfile'])
     ->middleware('auth:sanctum');
 Route::get('/customer/order-time-check', [LoginController::class, 'orderTimeCheck'])->middleware('auth:sanctum');
@@ -68,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/new-order', [ProductController::class, 'newOrders']);
     Route::post('/orders/{orderId}/rate-product', [ProductController::class, 'rateOrder']);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/increment', [ProductController::class, 'incrementCart']);
     Route::post('/cart/decrement', [ProductController::class, 'decrementCart']);
@@ -77,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('api/cart/increment', [ProductController::class, 'incrementCartItem']);
     Route::post('api/cart/decrement', [ProductController::class, 'decrementCartItem']);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offers', [CustomerCouponsOffersController::class, 'getOffers']);
     Route::post('/apply-offer', [CustomerCouponsOffersController::class, 'applyOffer']);
@@ -129,6 +136,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password', [DeliveryAgentController::class, 'resetPassword']);
     Route::post('forgot-password/send-otp', [DeliveryAgentController::class, 'forgotPasswordSendOtp']);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [DeliveryAgentController::class, 'logout']);
     Route::get('/partner/profile/image', [DeliveryAgentController::class, 'getProfileImage']);
@@ -157,6 +165,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/partner/performance/week', [DeliveryAgentDutyController::class, 'weekPerformance']);
     Route::get('/partner/performance/month', [DeliveryAgentDutyController::class, 'monthPerformance']);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/delivery/orders/new', [DeliveryOrderController::class, 'getNewOrders']);
@@ -222,3 +231,77 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/partner/returns/{returnId}/handover', [DeliveryPartnerReturnController::class, 'confirmHandover']);
     Route::get('/v1/partner/returns/{returnId}', [DeliveryPartnerReturnController::class, 'getHandoverDetails']);
 });
+
+
+//--------------------- Retailer Api Routes -----------------------------------------------
+
+    Route::prefix('retailer')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Retailer Login
+        |--------------------------------------------------------------------------
+        */
+        Route::post('/login', [
+            RetailerAuthController::class,
+            'login'
+        ])->name('retailer.login');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Protected Retailer APIs
+        |--------------------------------------------------------------------------
+        */
+        Route::middleware('auth:sanctum')->group(function () {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Retailer Profile
+            |--------------------------------------------------------------------------
+            */
+            Route::get('/profile', [
+                RetailerAuthController::class,
+                'profile'
+            ])->name('retailer.profile');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Retailer Logout
+            |--------------------------------------------------------------------------
+            */
+            Route::post('/logout', [
+                RetailerAuthController::class,
+                'logout'
+            ])->name('retailer.logout');
+
+        });
+
+    });
+
+
+    // RETAILER PRODUCTS
+    Route::middleware('auth:sanctum')
+        ->prefix('retailer')
+        ->group(function () {
+
+            // Product List
+            Route::get(
+                '/products',
+                [RetailerProductController::class, 'index']
+            )->name('retailer.products.index');
+
+            // Product Details
+            Route::get(
+                '/products/{product}',
+                [RetailerProductController::class, 'show']
+            )->name('retailer.products.show');
+
+            // Retailer Category List
+            Route::get(
+                '/categories',
+                [RetailerProductController::class, 'categories']
+            )->name('retailer.categories.index');
+
+        });
