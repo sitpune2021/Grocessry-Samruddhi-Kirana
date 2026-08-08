@@ -13,23 +13,28 @@
 
                 <div class="container-xxl flex-grow-1 container-p-y">
 
-                    <div class="row justify-content-center">
-                        <div class="col-xl-10 col-lg-11 col-md-12">
+                    <div class="row justify-content-center my-4">
 
-                            <div class="card">
+                        <div class="col-12 px-4">
 
-                                <div class="card-header bg-white">
+                            <div class="card shadow-sm border-0 rounded-3 mx-auto"
+                                style="max-width:100%;">
+
+                                <div class="card-header bg-white py-4 px-5">
+
                                     <h4 class="mb-0">
                                         {{ isset($retailer) ? 'Edit Retailer' : 'Create Retailer' }}
                                     </h4>
+
                                 </div>
 
-                                <div class="card-body">
+                                <div class="card-body px-5 py-4">
 
                                     <form method="POST"
                                         action="{{ isset($retailer)
-                                                ? route('retailers.update',$retailer->id)
-                                                : route('retailers.store') }}">
+                                            ? route('retailers.update',$retailer->id)
+                                            : route('retailers.store') }}"
+                                        class="mt-3">
 
                                         @csrf
 
@@ -237,22 +242,27 @@
                                         <hr class="my-4">
 
 
-                                        <div class="d-flex justify-content-end gap-2">
+                                        <div class="row mt-4">
 
-                                            <a href="{{ route('retailers.index') }}"
-                                                class="btn btn-outline-secondary">
+                                            <div class="col-12 text-end">
 
-                                                Back
+                                                <a href="{{ route('retailers.index') }}"
+                                                    class="btn btn-success">
 
-                                            </a>
+                                                    <i class="bx bx-arrow-back"></i>
+                                                    Back
 
-                                            <button
-                                                type="submit"
-                                                class="btn btn-success">
+                                                </a>
 
-                                                {{ isset($retailer) ? 'Update Retailer' : 'Save Retailer' }}
+                                                <button type="submit"
+                                                    class="btn btn-success">
 
-                                            </button>
+                                                    <i class="bx bx-save"></i>
+                                                    {{ isset($retailer) ? 'Update Retailer' : 'Save Retailer' }}
+
+                                                </button>
+
+                                            </div>
 
                                         </div>
 

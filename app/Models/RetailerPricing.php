@@ -8,6 +8,7 @@ class RetailerPricing extends Model
 {
     protected $fillable = [
         'retailer_id',
+        'warehouse_id',
         'product_id',
         'category_id',
         'base_price',
@@ -24,14 +25,18 @@ class RetailerPricing extends Model
         return $this->belongsTo(Retailer::class);
     }
 
-    public function product()
+    public function warehouse()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Warehouse::class);
     }
 
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
-}
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+}

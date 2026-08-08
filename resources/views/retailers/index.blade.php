@@ -2,187 +2,251 @@
 
 @section('content')
 
-<div class="card">
+<div class="container-fluid px-4 py-4">
 
-    <div class="card-header">
+    <div class="card shadow-sm border-0 rounded-6 mx-4 my-4">
 
-        <div class="row align-items-center">
 
-            <div class="col-md-6">
-                <h4 class="mb-0">
-                    Retailer List
-                </h4>
-            </div>
+        <div class="card-header bg-white">
 
-            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <div class="row align-items-center">
 
-                <a href="{{ route('retailers.create') }}"
-                    class="btn btn-success">
+                <div class="col-lg-6 col-md-6 col-12">
+                    <h4 class="mb-2 mb-md-0">
+                        <i class="bx bx-store"></i>
+                        Retailer List
+                    </h4>
+                </div>
 
-                    <i class="bx bx-plus"></i>
-                    Add Retailer
+                <div class="col-lg-6 col-md-6 col-12 text-md-end">
 
-                </a>
+                    <a href="{{ route('retailers.create') }}"
+                        class="btn btn-success">
+
+                        Add Retailer
+
+                    </a>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+        <div class="card-body">
 
-    <div class="card-body">
+            {{-- SUCCESS --}}
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bx bx-check-circle me-1"></i>
+                    {{ session('success') }}
 
-        <x-datatable-search />
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            @endif
 
-        <div class="table-responsive mt-4">
+            {{-- ERROR --}}
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bx bx-error-circle me-1"></i>
+                    {{ session('error') }}
 
-            <table class="table table-bordered table-hover align-middle">
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            @endif
 
-                <thead class="table-light">
+            <div class="row mb-3">
 
-                    <tr>
+                <div class="col-12">
 
-                        <th width="5%">#</th>
+                    <x-datatable-search />
 
-                        <th>Shop</th>
+                </div>
 
-                        <th>Name</th>
+            </div>
 
-                        <th>Mobile</th>
+            <div class="table-responsive">
 
-                        <th>Email</th>
+                <table class="table table-hover table-bordered align-middle text-nowrap">
 
-                        <th>Status</th>
+                    <thead class="table-light">
 
-                        <th width="220">Action</th>
+                        <tr>
 
-                    </tr>
+                            <th width="60">#</th>
 
-                </thead>
+                            <th>Shop Name</th>
 
-                <tbody>
+                            <th>Retailer Name</th>
 
-                    @forelse($retailers as $retailer)
+                            <th>Mobile</th>
 
-                    <tr>
+                            <th>Email</th>
 
-                        <td>
-                            {{ $loop->iteration }}
-                        </td>
+                            <th>Status</th>
 
-                        <td>
-                            {{ $retailer->shop_name }}
-                        </td>
+                            <th width="220" class="text-center">
+                                Action
+                            </th>
 
-                        <td>
-                            {{ $retailer->name }}
-                        </td>
+                        </tr>
 
-                        <td>
-                            {{ $retailer->mobile }}
-                        </td>
+                    </thead>
 
-                        <td>
-                            {{ $retailer->email ?? '-' }}
-                        </td>
+                    <tbody>
 
-                        <td>
+                        @forelse($retailers as $retailer)
 
-                            @if($retailer->is_active)
+                        <tr>
 
-                            <span class="badge bg-label-success">
-                                Active
-                            </span>
+                            <td>
+                                {{ $retailers->firstItem() + $loop->index }}
+                            </td>
 
-                            @else
+                            <td>
 
-                            <span class="badge bg-label-danger">
-                                Inactive
-                            </span>
+                                <strong>
+                                    {{ $retailer->shop_name }}
+                                </strong>
 
-                            @endif
+                            </td>
 
-                        </td>
+                            <td>
 
-                        <td>
+                                {{ $retailer->name }}
 
-                            <div class="d-flex flex-wrap gap-2">
+                            </td>
 
-                                <a href="{{ route('retailers.edit',$retailer->id) }}"
-                                    class="btn btn-sm btn-warning">
+                            <td>
 
+                                {{ $retailer->mobile }}
+
+                            </td>
+
+                            <td>
+
+                                {{ $retailer->email ?: '-' }}
+
+                            </td>
+
+                            <td>
+
+                                @if($retailer->is_active)
+
+                                <span class="badge bg-success">
+
+                                    Active
+
+                                </span>
+
+                                @else
+
+                                <span class="badge bg-danger">
+
+                                    Inactive
+
+                                </span>
+
+                                @endif
+
+                            </td>
+                          
+                            <td class="text-center" style="white-space: nowrap;">
+
+                                {{-- Edit --}}
+                                <a href="{{ route('retailers.edit', $retailer->id) }}"
+                                class="btn btn-sm btn-primary">
                                     <i class="bx bx-edit"></i>
-
                                 </a>
 
-                                <form action="{{ route('retailers.destroy',$retailer->id) }}"
+                                {{-- Delete --}}
+                                <form action="{{ route('retailers.destroy', $retailer->id) }}"
                                     method="POST"
+                                    class="d-inline"
                                     onsubmit="return confirm('Delete this retailer?')">
 
                                     @csrf
                                     @method('DELETE')
 
-                                    <button
-                                        class="btn btn-sm btn-danger">
-
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger">
                                         <i class="bx bx-trash"></i>
-
                                     </button>
 
                                 </form>
 
-                                <form action="{{ route('retailers.toggle.status',$retailer->id) }}"
-                                    method="POST">
+                                {{-- Status --}}
+                                <form action="{{ route('retailers.toggle.status', $retailer->id) }}"
+                                    method="POST"
+                                    class="d-inline">
 
                                     @csrf
                                     @method('PATCH')
 
-                                    <button
-                                        class="btn btn-sm {{ $retailer->is_active ? 'btn-secondary' : 'btn-success' }}">
+                                    <button type="submit"
+                                            class="btn btn-sm {{ $retailer->is_active ? 'btn-secondary' : 'btn-success' }}"
+                                            title="{{ $retailer->is_active ? 'Deactivate' : 'Activate' }}">
 
                                         @if($retailer->is_active)
-
-                                        <i class="bx bx-block"></i>
-
+                                            <i class="bx bx-block"></i>
                                         @else
-
-                                        <i class="bx bx-check-circle"></i>
-
+                                            <i class="bx bx-check-circle"></i>
                                         @endif
 
                                     </button>
 
                                 </form>
 
-                            </div>
+                            </td>
 
-                        </td>
+                        </tr>
 
-                    </tr>
+                        @empty
 
-                    @empty
+                        <tr>
 
-                    <tr>
+                            <td colspan="7" class="text-center py-5">
 
-                        <td colspan="7" class="text-center">
+                                <img src="{{ asset('admin/assets/img/no-data.svg') }}"
+                                    width="140"
+                                    class="mb-3"
+                                    onerror="this.style.display='none'">
 
-                            No Retailer Found
+                                <br>
 
-                        </td>
+                                <span class="text-muted">
 
-                    </tr>
+                                    No Retailers Found
 
-                    @endforelse
+                                </span>
 
-                </tbody>
+                            </td>
 
-            </table>
+                        </tr>
 
-        </div>
+                        @endforelse
 
-        <div class="mt-4">
+                    </tbody>
 
-            {{ $retailers->links() }}
+                </table>
+
+            </div>
+
+            @if($retailers->hasPages())
+
+            <div class="d-flex justify-content-end mt-4">
+
+                {{ $retailers->links() }}
+
+            </div>
+
+            @endif
 
         </div>
 
@@ -192,14 +256,51 @@
 
 @endsection
 
+@push('styles')
+
+<style>
+.table td,
+.table th{
+    vertical-align: middle;
+}
+
+.card{
+    border-radius:12px;
+}
+
+.btn-sm{
+    min-width:38px;
+}
+
+.badge{
+    font-size:13px;
+    padding:7px 12px;
+}
+
+@media(max-width:768px){
+
+    .card-header .btn{
+        width:100%;
+        margin-top:10px;
+    }
+
+    .table{
+        font-size:13px;
+    }
+
+    .btn-sm{
+        min-width:35px;
+        padding:5px 8px;
+    }
+
+    .pagination{
+        justify-content:center;
+    }
+}
+</style>
+
+@endpush
+
 @push('scripts')
-
-<script>
-
-document.addEventListener('DOMContentLoaded', function(){
-
-});
-
-</script>
 
 @endpush

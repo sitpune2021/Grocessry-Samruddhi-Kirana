@@ -401,27 +401,73 @@ Route::middleware(['auth:admin'])->group(function () {
     });
 
 
+    // =========================================================
     // RETAILER PRICING
-    Route::prefix('retailer-pricing')->name('retailer-pricing.')->group(function () {
+    // =========================================================
+    Route::prefix('retailer-pricing')
+        ->name('retailer-pricing.')
+        ->group(function () {
 
-        Route::get('/', [RetailerPricingController::class, 'index'])->name('index');
+            // Pricing List
+            Route::get('/', [
+                RetailerPricingController::class,
+                'index'
+            ])->name('index');
 
-        Route::get('/create', [RetailerPricingController::class, 'create'])->name('create');
-        Route::post('/store', [RetailerPricingController::class, 'store'])->name('store');
 
-        Route::get('/{pricing}/edit', [RetailerPricingController::class, 'edit'])->name('edit');
-        Route::put('/{pricing}', [RetailerPricingController::class, 'update'])->name('update');
+            // Create Pricing Form
+            Route::get('/create', [
+                RetailerPricingController::class,
+                'create'
+            ])->name('create');
 
-        Route::delete('/{pricing}', [RetailerPricingController::class, 'destroy'])->name('delete');
 
-        Route::post('/bulk-upload', [RetailerPricingController::class, 'bulkUpload'])
-            ->name('bulk.upload');
+            // Store Pricing
+            Route::post('/store', [
+                RetailerPricingController::class,
+                'store'
+            ])->name('store');
 
-        Route::get(
-            '/get-products-by-category/{category}',
-            [RetailerPricingController::class, 'getProductsByCategory']
-        );
-    });
+
+            // Products by DC + Category
+            Route::get(
+                '/get-products-by-warehouse-category/{warehouseId}/{categoryId}',
+                [
+                    RetailerPricingController::class,
+                    'getProductsByCategoryAndWarehouse'
+                ]
+            )->name('products.by.warehouse.category');
+
+
+            // Edit
+            Route::get('/{pricing}/edit', [
+                RetailerPricingController::class,
+                'edit'
+            ])->name('edit');
+
+
+            // Update
+            Route::put('/{pricing}', [
+                RetailerPricingController::class,
+                'update'
+            ])->name('update');
+
+
+            // Delete
+            Route::delete('/{pricing}', [
+                RetailerPricingController::class,
+                'destroy'
+            ])->name('delete');
+
+
+            // Bulk Upload
+            Route::post('/bulk-upload', [
+                RetailerPricingController::class,
+                'bulkUpload'
+            ])->name('bulk.upload');
+
+        });
+
 
     Route::middleware('auth')->group(function () {
 

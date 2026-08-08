@@ -61,15 +61,6 @@ return [
         ],
 
         /* ================= Warehouse Management ================= */
-        // [
-        //     'type'  => 'dropdown',
-        //     'key'   => 'warehouseMenu',
-        //     'title' => 'Warehouse / Distribution Center',
-        //     'icon'  => 'bx bx-store',
-        //     'children' => [
-        //         ['title' => 'Warehouse', 'route' => 'warehouse.index'],
-        //     ],
-        // ],
         [
             'type'  => 'single',
             'title' => 'Warehouse / Distribution',
@@ -95,8 +86,6 @@ return [
                 ['title' => 'Stock Management', 'route' => 'index.addStock.warehouse'],
                 ['title' => 'Batch Management', 'route' => 'batches.index'],
                 ['title' => 'Expiry Alerts', 'route' => 'batches.expiry'],
-                //['title' => 'Near Expiry Sell', 'route' => 'sale.create'],
-                //['title' => 'Sale Product', 'route' => 'sale.create'],
             ],
         ],
 
@@ -113,10 +102,6 @@ return [
                     'title' => 'Warehouse Stock Return',
                     'route' => 'stock-returns.index',
                 ],
-                // ['title' => 'District To District Warehouse Transfers', 'route' => 'district-district.index'],
-                // ['title' => 'District To Taluka Warehouse Transfers', 'route' => 'district-taluka-transfer.index'],
-                // ['title' => 'Taluka to Taluka Warehouse Transfers', 'route' => 'taluka.transfer.index'],
-                // ['title' => 'Taluka to Distribution Center Warehouse Transfers', 'route' => 'taluka-shop.index'],
             ],
         ],
 
@@ -131,24 +116,6 @@ return [
                     'title' => 'Warehouse Stock Approve',
                     'route' => 'warehouse.transfer.index',
                 ],
-                // [
-                //     'title' => 'District → District Transfer Approval',
-                //     'route' => 'district.transfer.index',
-                // ],
-                // [
-                //     'title' => 'District → Taluka Transfer Approval',
-                //     'route' => 'district-taluka.transfer.index',
-                // ],
-                // [
-                //     'title' => 'Taluka → Taluka Transfer Approval',
-                //     'route' => 'taluka-taluka.transfer.index',
-                // ],
-                // [
-                //     'title' => 'Taluka → Distribution Transfer Approval',
-                //     'route' => 'taluka-distribution.transfer.index',
-                // ],
-                
-
             ],
         ],
 
@@ -167,20 +134,29 @@ return [
             ],
         ],
 
-        /* ================= POS System ================= */
+        /* ================= Retailer Register ================= */
         // [
-        //     'type'  => 'dropdown',
-        //     'key'   => 'PosMenu',
-        //     'title' => 'POS System',
-        //     'icon'  => 'bx bx-package',
-        //     'children' => [
-        //         ['title' => 'Add Purches List', 'route' => 'purchase.orders.create'],
-        //         ['title' => 'Purches History', 'route' => 'purchase.orders.index'],
-        //         ['title' => 'Stock Request', 'route' => 'warehouse_transfer.create'],
-        //         ['title' => 'Incoming Request', 'route' => 'warehouse-transfer-request.incoming'],
-        //     ],
+        //     'type'       => 'single',
+        //     'title'      => 'Retailer Management',
+        //     'icon'       => 'bx bx-store',
+        //     'route'      => 'retailers.index',
+        //     'roles' => [5],
+        //     //'permission' => 'retailer.view',
         // ],
 
+        [
+            'type'  => 'dropdown',
+            'key'   => 'retailerMenu',
+            'title' => 'Retailer Management',
+            'icon'  => 'bx bx-store',
+            'exclude_roles' => [7],
+            'children' => [
+                ['title' => 'Retailer Register', 'route' => 'retailers.index'],
+                ['title' => 'Retailer Pricing', 'route' => 'retailer-pricing.index'],
+            ],
+        ],
+
+        /* ================= POS System ================= */
         [
             'type'  => 'single',
             'title' => 'POS System',
@@ -197,19 +173,6 @@ return [
             'roles' => [1, 2, 5],
             'route'   => 'coupons.index',
         ],
-       
-        // [
-        //     'type'  => 'dropdown',
-        //     'key'   => 'OfferMenu',
-        //     'title' => 'Offer / Scheme Management',
-        //     'icon'  => 'bx bx-package',
-        //     'exclude_roles' => [3, 4],
-        //     'children' => [
-        //         ['title' => 'Offer Management', 'route' => 'offers.index'],
-        //         //['title' => 'Retailer Offer Management', 'route' => 'retailer-offers.index'],
-        //         ['title' => 'Coupon Management', 'route' => 'coupons.index'],
-        //     ],
-        // ],
 
         /* ================= Customer Management ================= */
         [
@@ -239,39 +202,6 @@ return [
                 ['title' => 'Web-Site Order', 'route' => 'userorder', 'exclude_roles' => [3, 4],],
             ],
         ],
-
-        /* ================= Setting ================= */
-        // [
-        //     'type'  => 'dropdown',
-        //     'key'   => 'SettingMenu',
-        //     'title' => 'Setting',
-        //     'icon'  => 'bx bx-cog',
-        //     'children' => [
-        //         ['title' => 'Tax Management', 'route' => 'taxes.index'],
-        //     ],
-        // ],
-
-        /* ================= Website ================= */
-        // [
-        //     'type'  => 'single',
-        //     'title' => 'Banner Management',
-        //     'icon'  => 'bx bx-package',
-        //     'route' => 'banners.index',
-        // ],
-
-        // [
-        //     'type'  => 'single',
-        //     'title' => 'User Contact Details',
-        //     'icon'  => 'bx bx-package',
-        //     'route' => 'admin.contacts',
-        // ],
-
-        // [
-        //     'type'  => 'single',
-        //     'title' => 'About us',
-        //     'icon'  => 'bx bx-info-circle',
-        //     'route' => 'admin.aboutus',
-        // ],
 
         [
             'type'  => 'dropdown',

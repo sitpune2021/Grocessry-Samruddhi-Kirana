@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Validation\Rule;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
 
 class RoleController extends Controller
 {
@@ -20,27 +20,11 @@ class RoleController extends Controller
         return view('roles.index', compact('roles', 'users'));
     }
 
-
     public function create()
     {
         $mode = 'add';
         return view('roles.add-roles', compact('mode'));
     }
-
-    // public function store(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'name' => 'required|string|unique:roles,name',
-    //         'description' => 'nullable|string',
-    //     ]);
-
-    //     Role::create($validated);
-
-    //     return redirect()
-    //         ->route('roles.index')
-    //         ->with('success', 'Role created successfully.');
-    // }
-
 
     public function store(Request $request)
     {
@@ -82,6 +66,29 @@ class RoleController extends Controller
                     ->withInput()
                     ->with('error', 'Please add Taluka admin role next.');
             }
+        }elseif (!in_array('shop admin', $existingRoles)) {
+            // District exists, Taluka must come next
+            if ($roleName !== 'shop admin') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add shop admin role next.');
+            }
+        }
+        elseif (!in_array('delivery agent', $existingRoles)) {
+            // District exists, Taluka must come next
+            if ($roleName !== 'delivery agent') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add delivery agent role next.');
+            }
+        }
+        elseif (!in_array('retailer', $existingRoles)) {
+            // District exists, Taluka must come next
+            if ($roleName !== 'retailer') {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Please add retailer role next.');
+            }
         }
         // 🔹 After Master → District → Taluka, any other role is allowed freely
 
@@ -116,7 +123,7 @@ class RoleController extends Controller
     }
 
     public function destroy(string $id)
-{
+    {
     Log::info('Role Delete Request Received', ['role_id' => $id]);
 
     $user = auth()->user();
@@ -168,5 +175,7 @@ class RoleController extends Controller
         return redirect()->route('roles.index')
             ->with('error', 'Something went wrong: ' . $e->getMessage());
     }
-}
+    }
+
+
 }
