@@ -17,11 +17,41 @@
                         Add Retailer Price
                     </a>
                 </div>
-            </div><br><br>
+            </div><br>
+
+            {{-- SUCCESS --}}
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bx bx-check-circle me-1"></i>
+                    {{ session('success') }}
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            @endif
+
+            {{-- ERROR --}}
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bx bx-error-circle me-1"></i>
+                    {{ session('error') }}
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            @endif
+
             <!-- Search -->
             <x-datatable-search />
+
             <div class="table-responsive mt-5 p-3">
+
                 <table id="transfersTable" class="table table-bordered table-striped mt-4 mb-5">
+                    
                     <thead class="table-light">
                         <tr>
                             <th>#</th>
@@ -58,19 +88,27 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('retailer-pricing.edit', $p->id) }}">Edit</a>
-
+                               <a href="{{ route('retailer-pricing.edit', $p->id) }}" class="btn btn-sm btn-primary" title="Edit"> 
+                                    <i class="bx bx-edit"></i> 
+                                </a>
+                                
                                 <form action="{{ route('retailer-pricing.delete', $p->id) }}"
                                     method="POST"
-                                    style="display:inline">
+                                    class="d-inline"
+                                    onsubmit="return confirm('Delete pricing?')">
+
                                     @csrf
                                     @method('DELETE')
+
                                     <button type="submit"
-                                        onclick="return confirm('Delete pricing?')">
-                                        Delete
+                                            class="btn btn-sm btn-danger"
+                                            title="Delete">
+                                        <i class="bx bx-trash"></i>
                                     </button>
+
                                 </form>
                             </td>
+                            
                         </tr>
                         @empty
                         <tr>
@@ -78,13 +116,16 @@
                         </tr>
                         @endforelse
                     </tbody>
+
                 </table>
+
             </div>
+
             {{ $pricings->links() }}
 
-
-        </div>
+        </div>   
     </div>
+
 </div>
 
 <script>
@@ -104,8 +145,6 @@
 </script>
 
 <!-- table search box script -->
-
-
 <script src="{{ asset('admin/assets/js/datatable-search.js') }}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {

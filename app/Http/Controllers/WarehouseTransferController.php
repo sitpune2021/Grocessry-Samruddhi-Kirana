@@ -319,14 +319,6 @@ class WarehouseTransferController extends Controller
             ->with('success', 'Transfer updated successfully');
     }
 
-    // public function destroy($id)
-    // {
-    //     $batch = ProductBatch::findOrFail($id);
-    //     $batch->delete(); // soft delete
-    //     return redirect()->route('warehouse.index')->with('success', 'Batch deleted successfully');
-    // }
-
-
     public function destroy($id)
     {
         $transfer = WarehouseTransfer::find($id);
@@ -476,4 +468,6 @@ class WarehouseTransferController extends Controller
             'quantity' => $batch->quantity ?? 0
         ]);
     }
+
+
 }
