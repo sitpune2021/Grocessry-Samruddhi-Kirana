@@ -18,6 +18,7 @@ class RetailerOrderItem extends Model
         'quantity',
         'price',         // locked retailer price (effective_price)
         'total',         // price * quantity
+        'discount_amount',
     ];
 
     /* ================= RELATIONSHIPS ================= */
