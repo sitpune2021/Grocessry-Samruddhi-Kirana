@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RetailerAuthController;
 use App\Http\Controllers\Api\RetailerProductController;
 use App\Http\Controllers\Api\RetailerCartController;
+use App\Http\Controllers\Api\RetailerOrderController;
 
 
 Route::post('/register', [LoginController::class, 'register']);
@@ -352,4 +353,20 @@ Route::middleware('auth:sanctum')->group(function () {
             ])->name('retailer.cart.clear');
 
         });
+
+    // place order
+    Route::middleware('auth:sanctum')->prefix('retailer')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Place Order
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post('/orders/place', [
+            RetailerOrderController::class,
+            'placeOrder'
+        ])->name('retailer.orders.place');
+
+    });
 
