@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\PaymentController;
 
 use App\Http\Controllers\Api\RetailerAuthController;
 use App\Http\Controllers\Api\RetailerProductController;
+use App\Http\Controllers\Api\RetailerCartController;
 
 
 Route::post('/register', [LoginController::class, 'register']);
@@ -280,7 +281,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     });
 
-
     // RETAILER PRODUCTS
     Route::middleware('auth:sanctum')
         ->prefix('retailer')
@@ -305,3 +305,51 @@ Route::middleware('auth:sanctum')->group(function () {
             )->name('retailer.categories.index');
 
         });
+
+    // Bulk Add To Cart    
+    Route::middleware('auth:sanctum')->prefix('retailer')->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bulk Add To Cart
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/cart/bulk-add',
+            [RetailerCartController::class, 'bulkAddToCart']
+        )->name('retailer.cart.bulk-add');
+
+    });
+
+    // Retailer Cart
+    Route::middleware('auth:sanctum')
+        ->prefix('retailer')
+        ->group(function () {
+
+            // Get Cart
+            Route::get('/cart', [
+                RetailerCartController::class,
+                'index'
+            ])->name('retailer.cart.index');
+
+            // Update Cart Item
+            Route::put('/cart/items/{cartItem}', [
+                RetailerCartController::class,
+                'updateItem'
+            ])->name('retailer.cart.items.update');
+
+            // Remove Cart Item
+            Route::delete('/cart/items/{cartItem}', [
+                RetailerCartController::class,
+                'removeItem'
+            ])->name('retailer.cart.items.remove');
+
+            // Clear Complete Cart
+            Route::delete('/cart/clear', [
+                RetailerCartController::class,
+                'clearCart'
+            ])->name('retailer.cart.clear');
+
+        });
+
