@@ -668,7 +668,6 @@ Route::middleware(['auth:admin'])->group(function () {
         [ApprovalController::class, 'bulkReceive']
     )->name('warehouse.transfer.receive.bulk');
 
-
     Route::post(
         '/warehouse-transfer/dispatch/{transfer}',
         [ApprovalController::class, 'singleDispatch']
@@ -688,6 +687,29 @@ Route::middleware(['auth:admin'])->group(function () {
         '/transfer-challan/dispatch',
         [ApprovalController::class, 'dispatchChallan']
     )->name('warehouse.transfer.dispatch.bulk');
+
+
+    // Retailer Order Approval
+    Route::get(
+        '/retailer-order/approval',
+        [ApprovalController::class, 'retailerindex']
+    )->name('retailer.order.retailerindex');
+
+    Route::post(
+        '/retailer-orders/{order}/approve',
+        [ApprovalController::class, 'approveRetailerOrder']
+    )->name('retailer.order.approve');
+
+    Route::post(
+        '/retailer-orders/{order}/reject',
+        [ApprovalController::class, 'rejectRetailerOrder']
+    )->name('retailer.order.reject');
+
+    // Retailer Order Dispatch
+    Route::post(
+        '/retailer-orders/{order}/dispatch',
+        [ApprovalController::class, 'dispatchRetailerOrder']
+    )->name('retailer.order.dispatch');
 
 
     // LOW STOCK ALERTS

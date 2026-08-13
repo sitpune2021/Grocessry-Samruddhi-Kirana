@@ -153,6 +153,7 @@ return [
             'children' => [
                 ['title' => 'Retailer Register', 'route' => 'retailers.index'],
                 ['title' => 'Retailer Pricing', 'route' => 'retailer-pricing.index'],
+                ['title' => 'Retailer Order', 'route' => 'retailer.order.retailerindex'],
             ],
         ],
 

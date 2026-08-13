@@ -354,19 +354,43 @@ Route::middleware('auth:sanctum')->group(function () {
 
         });
 
-    // place order
+    // Place Order  
     Route::middleware('auth:sanctum')->prefix('retailer')->group(function () {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Place Order
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Place Order
+    |--------------------------------------------------------------------------
+    */
 
-        Route::post('/orders/place', [
-            RetailerOrderController::class,
-            'placeOrder'
-        ])->name('retailer.orders.place');
+    Route::post('/orders/place', [
+        RetailerOrderController::class,
+        'placeOrder'
+    ])->name('retailer.orders.place');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | My Orders
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/orders', [
+        RetailerOrderController::class,
+        'myOrders'
+    ])->name('retailer.orders.list');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Receive Order
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/orders/{order}/receive', [
+        RetailerOrderController::class,
+        'receiveOrder'
+    ])->name('retailer.orders.receive');
 
     });
 
