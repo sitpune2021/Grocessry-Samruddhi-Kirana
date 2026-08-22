@@ -13,10 +13,47 @@ use Illuminate\Support\Facades\Http;
 
 class CategoryController extends Controller
 {
+    // public function index()
+    // {
+    //     $categories = Category::orderBy('id', 'desc')->paginate(20);
+    //     return view('menus.category.index', compact('categories'));
+    // }
+
     public function index()
     {
-        $categories = Category::orderBy('id', 'desc')->paginate(20);
-        return view('menus.category.index', compact('categories'));
+    $categories = Category::orderBy('id', 'desc')
+        ->paginate(20);
+
+    $categories->getCollection()->transform(function ($category) {
+
+        $category->category_image_url = null;
+
+        if (!empty($category->category_images)) {
+
+            $image = $category->category_images[0] ?? null;
+
+            if ($image) {
+
+                $path = storage_path(
+                    'app/public/categories/' . $image
+                );
+
+                if (file_exists($path)) {
+                    $category->category_image_url = route(
+                        'category.image',
+                        ['filename' => $image]
+                    );
+                }
+            }
+        }
+
+        return $category;
+    });
+
+    return view(
+        'menus.category.index',
+        compact('categories')
+    );
     }
 
     public function create()
