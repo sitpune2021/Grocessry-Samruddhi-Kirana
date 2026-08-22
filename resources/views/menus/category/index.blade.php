@@ -77,22 +77,23 @@
                             <td class="text-center fw-semibold">
                                 {{ $categories->firstItem() + $index }}
                             </td>
-                            {{-- Product Image --}}
+                           {{-- Category Image --}}
                             <td>
-                                @if (!empty($category->category_images))
-                                @php
-                                $images = $category->category_images; // Already array
-                                $image = $images[0] ?? null;
-                                @endphp
+                                @if ($category->category_image_url)
 
-                                @if ($image)
-                                <img src="{{ asset('storage/categories/' . $image) }}" alt="category Image"
-                                    width="60" height="60" class="rounded border">
+                                    <img
+                                        src="{{ $category->category_image_url }}"
+                                        alt="{{ $category->name }}"
+                                        width="60"
+                                        height="60"
+                                        class="rounded border"
+                                        style="object-fit: cover;"
+                                    >
+
                                 @else
-                                <span class="text-muted">No Image</span>
-                                @endif
-                                @else
-                                <span class="text-muted">No Image</span>
+
+                                    <span class="text-muted">No Image</span>
+
                                 @endif
                             </td>
                             <td>
