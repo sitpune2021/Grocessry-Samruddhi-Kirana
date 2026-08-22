@@ -340,8 +340,13 @@ class RetailerProductController extends Controller
                         'stock' =>
                             $product?->stock,
 
-                        'product_images' =>
-                            $product?->product_images,
+                        'product_images' => collect($product?->product_images ?? [])
+                        ->map(function ($image) {
+                            return asset('storage/products/' . $image);
+                        })
+                        ->values()
+                        ->toArray(),
+
 
                         /*
                         |--------------------------------------------------------------------------
@@ -753,7 +758,13 @@ class RetailerProductController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                'product_images' => $product->product_images,
+                //'product_images' => $product->product_images,
+                'product_images' => collect($product?->product_images ?? [])
+                ->map(function ($image) {
+                    return asset('storage/products/' . $image);
+                })
+                ->values()
+                ->toArray(),
             ];
 
 
@@ -990,7 +1001,8 @@ class RetailerProductController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                ->with('category:id,name')
+                ->with('category:id,name,category_images')
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -1068,16 +1080,37 @@ class RetailerProductController extends Controller
 
                 ],
 
+                // 'categories' =>
+                //     $categories->map(function ($category) {
+
+                //         return [
+
+                //             'id' =>
+                //                 $category->id,
+
+                //             'name' =>
+                //                 $category->name,
+
+                //         ];
+
+                //     })->values(),
+
                 'categories' =>
                     $categories->map(function ($category) {
 
                         return [
 
-                            'id' =>
-                                $category->id,
+                            'id' => $category->id,
 
-                            'name' =>
-                                $category->name,
+                            'name' => $category->name,
+
+                            'category_images' => collect(
+                                $category->category_images ?? []
+                            )->map(function ($image) {
+
+                                return asset('storage/categories/' . $image);
+
+                            })->values()->toArray(),
 
                         ];
 

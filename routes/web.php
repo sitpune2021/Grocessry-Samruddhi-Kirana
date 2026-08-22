@@ -62,6 +62,25 @@ use App\Http\Controllers\TalukaToDistributionApprovalController;
 use App\Http\Controllers\TalukaToTalukaApprovalController;
 use App\Models\Order;
 
+
+// start this code use for category image
+    use Illuminate\Support\Facades\Storage;
+    Route::get('/category-image/{filename}', function ($filename) {
+
+        $path = 'categories/' . $filename;
+
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        return response()->file(
+            Storage::disk('public')->path($path)
+        );
+
+    })->where('filename', '.*')->name('category.image');
+// end this code use for category image
+
+
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 
