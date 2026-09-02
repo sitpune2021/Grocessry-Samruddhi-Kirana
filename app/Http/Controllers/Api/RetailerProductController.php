@@ -244,15 +244,31 @@ class RetailerProductController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            if (!empty($categoryId)) {
+            // if (!empty($categoryId)) {
 
-                $query->where(
-                    'category_id',
-                    $categoryId
-                );
+            //     $query->where(
+            //         'category_id',
+            //         $categoryId
+            //     );
 
+            // }
+
+            /*
+                |--------------------------------------------------------------------------
+                | 10. Category Filter
+                |--------------------------------------------------------------------------
+                |
+                | category_id = all / null / empty => show all categories
+                | specific category_id => filter by that category
+                |
+            */
+
+            if (
+                !empty($categoryId) &&
+                strtolower((string) $categoryId) !== 'all'
+            ) {
+                $query->where('category_id', $categoryId);
             }
-
 
             /*
             |--------------------------------------------------------------------------
