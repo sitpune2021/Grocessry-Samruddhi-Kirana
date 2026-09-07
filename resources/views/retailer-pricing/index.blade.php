@@ -13,9 +13,11 @@
                     <h5 class="card-title">Retailer pricing</h5>
                 </div>
                 <div class="col-md-auto ms-auto mt-5">
+                    @if(hasPermission('retailer_pricing.create'))
                     <a href="{{ route('retailer-pricing.create') }}" class="btn btn-primary">
                         Add Retailer Price
                     </a>
+                    @endif
                 </div>
             </div><br>
 
@@ -87,11 +89,13 @@
                                 </span>
                             </td>
 
+                            @if(hasPermission('retailer_pricing.edit'))
                             <td>
                                <a href="{{ route('retailer-pricing.edit', $p->id) }}" class="btn btn-sm btn-primary" title="Edit"> 
                                     <i class="bx bx-edit"></i> 
                                 </a>
-                                
+                            @endif 
+                            @if(hasPermission('retailer_pricing.delete'))   
                                 <form action="{{ route('retailer-pricing.delete', $p->id) }}"
                                     method="POST"
                                     class="d-inline"
@@ -108,6 +112,7 @@
 
                                 </form>
                             </td>
+                            @endif
                             
                         </tr>
                         @empty
