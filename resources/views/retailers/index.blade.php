@@ -11,21 +11,30 @@
 
             <div class="row align-items-center">
 
+                @php
+                    $canView = hasPermission('retailer.view');
+                    $canCreate = hasPermission('retailer.create');
+                    $canEdit = hasPermission('retailer.edit');
+                    $canDelete = hasPermission('retailer.delete');
+                @endphp
+
+
                 <div class="col-lg-6 col-md-6 col-12">
+                    
                     <h4 class="mb-2 mb-md-0">
                         <i class="bx bx-store"></i>
                         Retailer List
                     </h4>
+                   
                 </div>
 
                 <div class="col-lg-6 col-md-6 col-12 text-md-end">
 
-                    <a href="{{ route('retailers.create') }}"
-                        class="btn btn-success">
-
-                        Add Retailer
-
-                    </a>
+                    @if(hasPermission('retailer.create'))
+                        <a href="{{ route('retailers.create') }}" class="btn btn-success">
+                            Add Retailer
+                        </a>
+                    @endif
 
                 </div>
 
@@ -90,11 +99,17 @@
                             <th>Email</th>
 
                             <th>Status</th>
-
+    
+                            @if(hasPermission('retailer.view'))
+                            @if(hasPermission('retailer.edit'))
+                            @if(hasPermission('retailer.delete'))
                             <th width="220" class="text-center">
                                 Action
                             </th>
-
+                            @endif
+                            @endif
+                            @endif
+                           
                         </tr>
 
                     </thead>
@@ -156,15 +171,20 @@
                                 @endif
 
                             </td>
-                          
+                                                     
+                            @if(hasPermission('retailer.view'))
+                            @if(hasPermission('retailer.edit'))
+                            @if(hasPermission('retailer.delete'))
                             <td class="text-center" style="white-space: nowrap;">
-
-                                {{-- Edit --}}
-                                <a href="{{ route('retailers.edit', $retailer->id) }}"
-                                class="btn btn-sm btn-primary">
-                                    <i class="bx bx-edit"></i>
-                                </a>
-
+                                @if(hasPermission('retailer.edit'))
+                                    {{-- Edit --}}
+                                    <a href="{{ route('retailers.edit', $retailer->id) }}"
+                                    class="btn btn-sm btn-primary">
+                                        <i class="bx bx-edit"></i>
+                                    </a>
+                                @endif
+                                
+                                @if(hasPermission('retailer.delete'))
                                 {{-- Delete --}}
                                 <form action="{{ route('retailers.destroy', $retailer->id) }}"
                                     method="POST"
@@ -180,6 +200,7 @@
                                     </button>
 
                                 </form>
+                                @endif
 
                                 {{-- Status --}}
                                 <form action="{{ route('retailers.toggle.status', $retailer->id) }}"
@@ -204,7 +225,10 @@
                                 </form>
 
                             </td>
-
+                            @endif
+                            @endif
+                            @endif
+                            
                         </tr>
 
                         @empty
