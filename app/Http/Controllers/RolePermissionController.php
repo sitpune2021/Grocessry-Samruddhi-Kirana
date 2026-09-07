@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class RolePermissionController extends Controller
 {
 
+
     public function RolePermission()
     {
         Log::info('RolePermission page opened', [
@@ -108,7 +109,6 @@ class RolePermissionController extends Controller
         return redirect()->back()->with('success', 'Permissions saved successfully!');
     }
 
-
     public function getRolePermissions($role_id)
     {
         Log::info('Fetching permissions for role', [
@@ -141,4 +141,6 @@ class RolePermissionController extends Controller
             'permissions' => []
         ]);
     }
+
+
 }

@@ -149,7 +149,7 @@ return [
             'key'   => 'retailerMenu',
             'title' => 'Retailer Management',
             'icon'  => 'bx bx-store',
-            'roles' => [5],
+            'roles' => [5, 1],
             'children' => [
                 ['title' => 'Retailer Register', 'route' => 'retailers.index'],
                 ['title' => 'Retailer Pricing', 'route' => 'retailer-pricing.index'],
