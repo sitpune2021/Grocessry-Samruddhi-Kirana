@@ -474,394 +474,93 @@
 
 <body>
 
-    <div class="grocery-bg-animation" aria-hidden="true">
-
-    <div class="grocery-glow glow-one"></div>
-    <div class="grocery-glow glow-two"></div>
-    <div class="grocery-glow glow-three"></div>
-
-    <div class="grocery-particle particle-1">🥬</div>
-    <div class="grocery-particle particle-2">🍎</div>
-    <div class="grocery-particle particle-3">🥕</div>
-    <div class="grocery-particle particle-4">🥦</div>
-    <div class="grocery-particle particle-5">🍅</div>
-    <div class="grocery-particle particle-6">🍊</div>
-
-    <div class="grocery-ring ring-one"></div>
-    <div class="grocery-ring ring-two"></div>
-
+    <div class="floating-leaves" aria-hidden="true">
+        <span>🌿</span>
+        <span>🍃</span>
+        <span>🌿</span>
+        <span>🍃</span>
     </div>
 
-
-<!-- Layout wrapper -->
-<div class="layout-wrapper layout-content-navbar">
-
 <style>
-    /* =========================================================
-   PREMIUM GROCERY BACKGROUND
-========================================================= */
-
-body {
-    position: relative;
-
-    background:
-        linear-gradient(
-            135deg,
-            #f8fcf9 0%,
-            #ffffff 45%,
-            #f4faf7 100%
-        );
+    .floating-leaves {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
 }
 
+.floating-leaves span {
+    position: absolute;
+    font-size: 24px;
+    opacity: .12;
+    animation: leafFloat 12s linear infinite;
+}
 
-/* =========================================================
-   BACKGROUND CONTAINER
-========================================================= */
+.floating-leaves span:nth-child(1) {
+    left: 8%;
+    animation-delay: 0s;
+}
 
-.grocery-bg-animation {
-    position: fixed;
+.floating-leaves span:nth-child(2) {
+    left: 35%;
+    animation-delay: -4s;
+}
 
-    inset: 0;
+.floating-leaves span:nth-child(3) {
+    left: 65%;
+    animation-delay: -8s;
+}
 
-    z-index: 0;
+.floating-leaves span:nth-child(4) {
+    left: 90%;
+    animation-delay: -2s;
+}
 
+@keyframes leafFloat {
+    0% {
+        transform: translateY(110vh) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(50vh) translateX(40px) rotate(180deg);
+    }
+
+    100% {
+        transform: translateY(-10vh) translateX(-30px) rotate(360deg);
+    }
+}
+.stat-card {
     overflow: hidden;
+}
+
+.stat-card::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -120%;
+
+    width: 70%;
+    height: 100%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.45),
+        transparent
+    );
+
+    transform: skewX(-20deg);
+
+    transition: left .8s ease;
 
     pointer-events: none;
 }
 
-
-/* =========================================================
-   GLOWING BLOBS
-========================================================= */
-
-.grocery-glow {
-    position: absolute;
-
-    border-radius: 50%;
-
-    filter: blur(70px);
-
-    opacity: 0.25;
-
-    animation:
-        glowMove 12s ease-in-out infinite alternate;
-}
-
-
-/* Green */
-
-.glow-one {
-    width: 380px;
-    height: 380px;
-
-    top: -180px;
-    left: 15%;
-
-    background: rgba(25, 135, 84, 0.16);
-
-    animation-delay: 0s;
-}
-
-
-/* Yellow */
-
-.glow-two {
-    width: 300px;
-    height: 300px;
-
-    right: -100px;
-    top: 35%;
-
-    background: rgba(255, 193, 7, 0.13);
-
-    animation-delay: -4s;
-}
-
-
-/* Light green */
-
-.glow-three {
-    width: 420px;
-    height: 420px;
-
-    bottom: -250px;
-    left: 25%;
-
-    background: rgba(32, 201, 151, 0.12);
-
-    animation-delay: -7s;
-}
-
-
-@keyframes glowMove {
-
-    0% {
-        transform:
-            translate3d(0, 0, 0)
-            scale(1);
-    }
-
-    50% {
-        transform:
-            translate3d(60px, -40px, 0)
-            scale(1.12);
-    }
-
-    100% {
-        transform:
-            translate3d(-40px, 50px, 0)
-            scale(0.95);
-    }
-}
-
-
-/* =========================================================
-   GROCERY PARTICLES
-========================================================= */
-
-.grocery-particle {
-    position: absolute;
-
-    width: 46px;
-    height: 46px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, 0.60);
-
-    border: 1px solid rgba(25, 135, 84, 0.08);
-
-    box-shadow:
-        0 10px 30px rgba(25, 135, 84, 0.08);
-
-    backdrop-filter: blur(6px);
-
-    font-size: 22px;
-
-    opacity: 0.38;
-
-    animation:
-        groceryDrift 9s ease-in-out infinite;
-}
-
-
-/* Positions */
-
-.particle-1 {
-    top: 18%;
-    left: 12%;
-    animation-delay: 0s;
-}
-
-.particle-2 {
-    top: 28%;
-    right: 14%;
-    animation-delay: -2s;
-}
-
-.particle-3 {
-    top: 58%;
-    left: 6%;
-    animation-delay: -4s;
-}
-
-.particle-4 {
-    top: 72%;
-    right: 10%;
-    animation-delay: -1s;
-}
-
-.particle-5 {
-    top: 84%;
-    left: 42%;
-    animation-delay: -5s;
-}
-
-.particle-6 {
-    top: 12%;
-    right: 38%;
-    animation-delay: -3s;
-}
-
-
-@keyframes groceryDrift {
-
-    0% {
-        transform:
-            translate3d(0, 0, 0)
-            rotate(0deg);
-
-        opacity: 0.22;
-    }
-
-    25% {
-        transform:
-            translate3d(18px, -20px, 0)
-            rotate(8deg);
-
-        opacity: 0.40;
-    }
-
-    50% {
-        transform:
-            translate3d(-5px, -38px, 0)
-            rotate(-6deg);
-
-        opacity: 0.30;
-    }
-
-    75% {
-        transform:
-            translate3d(-20px, -15px, 0)
-            rotate(5deg);
-
-        opacity: 0.42;
-    }
-
-    100% {
-        transform:
-            translate3d(0, 0, 0)
-            rotate(0deg);
-
-        opacity: 0.22;
-    }
-}
-
-
-/* =========================================================
-   ANIMATED RINGS
-========================================================= */
-
-.grocery-ring {
-    position: absolute;
-
-    border-radius: 50%;
-
-    border: 1px solid rgba(25, 135, 84, 0.08);
-
-    animation:
-        ringPulse 8s ease-in-out infinite;
-}
-
-
-.ring-one {
-    width: 260px;
-    height: 260px;
-
-    top: 20%;
-    right: -120px;
-}
-
-
-.ring-two {
-    width: 340px;
-    height: 340px;
-
-    bottom: -170px;
-    left: -140px;
-
-    animation-delay: -3s;
-}
-
-
-@keyframes ringPulse {
-
-    0% {
-        transform: scale(0.85);
-
-        opacity: 0.15;
-    }
-
-    50% {
-        transform: scale(1.08);
-
-        opacity: 0.35;
-    }
-
-    100% {
-        transform: scale(0.85);
-
-        opacity: 0.15;
-    }
-}
-
-
-/* =========================================================
-   KEEP DASHBOARD ABOVE ANIMATION
-========================================================= */
-
-.layout-wrapper,
-.layout-container,
-.layout-page,
-.content-wrapper {
-    position: relative;
-
-    z-index: 1;
-}
-
-
-/* =========================================================
-   CARD SLIGHT GLASS EFFECT
-   Optional but looks very good with background
-========================================================= */
-
-.stat-card,
-.warehouse-ui-card,
-.card {
-    position: relative;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 767px) {
-
-    .grocery-bg-animation {
-        opacity: 0.55;
-    }
-
-    .grocery-particle {
-        width: 36px;
-        height: 36px;
-
-        font-size: 17px;
-    }
-
-    .glow-one {
-        width: 250px;
-        height: 250px;
-    }
-
-    .glow-two {
-        width: 220px;
-        height: 220px;
-    }
-
-    .glow-three {
-        width: 280px;
-        height: 280px;
-    }
-}
-
-
-/* =========================================================
-   REDUCE MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .grocery-glow,
-    .grocery-particle,
-    .grocery-ring {
-        animation: none;
-    }
+.stat-card:hover::after {
+    left: 130%;
 }
 
 </style>
@@ -869,6 +568,7 @@ body {
   <!-- Layout wrapper -->
   <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
+
       <!-- Menu -->
       <style>
         .stat-card {
@@ -921,1042 +621,1038 @@ body {
         }
 
       </style>
-
+      
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
         @include('layouts.sidebar')
 
       </aside>
-        <!-- / Menu -->
+      <!-- / Menu -->
 
-        <!-- Layout container -->
-        <div class="layout-page">
+      <!-- Layout container -->
+      <div class="layout-page">
+        <!-- / Navbar -->
+        @include('layouts.navbar')
 
-            <!-- / Navbar -->
-            @include('layouts.navbar')
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+          <!-- Content -->
+          <div class="container-xxl flex-grow-1 container-p-y">
 
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
-                <!-- Content -->
-                <div class="container-xxl flex-grow-1 container-p-y">
+            <!-- STAT CARDS -->
+            <!-- <div class="row g-3">
 
-                    <!-- STAT CARDS -->
-                    <!-- <div class="row g-3">
+              <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('warehouse.transfer.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                   <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Pending Transfer Requests</p>
+                    <h3 class="text-warning">{{ $pendingTransferCount }}</h3>
+                    <small class="text-muted">
+                      Warehouse → Warehouse
+                    </small>
+                  </div>
+                </div>
+                </a>
+              </div>
 
-                    <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ route('warehouse.transfer.index') }}" class="text-decoration-none">
-                        <div class="card stat-card border-warning">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
-                        <div class="card-body">
-                            <p>Pending Transfer Requests</p>
-                            <h3 class="text-warning">{{ $pendingTransferCount }}</h3>
+              <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
+                  <div class="card stat-card">
+                     <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                    <div class="card-body">
+                      <p>Expired Batches</p>
+                      <h3 class="text-warning">{{ $expiredCount }}</h3>
+                      <small class="text-success">
+                          Expiring in 7 days: {{ $expiringSoonCount }}
+                        </small>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <div class="card stat-card">
+                  <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Warehouses</p>
+                    <h3 class="text-warning">{{ $WarehouseCount }}</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <div class="card stat-card">
+                  <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Stock</p>
+                    <h3 class="text-warning">{{ $StockMovementCount }}</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <div class="card stat-card">
+                  <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Warehouse Transfers</p>
+                    <h3 class="text-warning">{{ $WarehouseTransferCount }}</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <div class="card stat-card border-0 shadow-sm" style="background:linear-gradient(135deg,#fff,#fff5f5);">
+                  <div class="card-body position-relative" style="height:114px;">
+                      
+                      <div class="position-absolute top-0 start-0 w-100"
+                          style="height:4px; background:gray;"></div>
+
+                      <div class="d-flex justify-content-between align-items-center h-100">
+                        <div>
+                            <p class="mb-1 text-muted fw-semibold">
+                                Today Dispatch
+                            </p>
+                            <h3 class="text-danger mb-0">
+                                {{ $todayDispatchCount }}
+                            </h3>
                             <small class="text-muted">
-                            Warehouse → Warehouse
+                                Qty: {{ $todayDispatchQty }}
                             </small>
                         </div>
-                        </div>
-                        </a>
-                    </div>
+                      </div>
+                  </div>
+                </div>
+              </div>
 
-                    <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ route('batches.expiry') }}" class="text-decoration-none">
-                        <div class="card stat-card">
-                            <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
+            </div>            -->
+
+
+            <!-- =========================================================
+              DASHBOARD STAT CARDS
+            ========================================================= -->
+
+            <div class="row g-3 dashboard-stat-row">
+
+                <!-- Pending Transfer Requests -->
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                    <a href="{{ route('warehouse.transfer.index') }}"
+                      class="text-decoration-none">
+
+                        <div class="card stat-card stat-card-warning">
+
+                            <div class="stat-card-strip"></div>
+
                             <div class="card-body">
-                            <p>Expired Batches</p>
-                            <h3 class="text-warning">{{ $expiredCount }}</h3>
-                            <small class="text-success">
-                                Expiring in 7 days: {{ $expiringSoonCount }}
-                                </small>
+
+                                <div class="stat-card-content">
+
+                                    <div class="stat-card-info">
+
+                                        <p class="stat-card-title">
+                                            Pending Transfer Requests
+                                        </p>
+
+                                        <h3 class="stat-card-number">
+                                            {{ $pendingTransferCount }}
+                                        </h3>
+
+                                        <small class="stat-card-subtitle">
+                                            Warehouse → Warehouse
+                                        </small>
+
+                                    </div>
+
+                                    <div class="stat-card-icon">
+                                        <i class="bi bi-arrow-left-right"></i>
+                                    </div>
+
+                                </div>
+
                             </div>
-                        </div>
-                        </a>
-                    </div>
 
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <div class="card stat-card">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
+                        </div>
+
+                    </a>
+                </div>
+
+
+                <!-- Expired Batches -->
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+
+                    <a href="{{ route('batches.expiry') }}"
+                      class="text-decoration-none">
+
+                        <div class="card stat-card stat-card-danger">
+
+                            <div class="stat-card-strip"></div>
+
+                            <div class="card-body">
+
+                                <div class="stat-card-content">
+
+                                    <div class="stat-card-info">
+
+                                        <p class="stat-card-title">
+                                            Expired Batches
+                                        </p>
+
+                                        <h3 class="stat-card-number">
+                                            {{ $expiredCount }}
+                                        </h3>
+
+                                        <small class="stat-card-subtitle success-text">
+                                            Expiring in 7 days:
+                                            {{ $expiringSoonCount }}
+                                        </small>
+
+                                    </div>
+
+                                    <div class="stat-card-icon">
+                                        <i class="bi bi-calendar-x"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+
+                <!-- Total Warehouses -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-primary">
+
+                        <div class="stat-card-strip"></div>
+
                         <div class="card-body">
-                            <p>Total Warehouses</p>
-                            <h3 class="text-warning">{{ $WarehouseCount }}</h3>
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Total Warehouses
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $WarehouseCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+
+                            </div>
+
                         </div>
-                        </div>
+
                     </div>
 
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <div class="card stat-card">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
+                </div>
+
+
+                <!-- Total Stock -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-success">
+
+                        <div class="stat-card-strip"></div>
+
                         <div class="card-body">
-                            <p>Total Stock</p>
-                            <h3 class="text-warning">{{ $StockMovementCount }}</h3>
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Total Stock
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $StockMovementCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+
+                            </div>
+
                         </div>
-                        </div>
+
                     </div>
 
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <div class="card stat-card">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
+                </div>
+
+
+                <!-- Warehouse Transfers -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-info">
+
+                        <div class="stat-card-strip"></div>
+
                         <div class="card-body">
-                            <p>Warehouse Transfers</p>
-                            <h3 class="text-warning">{{ $WarehouseTransferCount }}</h3>
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Warehouse Transfers
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $WarehouseTransferCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+
+                            </div>
+
                         </div>
-                        </div>
+
                     </div>
 
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <div class="card stat-card border-0 shadow-sm" style="background:linear-gradient(135deg,#fff,#fff5f5);">
-                        <div class="card-body position-relative" style="height:114px;">
-                            
-                            <div class="position-absolute top-0 start-0 w-100"
-                                style="height:4px; background:gray;"></div>
+                </div>
 
-                            <div class="d-flex justify-content-between align-items-center h-100">
-                                <div>
-                                    <p class="mb-1 text-muted fw-semibold">
+
+                <!-- Today Dispatch -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-dispatch">
+
+                        <div class="stat-card-strip"></div>
+
+                        <div class="card-body">
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
                                         Today Dispatch
                                     </p>
-                                    <h3 class="text-danger mb-0">
+
+                                    <h3 class="stat-card-number">
                                         {{ $todayDispatchCount }}
                                     </h3>
-                                    <small class="text-muted">
+
+                                    <small class="stat-card-subtitle">
                                         Qty: {{ $todayDispatchQty }}
                                     </small>
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-
-                    </div>            -->
-
-
-                    <!-- =========================================================
-                    DASHBOARD STAT CARDS
-                    ========================================================= -->
-
-                    <div class="row g-3 dashboard-stat-row">
-
-                        <!-- Pending Transfer Requests -->
-                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                            <a href="{{ route('warehouse.transfer.index') }}"
-                            class="text-decoration-none">
-
-                                <div class="card stat-card stat-card-warning">
-
-                                    <div class="stat-card-strip"></div>
-
-                                    <div class="card-body">
-
-                                        <div class="stat-card-content">
-
-                                            <div class="stat-card-info">
-
-                                                <p class="stat-card-title">
-                                                    Pending Transfer Requests
-                                                </p>
-
-                                                <h3 class="stat-card-number">
-                                                    {{ $pendingTransferCount }}
-                                                </h3>
-
-                                                <small class="stat-card-subtitle">
-                                                    Warehouse → Warehouse
-                                                </small>
-
-                                            </div>
-
-                                            <div class="stat-card-icon">
-                                                <i class="bi bi-arrow-left-right"></i>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
 
                                 </div>
 
-                            </a>
-                        </div>
-
-
-                        <!-- Expired Batches -->
-                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-
-                            <a href="{{ route('batches.expiry') }}"
-                            class="text-decoration-none">
-
-                                <div class="card stat-card stat-card-danger">
-
-                                    <div class="stat-card-strip"></div>
-
-                                    <div class="card-body">
-
-                                        <div class="stat-card-content">
-
-                                            <div class="stat-card-info">
-
-                                                <p class="stat-card-title">
-                                                    Expired Batches
-                                                </p>
-
-                                                <h3 class="stat-card-number">
-                                                    {{ $expiredCount }}
-                                                </h3>
-
-                                                <small class="stat-card-subtitle success-text">
-                                                    Expiring in 7 days:
-                                                    {{ $expiringSoonCount }}
-                                                </small>
-
-                                            </div>
-
-                                            <div class="stat-card-icon">
-                                                <i class="bi bi-calendar-x"></i>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </a>
-
-                        </div>
-
-
-                        <!-- Total Warehouses -->
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-
-                            <div class="card stat-card stat-card-primary">
-
-                                <div class="stat-card-strip"></div>
-
-                                <div class="card-body">
-
-                                    <div class="stat-card-content">
-
-                                        <div class="stat-card-info">
-
-                                            <p class="stat-card-title">
-                                                Total Warehouses
-                                            </p>
-
-                                            <h3 class="stat-card-number">
-                                                {{ $WarehouseCount }}
-                                            </h3>
-
-                                        </div>
-
-                                        <div class="stat-card-icon">
-                                            <i class="bi bi-building"></i>
-                                        </div>
-
-                                    </div>
-
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-box-arrow-up"></i>
                                 </div>
 
                             </div>
 
                         </div>
 
-
-                        <!-- Total Stock -->
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-
-                            <div class="card stat-card stat-card-success">
-
-                                <div class="stat-card-strip"></div>
-
-                                <div class="card-body">
-
-                                    <div class="stat-card-content">
-
-                                        <div class="stat-card-info">
-
-                                            <p class="stat-card-title">
-                                                Total Stock
-                                            </p>
-
-                                            <h3 class="stat-card-number">
-                                                {{ $StockMovementCount }}
-                                            </h3>
-
-                                        </div>
-
-                                        <div class="stat-card-icon">
-                                            <i class="bi bi-box-seam"></i>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- Warehouse Transfers -->
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-
-                            <div class="card stat-card stat-card-info">
-
-                                <div class="stat-card-strip"></div>
-
-                                <div class="card-body">
-
-                                    <div class="stat-card-content">
-
-                                        <div class="stat-card-info">
-
-                                            <p class="stat-card-title">
-                                                Warehouse Transfers
-                                            </p>
-
-                                            <h3 class="stat-card-number">
-                                                {{ $WarehouseTransferCount }}
-                                            </h3>
-
-                                        </div>
-
-                                        <div class="stat-card-icon">
-                                            <i class="bi bi-truck"></i>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- Today Dispatch -->
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-
-                            <div class="card stat-card stat-card-dispatch">
-
-                                <div class="stat-card-strip"></div>
-
-                                <div class="card-body">
-
-                                    <div class="stat-card-content">
-
-                                        <div class="stat-card-info">
-
-                                            <p class="stat-card-title">
-                                                Today Dispatch
-                                            </p>
-
-                                            <h3 class="stat-card-number">
-                                                {{ $todayDispatchCount }}
-                                            </h3>
-
-                                            <small class="stat-card-subtitle">
-                                                Qty: {{ $todayDispatchQty }}
-                                            </small>
-
-                                        </div>
-
-                                        <div class="stat-card-icon">
-                                            <i class="bi bi-box-arrow-up"></i>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- WAREHOUSE LIST + STOCK UTILIZATION -->
-                    <div class="row g-3 mt-4 warehouse-dashboard">
-
-                        <!-- Left: Warehouse List -->
-                        <div class="col-12 col-lg-7">
-                            <div class="card warehouse-ui-card h-100">
-
-                                <div class="card-body warehouse-card-body">
-
-                                    <div class="warehouse-heading">
-                                        <div>
-                                            <h5 class="warehouse-title">
-                                                All Warehouses
-                                            </h5>
-
-                                            <p class="warehouse-subtitle">
-                                                Available warehouse locations
-                                            </p>
-                                        </div>
-
-                                        <div class="warehouse-heading-icon">
-                                            <i class="bi bi-building"></i>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="warehouse-scroll">
-
-                                        <ul class="list-group list-group-flush">
-
-                                            @forelse($warehouseDistrict as $warehouse)
-
-                                            <li class="list-group-item warehouse-list-item">
-
-                                                <div class="warehouse-item-left">
-
-                                                    <span class="warehouse-item-icon">
-                                                        <i class="bi bi-building"></i>
-                                                    </span>
-
-                                                    <span class="warehouse-item-name">
-                                                        {{ $warehouse }}
-                                                    </span>
-
-                                                </div>
-
-                                                <i class="bi bi-chevron-right warehouse-item-arrow"></i>
-
-                                            </li>
-
-                                            @empty
-
-                                            <li class="list-group-item warehouse-empty">
-                                                <i class="bi bi-building-x"></i>
-                                                <span>No Warehouses Found</span>
-                                            </li>
-
-                                            @endforelse
-
-                                        </ul>
-
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right: Stock Utilization -->
-                        <div class="col-12 col-lg-5">
-
-                            <div class="card warehouse-ui-card h-100">
-
-                                <div class="card-body stock-card-body">
-
-                                    <div class="stock-heading">
-
-                                        <div>
-                                            <h6 class="stock-title">
-                                                Stock Utilization
-                                            </h6>
-
-                                            <p class="stock-subtitle">
-                                                Current storage usage
-                                            </p>
-                                        </div>
-
-                                        <div class="stock-heading-icon">
-                                            <i class="bi bi-pie-chart"></i>
-                                        </div>
-
-                                    </div>
-
-
-                                    <div class="stock-chart-wrapper">
-                                        <canvas id="stockUtilizationChart"></canvas>
-                                    </div>
-
-
-                                    <strong class="stock-value">
-                                        {{ $stockUtilization }}%
-                                        <span>Used</span>
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <style>
-
-                    /* =========================================================
-                    MAIN
-                    ========================================================= */
-
-                    .warehouse-dashboard {
-                        width: 100%;
-                    }
-
-
-                    /* =========================================================
-                    CARD
-                    ========================================================= */
-
-                    .warehouse-ui-card {
-                        border: 1px solid #e8eee9 !important;
-                        border-radius: 14px !important;
-
-                        background: #ffffff;
-
-                        box-shadow:
-                            0 4px 18px rgba(0, 0, 0, 0.035);
-
-                        overflow: hidden;
-
-                        transition:
-                            transform 0.2s ease,
-                            box-shadow 0.2s ease;
-                    }
-
-                    .warehouse-ui-card:hover {
-                        box-shadow:
-                            0 7px 24px rgba(25, 135, 84, 0.08);
-                    }
-
-                    .warehouse-card-body,
-                    .stock-card-body {
-                        padding: 20px;
-                    }
-
-
-                    /* =========================================================
-                    WAREHOUSE HEADER
-                    ========================================================= */
-
-                    .warehouse-heading,
-                    .stock-heading {
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-
-                        gap: 15px;
-
-                        margin-bottom: 16px;
-                    }
-
-                    .warehouse-title,
-                    .stock-title {
-                        margin: 0;
-
-                        color: #202a24;
-
-                        font-size: 16px;
-                        font-weight: 700;
-                    }
-
-                    .warehouse-subtitle,
-                    .stock-subtitle {
-                        margin: 4px 0 0;
-
-                        color: #8a948e;
-
-                        font-size: 12px;
-                    }
-
-
-                    /* =========================================================
-                    HEADER ICON
-                    ========================================================= */
-
-                    .warehouse-heading-icon,
-                    .stock-heading-icon {
-                        width: 38px;
-                        height: 38px;
-
-                        flex: 0 0 38px;
-
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-
-                        border-radius: 10px;
-
-                        background: #eaf7f0;
-                        color: #198754;
-
-                        font-size: 17px;
-                    }
-
-
-                    /* =========================================================
-                    WAREHOUSE SCROLL
-                    ========================================================= */
-
-                    .warehouse-scroll {
-                        width: 100%;
-
-                        max-height: 300px;
-
-                        overflow-y: auto;
-                        overflow-x: hidden;
-
-                        padding-right: 3px;
-
-                        scrollbar-width: thin;
-                        scrollbar-color: #cbd8d0 transparent;
-                    }
-
-                    .warehouse-scroll::-webkit-scrollbar {
-                        width: 5px;
-                    }
-
-                    .warehouse-scroll::-webkit-scrollbar-track {
-                        background: transparent;
-                    }
-
-                    .warehouse-scroll::-webkit-scrollbar-thumb {
-                        background: #cbd8d0;
-                        border-radius: 10px;
-                    }
-
-                    .warehouse-scroll::-webkit-scrollbar-thumb:hover {
-                        background: #198754;
-                    }
-
-
-                    /* =========================================================
-                    WAREHOUSE ITEM
-                    ========================================================= */
-
-                    .warehouse-list-item {
-                        display: flex !important;
-
-                        align-items: center;
-                        justify-content: space-between;
-
-                        gap: 12px;
-
-                        min-height: 50px;
-
-                        padding: 8px 10px !important;
-
-                        border: 0 !important;
-                        border-bottom: 1px solid #edf2ef !important;
-
-                        background: transparent !important;
-
-                        transition: all 0.18s ease;
-                    }
-
-                    .warehouse-list-item:last-child {
-                        border-bottom: 0 !important;
-                    }
-
-                    .warehouse-list-item:hover {
-                        padding-left: 14px !important;
-
-                        background: #f7fbf8 !important;
-                    }
-
-
-                    /* =========================================================
-                    ITEM LEFT
-                    ========================================================= */
-
-                    .warehouse-item-left {
-                        display: flex;
-
-                        align-items: center;
-
-                        gap: 10px;
-
-                        min-width: 0;
-                    }
-
-                    .warehouse-item-icon {
-                        width: 32px;
-                        height: 32px;
-
-                        min-width: 32px;
-
-                        display: flex;
-
-                        align-items: center;
-                        justify-content: center;
-
-                        border-radius: 8px;
-
-                        background: #eef8f2;
-                        color: #198754;
-
-                        font-size: 14px;
-                    }
-
-                    .warehouse-item-name {
-                        min-width: 0;
-
-                        color: #465149;
-
-                        font-size: 13px;
-                        font-weight: 600;
-
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-
-
-                    /* =========================================================
-                    ARROW
-                    ========================================================= */
-
-                    .warehouse-item-arrow {
-                        flex: 0 0 auto;
-
-                        color: #a3ada7;
-
-                        font-size: 13px;
-
-                        transition: all 0.18s ease;
-                    }
-
-                    .warehouse-list-item:hover .warehouse-item-arrow {
-                        color: #198754;
-
-                        transform: translateX(3px);
-                    }
-
-
-                    /* =========================================================
-                    EMPTY
-                    ========================================================= */
-
-                    .warehouse-empty {
-                        min-height: 130px;
-
-                        display: flex !important;
-
-                        align-items: center;
-                        justify-content: center;
-
-                        gap: 8px;
-
-                        border: 0 !important;
-
-                        color: #8a948e;
-
-                        font-size: 13px;
-                    }
-
-                    .warehouse-empty i {
-                        color: #198754;
-
-                        font-size: 20px;
-                    }
-
-
-                    /* =========================================================
-                    STOCK CHART
-                    ========================================================= */
-
-                    .stock-card-body {
-                        display: flex;
-
-                        flex-direction: column;
-                    }
-
-                    .stock-chart-wrapper {
-                        position: relative;
-
-                        width: 100%;
-
-                        height: 190px;
-
-                        margin: 0 auto;
-                    }
-
-                    .stock-chart-wrapper canvas {
-                        width: 100% !important;
-                        height: 100% !important;
-                    }
-
-
-                    /* =========================================================
-                    STOCK VALUE
-                    ========================================================= */
-
-                    .stock-value {
-                        display: flex;
-
-                        align-items: baseline;
-                        justify-content: center;
-
-                        gap: 5px;
-
-                        margin-top: 8px;
-
-                        color: #198754;
-
-                        font-size: 24px;
-                        font-weight: 800;
-                    }
-
-                    .stock-value span {
-                        color: #7d8781;
-
-                        font-size: 12px;
-                        font-weight: 600;
-                    }
-
-
-                    /* =========================================================
-                    TABLET
-                    ========================================================= */
-
-                    @media (max-width: 991px) {
-
-                        .warehouse-card-body,
-                        .stock-card-body {
-                            padding: 18px;
-                        }
-
-                        .warehouse-scroll {
-                            max-height: 270px;
-                        }
-
-                        .stock-chart-wrapper {
-                            height: 210px;
-                        }
-                    }
-
-
-                    /* =========================================================
-                    MOBILE
-                    ========================================================= */
-
-                    @media (max-width: 767px) {
-
-                        .warehouse-dashboard {
-                            margin-top: 16px !important;
-                        }
-
-                        .warehouse-card-body,
-                        .stock-card-body {
-                            padding: 15px;
-                        }
-
-                        .warehouse-title,
-                        .stock-title {
-                            font-size: 15px;
-                        }
-
-                        .warehouse-subtitle,
-                        .stock-subtitle {
-                            font-size: 11px;
-                        }
-
-                        .warehouse-heading-icon,
-                        .stock-heading-icon {
-                            width: 34px;
-                            height: 34px;
-
-                            flex-basis: 34px;
-
-                            font-size: 15px;
-                        }
-
-                        .warehouse-scroll {
-                            max-height: 240px;
-                        }
-
-                        .warehouse-list-item {
-                            min-height: 46px;
-
-                            padding: 7px 6px !important;
-                        }
-
-                        .warehouse-item-icon {
-                            width: 30px;
-                            height: 30px;
-
-                            min-width: 30px;
-
-                            font-size: 13px;
-                        }
-
-                        .warehouse-item-name {
-                            font-size: 12.5px;
-                        }
-
-                        .stock-chart-wrapper {
-                            height: 190px;
-
-                            max-width: 280px;
-                        }
-
-                        .stock-value {
-                            font-size: 22px;
-                        }
-                    }
-
-
-                    /* =========================================================
-                    SMALL MOBILE
-                    ========================================================= */
-
-                    @media (max-width: 480px) {
-
-                        .warehouse-card-body,
-                        .stock-card-body {
-                            padding: 13px;
-                        }
-
-                        .warehouse-heading,
-                        .stock-heading {
-                            margin-bottom: 12px;
-                        }
-
-                        .warehouse-title,
-                        .stock-title {
-                            font-size: 14px;
-                        }
-
-                        .warehouse-subtitle,
-                        .stock-subtitle {
-                            font-size: 10.5px;
-                        }
-
-                        .warehouse-scroll {
-                            max-height: 220px;
-                        }
-
-                        .warehouse-item-name {
-                            font-size: 12px;
-                        }
-
-                        .warehouse-item-arrow {
-                            font-size: 12px;
-                        }
-
-                        .stock-chart-wrapper {
-                            height: 175px;
-
-                            max-width: 250px;
-                        }
-
-                        .stock-value {
-                            font-size: 21px;
-                        }
-                    }
-
-                    </style>
-
-
-                    <!-- Full width: IN vs OUT Trend -->
-                    <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card">
-                        <div class="card-body">
-                            <h5 class="mb-3">Stock IN vs OUT (Last 7 days)</h5>
-                            <canvas id="inOutChart" height="150"></canvas>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                
-                    <!-- SECOND ROW -->
-                    <div class="row g-3 mt-3">                       
-
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ route('category.index') }}" class="text-decoration-none">
-                        <div class="card stat-card border-warning">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
-                        <div class="card-body">
-                            <p>Total Categories</p>
-                            <h3 class="text-warning">{{ $categoryCount }}</h3>
-                        </div>
-                        </div>
-                        </a>
-                    </div>
-
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ route('product.index') }}" class="text-decoration-none">
-                        <div class="card stat-card border-warning">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
-                        <div class="card-body">
-                            <p>Total Products</p>
-                            <h3 class="text-warning">{{ $ProductCount }}</h3>
-                        </div>
-                        </div>
-                        </a>
-                    </div>
-
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <a href="{{ route('product.index') }}" class="text-decoration-none">
-                        <div class="card stat-card border-warning">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
-                        <div class="card-body">
-                            <p>Total Users</p>
-                            <h3 class="text-warning">{{ $UserCount }}</h3>
-                        </div>
-                        </div>
-                        </a>
-                    </div>
-
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                        <div class="card stat-card">
-                        <div class="position-absolute top-0 start-0 w-100"
-                            style="height:4px; background:gray;"></div>
-                        <div class="card-body">
-                            <p>Total Batches</p>
-                            <h3 class="text-warning">{{ $BatchCount }}</h3>
-                        </div>
-                        </div>
-                    </div>
-
-                    </div>
-
-                    <!-- low stock bar chart -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="mb-3">Warehouse-wise Low Stock</h5>
-
-                                    <div class="chart-container" style="position: relative; height:300px;">
-                                        <canvas id="warehouseBarChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                 </div>
 
+            </div>
+
+
+            <!-- WAREHOUSE LIST + STOCK UTILIZATION -->
+            <div class="row g-3 mt-4 warehouse-dashboard">
+
+                <!-- Left: Warehouse List -->
+                <div class="col-12 col-lg-7">
+                    <div class="card warehouse-ui-card h-100">
+
+                        <div class="card-body warehouse-card-body">
+
+                            <div class="warehouse-heading">
+                                <div>
+                                    <h5 class="warehouse-title">
+                                        All Warehouses
+                                    </h5>
+
+                                    <p class="warehouse-subtitle">
+                                        Available warehouse locations
+                                    </p>
+                                </div>
+
+                                <div class="warehouse-heading-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                            </div>
+
+
+                            <div class="warehouse-scroll">
+
+                                <ul class="list-group list-group-flush">
+
+                                    @forelse($warehouseDistrict as $warehouse)
+
+                                    <li class="list-group-item warehouse-list-item">
+
+                                        <div class="warehouse-item-left">
+
+                                            <span class="warehouse-item-icon">
+                                                <i class="bi bi-building"></i>
+                                            </span>
+
+                                            <span class="warehouse-item-name">
+                                                {{ $warehouse }}
+                                            </span>
+
+                                        </div>
+
+                                        <i class="bi bi-chevron-right warehouse-item-arrow"></i>
+
+                                    </li>
+
+                                    @empty
+
+                                    <li class="list-group-item warehouse-empty">
+                                        <i class="bi bi-building-x"></i>
+                                        <span>No Warehouses Found</span>
+                                    </li>
+
+                                    @endforelse
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
-                <!-- / Content -->
 
-            @include('layouts.footer')
+                <!-- Right: Stock Utilization -->
+                <div class="col-12 col-lg-5">
 
-            <div class="content-backdrop fade"></div>
-            
+                    <div class="card warehouse-ui-card h-100">
+
+                        <div class="card-body stock-card-body">
+
+                            <div class="stock-heading">
+
+                                <div>
+                                    <h6 class="stock-title">
+                                        Stock Utilization
+                                    </h6>
+
+                                    <p class="stock-subtitle">
+                                        Current storage usage
+                                    </p>
+                                </div>
+
+                                <div class="stock-heading-icon">
+                                    <i class="bi bi-pie-chart"></i>
+                                </div>
+
+                            </div>
+
+
+                            <div class="stock-chart-wrapper">
+                                <canvas id="stockUtilizationChart"></canvas>
+                            </div>
+
+
+                            <strong class="stock-value">
+                                {{ $stockUtilization }}%
+                                <span>Used</span>
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <style>
+
+            /* =========================================================
+            MAIN
+            ========================================================= */
+
+            .warehouse-dashboard {
+                width: 100%;
+            }
+
+
+            /* =========================================================
+            CARD
+            ========================================================= */
+
+            .warehouse-ui-card {
+                border: 1px solid #e8eee9 !important;
+                border-radius: 14px !important;
+
+                background: #ffffff;
+
+                box-shadow:
+                    0 4px 18px rgba(0, 0, 0, 0.035);
+
+                overflow: hidden;
+
+                transition:
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+            }
+
+            .warehouse-ui-card:hover {
+                box-shadow:
+                    0 7px 24px rgba(25, 135, 84, 0.08);
+            }
+
+            .warehouse-card-body,
+            .stock-card-body {
+                padding: 20px;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE HEADER
+            ========================================================= */
+
+            .warehouse-heading,
+            .stock-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                gap: 15px;
+
+                margin-bottom: 16px;
+            }
+
+            .warehouse-title,
+            .stock-title {
+                margin: 0;
+
+                color: #202a24;
+
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            .warehouse-subtitle,
+            .stock-subtitle {
+                margin: 4px 0 0;
+
+                color: #8a948e;
+
+                font-size: 12px;
+            }
+
+
+            /* =========================================================
+            HEADER ICON
+            ========================================================= */
+
+            .warehouse-heading-icon,
+            .stock-heading-icon {
+                width: 38px;
+                height: 38px;
+
+                flex: 0 0 38px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                border-radius: 10px;
+
+                background: #eaf7f0;
+                color: #198754;
+
+                font-size: 17px;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE SCROLL
+            ========================================================= */
+
+            .warehouse-scroll {
+                width: 100%;
+
+                max-height: 300px;
+
+                overflow-y: auto;
+                overflow-x: hidden;
+
+                padding-right: 3px;
+
+                scrollbar-width: thin;
+                scrollbar-color: #cbd8d0 transparent;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-thumb {
+                background: #cbd8d0;
+                border-radius: 10px;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-thumb:hover {
+                background: #198754;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE ITEM
+            ========================================================= */
+
+            .warehouse-list-item {
+                display: flex !important;
+
+                align-items: center;
+                justify-content: space-between;
+
+                gap: 12px;
+
+                min-height: 50px;
+
+                padding: 8px 10px !important;
+
+                border: 0 !important;
+                border-bottom: 1px solid #edf2ef !important;
+
+                background: transparent !important;
+
+                transition: all 0.18s ease;
+            }
+
+            .warehouse-list-item:last-child {
+                border-bottom: 0 !important;
+            }
+
+            .warehouse-list-item:hover {
+                padding-left: 14px !important;
+
+                background: #f7fbf8 !important;
+            }
+
+
+            /* =========================================================
+            ITEM LEFT
+            ========================================================= */
+
+            .warehouse-item-left {
+                display: flex;
+
+                align-items: center;
+
+                gap: 10px;
+
+                min-width: 0;
+            }
+
+            .warehouse-item-icon {
+                width: 32px;
+                height: 32px;
+
+                min-width: 32px;
+
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+
+                border-radius: 8px;
+
+                background: #eef8f2;
+                color: #198754;
+
+                font-size: 14px;
+            }
+
+            .warehouse-item-name {
+                min-width: 0;
+
+                color: #465149;
+
+                font-size: 13px;
+                font-weight: 600;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+
+            /* =========================================================
+            ARROW
+            ========================================================= */
+
+            .warehouse-item-arrow {
+                flex: 0 0 auto;
+
+                color: #a3ada7;
+
+                font-size: 13px;
+
+                transition: all 0.18s ease;
+            }
+
+            .warehouse-list-item:hover .warehouse-item-arrow {
+                color: #198754;
+
+                transform: translateX(3px);
+            }
+
+
+            /* =========================================================
+            EMPTY
+            ========================================================= */
+
+            .warehouse-empty {
+                min-height: 130px;
+
+                display: flex !important;
+
+                align-items: center;
+                justify-content: center;
+
+                gap: 8px;
+
+                border: 0 !important;
+
+                color: #8a948e;
+
+                font-size: 13px;
+            }
+
+            .warehouse-empty i {
+                color: #198754;
+
+                font-size: 20px;
+            }
+
+
+            /* =========================================================
+            STOCK CHART
+            ========================================================= */
+
+            .stock-card-body {
+                display: flex;
+
+                flex-direction: column;
+            }
+
+            .stock-chart-wrapper {
+                position: relative;
+
+                width: 100%;
+
+                height: 190px;
+
+                margin: 0 auto;
+            }
+
+            .stock-chart-wrapper canvas {
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+
+            /* =========================================================
+            STOCK VALUE
+            ========================================================= */
+
+            .stock-value {
+                display: flex;
+
+                align-items: baseline;
+                justify-content: center;
+
+                gap: 5px;
+
+                margin-top: 8px;
+
+                color: #198754;
+
+                font-size: 24px;
+                font-weight: 800;
+            }
+
+            .stock-value span {
+                color: #7d8781;
+
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+
+            /* =========================================================
+            TABLET
+            ========================================================= */
+
+            @media (max-width: 991px) {
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 18px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 270px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 210px;
+                }
+            }
+
+
+            /* =========================================================
+            MOBILE
+            ========================================================= */
+
+            @media (max-width: 767px) {
+
+                .warehouse-dashboard {
+                    margin-top: 16px !important;
+                }
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 15px;
+                }
+
+                .warehouse-title,
+                .stock-title {
+                    font-size: 15px;
+                }
+
+                .warehouse-subtitle,
+                .stock-subtitle {
+                    font-size: 11px;
+                }
+
+                .warehouse-heading-icon,
+                .stock-heading-icon {
+                    width: 34px;
+                    height: 34px;
+
+                    flex-basis: 34px;
+
+                    font-size: 15px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 240px;
+                }
+
+                .warehouse-list-item {
+                    min-height: 46px;
+
+                    padding: 7px 6px !important;
+                }
+
+                .warehouse-item-icon {
+                    width: 30px;
+                    height: 30px;
+
+                    min-width: 30px;
+
+                    font-size: 13px;
+                }
+
+                .warehouse-item-name {
+                    font-size: 12.5px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 190px;
+
+                    max-width: 280px;
+                }
+
+                .stock-value {
+                    font-size: 22px;
+                }
+            }
+
+
+            /* =========================================================
+            SMALL MOBILE
+            ========================================================= */
+
+            @media (max-width: 480px) {
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 13px;
+                }
+
+                .warehouse-heading,
+                .stock-heading {
+                    margin-bottom: 12px;
+                }
+
+                .warehouse-title,
+                .stock-title {
+                    font-size: 14px;
+                }
+
+                .warehouse-subtitle,
+                .stock-subtitle {
+                    font-size: 10.5px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 220px;
+                }
+
+                .warehouse-item-name {
+                    font-size: 12px;
+                }
+
+                .warehouse-item-arrow {
+                    font-size: 12px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 175px;
+
+                    max-width: 250px;
+                }
+
+                .stock-value {
+                    font-size: 21px;
+                }
+            }
+
+            </style>
+
+
+            <!-- Full width: IN vs OUT Trend -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="mb-3">Stock IN vs OUT (Last 7 days)</h5>
+                    <canvas id="inOutChart" height="150"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+         
+             <!-- SECOND ROW -->
+            <div class="row g-3 mt-3">                       
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('category.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                   <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Categories</p>
+                    <h3 class="text-warning">{{ $categoryCount }}</h3>
+                  </div>
+                </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('product.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                   <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Products</p>
+                    <h3 class="text-warning">{{ $ProductCount }}</h3>
+                  </div>
+                </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <a href="{{ route('product.index') }}" class="text-decoration-none">
+                <div class="card stat-card border-warning">
+                   <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Users</p>
+                    <h3 class="text-warning">{{ $UserCount }}</h3>
+                  </div>
+                </div>
+                </a>
+              </div>
+
+              <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                <div class="card stat-card">
+                  <div class="position-absolute top-0 start-0 w-100"
+                    style="height:4px; background:gray;"></div>
+                  <div class="card-body">
+                    <p>Total Batches</p>
+                    <h3 class="text-warning">{{ $BatchCount }}</h3>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- low stock bar chart -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="mb-3">Warehouse-wise Low Stock</h5>
+
+                            <div class="chart-container" style="position: relative; height:300px;">
+                                <canvas id="warehouseBarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+          </div>
+
         </div>
+        <!-- / Content -->
 
+        @include('layouts.footer')
+
+        <div class="content-backdrop fade"></div>
+      </div>
       <!-- Content wrapper -->
     </div>
     <!-- / Layout page -->
   </div>
 
-    <!-- Overlay -->
-    <div class="layout-overlay layout-menu-toggle"></div>
-
+  <!-- Overlay -->
+  <div class="layout-overlay layout-menu-toggle"></div>
   </div>
   <!-- / Layout wrapper -->
 
@@ -2008,6 +1704,7 @@ body {
   });
   </script>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const ctx = document.getElementById('inOutChart').getContext('2d');
     const inOutChart = new Chart(ctx, {
