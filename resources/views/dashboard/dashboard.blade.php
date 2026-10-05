@@ -1,5 +1,477 @@
 @include('layouts.header')
 
+<style>
+  /* =========================================================
+   DASHBOARD STAT CARDS
+========================================================= */
+
+.dashboard-stat-row {
+    width: 100%;
+    margin: 0;
+}
+
+
+/* =========================================================
+   MAIN CARD
+========================================================= */
+
+.stat-card {
+    position: relative;
+    height: 100%;
+    min-height: 125px;
+
+    overflow: hidden;
+
+    border: 1px solid #e9ecef !important;
+    border-radius: 14px !important;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, 0.05);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HOVER EFFECT
+========================================================= */
+
+.stat-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.10);
+}
+
+
+/* =========================================================
+   TOP COLOR STRIP
+========================================================= */
+
+.stat-card-strip {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 4px;
+
+    transition: height 0.25s ease;
+}
+
+.stat-card:hover .stat-card-strip {
+    height: 5px;
+}
+
+
+/* =========================================================
+   CARD BODY
+========================================================= */
+
+.stat-card .card-body {
+    position: relative;
+
+    min-height: 125px;
+
+    padding: 20px;
+
+    display: flex;
+    align-items: center;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.stat-card-content {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   INFORMATION
+========================================================= */
+
+.stat-card-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.stat-card-title {
+    margin: 0 0 7px 0;
+
+    color: #6c757d;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1.4;
+}
+
+.stat-card-number {
+    margin: 0 0 4px 0;
+
+    font-size: 28px;
+    font-weight: 700;
+
+    line-height: 1.1;
+
+    letter-spacing: -0.5px;
+}
+
+.stat-card-subtitle {
+    display: block;
+
+    margin: 0;
+
+    color: #8a9299;
+
+    font-size: 11px;
+    font-weight: 500;
+
+    line-height: 1.4;
+}
+
+.success-text {
+    color: #198754;
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.stat-card-icon {
+    flex-shrink: 0;
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    font-size: 21px;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.stat-card:hover .stat-card-icon {
+    transform: scale(1.08) rotate(-3deg);
+}
+
+
+/* =========================================================
+   WARNING
+========================================================= */
+
+.stat-card-warning {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fffaf0 100%
+        );
+}
+
+.stat-card-warning .stat-card-strip {
+    background: #ffc107;
+}
+
+.stat-card-warning .stat-card-number {
+    color: #d39e00;
+}
+
+.stat-card-warning .stat-card-icon {
+    background: #fff3cd;
+    color: #d39e00;
+}
+
+
+/* =========================================================
+   DANGER
+========================================================= */
+
+.stat-card-danger {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fff6f6 100%
+        );
+}
+
+.stat-card-danger .stat-card-strip {
+    background: #dc3545;
+}
+
+.stat-card-danger .stat-card-number {
+    color: #dc3545;
+}
+
+.stat-card-danger .stat-card-icon {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+
+/* =========================================================
+   PRIMARY
+========================================================= */
+
+.stat-card-primary {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f5f8ff 100%
+        );
+}
+
+.stat-card-primary .stat-card-strip {
+    background: #0d6efd;
+}
+
+.stat-card-primary .stat-card-number {
+    color: #0d6efd;
+}
+
+.stat-card-primary .stat-card-icon {
+    background: #e7f0ff;
+    color: #0d6efd;
+}
+
+
+/* =========================================================
+   SUCCESS
+========================================================= */
+
+.stat-card-success {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f3fbf7 100%
+        );
+}
+
+.stat-card-success .stat-card-strip {
+    background: #198754;
+}
+
+.stat-card-success .stat-card-number {
+    color: #198754;
+}
+
+.stat-card-success .stat-card-icon {
+    background: #dff3e8;
+    color: #198754;
+}
+
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.stat-card-info {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f3faff 100%
+        );
+}
+
+.stat-card-info .stat-card-strip {
+    background: #0dcaf0;
+}
+
+.stat-card-info .stat-card-number {
+    color: #0b8fa8;
+}
+
+.stat-card-info .stat-card-icon {
+    background: #dff7fc;
+    color: #0b8fa8;
+}
+
+
+/* =========================================================
+   DISPATCH
+========================================================= */
+
+.stat-card-dispatch {
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #fff5f5 100%
+        );
+}
+
+.stat-card-dispatch .stat-card-strip {
+    background: #dc3545;
+}
+
+.stat-card-dispatch .stat-card-number {
+    color: #dc3545;
+}
+
+.stat-card-dispatch .stat-card-icon {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+
+/* =========================================================
+   CLICKABLE CARD
+========================================================= */
+
+.dashboard-stat-row a {
+    display: block;
+    height: 100%;
+}
+
+.dashboard-stat-row a:hover {
+    color: inherit;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 991px) {
+
+    .stat-card {
+        min-height: 120px;
+    }
+
+    .stat-card .card-body {
+        min-height: 120px;
+        padding: 17px;
+    }
+
+    .stat-card-number {
+        font-size: 25px;
+    }
+
+    .stat-card-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        font-size: 19px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 576px) {
+
+    .dashboard-stat-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .stat-card {
+        min-height: 112px;
+
+        border-radius: 12px !important;
+    }
+
+    .stat-card .card-body {
+        min-height: 112px;
+        padding: 15px;
+    }
+
+    .stat-card-title {
+        font-size: 12px;
+    }
+
+    .stat-card-number {
+        font-size: 23px;
+    }
+
+    .stat-card-subtitle {
+        font-size: 10px;
+    }
+
+    .stat-card-icon {
+        width: 41px;
+        height: 41px;
+
+        border-radius: 10px;
+
+        font-size: 18px;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 360px) {
+
+    .stat-card .card-body {
+        padding: 13px;
+    }
+
+    .stat-card-title {
+        font-size: 11px;
+    }
+
+    .stat-card-number {
+        font-size: 21px;
+    }
+
+    .stat-card-subtitle {
+        font-size: 9px;
+    }
+
+    .stat-card-icon {
+        width: 37px;
+        height: 37px;
+
+        border-radius: 9px;
+
+        font-size: 16px;
+    }
+
+}
+</style>
+
+<head>
+  <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
 <body>
   <!-- Layout wrapper -->
   <div class="layout-wrapper layout-content-navbar">
@@ -74,7 +546,7 @@
           <div class="container-xxl flex-grow-1 container-p-y">
 
             <!-- STAT CARDS -->
-            <div class="row g-3">
+            <!-- <div class="row g-3">
 
               <div class="col-xl-6 col-lg-4 col-md-6 col-sm-12">
                 <a href="{{ route('warehouse.transfer.index') }}" class="text-decoration-none">
@@ -144,7 +616,7 @@
               <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                 <div class="card stat-card border-0 shadow-sm" style="background:linear-gradient(135deg,#fff,#fff5f5);">
                   <div class="card-body position-relative" style="height:114px;">
-                      <!-- Top color strip -->
+                      
                       <div class="position-absolute top-0 start-0 w-100"
                           style="height:4px; background:gray;"></div>
 
@@ -165,7 +637,253 @@
                 </div>
               </div>
 
-            </div>           
+            </div>            -->
+
+
+            <!-- =========================================================
+              DASHBOARD STAT CARDS
+            ========================================================= -->
+
+            <div class="row g-3 dashboard-stat-row">
+
+                <!-- Pending Transfer Requests -->
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                    <a href="{{ route('warehouse.transfer.index') }}"
+                      class="text-decoration-none">
+
+                        <div class="card stat-card stat-card-warning">
+
+                            <div class="stat-card-strip"></div>
+
+                            <div class="card-body">
+
+                                <div class="stat-card-content">
+
+                                    <div class="stat-card-info">
+
+                                        <p class="stat-card-title">
+                                            Pending Transfer Requests
+                                        </p>
+
+                                        <h3 class="stat-card-number">
+                                            {{ $pendingTransferCount }}
+                                        </h3>
+
+                                        <small class="stat-card-subtitle">
+                                            Warehouse → Warehouse
+                                        </small>
+
+                                    </div>
+
+                                    <div class="stat-card-icon">
+                                        <i class="bi bi-arrow-left-right"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </a>
+                </div>
+
+
+                <!-- Expired Batches -->
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+
+                    <a href="{{ route('batches.expiry') }}"
+                      class="text-decoration-none">
+
+                        <div class="card stat-card stat-card-danger">
+
+                            <div class="stat-card-strip"></div>
+
+                            <div class="card-body">
+
+                                <div class="stat-card-content">
+
+                                    <div class="stat-card-info">
+
+                                        <p class="stat-card-title">
+                                            Expired Batches
+                                        </p>
+
+                                        <h3 class="stat-card-number">
+                                            {{ $expiredCount }}
+                                        </h3>
+
+                                        <small class="stat-card-subtitle success-text">
+                                            Expiring in 7 days:
+                                            {{ $expiringSoonCount }}
+                                        </small>
+
+                                    </div>
+
+                                    <div class="stat-card-icon">
+                                        <i class="bi bi-calendar-x"></i>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </a>
+
+                </div>
+
+
+                <!-- Total Warehouses -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-primary">
+
+                        <div class="stat-card-strip"></div>
+
+                        <div class="card-body">
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Total Warehouses
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $WarehouseCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Total Stock -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-success">
+
+                        <div class="stat-card-strip"></div>
+
+                        <div class="card-body">
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Total Stock
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $StockMovementCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Warehouse Transfers -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-info">
+
+                        <div class="stat-card-strip"></div>
+
+                        <div class="card-body">
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Warehouse Transfers
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $WarehouseTransferCount }}
+                                    </h3>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Today Dispatch -->
+                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+
+                    <div class="card stat-card stat-card-dispatch">
+
+                        <div class="stat-card-strip"></div>
+
+                        <div class="card-body">
+
+                            <div class="stat-card-content">
+
+                                <div class="stat-card-info">
+
+                                    <p class="stat-card-title">
+                                        Today Dispatch
+                                    </p>
+
+                                    <h3 class="stat-card-number">
+                                        {{ $todayDispatchCount }}
+                                    </h3>
+
+                                    <small class="stat-card-subtitle">
+                                        Qty: {{ $todayDispatchQty }}
+                                    </small>
+
+                                </div>
+
+                                <div class="stat-card-icon">
+                                    <i class="bi bi-box-arrow-up"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
 
             <!-- WAREHOUSE LIST + STOCK UTILIZATION -->
             <div class="row g-3 mt-4">
