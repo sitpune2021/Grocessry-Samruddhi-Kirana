@@ -473,9 +473,102 @@
 </head>
 
 <body>
+
+    <div class="floating-leaves" aria-hidden="true">
+        <span>🌿</span>
+        <span>🍃</span>
+        <span>🌿</span>
+        <span>🍃</span>
+    </div>
+
+<style>
+    .floating-leaves {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.floating-leaves span {
+    position: absolute;
+    font-size: 24px;
+    opacity: .12;
+    animation: leafFloat 12s linear infinite;
+}
+
+.floating-leaves span:nth-child(1) {
+    left: 8%;
+    animation-delay: 0s;
+}
+
+.floating-leaves span:nth-child(2) {
+    left: 35%;
+    animation-delay: -4s;
+}
+
+.floating-leaves span:nth-child(3) {
+    left: 65%;
+    animation-delay: -8s;
+}
+
+.floating-leaves span:nth-child(4) {
+    left: 90%;
+    animation-delay: -2s;
+}
+
+@keyframes leafFloat {
+    0% {
+        transform: translateY(110vh) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(50vh) translateX(40px) rotate(180deg);
+    }
+
+    100% {
+        transform: translateY(-10vh) translateX(-30px) rotate(360deg);
+    }
+}
+.stat-card {
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -120%;
+
+    width: 70%;
+    height: 100%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.45),
+        transparent
+    );
+
+    transform: skewX(-20deg);
+
+    transition: left .8s ease;
+
+    pointer-events: none;
+}
+
+.stat-card:hover::after {
+    left: 130%;
+}
+
+</style>
+
   <!-- Layout wrapper -->
   <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
+
       <!-- Menu -->
       <style>
         .stat-card {
@@ -528,6 +621,7 @@
         }
 
       </style>
+      
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
         @include('layouts.sidebar')
@@ -886,45 +980,580 @@
 
 
             <!-- WAREHOUSE LIST + STOCK UTILIZATION -->
-            <div class="row g-3 mt-4">
+            <div class="row g-3 mt-4 warehouse-dashboard">
 
-              <!-- Left: Warehouse List -->
-              <div class="col-lg-7 col-md-12">
-                <div class="card h-100">
-                  <div class="card-body">
-                    <h5 class="mb-3">All Warehouses</h5>
+                <!-- Left: Warehouse List -->
+                <div class="col-12 col-lg-7">
+                    <div class="card warehouse-ui-card h-100">
 
-                    <div class="warehouse-scroll">
-                      <ul class="list-group list-group-flush">
-                        @forelse($warehouseDistrict as $warehouse)
-                        <li class="list-group-item">{{ $warehouse }}</li>
-                        @empty
-                        <li class="list-group-item text-muted">No Warehouses Found</li>
-                        @endforelse
-                      </ul>
+                        <div class="card-body warehouse-card-body">
+
+                            <div class="warehouse-heading">
+                                <div>
+                                    <h5 class="warehouse-title">
+                                        All Warehouses
+                                    </h5>
+
+                                    <p class="warehouse-subtitle">
+                                        Available warehouse locations
+                                    </p>
+                                </div>
+
+                                <div class="warehouse-heading-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                            </div>
+
+
+                            <div class="warehouse-scroll">
+
+                                <ul class="list-group list-group-flush">
+
+                                    @forelse($warehouseDistrict as $warehouse)
+
+                                    <li class="list-group-item warehouse-list-item">
+
+                                        <div class="warehouse-item-left">
+
+                                            <span class="warehouse-item-icon">
+                                                <i class="bi bi-building"></i>
+                                            </span>
+
+                                            <span class="warehouse-item-name">
+                                                {{ $warehouse }}
+                                            </span>
+
+                                        </div>
+
+                                        <i class="bi bi-chevron-right warehouse-item-arrow"></i>
+
+                                    </li>
+
+                                    @empty
+
+                                    <li class="list-group-item warehouse-empty">
+                                        <i class="bi bi-building-x"></i>
+                                        <span>No Warehouses Found</span>
+                                    </li>
+
+                                    @endforelse
+
+                                </ul>
+
+                            </div>
+
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
 
-              <!-- Right: Stock Utilization -->
-              <div class="col-lg-5 col-md-12">
-                <div class="card h-100">
-                  <div class="card-body text-center">
-                    <h6 class="mb-3">Stock Utilization</h6>
+                <!-- Right: Stock Utilization -->
+                <div class="col-12 col-lg-5">
 
-                    <div style="height:160px">
-                      <canvas id="stockUtilizationChart"></canvas>
+                    <div class="card warehouse-ui-card h-100">
+
+                        <div class="card-body stock-card-body">
+
+                            <div class="stock-heading">
+
+                                <div>
+                                    <h6 class="stock-title">
+                                        Stock Utilization
+                                    </h6>
+
+                                    <p class="stock-subtitle">
+                                        Current storage usage
+                                    </p>
+                                </div>
+
+                                <div class="stock-heading-icon">
+                                    <i class="bi bi-pie-chart"></i>
+                                </div>
+
+                            </div>
+
+
+                            <div class="stock-chart-wrapper">
+                                <canvas id="stockUtilizationChart"></canvas>
+                            </div>
+
+
+                            <strong class="stock-value">
+                                {{ $stockUtilization }}%
+                                <span>Used</span>
+                            </strong>
+
+                        </div>
+
                     </div>
 
-                    <strong class="mt-2 d-block">
-                      {{ $stockUtilization }}% Used
-                    </strong>
-                  </div>
                 </div>
-              </div>
 
             </div>
+
+            <style>
+
+            /* =========================================================
+            MAIN
+            ========================================================= */
+
+            .warehouse-dashboard {
+                width: 100%;
+            }
+
+
+            /* =========================================================
+            CARD
+            ========================================================= */
+
+            .warehouse-ui-card {
+                border: 1px solid #e8eee9 !important;
+                border-radius: 14px !important;
+
+                background: #ffffff;
+
+                box-shadow:
+                    0 4px 18px rgba(0, 0, 0, 0.035);
+
+                overflow: hidden;
+
+                transition:
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease;
+            }
+
+            .warehouse-ui-card:hover {
+                box-shadow:
+                    0 7px 24px rgba(25, 135, 84, 0.08);
+            }
+
+            .warehouse-card-body,
+            .stock-card-body {
+                padding: 20px;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE HEADER
+            ========================================================= */
+
+            .warehouse-heading,
+            .stock-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                gap: 15px;
+
+                margin-bottom: 16px;
+            }
+
+            .warehouse-title,
+            .stock-title {
+                margin: 0;
+
+                color: #202a24;
+
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            .warehouse-subtitle,
+            .stock-subtitle {
+                margin: 4px 0 0;
+
+                color: #8a948e;
+
+                font-size: 12px;
+            }
+
+
+            /* =========================================================
+            HEADER ICON
+            ========================================================= */
+
+            .warehouse-heading-icon,
+            .stock-heading-icon {
+                width: 38px;
+                height: 38px;
+
+                flex: 0 0 38px;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                border-radius: 10px;
+
+                background: #eaf7f0;
+                color: #198754;
+
+                font-size: 17px;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE SCROLL
+            ========================================================= */
+
+            .warehouse-scroll {
+                width: 100%;
+
+                max-height: 300px;
+
+                overflow-y: auto;
+                overflow-x: hidden;
+
+                padding-right: 3px;
+
+                scrollbar-width: thin;
+                scrollbar-color: #cbd8d0 transparent;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-thumb {
+                background: #cbd8d0;
+                border-radius: 10px;
+            }
+
+            .warehouse-scroll::-webkit-scrollbar-thumb:hover {
+                background: #198754;
+            }
+
+
+            /* =========================================================
+            WAREHOUSE ITEM
+            ========================================================= */
+
+            .warehouse-list-item {
+                display: flex !important;
+
+                align-items: center;
+                justify-content: space-between;
+
+                gap: 12px;
+
+                min-height: 50px;
+
+                padding: 8px 10px !important;
+
+                border: 0 !important;
+                border-bottom: 1px solid #edf2ef !important;
+
+                background: transparent !important;
+
+                transition: all 0.18s ease;
+            }
+
+            .warehouse-list-item:last-child {
+                border-bottom: 0 !important;
+            }
+
+            .warehouse-list-item:hover {
+                padding-left: 14px !important;
+
+                background: #f7fbf8 !important;
+            }
+
+
+            /* =========================================================
+            ITEM LEFT
+            ========================================================= */
+
+            .warehouse-item-left {
+                display: flex;
+
+                align-items: center;
+
+                gap: 10px;
+
+                min-width: 0;
+            }
+
+            .warehouse-item-icon {
+                width: 32px;
+                height: 32px;
+
+                min-width: 32px;
+
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+
+                border-radius: 8px;
+
+                background: #eef8f2;
+                color: #198754;
+
+                font-size: 14px;
+            }
+
+            .warehouse-item-name {
+                min-width: 0;
+
+                color: #465149;
+
+                font-size: 13px;
+                font-weight: 600;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+
+            /* =========================================================
+            ARROW
+            ========================================================= */
+
+            .warehouse-item-arrow {
+                flex: 0 0 auto;
+
+                color: #a3ada7;
+
+                font-size: 13px;
+
+                transition: all 0.18s ease;
+            }
+
+            .warehouse-list-item:hover .warehouse-item-arrow {
+                color: #198754;
+
+                transform: translateX(3px);
+            }
+
+
+            /* =========================================================
+            EMPTY
+            ========================================================= */
+
+            .warehouse-empty {
+                min-height: 130px;
+
+                display: flex !important;
+
+                align-items: center;
+                justify-content: center;
+
+                gap: 8px;
+
+                border: 0 !important;
+
+                color: #8a948e;
+
+                font-size: 13px;
+            }
+
+            .warehouse-empty i {
+                color: #198754;
+
+                font-size: 20px;
+            }
+
+
+            /* =========================================================
+            STOCK CHART
+            ========================================================= */
+
+            .stock-card-body {
+                display: flex;
+
+                flex-direction: column;
+            }
+
+            .stock-chart-wrapper {
+                position: relative;
+
+                width: 100%;
+
+                height: 190px;
+
+                margin: 0 auto;
+            }
+
+            .stock-chart-wrapper canvas {
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+
+            /* =========================================================
+            STOCK VALUE
+            ========================================================= */
+
+            .stock-value {
+                display: flex;
+
+                align-items: baseline;
+                justify-content: center;
+
+                gap: 5px;
+
+                margin-top: 8px;
+
+                color: #198754;
+
+                font-size: 24px;
+                font-weight: 800;
+            }
+
+            .stock-value span {
+                color: #7d8781;
+
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+
+            /* =========================================================
+            TABLET
+            ========================================================= */
+
+            @media (max-width: 991px) {
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 18px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 270px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 210px;
+                }
+            }
+
+
+            /* =========================================================
+            MOBILE
+            ========================================================= */
+
+            @media (max-width: 767px) {
+
+                .warehouse-dashboard {
+                    margin-top: 16px !important;
+                }
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 15px;
+                }
+
+                .warehouse-title,
+                .stock-title {
+                    font-size: 15px;
+                }
+
+                .warehouse-subtitle,
+                .stock-subtitle {
+                    font-size: 11px;
+                }
+
+                .warehouse-heading-icon,
+                .stock-heading-icon {
+                    width: 34px;
+                    height: 34px;
+
+                    flex-basis: 34px;
+
+                    font-size: 15px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 240px;
+                }
+
+                .warehouse-list-item {
+                    min-height: 46px;
+
+                    padding: 7px 6px !important;
+                }
+
+                .warehouse-item-icon {
+                    width: 30px;
+                    height: 30px;
+
+                    min-width: 30px;
+
+                    font-size: 13px;
+                }
+
+                .warehouse-item-name {
+                    font-size: 12.5px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 190px;
+
+                    max-width: 280px;
+                }
+
+                .stock-value {
+                    font-size: 22px;
+                }
+            }
+
+
+            /* =========================================================
+            SMALL MOBILE
+            ========================================================= */
+
+            @media (max-width: 480px) {
+
+                .warehouse-card-body,
+                .stock-card-body {
+                    padding: 13px;
+                }
+
+                .warehouse-heading,
+                .stock-heading {
+                    margin-bottom: 12px;
+                }
+
+                .warehouse-title,
+                .stock-title {
+                    font-size: 14px;
+                }
+
+                .warehouse-subtitle,
+                .stock-subtitle {
+                    font-size: 10.5px;
+                }
+
+                .warehouse-scroll {
+                    max-height: 220px;
+                }
+
+                .warehouse-item-name {
+                    font-size: 12px;
+                }
+
+                .warehouse-item-arrow {
+                    font-size: 12px;
+                }
+
+                .stock-chart-wrapper {
+                    height: 175px;
+
+                    max-width: 250px;
+                }
+
+                .stock-value {
+                    font-size: 21px;
+                }
+            }
+
+            </style>
+
 
             <!-- Full width: IN vs OUT Trend -->
             <div class="row mt-4">
@@ -1182,7 +1811,6 @@
 
   });
   </script>
-
 
 </body>
 
