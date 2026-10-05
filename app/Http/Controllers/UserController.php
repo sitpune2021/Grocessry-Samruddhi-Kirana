@@ -18,23 +18,88 @@ class UserController extends Controller
 {
     
     
+    // public function profile()
+    // {
+    //     $users = User::with('role')->paginate(20);
+
+    //     return view('userProfile.index', compact('users'));
+    // }
+
+    // public function Store(Request $request)
+    // {
+    //     // Log: Raw request
+    //     Log::info('User Store Request Received', ['request' => $request->all()]);
+    //     Log::info('RAW BODY', ['body' => $request->getContent()]);
+
+    //     try {
+
+    //         // Log: Starting validation
+    //         Log::info('User Store Validation Started');
+
+    //         $request->validate([
+    //             'first_name' => 'required|string|max:100',
+    //             'last_name'  => 'required|string|max:100',
+    //             'email'      => 'nullable|email|unique:users,email',
+    //             'mobile'     => 'required|digits:10|unique:users,mobile',
+    //             'role'       => 'required|in:admin,user,manager,staff',
+    //             'password'   => 'required|min:8|confirmed',
+    //         ]);
+
+    //         Log::info('User Store Validation Passed');
+
+    //         // Create User
+    //         $admin = User::create([
+    //             'first_name' => $request->first_name,
+    //             'email'      => $request->email,
+    //             'last_name'  => $request->last_name,
+    //             'mobile'     => $request->mobile,
+    //             'role'       => $request->role,
+    //             'password'   => Hash::make($request->password),
+    //         ]);
+
+    //         // Log: After creating user
+    //         Log::info('User Created Successfully', [
+    //             'user_id' => $admin->id,
+    //             'email'   => $admin->email
+    //         ]);
+
+    //         return response()->json([
+    //             'status'  => true,
+    //             'message' => 'User created successfully',
+    //             'data'    => $admin
+    //         ], 200);
+    //     } catch (\Exception $e) {
+
+    //         // Log: Error
+    //         Log::error('User Store Error', [
+    //             'error_message' => $e->getMessage(),
+    //             'line'          => $e->getLine(),
+    //             'file'          => $e->getFile(),
+    //         ]);
+
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Something went wrong',
+    //             'error'   => $e->getMessage()
+    //         ], 500);
+    //     }
+        
+    // }
+
     public function profile()
     {
-        $users = User::with('role')->paginate(20);
+        $users = User::with(['role', 'warehouse'])->paginate(20);
 
         return view('userProfile.index', compact('users'));
     }
 
     public function Store(Request $request)
     {
-        // Log: Raw request
-        Log::info('User Store Request Received', ['request' => $request->all()]);
-        Log::info('RAW BODY', ['body' => $request->getContent()]);
+        Log::info('User Store Request Received', [
+            'request' => $request->all()
+        ]);
 
         try {
-
-            // Log: Starting validation
-            Log::info('User Store Validation Started');
 
             $request->validate([
                 'first_name' => 'required|string|max:100',
@@ -43,24 +108,53 @@ class UserController extends Controller
                 'mobile'     => 'required|digits:10|unique:users,mobile',
                 'role'       => 'required|in:admin,user,manager,staff',
                 'password'   => 'required|min:8|confirmed',
+
+                // Profile Photo
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             ]);
 
             Log::info('User Store Validation Passed');
 
-            // Create User
+            /*
+            |--------------------------------------------------------------------------
+            | Profile Photo Upload
+            |--------------------------------------------------------------------------
+            */
+
+            $profilePhoto = null;
+
+            if ($request->hasFile('profile_photo')) {
+
+                $profilePhoto = $request->file('profile_photo')
+                    ->store('profiles', 'public');
+
+                Log::info('Profile Photo Uploaded', [
+                    'path' => $profilePhoto
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Create User
+            |--------------------------------------------------------------------------
+            */
+
             $admin = User::create([
-                'first_name' => $request->first_name,
-                'email'      => $request->email,
-                'last_name'  => $request->last_name,
-                'mobile'     => $request->mobile,
-                'role'       => $request->role,
-                'password'   => Hash::make($request->password),
+                'first_name'    => $request->first_name,
+                'last_name'     => $request->last_name,
+                'email'         => $request->email,
+                'mobile'        => $request->mobile,
+                'role'          => $request->role,
+                'password'      => Hash::make($request->password),
+
+                // Profile photo path
+                'profile_photo' => $profilePhoto,
             ]);
 
-            // Log: After creating user
             Log::info('User Created Successfully', [
                 'user_id' => $admin->id,
-                'email'   => $admin->email
+                'email'   => $admin->email,
+                'profile_photo' => $profilePhoto
             ]);
 
             return response()->json([
@@ -68,9 +162,9 @@ class UserController extends Controller
                 'message' => 'User created successfully',
                 'data'    => $admin
             ], 200);
+
         } catch (\Exception $e) {
 
-            // Log: Error
             Log::error('User Store Error', [
                 'error_message' => $e->getMessage(),
                 'line'          => $e->getLine(),
@@ -83,7 +177,6 @@ class UserController extends Controller
                 'error'   => $e->getMessage()
             ], 500);
         }
-        
     }
 
     public function show(string $id)
@@ -125,6 +218,77 @@ class UserController extends Controller
         }
     }
 
+    // public function update(Request $request, string $id)
+    // {
+    //     Log::info('User Update Request Received', [
+    //         'user_id' => $id,
+    //         'request' => $request->all()
+    //     ]);
+
+    //     try {
+
+    //         $user = User::find($id);
+
+    //         if (!$user) {
+    //             Log::warning("User Not Found", ['user_id' => $id]);
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'User not found'
+    //             ], 404);
+    //         }
+
+    //         Log::info("User Found", ['user_id' => $user->id]);
+
+    //         // Validation
+    //         $request->validate([
+    //             'first_name' => 'required|string|max:100',
+    //             'last_name'  => 'required|string|max:100',
+    //             'email'      => 'nullable|email|unique:users,email,' . $id,
+    //             'mobile'     => 'required|digits:10|unique:users,mobile,' . $id,
+    //             'role'       => 'required|in:admin,user,manager,staff',
+    //             'password'   => 'nullable|min:8|confirmed',
+    //         ]);
+
+    //         Log::info("User Update Validation Passed");
+
+    //         // Update values
+    //         $user->first_name = $request->first_name;
+    //         $user->last_name  = $request->last_name;
+    //         $user->email      = $request->email;
+    //         $user->mobile     = $request->mobile;
+    //         $user->role       = $request->role;
+
+    //         if ($request->password) {
+    //             $user->password = Hash::make($request->password);
+    //             Log::info("Password Updated for User", ['user_id' => $user->id]);
+    //         }
+
+    //         $user->save();
+
+    //         Log::info("User Updated Successfully", ['user_id' => $user->id]);
+
+    //         return response()->json([
+    //             'status'  => true,
+    //             'message' => 'User updated successfully',
+    //             'data'    => $user
+    //         ], 200);
+    //     } catch (\Exception $e) {
+
+    //         Log::error("User Update Error", [
+    //             'user_id' => $id,
+    //             'error'   => $e->getMessage()
+    //         ]);
+
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Something went wrong',
+    //             'error'   => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+   
     public function update(Request $request, string $id)
     {
         Log::info('User Update Request Received', [
@@ -137,54 +301,135 @@ class UserController extends Controller
             $user = User::find($id);
 
             if (!$user) {
-                Log::warning("User Not Found", ['user_id' => $id]);
+                Log::warning('User Not Found', [
+                    'user_id' => $id
+                ]);
 
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'User not found'
                 ], 404);
             }
 
-            Log::info("User Found", ['user_id' => $user->id]);
-
-            // Validation
-            $request->validate([
-                'first_name' => 'required|string|max:100',
-                'last_name'  => 'required|string|max:100',
-                'email'      => 'nullable|email|unique:users,email,' . $id,
-                'mobile'     => 'required|digits:10|unique:users,mobile,' . $id,
-                'role'       => 'required|in:admin,user,manager,staff',
-                'password'   => 'nullable|min:8|confirmed',
+            Log::info('User Found', [
+                'user_id' => $user->id
             ]);
 
-            Log::info("User Update Validation Passed");
+            /*
+            |--------------------------------------------------------------------------
+            | Validation
+            |--------------------------------------------------------------------------
+            */
 
-            // Update values
+            $request->validate([
+                'first_name'    => 'required|string|max:100',
+                'last_name'     => 'required|string|max:100',
+                'email'         => 'nullable|email|unique:users,email,' . $id,
+                'mobile'        => 'required|digits:10|unique:users,mobile,' . $id,
+                'role'          => 'required|in:admin,user,manager,staff',
+                'password'      => 'nullable|min:8|confirmed',
+
+                // Profile Photo
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            ]);
+
+            Log::info('User Update Validation Passed');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update Basic Information
+            |--------------------------------------------------------------------------
+            */
+
             $user->first_name = $request->first_name;
             $user->last_name  = $request->last_name;
             $user->email      = $request->email;
             $user->mobile     = $request->mobile;
             $user->role       = $request->role;
 
-            if ($request->password) {
+            /*
+            |--------------------------------------------------------------------------
+            | Update Password
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->filled('password')) {
+
                 $user->password = Hash::make($request->password);
-                Log::info("Password Updated for User", ['user_id' => $user->id]);
+
+                Log::info('Password Updated', [
+                    'user_id' => $user->id
+                ]);
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Update Profile Photo
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->hasFile('profile_photo')) {
+
+                Log::info('New Profile Photo Received', [
+                    'user_id' => $user->id,
+                    'original_name' => $request->file('profile_photo')->getClientOriginalName()
+                ]);
+
+                // Delete old image
+                if ($user->profile_photo) {
+
+                    $oldPhoto = storage_path(
+                        'app/public/' . $user->profile_photo
+                    );
+
+                    if (file_exists($oldPhoto)) {
+                        unlink($oldPhoto);
+
+                        Log::info('Old Profile Photo Deleted', [
+                            'path' => $oldPhoto
+                        ]);
+                    }
+                }
+
+                // Store new image
+                $profilePhoto = $request->file('profile_photo')
+                    ->store('profile_photos', 'public');
+
+                // Save path in database
+                $user->profile_photo = $profilePhoto;
+
+                Log::info('New Profile Photo Stored', [
+                    'user_id' => $user->id,
+                    'path'    => $profilePhoto
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Save User
+            |--------------------------------------------------------------------------
+            */
 
             $user->save();
 
-            Log::info("User Updated Successfully", ['user_id' => $user->id]);
+            Log::info('User Updated Successfully', [
+                'user_id'       => $user->id,
+                'profile_photo' => $user->profile_photo
+            ]);
 
             return response()->json([
                 'status'  => true,
                 'message' => 'User updated successfully',
                 'data'    => $user
             ], 200);
+
         } catch (\Exception $e) {
 
-            Log::error("User Update Error", [
+            Log::error('User Update Error', [
                 'user_id' => $id,
-                'error'   => $e->getMessage()
+                'error'   => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile()
             ]);
 
             return response()->json([

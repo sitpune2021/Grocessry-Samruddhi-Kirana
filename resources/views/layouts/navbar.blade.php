@@ -42,7 +42,6 @@
                                 class="rounded-circle"
                                 width="40"
                                 height="40"
-                                alt="User Avatar"
                             >
                         @else
                             <img src="{{ asset('admin/assets/img/avatars/1.png') }}" class="rounded-circle" width="40">

@@ -81,6 +81,31 @@ use App\Models\Order;
 // end this code use for category image
 
 
+// Route::get('/test-image', function () {
+
+//     $file = 'profile_photos/Ni1PMvjI1npBmLSoe0Mae94S72OqajBK0T9eeQCH.jpg';
+
+//     return response()->json([
+//         'storage_exists' => Storage::disk('public')->exists($file),
+//         'storage_path'   => Storage::disk('public')->path($file),
+//         'public_path'    => public_path('storage/' . $file),
+//         'public_exists'  => file_exists(public_path('storage/' . $file)),
+//     ]);
+// });
+
+// Route::get('/test-category-image', function () {
+
+//     $file = 'category/1790843101_hjgjhjhj.JPG';
+
+//     return response()->json([
+//         'storage_exists' => Storage::disk('public')->exists($file),
+//         'storage_path'   => Storage::disk('public')->path($file),
+//         'public_path'    => public_path('storage/' . $file),
+//         'public_exists'  => file_exists(public_path('storage/' . $file)),
+//         'url'            => asset('storage/' . $file),
+//     ]);
+// });
+
 Route::get('/login-admin', [AdminAuthController::class, 'loginForm'])->name('login.form');
 Route::post('/admin-login', [AdminAuthController::class, 'login'])->name('admin.login');
 

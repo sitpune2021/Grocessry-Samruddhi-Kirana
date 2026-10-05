@@ -1,37 +1,981 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+    /* =====================================================
+   BRAND TABLE WRAPPER
+===================================================== */
+
+.brand-table-wrapper {
+    width: 100%;
+    margin-top: 15px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+
+/* =====================================================
+   RESPONSIVE SCROLL
+===================================================== */
+
+.brand-table-wrapper .brand-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.brand-responsive-table {
+    width: 100% !important;
+    min-width: 850px;
+    margin: 0 !important;
+
+    table-layout: fixed;
+
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+
+/* =====================================================
+   COLUMN WIDTHS
+===================================================== */
+
+.brand-sr-column {
+    width: 75px !important;
+    min-width: 75px !important;
+    max-width: 75px !important;
+    text-align: center !important;
+}
+
+
+.brand-logo-column {
+    width: 105px !important;
+    min-width: 105px !important;
+    max-width: 105px !important;
+    text-align: center !important;
+}
+
+
+.brand-name-column {
+    width: 230px !important;
+    min-width: 190px !important;
+}
+
+
+.brand-slug-column {
+    width: 230px !important;
+    min-width: 180px !important;
+}
+
+
+.brand-status-column {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    text-align: center !important;
+}
+
+
+.brand-action-column {
+    width: 155px !important;
+    min-width: 155px !important;
+    max-width: 155px !important;
+    text-align: center !important;
+}
+
+/* =====================================================
+   TABLE HEADER
+===================================================== */
+
+.brand-responsive-table thead th {
+    height: 52px;
+    padding: 14px 15px !important;
+    background: #f5f8f6 !important;
+    color: #495057 !important;
+    border: none !important;
+    border-bottom: 1px solid #e5e9eb !important;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+    vertical-align: middle !important;
+}
+
+
+.brand-responsive-table thead th:first-child {
+    border-radius: 15px 0 0 0;
+}
+
+
+.brand-responsive-table thead th:last-child {
+    border-radius: 0 15px 0 0;
+}
+
+
+/* =====================================================
+   TABLE BODY
+===================================================== */
+
+.brand-responsive-table tbody td {
+    height: 70px;
+    padding: 13px 15px !important;
+    background: #ffffff;
+    border: none !important;
+    border-bottom: 1px solid #edf0f2 !important;
+    vertical-align: middle !important;
+}
+
+
+.brand-responsive-table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+
+/* =====================================================
+   ROW HOVER
+===================================================== */
+
+.brand-table-row {
+    transition: all 0.2s ease;
+}
+
+
+.brand-table-row:hover td {
+    background: #f8fcf9 !important;
+}
+
+
+.brand-table-row:hover td:first-child {
+    box-shadow: inset 4px 0 0 #198754;
+}
+
+
+/* =====================================================
+   SR NUMBER
+===================================================== */
+
+.brand-sr-badge {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #eaf7ef;
+    color: #198754;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.brand-logo-image {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    padding: 5px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 9px;
+    display: inline-block;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+
+.brand-logo-image:hover {
+    transform: translateY(-2px);
+    border-color: #ced4da;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =====================================================
+   NO LOGO
+===================================================== */
+
+.brand-no-logo {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f5f7f8;
+    border: 1px dashed #ced4da;
+    color: #adb5bd;
+    font-size: 20px;
+}
+
+
+/* =====================================================
+   BRAND NAME
+===================================================== */
+
+.brand-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+
+.brand-name-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #f1f8f3;
+    color: #198754;
+    border: 1px solid #e3eee7;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+
+.brand-table-row:hover .brand-name-icon {
+    background: #198754;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+
+.brand-name {
+    color: #212529;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+
+/* =====================================================
+   SLUG
+===================================================== */
+
+.brand-slug {
+    display: inline-block;
+
+    max-width: 100%;
+
+    padding: 5px 9px;
+
+    background: #f7f9f8;
+
+    border: 1px solid #e4e8ea;
+
+    color: #667078;
+
+    border-radius: 8px;
+
+    font-family: monospace;
+
+    font-size: 11.5px;
+
+    font-weight: 500;
+
+    line-height: 1.4;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.02);
+
+    transition: all 0.2s ease;
+}
+
+
+.brand-table-row:hover .brand-slug {
+    background: #edf8f1;
+    border-color: #dceee2;
+    color: #198754;
+}
+
+
+/* =====================================================
+   STATUS
+   SAME STYLE AS OTHER PAGES
+===================================================== */
+
+.brand-status-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+.brand-status-switch {
+    width: 38px !important;
+    height: 20px !important;
+    margin: 0 !important;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+
+.brand-status-switch:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+
+.brand-status-switch:focus {
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.10);
+}
+
+
+/* =====================================================
+   ACTIONS
+===================================================== */
+
+.brand-action-cell {
+    white-space: nowrap;
+    text-align: center !important;
+}
+
+
+.brand-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    min-height: 35px;
+}
+
+
+.brand-delete-form {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* =====================================================
+   ACTION BUTTON
+===================================================== */
+
+.brand-action-btn {
+    width: 35px !important;
+    height: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    flex: 0 0 35px !important;
+
+    border: none !important;
+    border-radius: 8px !important;
+
+    font-size: 14px;
+    text-decoration: none !important;
+
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+
+    transition: all 0.2s ease;
+}
+
+
+.brand-action-btn i {
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   VIEW - BLUE
+===================================================== */
+
+.brand-view-btn {
+    background: #e8f1ff !important;
+    color: #0d6efd !important;
+}
+
+
+.brand-view-btn:hover {
+    background: #0d6efd !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(13, 110, 253, 0.18);
+}
+
+
+/* =====================================================
+   EDIT - ORANGE
+===================================================== */
+
+.brand-edit-btn {
+    background: #fff4df !important;
+    color: #f59f00 !important;
+}
+
+
+.brand-edit-btn:hover {
+    background: #f59f00 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(245, 159, 0, 0.18);
+}
+
+
+/* =====================================================
+   DELETE - RED
+===================================================== */
+
+.brand-delete-btn {
+    background: #ffe9e9 !important;
+    color: #dc3545 !important;
+}
+
+
+.brand-delete-btn:hover {
+    background: #dc3545 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(220, 53, 69, 0.18);
+}
+
+
+/* =====================================================
+   BRAND HEADER
+===================================================== */
+
+.brand-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+    padding: 16px 20px;
+
+    background: #ffffff;
+    border-bottom: 1px solid #edf0f2;
+}
+
+
+/* =====================================================
+   HEADER TITLE
+===================================================== */
+
+.brand-header-title {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.brand-title-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: #edf8f1;
+    color: #198754;
+
+    border: 1px solid #e1f0e6;
+
+    font-size: 19px;
+
+    transition: all 0.2s ease;
+}
+
+
+.brand-title-row:hover .brand-title-icon {
+    background: #198754;
+    color: #ffffff;
+    transform: scale(1.04);
+}
+
+
+.brand-header-title .card-title {
+    margin: 0 !important;
+    color: #212529;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+
+.brand-subtitle {
+    display: block;
+    margin-top: 2px;
+    color: #8f969c;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+
+/* =====================================================
+   HEADER ACTIONS
+===================================================== */
+
+.brand-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+
+/* =====================================================
+   HEADER BUTTON
+===================================================== */
+
+.brand-header-btn {
+    min-height: 40px;
+    height: 40px;
+
+    padding: 7px 13px !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    border-radius: 9px;
+
+    font-size: 12.5px;
+    font-weight: 600;
+
+    white-space: nowrap;
+    text-decoration: none !important;
+
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.04);
+
+    transition: all 0.2s ease;
+}
+
+
+.brand-header-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =====================================================
+   HEADER BUTTON ICON
+===================================================== */
+
+.brand-btn-icon {
+    width: 22px;
+    height: 22px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 6px;
+
+    background: rgba(255, 255, 255, 0.14);
+}
+
+
+.brand-btn-icon i {
+    font-size: 12px;
+}
+
+
+/* =====================================================
+   ADD BRAND - GREEN
+===================================================== */
+
+.brand-add-btn {
+    background: #198754 !important;
+    border: 1px solid #198754 !important;
+    color: #ffffff !important;
+}
+
+
+.brand-add-btn:hover {
+    background: #157347 !important;
+    border-color: #157347 !important;
+    color: #ffffff !important;
+}
+
+
+/* =====================================================
+   UPLOAD - BLUE
+===================================================== */
+
+.brand-upload-btn {
+    background: #0d6efd !important;
+    border: 1px solid #0d6efd !important;
+    color: #ffffff !important;
+}
+
+
+.brand-upload-btn:hover {
+    background: #0b5ed7 !important;
+    border-color: #0b5ed7 !important;
+    color: #ffffff !important;
+}
+
+
+/* =====================================================
+   DOWNLOAD - WHITE
+===================================================== */
+
+.brand-download-btn {
+    background: #ffffff !important;
+    border: 1px solid #dce1e4 !important;
+    color: #596168 !important;
+}
+
+
+.brand-download-btn:hover {
+    background: #f7f9f8 !important;
+    border-color: #c8d0d4 !important;
+    color: #343a40 !important;
+}
+
+
+/* =====================================================
+   EMPTY STATE
+===================================================== */
+
+.brand-empty-cell {
+    padding: 50px 20px !important;
+}
+
+
+.brand-empty-state {
+    color: #6c757d;
+    text-align: center;
+}
+
+
+.brand-empty-icon {
+    width: 65px;
+    height: 65px;
+
+    margin: 0 auto 15px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background: #f1f8f3;
+    color: #198754;
+
+    border: 1px solid #e3eee7;
+
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.05);
+
+    font-size: 27px;
+}
+
+
+.brand-empty-title {
+    margin-bottom: 5px;
+    color: #343a40;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+.brand-empty-text {
+    margin: 0;
+    color: #adb5bd;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .brand-table-wrapper {
+        border-radius: 12px;
+    }
+
+    .brand-responsive-table {
+        min-width: 850px !important;
+    }
+
+    .brand-responsive-table thead th {
+        height: 48px;
+        padding: 12px !important;
+        font-size: 10.5px;
+    }
+
+    .brand-responsive-table tbody td {
+        height: 62px;
+        padding: 11px 12px !important;
+    }
+
+    .brand-action-column {
+        width: 145px !important;
+        min-width: 145px !important;
+        max-width: 145px !important;
+    }
+
+    .brand-actions {
+        gap: 6px !important;
+    }
+
+    .brand-action-btn {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
+        flex-basis: 32px !important;
+    }
+
+    .brand-name {
+        font-size: 13px;
+    }
+
+    .brand-slug {
+        font-size: 11px;
+    }
+
+    .brand-title-row {
+        gap: 10px;
+    }
+
+    .brand-title-icon {
+        width: 39px;
+        height: 39px;
+        min-width: 39px;
+        font-size: 17px;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 576px) {
+
+    .brand-header {
+        padding: 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .brand-header-title {
+        width: 100%;
+    }
+
+    .brand-title-icon {
+        width: 37px;
+        height: 37px;
+        min-width: 37px;
+        border-radius: 9px;
+        font-size: 16px;
+    }
+
+    .brand-header-title .card-title {
+        font-size: 18px;
+    }
+
+    .brand-subtitle {
+        font-size: 11px;
+    }
+
+    .brand-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .brand-header-btn {
+        width: 100%;
+        min-height: 40px;
+        height: 40px;
+        font-size: 11.5px;
+    }
+
+    .brand-download-btn {
+        grid-column: 1 / -1;
+    }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 400px) {
+
+    .brand-title-row {
+        gap: 9px;
+    }
+
+    .brand-title-icon {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        font-size: 15px;
+    }
+
+    .brand-header-title .card-title {
+        font-size: 17px;
+    }
+
+    .brand-header-btn {
+        font-size: 11px;
+        padding: 7px 9px !important;
+    }
+
+}
+</style>
+
+<head>
+  <link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
     <div class="card shadow-sm p-2">
         <div class="card-datatable text-nowrap">
             @php
-            $canView = hasPermission('brands.view');
-            $canEdit = hasPermission('brands.edit');
-            $canDelete = hasPermission('brands.delete');
+                $canView = hasPermission('brands.view');
+                $canEdit = hasPermission('brands.edit');
+                $canDelete = hasPermission('brands.delete');
             @endphp
 
-            <!-- Header -->
-            <div class="row card-header flex-column flex-md-row align-items-center pb-2">
-                <div class="col-md-auto me-auto">
-                    <h4 class="card-title mb-0">Brands</h4>
+            <!-- ========================================
+                BRAND HEADER
+            ======================================== -->
+
+            <div class="brand-header">
+
+                <div class="brand-header-title">
+
+                    <div class="brand-title-row">
+
+                        <div class="brand-title-icon">
+                            <i class="bi bi-tags-fill"></i>
+                        </div>
+
+                        <div>
+                            <h4 class="card-title">
+                                Brands
+                            </h4>
+
+                            <span class="brand-subtitle">
+                                Manage your brands and brand details
+                            </span>
+                        </div>
+
+                    </div>
+
                 </div>
 
-                <div class="col-md-auto ms-auto d-flex gap-2">
-                    @if (hasPermission('brands.create'))
-                    <a href="{{ route('brands.create') }}" class="btn btn-success">
-                        Add Brands
-                    </a>
-                    <button type="button" class="btn btn-primary " data-bs-toggle="modal"
-                        data-bs-target="#bulkUploadModal">
-                        Upload CSV
-                    </button>
-                    <!-- <a href="{{ route('brands.sample-excel') }}" class="btn btn-outline-secondary"> -->
-                    <a class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#csvModal">
-                        Download Csv
-                    </a>
-                    @endif
-                </div>
+
+                @if (hasPermission('brands.create'))
+
+                    <div class="brand-header-actions">
+
+                        <!-- ADD BRAND -->
+                        <a href="{{ route('brands.create') }}"
+                        class="brand-header-btn brand-add-btn">
+
+                            <span class="brand-btn-icon">
+                                <i class="bi bi-plus-lg"></i>
+                            </span>
+
+                            <span>Add Brand</span>
+
+                        </a>
+
+
+                        <!-- UPLOAD CSV -->
+                        <button type="button"
+                                class="brand-header-btn brand-upload-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#bulkUploadModal">
+
+                            <span class="brand-btn-icon">
+                                <i class="bi bi-file-earmark-arrow-up"></i>
+                            </span>
+
+                            <span>Upload CSV</span>
+
+                        </button>
+
+
+                        <!-- DOWNLOAD CSV -->
+                        <a href="javascript:void(0);"
+                        class="brand-header-btn brand-download-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#csvModal">
+
+                            <span class="brand-btn-icon">
+                                <i class="bi bi-download"></i>
+                            </span>
+
+                            <span>Download CSV</span>
+
+                        </a>
+
+                    </div>
+
+                @endif
+
             </div>
 
             <!-- Search -->
@@ -58,121 +1002,235 @@
             </script>
             @endif
 
-            <!-- Table -->
-            <div class="table-responsive mt-5">
-                <table id="batchTable" class="table table-bordered table-striped mb-0">
+            <!-- ========================================
+                BRAND TABLE
+            ======================================== -->
 
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 80px;">Sr No</th>
-                            <th style="width: 15%;">Logo</th>
-                            <th style="width: 30%;">Brand Name</th>
-                            <th style="width: 40%;">Slug</th>
-                            <th class="text-center" style="width: 120px;">Status</th>
+            <div class="brand-table-wrapper">
 
-                            @if ($canView || $canEdit || $canDelete)
-                            <th style="width: 150px;">Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
+                <div class="brand-table-responsive">
 
-                    <tbody>
+                    <table id="batchTable"
+                        class="table brand-responsive-table mb-0">
 
-                        @forelse ($brands as $index => $brand)
-                        <tr>
+                        <thead>
+                            <tr>
 
-                            {{-- Sr No --}}
-                            <td class="text-center fw-semibold">
-                                {{ $brands->firstItem() + $index }}
-                            </td>
+                                <th class="text-center brand-sr-column">
+                                    Sr No
+                                </th>
 
-                            {{-- Logo --}}
-                            <td class="text-center">
-                                @if ($brand->logo)
-                                <img src="{{ asset('storage/brands/' . $brand->logo) }}"
-                                    alt="{{ $brand->name }}" width="50" height="50"
-                                    class="rounded border">
-                                @else
-                                <span class="text-muted">—</span>
-                                @endif
-                            </td>
+                                <th class="text-center brand-logo-column">
+                                    Logo
+                                </th>
 
-                            {{-- Brand Name --}}
-                            <td>
-                                <span class="fw-medium">{{ $brand->name }}</span>
-                            </td>
+                                <th class="brand-name-column">
+                                    Brand Name
+                                </th>
 
-                            {{-- Slug --}}
-                            <td class="text-muted">
-                                {{ $brand->slug }}
-                            </td>
+                                <th class="brand-slug-column">
+                                    Slug
+                                </th>
 
-                            {{-- Status --}}
-                            <td>
-                                <form action="{{ route('updateStatus') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="id" value="{{ $brand->id }}">
+                                <th class="text-center brand-status-column">
+                                    Status
+                                </th>
 
-                                    <div class="form-check form-switch d-flex justify-content-center">
-                                        <input class="form-check-input" type="checkbox" role="switch"
-                                            onchange="this.form.submit()" {{ $brand->status ? 'checked' : '' }}>
-                                    </div>
-                                </form>
-                            </td>
+                                @if ($canView || $canEdit || $canDelete)
 
-                            {{-- Actions --}}
-                            @if ($canView || $canEdit || $canDelete)
-                            <td class="text-center" style="white-space:nowrap;">
+                                    <th class="text-center brand-action-column">
+                                        Actions
+                                    </th>
 
-                                @if ($canView)
-                                <a href="{{ route('brands.show', $brand->id) }}"
-                                    class="btn btn-sm btn-primary">View</a>
                                 @endif
 
-                                @if ($canEdit)
-                                <a href="{{ route('brands.edit', $brand->id) }}"
-                                    class="btn btn-sm btn-warning">Edit</a>
-                                @endif
+                            </tr>
+                        </thead>
 
-                                @if ($canDelete)
-                                <form action="{{ route('brands.destroy', $brand->id) }}" method="POST"
-                                    class="d-inline">
+                        <tbody>
 
-                                    @csrf
-                                    @method('DELETE')
+                            @forelse ($brands as $index => $brand)
 
-                                    <button onclick="return confirm('Delete brand?')"
-                                        class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
+                                <tr class="brand-table-row">
 
-                                </form>
-                                @endif
+                                    {{-- Sr No --}}
+                                    <td class="text-center">
 
-                            </td>
-                            @endif
+                                        <span class="brand-sr-badge">
+                                            {{ $brands->firstItem() + $index }}
+                                        </span>
 
-                        </tr>
+                                    </td>
 
-                        @empty
+                                    {{-- Logo --}}
+                                    <td class="text-center">
 
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                No brands found
-                            </td>
-                        </tr>
-                        @endforelse
+                                        @if ($brand->logo)
 
-                    </tbody>
+                                            <img src="{{ asset('storage/brands/' . $brand->logo) }}"
+                                                alt="{{ $brand->name }}"
+                                                class="brand-logo-image">
 
-                </table>
+                                        @else
+
+                                            <div class="brand-no-logo">
+                                                <i class="bi bi-image"></i>
+                                            </div>
+
+                                        @endif
+
+                                    </td>
+
+                                    {{-- Brand Name --}}
+                                    <td>
+
+    <div class="brand-name-wrapper">
+
+        <div class="brand-name-icon">
+            <i class="bi bi-tag"></i>
+        </div>
+
+        <span class="brand-name">
+            {{ $brand->name }}
+        </span>
+
+    </div>
+
+</td>
+
+                                    {{-- Slug --}}
+                                    <td>
+
+                                        <span class="brand-slug">
+                                            {{ $brand->slug }}
+                                        </span>
+
+                                    </td>
+
+                                    {{-- Status --}}
+                                    <td>
+    <form action="{{ route('updateStatus') }}" method="POST">
+        @csrf
+
+        <input type="hidden"
+               name="id"
+               value="{{ $brand->id }}">
+
+        <div class="form-check form-switch d-flex justify-content-center">
+
+            <input class="form-check-input"
+                   type="checkbox"
+                   role="switch"
+                   onchange="this.form.submit()"
+                   {{ $brand->status ? 'checked' : '' }}>
+
+        </div>
+    </form>
+</td>
+                                    {{-- Actions --}}
+                                   @if ($canView || $canEdit || $canDelete)
+
+    <td class="text-center brand-action-cell">
+
+        <div class="brand-actions">
+
+            @if ($canView)
+
+                <a href="{{ route('brands.show', $brand->id) }}"
+                   class="brand-action-btn brand-view-btn"
+                   title="View Brand">
+
+                    <i class="bi bi-eye"></i>
+
+                </a>
+
+            @endif
+
+
+            @if ($canEdit)
+
+                <a href="{{ route('brands.edit', $brand->id) }}"
+                   class="brand-action-btn brand-edit-btn"
+                   title="Edit Brand">
+
+                    <i class="bi bi-pencil"></i>
+
+                </a>
+
+            @endif
+
+
+            @if ($canDelete)
+
+                <form action="{{ route('brands.destroy', $brand->id) }}"
+                      method="POST"
+                      class="brand-delete-form">
+
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit"
+                            onclick="return confirm('Delete brand?')"
+                            class="brand-action-btn brand-delete-btn"
+                            title="Delete Brand">
+
+                        <i class="bi bi-trash3"></i>
+
+                    </button>
+
+                </form>
+
+            @endif
+
+        </div>
+
+    </td>
+
+@endif
+
+                                </tr>
+
+                            @empty
+
+                                <tr>
+
+                                    <td colspan="{{ ($canView || $canEdit || $canDelete) ? 6 : 5 }}"
+                                        class="brand-empty-cell">
+
+                                        <div class="brand-empty-state">
+
+                                            <div class="brand-empty-icon">
+                                                <i class="bi bi-tags"></i>
+                                            </div>
+
+                                            <div class="brand-empty-title">
+                                                No Brands Found
+                                            </div>
+
+                                            <div class="brand-empty-text">
+                                                There are no brands available at the moment.
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
             </div>
 
             <!-- Pagination -->
             <div class="px-3 py-2">
                 {{ $brands->onEachSide(0)->links('pagination::bootstrap-5') }}
             </div>
-
 
         </div>
     </div>
@@ -271,9 +1329,11 @@
                     <button type="submit" class="btn btn-primary">Upload</button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -310,6 +1370,7 @@
 
     });
 </script>
+
 <script>
     const categories = @json($categories);
 
@@ -465,126 +1526,4 @@
     });
 </script>
 
-<!-- <script>
-    let selectedSubcategories = [];
-
-    // ===============================
-    // 1. Load subcategories on category change
-    // ===============================
-    document.getElementById('category').addEventListener('change', function() {
-
-        let categoryId = this.value;
-        alert(categoryId)
-        let menu = document.getElementById('subDropdownMenu');
-
-        selectedSubcategories = []; // reset
-        menu.innerHTML = 'Loading...';
-
-        if (!categoryId) {
-            menu.innerHTML = '<p class="text-muted">Select SubCategory</p>';
-            return;
-        }
-
-        fetch(`/get-subcategories/${categoryId}`)
-            .then(res => res.json())
-            .then(data => {
-
-                menu.innerHTML = '';
-
-                if (data.length === 0) {
-                    menu.innerHTML = '<p class="text-danger">No Subcategories Found</p>';
-                    return;
-                }
-
-                data.forEach(sub => {
-
-                    let item = document.createElement('div');
-
-                    item.innerHTML = `
-                    <label class="d-block">
-                        <input type="checkbox" class="sub-checkbox" value="${sub.id}">
-                        ${sub.name}
-                    </label>
-                `;
-
-                    menu.appendChild(item);
-                });
-
-            })
-            .catch(err => {
-                console.error(err);
-                menu.innerHTML = '<p class="text-danger">Error loading data</p>';
-            });
-    });
-
-
-    // ===============================
-    // 2. Handle checkbox selection
-    // ===============================
-    document.addEventListener('change', function(e) {
-
-        if (e.target.classList.contains('sub-checkbox')) {
-
-            let id = e.target.value;
-
-            if (e.target.checked) {
-                if (!selectedSubcategories.includes(id)) {
-                    selectedSubcategories.push(id);
-                }
-            } else {
-                selectedSubcategories = selectedSubcategories.filter(val => val !== id);
-            }
-
-            // Optional: Update button text
-            document.getElementById('subDropdown').innerText =
-                selectedSubcategories.length > 0 ?
-                selectedSubcategories.length + ' selected' :
-                'Select SubCategory';
-        }
-    });
-
-
-    // ===============================
-    // 3. Submit form & download CSV
-    // ===============================
-    document.getElementById('csvForm').addEventListener('submit', function(e) {
-
-        e.preventDefault();
-
-        let category = document.getElementById('category').value;
-
-        if (!category) {
-            alert('Please select category');
-            return;
-        }
-
-        if (selectedSubcategories.length === 0) {
-            alert('Please select at least one subcategory');
-            return;
-        }
-
-        let form = this;
-
-        // Remove old dynamic inputs
-        document.querySelectorAll('.dynamic-sub').forEach(el => el.remove());
-
-        // Add subcategory_id[] inputs dynamically
-        selectedSubcategories.forEach(id => {
-
-            let input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'subcategory_id[]';
-            input.value = id;
-            input.classList.add('dynamic-sub');
-
-            form.appendChild(input);
-        });
-
-        // IMPORTANT: Set action manually (since form doesn't have one)
-        form.action = '/brands.sample-excel'; // 👈 your route
-        form.method = 'POST';
-
-        form.submit(); // ✅ triggers CSV download
-    });
-</script> -->
 @endpush
