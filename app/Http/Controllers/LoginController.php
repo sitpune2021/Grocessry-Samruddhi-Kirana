@@ -13,6 +13,329 @@ use Illuminate\Support\Facades\Validator;
 class LoginController extends Controller
 {
 
+    public function register(Request $request)
+    {
+        $request->merge([
+            'email' => $request->email ?: null
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'nullable|string|max:255',
+            'mobile'     => 'required|digits:10|unique:users,mobile',
+            'email'      => 'nullable|email|unique:users,email',
+            'password'   => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+            ],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // ✅ DYNAMIC CUSTOMER (ID CHANGE SAFE)
+        $role = Role::whereRaw('LOWER(name) = ?', ['customer'])
+            ->firstOrFail();
+
+        $user = User::create([
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'mobile'     => $request->mobile,
+            'email'      => $request->email,
+            'role_id'    => $role->id,
+            'password'   => Hash::make($request->password),
+            'status'     => 1
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer registration successful',
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                'role_id' => $role->id,
+                'role' => $role->name
+            ]
+        ], 201);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // ✅ DYNAMIC CUSTOMER CHECK (ID CHANGE SAFE)
+        if (!$user->role || strtolower($user->role->name) !== 'customer') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Only customers can update profile'
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'first_name'    => 'nullable|string|max:255',
+            'last_name'     => 'nullable|string|max:255',
+            'email'         => 'nullable|email|unique:users,email,' . $user->id,
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Update profile photo
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo) {
+                Storage::delete('public/profile/' . $user->profile_photo);
+            }
+            $imageName = time() . '.' . $request->profile_photo->extension();
+            $request->profile_photo->storeAs('public/profile', $imageName);
+            $user->profile_photo = $imageName;
+        }
+
+        if ($request->filled('first_name')) {
+            $user->first_name = $request->first_name;
+        }
+
+        if ($request->filled('last_name')) {
+            $user->last_name = $request->last_name;
+        }
+
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $user->email = $request->email;
+            $user->email_verified_at = now();
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Customer profile updated successfully',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'profile_photo' => $user->profile_photo
+                    ? asset('storage/profile/' . $user->profile_photo)
+                    : null,
+            ]
+        ], 200);
+    }
+
+    public function login(Request $request, $type)
+    {
+        /* ================= TYPE VALIDATION ================= */
+        if (!in_array($type, ['password', 'otp'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid login type'
+            ], 400);
+        }
+
+        /* ================= VALIDATION ================= */
+        $rules = [
+            'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+        ];
+
+        if ($type === 'password') {
+            $rules['password'] = 'required';
+        }
+
+        if ($type === 'otp') {
+            $rules['password'] = 'prohibited';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        /* ================= USER CHECK ================= */
+        $user = User::with('role')
+            ->where('mobile', $request->mobile)
+            ->first();
+
+        if (!$user || !$user->role) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 200);
+        }
+
+        /* ================= ROLE CHECK (DYNAMIC) ================= */
+        $allowedRoles = [
+            'customer',
+            'retailer',
+            'delivery agent',
+        ];
+
+        if (!in_array(strtolower($user->role->name), $allowedRoles)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'This role is not allowed to login'
+            ], 403);
+        }
+
+        /* ================= OTP LOGIN ================= */
+        if ($type === 'otp') {
+
+            $key = 'login-otp-' . $request->mobile;
+
+            if (RateLimiter::tooManyAttempts($key, 3)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Too many OTP requests. Try again after 5 minutes'
+                ], 429);
+            }
+
+            RateLimiter::hit($key, 300);
+
+            $otp = random_int(100000, 999999);
+
+            $user->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5)
+            ]);
+
+            $response = Http::asForm()->post(
+                'http://redirect.ds3.in/submitsms.jsp',
+                [
+                    'user'     => env('SMS_USER'),
+                    'key'      => env('SMS_KEY'),
+                    'mobile'   => '91' . $user->mobile,
+                    'message'  => "Your OTP for login is $otp",
+                    'senderid' => env('SMS_SENDERID'),
+                    'accusage' => '10',
+                ]
+            );
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Failed to send OTP'
+                ], 500);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP sent successfully'
+            ], 200);
+        }
+
+        /* ================= PASSWORD LOGIN ================= */
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid password'
+            ], 200);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login successful',
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'mobile' => $user->mobile,
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'role' => $user->role->name
+            ]
+        ], 200);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'mobile' => 'required|digits:10',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('mobile', $request->mobile)->first();
+
+        // 🔒 Do NOT reveal whether user exists
+        if (!$user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'If an account exists, OTP has been sent to the registered mobile number.'
+            ]);
+        }
+
+        // ⏱ Rate limiting
+        $key = 'forgot-password-' . $request->mobile;
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Too many requests. Please try again later.'
+            ], 200);
+        }
+        RateLimiter::hit($key, 300); // 5 minutes
+
+        // 🔐 Generate OTP (plain text for verification)
+        $otp = rand(100000, 999999);
+
+        $user->update([
+            'otp' => $otp, // store plain OTP
+            'otp_expires_at' => Carbon::now()->addMinutes(5),
+        ]);
+
+        // 📲 Send SMS
+        $message = "Your password reset OTP is $otp";
+
+        Http::asForm()->post(
+            'http://redirect.ds3.in/submitsms.jsp',
+            [
+                'user'     => env('SMS_USER'),
+                'key'      => env('SMS_KEY'),
+                'mobile'   => '91' . $user->mobile,
+                'message'  => $message,
+                'senderid' => env('SMS_SENDERID'),
+                'accusage' => '10',
+            ]
+        );
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'If an account exists, OTP has been sent to the registered mobile number.'
+        ]);
+    }
+
     // Mobile login with otp
     public function sendOtp(Request $request)
     {
@@ -102,6 +425,53 @@ class LoginController extends Controller
         ]);
     }
 
+     public function resetPassword(Request $request)
+    {
+        /* ================= VALIDATION ================= */
+        $validator = Validator::make($request->all(), [
+            'mobile' => 'required|digits:10',
+            'password' => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).{8,}$/'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        /* ================= USER FETCH ================= */
+        $user = User::where('mobile', $request->mobile)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User not found'
+            ], 200);
+        }
+
+        /* ================= PASSWORD UPDATE ================= */
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Password reset successful',
+            'user'    => [
+                'id'      => $user->id,
+                'name'    => trim($user->first_name . ' ' . $user->last_name),
+                'mobile'  => $user->mobile,
+                'email'   => $user->email,
+                'role_id' => $user->role_id,
+                'role'    => ucfirst(optional($user->role)->name),
+            ]
+        ], 200);
+    }
 
     public function logout(Request $request)
     {
