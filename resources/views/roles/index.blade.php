@@ -834,26 +834,16 @@
                     </div>
 
                 </div>
-
-                @if(hasPermission('roles.create'))
-
+                
+                @if(hasPermission('roles.create') || auth()->user()?->hasRole('Super Admin'))
                     <div class="role-header-actions">
-
-                        <a href="{{ route('roles.create') }}"
-                        class="role-add-btn">
-
+                        <a href="{{ route('roles.create') }}" class="role-add-btn">
                             <span class="role-add-icon">
                                 <i class="bi bi-plus-lg"></i>
                             </span>
-
-                            <span>
-                                Add Role
-                            </span>
-
+                            <span>Add Role</span>
                         </a>
-
                     </div>
-
                 @endif
 
             </div>
