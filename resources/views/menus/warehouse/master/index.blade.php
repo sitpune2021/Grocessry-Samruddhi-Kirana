@@ -831,7 +831,8 @@
                     </div>
                 </div>
 
-                @if(hasPermission('warehouse.create'))
+               
+                @if(hasPermission('warehouse.create') || auth()->user()?->hasRole('Super Admin'))
                     <div class="warehouse-header-actions">
 
                         <a href="{{ route('warehouse.create') }}"
