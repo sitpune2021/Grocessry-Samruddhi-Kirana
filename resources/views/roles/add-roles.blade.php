@@ -163,10 +163,10 @@
 
                         <a
                             href="{{ route('roles.index') }}"
-                            class="btn btn-success role-back-btn">
+                            class="btn btn-success role-back-btn"
+                            style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
 
                             Back
-
                         </a>
 
 
@@ -174,7 +174,8 @@
 
                             <button
                                 type="submit"
-                                class="btn btn-success role-submit-btn">
+                                class="btn btn-success role-submit-btn"
+                                style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
 
                                 {{ $mode == 'edit' ? 'Update Role' : 'Save Role' }}
 
