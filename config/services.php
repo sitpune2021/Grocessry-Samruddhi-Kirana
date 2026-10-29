@@ -39,6 +39,7 @@ return [
         'user'     => env('SMS_USER'),
         'key'      => env('SMS_KEY'),
         'senderid' => env('SMS_SENDERID'),
+        'debug_otp' => env('OTP_DEBUG_ENABLED', false),
     ],
 
     'razorpay' => [
