@@ -22,8 +22,14 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+
 class LoginController extends Controller
 {
+
+
     public function register(Request $request)
     {
         $request->merge([
@@ -219,27 +225,583 @@ class LoginController extends Controller
             'message' => 'Account deleted successfully'
         ]);
     }
+    
+    // public function login(Request $request, $type)
+    // {
+    //     /* ================= TYPE VALIDATION ================= */
+    //     if (!in_array($type, ['password', 'otp'])) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid login type'
+    //         ], 400);
+    //     }
+
+    //     /* ================= VALIDATION ================= */
+    //     $rules = [
+    //         'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+    //     ];
+
+    //     if ($type === 'password') {
+    //         $rules['password'] = 'required';
+    //     }
+
+    //     if ($type === 'otp') {
+    //         $rules['password'] = 'prohibited';
+    //     }
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     /* ================= USER CHECK ================= */
+    //     $user = User::with('role')
+    //         ->where('mobile', $request->mobile)
+    //         ->first();
+
+    //     if (!$user || !$user->role) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'User not found'
+    //         ], 200);
+    //     }
+
+    //     /* ================= ROLE CHECK (DYNAMIC) ================= */
+    //     $allowedRoles = [
+    //         'customer',
+    //         'retailer',
+    //         'delivery agent',
+    //     ];
+
+    //     if (!in_array(strtolower($user->role->name), $allowedRoles)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This role is not allowed to login'
+    //         ], 403);
+    //     }
+
+    //     /* ================= OTP LOGIN ================= */
+    //     if ($type === 'otp') {
+
+    //         $key = 'login-otp-' . $request->mobile;
+
+    //         if (RateLimiter::tooManyAttempts($key, 3)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Too many OTP requests. Try again after 5 minutes'
+    //             ], 429);
+    //         }
+
+    //         RateLimiter::hit($key, 300);
+
+    //         $otp = random_int(100000, 999999);
+
+    //         $user->update([
+    //             'otp' => $otp,
+    //             'otp_expires_at' => now()->addMinutes(5)
+    //         ]);
+
+    //         $response = Http::asForm()->post(
+    //             'http://redirect.ds3.in/submitsms.jsp',
+    //             [
+    //                 'user'     => env('SMS_USER'),
+    //                 'key'      => env('SMS_KEY'),
+    //                 'mobile'   => '91' . $user->mobile,
+    //                 'message'  => "Your OTP for login is $otp",
+    //                 'senderid' => env('SMS_SENDERID'),
+    //                 'accusage' => '10',
+    //             ]
+    //         );
+
+    //         if (!$response->successful()) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Failed to send OTP'
+    //             ], 500);
+    //         }
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'OTP sent successfully'
+    //         ], 200);
+    //     }
+
+    //     /* ================= PASSWORD LOGIN ================= */
+    //     if (!Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid password'
+    //         ], 200);
+    //     }
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Login successful',
+    //         'token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => trim($user->first_name . ' ' . $user->last_name),
+    //             'mobile' => $user->mobile,
+    //             'email' => $user->email,
+    //             'role_id' => $user->role_id,
+    //             'role' => $user->role->name
+    //         ]
+    //     ], 200);
+    // }
+
+    // public function login(Request $request, $type)
+    // {
+    //     // 1. Type validation
+    //     if (!in_array($type, ['password', 'otp'], true)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid login type'
+    //         ], 400);
+    //     }
+
+    //     // 2. Request validation
+    //     $rules = [
+    //         'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+    //     ];
+
+    //     if ($type === 'password') {
+    //         $rules['password'] = ['required', 'string'];
+    //     } else {
+    //         $rules['password'] = ['prohibited'];
+    //     }
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     // 3. Find user
+    //     $user = User::with('role')
+    //         ->where('mobile', $request->mobile)
+    //         ->first();
+
+    //     if (!$user || !$user->role) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'User not found'
+    //         ], 404);
+    //     }
+
+    //     // 4. Allowed role check
+    //     $allowedRoles = [
+    //         'customer',
+    //         'retailer',
+    //         'delivery agent',
+    //     ];
+
+    //     if (!in_array(
+    //         strtolower(trim($user->role->name)),
+    //         $allowedRoles,
+    //         true
+    //     )) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This role is not allowed to login'
+    //         ], 403);
+    //     }
+
+    //     // 5. OTP login
+    //     if ($type === 'otp') {
+
+    //         $key = 'login-otp-' . $user->mobile;
+
+    //         if (RateLimiter::tooManyAttempts($key, 3)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Too many OTP requests. Try again after '
+    //                     . RateLimiter::availableIn($key)
+    //                     . ' seconds'
+    //             ], 429);
+    //         }
+
+    //         // Check SMS configuration
+    //         $smsUser = config('services.sms.user');
+    //         $smsKey = config('services.sms.key');
+    //         $senderId = config('services.sms.senderid');
+
+    //         if (!$smsUser || !$smsKey || !$senderId) {
+    //             Log::error('SMS configuration missing');
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'SMS gateway configuration missing'
+    //             ], 500);
+    //         }
+
+    //         // Generate OTP
+    //         $otp = (string) random_int(100000, 999999);
+
+    //         try {
+    //             $response = Http::asForm()
+    //                 ->timeout(30)
+    //                 ->post('http://redirect.ds3.in/submitsms.jsp', [
+    //                     'user'     => $smsUser,
+    //                     'key'      => $smsKey,
+    //                     'mobile'   => '91' . $user->mobile,
+    //                     'message'  => "Your OTP for login is {$otp}",
+    //                     'senderid' => $senderId,
+    //                     'accusage' => '10',
+    //                 ]);
+
+    //             // Log gateway response; do not log OTP or API key
+    //             Log::info('SMS Gateway Response', [
+    //                 'http_status' => $response->status(),
+    //                 'response_body' => $response->body(),
+    //                 'mobile_last4' => substr($user->mobile, -4),
+    //             ]);
+
+    //             // HTTP request failed
+    //             if (!$response->successful()) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'Failed to connect to SMS gateway'
+    //                 ], 502);
+    //             }
+
+    //             /*
+    //             * IMPORTANT:
+    //             * HTTP 200 does not guarantee SMS delivery.
+    //             * Verify the response body against the DS3 provider's
+    //             * documented success response before accepting the OTP.
+    //             */
+
+    //             $gatewayResponse = trim($response->body());
+
+    //             if ($gatewayResponse === '') {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'SMS gateway returned an empty response'
+    //                 ], 502);
+    //             }
+
+    //             /*
+    //             * Save OTP only after confirming that the gateway
+    //             * accepted the SMS request. Adapt this check to DS3's
+    //             * actual response format.
+    //             */
+
+    //             $user->update([
+    //                 'otp' => $otp,
+    //                 'otp_expires_at' => now()->addMinutes(5),
+    //             ]);
+
+    //             RateLimiter::hit($key, 300);
+
+    //             return response()->json([
+    //                 'status' => true,
+    //                 'message' => 'OTP request submitted to SMS gateway'
+    //             ], 200);
+
+    //         } catch (\Illuminate\Http\Client\ConnectionException $e) {
+
+    //             Log::error('SMS Gateway Connection Error', [
+    //                 'error' => $e->getMessage(),
+    //             ]);
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'SMS gateway connection failed'
+    //             ], 502);
+
+    //         } catch (\Throwable $e) {
+
+    //             Log::error('OTP Login Error', [
+    //                 'error' => $e->getMessage(),
+    //             ]);
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Unable to process OTP request'
+    //             ], 500);
+    //         }
+    //     }
+
+    //     // 6. Password login
+    //     if (!Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid password'
+    //         ], 401);
+    //     }
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Login successful',
+    //         'token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => trim(
+    //                 $user->first_name . ' ' . $user->last_name
+    //             ),
+    //             'mobile' => $user->mobile,
+    //             'email' => $user->email,
+    //             'role_id' => $user->role_id,
+    //             'role' => $user->role->name,
+    //         ]
+    //     ], 200);
+    // }
+
+    // proper msg show
+
+    // public function login(Request $request, $type)
+    // {
+    //     // 1. Validate login type
+    //     if (!in_array($type, ['password', 'otp'], true)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid login type'
+    //         ], 400);
+    //     }
+
+    //     // 2. Validate request
+    //     $rules = [
+    //         'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+    //     ];
+
+    //     if ($type === 'password') {
+    //         $rules['password'] = ['required', 'string'];
+    //     } else {
+    //         $rules['password'] = ['prohibited'];
+    //     }
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Validation failed',
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     // 3. Find user
+    //     $user = User::with('role')
+    //         ->where('mobile', $request->mobile)
+    //         ->first();
+
+    //     if (!$user || !$user->role) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'User not found'
+    //         ], 404);
+    //     }
+
+    //     // 4. Check allowed roles
+    //     $allowedRoles = [
+    //         'customer',
+    //         'retailer',
+    //         'delivery agent',
+    //     ];
+
+    //     if (!in_array(
+    //         strtolower(trim($user->role->name)),
+    //         $allowedRoles,
+    //         true
+    //     )) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'This role is not allowed to login'
+    //         ], 403);
+    //     }
+
+    //     // 5. OTP LOGIN
+    //     if ($type === 'otp') {
+
+    //         $key = 'login-otp-' . $user->mobile;
+
+    //         if (RateLimiter::tooManyAttempts($key, 3)) {
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Too many OTP requests. Try again after '
+    //                     . RateLimiter::availableIn($key)
+    //                     . ' seconds'
+    //             ], 429);
+    //         }
+
+    //         $smsUser = config('services.sms.user');
+    //         $smsKey = config('services.sms.key');
+    //         $senderId = config('services.sms.senderid');
+
+    //         if (!$smsUser || !$smsKey || !$senderId) {
+    //             Log::error('SMS gateway configuration missing');
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'SMS gateway configuration missing'
+    //             ], 503);
+    //         }
+
+    //         $otp = (string) random_int(100000, 999999);
+
+    //         try {
+    //             $response = Http::asForm()
+    //                 ->timeout(30)
+    //                 ->post('http://redirect.ds3.in/submitsms.jsp', [
+    //                     'user'     => $smsUser,
+    //                     'key'      => $smsKey,
+    //                     'mobile'   => '91' . $user->mobile,
+    //                     'message'  => "Your OTP for login is {$otp}",
+    //                     'senderid' => $senderId,
+    //                     'accusage' => '10',
+    //                 ]);
+
+    //             $gatewayBody = trim($response->body());
+
+    //             // Log response without OTP or API credentials
+    //             Log::info('SMS Gateway Response', [
+    //                 'http_status' => $response->status(),
+    //                 'response_body' => $gatewayBody,
+    //                 'mobile_last4' => substr($user->mobile, -4),
+    //             ]);
+
+    //             if (!$response->successful()) {
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'SMS gateway HTTP request failed'
+    //                 ], 502);
+    //             }
+
+    //             // Handle known gateway failures
+    //             if (
+    //                 $gatewayBody === '' ||
+    //                 preg_match('/^\s*fail\s*,/i', $gatewayBody)
+    //             ) {
+    //                 if (stripos($gatewayBody, 'InsufficientBalance') !== false) {
+    //                     return response()->json([
+    //                         'status' => false,
+    //                         'message' => 'SMS balance is insufficient. Please recharge your SMS account.'
+    //                     ], 503);
+    //                 }
+
+    //                 return response()->json([
+    //                     'status' => false,
+    //                     'message' => 'SMS gateway rejected the OTP request'
+    //                 ], 502);
+    //             }
+
+    //             /*
+    //             * IMPORTANT:
+    //             * Confirm this success-response rule against DS3's
+    //             * documented response format before production use.
+    //             * An HTTP 200 response alone does not guarantee delivery.
+    //             */
+
+    //             // Save OTP only after gateway response passes the checks
+    //             $user->update([
+    //                 'otp' => $otp,
+    //                 'otp_expires_at' => now()->addMinutes(5),
+    //             ]);
+
+    //             RateLimiter::hit($key, 300);
+
+    //             $result = [
+    //                 'status' => true,
+    //                 'message' => 'OTP request accepted by SMS gateway'
+    //             ];
+
+    //             // Never expose OTP in production
+    //             if (
+    //                 app()->environment('local') &&
+    //                 config('services.sms.debug_otp', false)
+    //             ) {
+    //                 $result['otp'] = $otp;
+    //                 $result['debug'] = true;
+    //             }
+
+    //             return response()->json($result, 200);
+
+    //         } catch (\Illuminate\Http\Client\ConnectionException $e) {
+
+    //             Log::error('SMS gateway connection failed', [
+    //                 'error' => $e->getMessage(),
+    //             ]);
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Unable to connect to SMS gateway'
+    //             ], 502);
+
+    //         } catch (\Throwable $e) {
+
+    //             Log::error('OTP login error', [
+    //                 'error' => $e->getMessage(),
+    //             ]);
+
+    //             return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Unable to process OTP request'
+    //             ], 500);
+    //         }
+    //     }
+
+    //     // 6. PASSWORD LOGIN
+    //     if (!Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Invalid password'
+    //         ], 401);
+    //     }
+
+    //     $token = $user->createToken('auth_token')->plainTextToken;
+
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Login successful',
+    //         'token' => $token,
+    //         'token_type' => 'Bearer',
+    //         'user' => [
+    //             'id' => $user->id,
+    //             'name' => trim(
+    //                 $user->first_name . ' ' . $user->last_name
+    //             ),
+    //             'mobile' => $user->mobile,
+    //             'email' => $user->email,
+    //             'role_id' => $user->role_id,
+    //             'role' => $user->role->name,
+    //         ]
+    //     ], 200);
+    // }
+
     public function login(Request $request, $type)
     {
-        /* ================= TYPE VALIDATION ================= */
-        if (!in_array($type, ['password', 'otp'])) {
+        // 1. Validate login type
+        if (!in_array($type, ['password', 'otp'], true)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid login type'
             ], 400);
         }
 
-        /* ================= VALIDATION ================= */
+        // 2. Validate request
         $rules = [
             'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
         ];
 
         if ($type === 'password') {
-            $rules['password'] = 'required';
-        }
-
-        if ($type === 'otp') {
-            $rules['password'] = 'prohibited';
+            $rules['password'] = ['required', 'string'];
+        } else {
+            $rules['password'] = ['prohibited'];
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -252,7 +814,7 @@ class LoginController extends Controller
             ], 422);
         }
 
-        /* ================= USER CHECK ================= */
+        // 3. Find user
         $user = User::with('role')
             ->where('mobile', $request->mobile)
             ->first();
@@ -261,75 +823,120 @@ class LoginController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'User not found'
-            ], 200);
+            ], 404);
         }
 
-        /* ================= ROLE CHECK (DYNAMIC) ================= */
+        // 4. Allowed roles
         $allowedRoles = [
             'customer',
             'retailer',
             'delivery agent',
         ];
 
-        if (!in_array(strtolower($user->role->name), $allowedRoles)) {
+        if (!in_array(
+            strtolower(trim($user->role->name)),
+            $allowedRoles,
+            true
+        )) {
             return response()->json([
                 'status' => false,
                 'message' => 'This role is not allowed to login'
             ], 403);
         }
 
-        /* ================= OTP LOGIN ================= */
+        // 5. OTP LOGIN
         if ($type === 'otp') {
 
-            $key = 'login-otp-' . $request->mobile;
+            $key = 'login-otp-' . $user->mobile;
 
             if (RateLimiter::tooManyAttempts($key, 3)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Too many OTP requests. Try again after 5 minutes'
+                    'message' => 'Too many OTP requests. Try again after '
+                        . RateLimiter::availableIn($key)
+                        . ' seconds'
                 ], 429);
             }
 
-            RateLimiter::hit($key, 300);
+            $otp = (string) random_int(100000, 999999);
 
-            $otp = random_int(100000, 999999);
+            $smsUser = config('services.sms.user');
+            $smsKey = config('services.sms.key');
+            $senderId = config('services.sms.senderid');
+
+            $smsSent = false;
+            $gatewayBody = '';
+
+            try {
+                if ($smsUser && $smsKey && $senderId) {
+
+                    $response = Http::asForm()
+                        ->timeout(30)
+                        ->post('http://redirect.ds3.in/submitsms.jsp', [
+                            'user'     => $smsUser,
+                            'key'      => $smsKey,
+                            'mobile'   => '91' . $user->mobile,
+                            'message'  => "Your OTP for login is {$otp}",
+                            'senderid' => $senderId,
+                            'accusage' => '10',
+                        ]);
+
+                    $gatewayBody = trim($response->body());
+
+                    Log::info('SMS Gateway Response', [
+                        'http_status' => $response->status(),
+                        'response_body' => $gatewayBody,
+                        'mobile_last4' => substr($user->mobile, -4),
+                    ]);
+
+                    $smsSent = $response->successful()
+                        && $gatewayBody !== ''
+                        && !preg_match('/^\s*fail\s*,/i', $gatewayBody);
+                }
+
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+
+                Log::warning('SMS gateway unavailable', [
+                    'error' => $e->getMessage(),
+                ]);
+
+            }
+
+            // TEMPORARY TEST MODE:
+            // OTP is saved even when the SMS gateway has no balance.
+            // Use only in a controlled development/testing environment.
 
             $user->update([
                 'otp' => $otp,
-                'otp_expires_at' => now()->addMinutes(5)
+                'otp_expires_at' => now()->addMinutes(5),
             ]);
 
-            $response = Http::asForm()->post(
-                'http://redirect.ds3.in/submitsms.jsp',
-                [
-                    'user'     => env('SMS_USER'),
-                    'key'      => env('SMS_KEY'),
-                    'mobile'   => '91' . $user->mobile,
-                    'message'  => "Your OTP for login is $otp",
-                    'senderid' => env('SMS_SENDERID'),
-                    'accusage' => '10',
-                ]
-            );
+            RateLimiter::hit($key, 300);
 
-            if (!$response->successful()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Failed to send OTP'
-                ], 500);
+            if (!$smsSent) {
+                Log::warning('Testing OTP generated without confirmed SMS delivery', [
+                    'mobile_last4' => substr($user->mobile, -4),
+                    'gateway_error' => $gatewayBody,
+                ]);
             }
 
             return response()->json([
                 'status' => true,
-                'message' => 'OTP sent successfully'
+                'message' => $smsSent
+                    ? 'OTP request accepted by SMS gateway'
+                    : 'Testing OTP generated. SMS was not confirmed.',
+                'otp' => $otp,
+                'otp_expires_in' => 300,
+                'sms_sent' => $smsSent,
             ], 200);
         }
 
-        /* ================= PASSWORD LOGIN ================= */
+        // 6. PASSWORD LOGIN
         if (!Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid password'
-            ], 200);
+            ], 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -341,14 +948,17 @@ class LoginController extends Controller
             'token_type' => 'Bearer',
             'user' => [
                 'id' => $user->id,
-                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'name' => trim(
+                    $user->first_name . ' ' . $user->last_name
+                ),
                 'mobile' => $user->mobile,
                 'email' => $user->email,
                 'role_id' => $user->role_id,
-                'role' => $user->role->name
+                'role' => $user->role->name,
             ]
         ], 200);
     }
+
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -411,71 +1021,185 @@ class LoginController extends Controller
         ]);
     }
 
+    // public function verifyOtp(Request $request, $type)
+    // {
+    //     /* ================= VALID OTP TYPE ================= */
+    //     if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Invalid OTP type'
+    //         ], 200);
+    //     }
+
+    //     /* ================= VALIDATION ================= */
+    //     $validator = Validator::make($request->all(), [
+    //         'mobile' => 'required|digits:10',
+    //         'otp'    => 'required|digits:6',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validator->errors()
+    //         ], 422);
+    //     }
+
+    //     /* ================= USER FETCH ================= */
+    //     $user = User::where('mobile', $request->mobile)->first();
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'User not found'
+    //         ], 200);
+    //     }
+
+    //     /* ================= OTP CHECK ================= */
+    //     $otpField     = 'otp';
+    //     $expiresField = 'otp_expires_at';
+
+    //     if (!$user->$otpField || !$user->$expiresField) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'OTP not requested'
+    //         ], 400);
+    //     }
+
+    //     if (now()->greaterThan($user->$expiresField)) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'OTP expired. Please request a new OTP.'
+    //         ], 200);
+    //     }
+
+    //     if ($request->otp != $user->$otpField) {
+    //         return response()->json([
+    //             'status'  => false,
+    //             'message' => 'Invalid OTP'
+    //         ], 200);
+    //     }
+
+    //     /* ================= CLEAR OTP ================= */
+    //     $user->update([
+    //         $otpField     => null,
+    //         $expiresField => null,
+    //     ]);
+
+    //     /* ================= LOGIN OTP ================= */
+    //     if ($type === 'login_otp') {
+
+    //         $user->tokens()->delete();
+
+    //         $token = $user->createToken('auth_token')->plainTextToken;
+
+    //         return response()->json([
+    //             'status'      => true,
+    //             'message'     => 'Login successful',
+    //             'token'       => $token,
+    //             'token_type'  => 'Bearer',
+    //             'user'        => [
+    //                 'id'    => $user->id,
+    //                 'name'  => trim($user->first_name . ' ' . $user->last_name),
+    //                 'mobile' => $user->mobile,
+    //                 'email' => $user->email,
+    //                 'role_id' => $user->role_id,
+    //                 'role'  => optional($user->role)->name,
+    //             ]
+    //         ], 200);
+    //     }
+
+    //     /* ================= FORGOT PASSWORD OTP ================= */
+    //     return response()->json([
+    //         'status'  => true,
+    //         'message' => 'OTP verified. You may now reset your password.'
+    //     ], 200);
+    // }
+
+    
     public function verifyOtp(Request $request, $type)
     {
-        /* ================= VALID OTP TYPE ================= */
-        if (!in_array($type, ['login_otp', 'forgot_password_otp'])) {
+        // 1. Validate OTP type
+        if (!in_array($type, ['login_otp', 'forgot_password_otp'], true)) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Invalid OTP type'
-            ], 200);
+            ], 400);
         }
 
-        /* ================= VALIDATION ================= */
+        // 2. Normalize OTP input
+        $request->merge([
+            'mobile' => trim((string) $request->input('mobile', '')),
+            'otp' => trim((string) $request->input('otp', '')),
+        ]);
+
+        // 3. Validate request
         $validator = Validator::make($request->all(), [
-            'mobile' => 'required|digits:10',
-            'otp'    => 'required|digits:6',
+            'mobile' => ['required', 'regex:/^[6-9][0-9]{9}$/'],
+            'otp' => ['required', 'regex:/^[0-9]{6}$/'],
+        ], [
+            'otp.required' => 'Please enter OTP.',
+            'otp.regex' => 'OTP must contain exactly 6 digits.',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
+                'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        /* ================= USER FETCH ================= */
-        $user = User::where('mobile', $request->mobile)->first();
+        // 4. Find user
+        $user = User::with('role')
+            ->where('mobile', $request->mobile)
+            ->first();
 
         if (!$user) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'User not found'
-            ], 200);
+            ], 404);
         }
 
-        /* ================= OTP CHECK ================= */
-        $otpField     = 'otp';
-        $expiresField = 'otp_expires_at';
-
-        if (!$user->$otpField || !$user->$expiresField) {
+        // 5. Check saved OTP
+        if (
+            $user->otp === null ||
+            $user->otp_expires_at === null
+        ) {
             return response()->json([
-                'status'  => false,
-                'message' => 'OTP not requested'
+                'status' => false,
+                'message' => 'OTP not requested or already used'
             ], 400);
         }
 
-        if (now()->greaterThan($user->$expiresField)) {
+        // 6. Check expiry
+        if (now()->greaterThanOrEqualTo($user->otp_expires_at)) {
+            $user->update([
+                'otp' => null,
+                'otp_expires_at' => null,
+            ]);
+
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'OTP expired. Please request a new OTP.'
-            ], 200);
+            ], 400);
         }
 
-        if ($request->otp != $user->$otpField) {
+        // 7. Compare OTP as strings
+        if (!hash_equals((string) $user->otp, $request->otp)) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Invalid OTP'
-            ], 200);
+            ], 400);
         }
 
-        /* ================= CLEAR OTP ================= */
+        // 8. Clear OTP after successful verification
         $user->update([
-            $otpField     => null,
-            $expiresField => null,
+            'otp' => null,
+            'otp_expires_at' => null,
         ]);
 
-        /* ================= LOGIN OTP ================= */
+        // 9. Login OTP
         if ($type === 'login_otp') {
 
             $user->tokens()->delete();
@@ -483,24 +1207,26 @@ class LoginController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'status'      => true,
-                'message'     => 'Login successful',
-                'token'       => $token,
-                'token_type'  => 'Bearer',
-                'user'        => [
-                    'id'    => $user->id,
-                    'name'  => trim($user->first_name . ' ' . $user->last_name),
+                'status' => true,
+                'message' => 'OTP verified. Login successful.',
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => trim(
+                        $user->first_name . ' ' . $user->last_name
+                    ),
                     'mobile' => $user->mobile,
                     'email' => $user->email,
                     'role_id' => $user->role_id,
-                    'role'  => optional($user->role)->name,
+                    'role' => optional($user->role)->name,
                 ]
             ], 200);
         }
 
-        /* ================= FORGOT PASSWORD OTP ================= */
+        // 10. Forgot password OTP
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'OTP verified. You may now reset your password.'
         ], 200);
     }
@@ -569,7 +1295,6 @@ class LoginController extends Controller
             'message' => 'Logged out successfully'
         ]);
     }
-
 
     public function orderTimeCheck(Request $request)
     {
@@ -669,4 +1394,6 @@ class LoginController extends Controller
             ]
         ]);
     }
+
+
 }

@@ -141,7 +141,7 @@
                     </table>
 
                     <div class="mt-3 text-end">
-                        <button type="submit" class="btn btn-success">Save Permissions</button>
+                        <button type="submit" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Save Permissions</button>
                     </div>
                 </form>
             </div>

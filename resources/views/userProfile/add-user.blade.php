@@ -246,10 +246,10 @@
                                         {{-- Buttons --}}
                                         <div class="col-lg-12 text-end">
                                             <a href="{{ route('user.profile') }}"
-                                                class="btn btn-success">Back</a>
+                                                class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Back</a>
 
                                             @if ($mode !== 'view')
-                                            <button class="btn btn-success">
+                                            <button class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
                                                 {{ $mode === 'edit' ? 'Update User' : 'Save User' }}
                                             </button>
                                             @endif

@@ -165,17 +165,17 @@
 
                                             {{-- Buttons --}}
                                             <div class="mt-4 d-flex justify-content-end gap-2 text-end">
-                                                <a href="{{ route('brands.index') }}" class="btn btn-success">
+                                                <a href="{{ route('brands.index') }}" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
                                                     Back
                                                 </a>
 
 
                                                 @if ($mode === 'add')
-                                                <button type="submit" class="btn btn-success">
+                                                <button type="submit" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
                                                     Save Brand
                                                 </button>
                                                 @elseif($mode === 'edit')
-                                                <button type="submit" class="btn btn-success">
+                                                <button type="submit" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
                                                     Update Brand
                                                 </button>
                                                 @endif
