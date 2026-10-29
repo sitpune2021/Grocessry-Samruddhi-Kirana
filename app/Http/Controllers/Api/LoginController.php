@@ -844,7 +844,94 @@ class LoginController extends Controller
             ], 403);
         }
 
-        // 5. OTP LOGIN
+        // 5. OTP LOGIN with testing otp generate
+        // if ($type === 'otp') {
+
+        //     $key = 'login-otp-' . $user->mobile;
+
+        //     if (RateLimiter::tooManyAttempts($key, 3)) {
+        //         return response()->json([
+        //             'status' => false,
+        //             'message' => 'Too many OTP requests. Try again after '
+        //                 . RateLimiter::availableIn($key)
+        //                 . ' seconds'
+        //         ], 429);
+        //     }
+
+        //     $otp = (string) random_int(100000, 999999);
+
+        //     $smsUser = config('services.sms.user');
+        //     $smsKey = config('services.sms.key');
+        //     $senderId = config('services.sms.senderid');
+
+        //     $smsSent = false;
+        //     $gatewayBody = '';
+
+        //     try {
+        //         if ($smsUser && $smsKey && $senderId) {
+
+        //             $response = Http::asForm()
+        //                 ->timeout(30)
+        //                 ->post('http://redirect.ds3.in/submitsms.jsp', [
+        //                     'user'     => $smsUser,
+        //                     'key'      => $smsKey,
+        //                     'mobile'   => '91' . $user->mobile,
+        //                     'message'  => "Your OTP for login is {$otp}",
+        //                     'senderid' => $senderId,
+        //                     'accusage' => '10',
+        //                 ]);
+
+        //             $gatewayBody = trim($response->body());
+
+        //             Log::info('SMS Gateway Response', [
+        //                 'http_status' => $response->status(),
+        //                 'response_body' => $gatewayBody,
+        //                 'mobile_last4' => substr($user->mobile, -4),
+        //             ]);
+
+        //             $smsSent = $response->successful()
+        //                 && $gatewayBody !== ''
+        //                 && !preg_match('/^\s*fail\s*,/i', $gatewayBody);
+        //         }
+
+        //     } catch (\Illuminate\Http\Client\ConnectionException $e) {
+
+        //         Log::warning('SMS gateway unavailable', [
+        //             'error' => $e->getMessage(),
+        //         ]);
+
+        //     }
+
+        //     // TEMPORARY TEST MODE:
+        //     // OTP is saved even when the SMS gateway has no balance.
+        //     // Use only in a controlled development/testing environment.
+
+        //     $user->update([
+        //         'otp' => $otp,
+        //         'otp_expires_at' => now()->addMinutes(5),
+        //     ]);
+
+        //     RateLimiter::hit($key, 300);
+
+        //     if (!$smsSent) {
+        //         Log::warning('Testing OTP generated without confirmed SMS delivery', [
+        //             'mobile_last4' => substr($user->mobile, -4),
+        //             'gateway_error' => $gatewayBody,
+        //         ]);
+        //     }
+
+        //     return response()->json([
+        //         'status' => true,
+        //         'message' => $smsSent
+        //             ? 'OTP request accepted by SMS gateway'
+        //             : 'Testing OTP generated. SMS was not confirmed.',
+        //         'otp' => $otp,
+        //         'otp_expires_in' => 300,
+        //         'sms_sent' => $smsSent,
+        //     ], 200);
+        // }
+
+        // testing otp show in response untile sms recharge for actual otp send
         if ($type === 'otp') {
 
             $key = 'login-otp-' . $user->mobile;
@@ -853,8 +940,7 @@ class LoginController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Too many OTP requests. Try again after '
-                        . RateLimiter::availableIn($key)
-                        . ' seconds'
+                        . RateLimiter::availableIn($key) . ' seconds'
                 ], 429);
             }
 
@@ -889,22 +975,30 @@ class LoginController extends Controller
                         'mobile_last4' => substr($user->mobile, -4),
                     ]);
 
+                    // Detect insufficient balance and gateway failures
+                    $isGatewayFailure = preg_match(
+                        '/^\s*fail\s*,/i',
+                        $gatewayBody
+                    );
+
                     $smsSent = $response->successful()
                         && $gatewayBody !== ''
-                        && !preg_match('/^\s*fail\s*,/i', $gatewayBody);
+                        && !$isGatewayFailure;
+
                 }
 
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
 
-                Log::warning('SMS gateway unavailable', [
+                Log::warning('SMS gateway connection failed', [
                     'error' => $e->getMessage(),
                 ]);
-
             }
 
-            // TEMPORARY TEST MODE:
-            // OTP is saved even when the SMS gateway has no balance.
-            // Use only in a controlled development/testing environment.
+            /*
+            * TEMPORARY TESTING:
+            * Save OTP even if SMS is not sent.
+            * Remove OTP from the API response before production.
+            */
 
             $user->update([
                 'otp' => $otp,
@@ -914,20 +1008,29 @@ class LoginController extends Controller
             RateLimiter::hit($key, 300);
 
             if (!$smsSent) {
-                Log::warning('Testing OTP generated without confirmed SMS delivery', [
-                    'mobile_last4' => substr($user->mobile, -4),
-                    'gateway_error' => $gatewayBody,
-                ]);
+
+                $message = stripos(
+                    $gatewayBody,
+                    'InsufficientBalance'
+                ) !== false
+                    ? 'SMS balance is insufficient. Testing OTP generated.'
+                    : 'SMS was not confirmed. Testing OTP generated.';
+
+                return response()->json([
+                    'status' => true,
+                    'message' => $message,
+                    'otp' => $otp,
+                    'otp_expires_in' => 300,
+                    'sms_sent' => false,
+                ], 200);
             }
 
             return response()->json([
                 'status' => true,
-                'message' => $smsSent
-                    ? 'OTP request accepted by SMS gateway'
-                    : 'Testing OTP generated. SMS was not confirmed.',
+                'message' => 'OTP request accepted by SMS gateway',
                 'otp' => $otp,
                 'otp_expires_in' => 300,
-                'sms_sent' => $smsSent,
+                'sms_sent' => true,
             ], 200);
         }
 
