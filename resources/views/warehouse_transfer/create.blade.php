@@ -30,7 +30,7 @@
 
                                             <input type="number" id="product_qty" value="1" min="1" style="width:80px" class="form-control">
 
-                                            <button type="button" onclick="addProduct()" class="btn btn-success btn-sm" class="form-control">Add</button>
+                                            <button type="button" onclick="addProduct()" class="btn btn-success btn-sm" class="form-control" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Add</button>
                                         </div>
 
                                         {{-- CART TABLE --}}
@@ -68,7 +68,7 @@
                                             <input type="hidden" name="items" id="items_input">
 
                                             <br><br>
-                                            <button type="submit" class="btn btn-success btn-sm">Send Request</button>
+                                            <button type="submit" class="btn btn-success btn-sm" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Send Request</button>
                                         </form>
                                     
                                     </div>

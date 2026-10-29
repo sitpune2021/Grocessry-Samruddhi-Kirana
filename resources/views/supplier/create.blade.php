@@ -156,15 +156,15 @@
 
                             {{-- Buttons --}}
                             <div class="col-lg-12 text-end">
-                                <a href="{{ route('supplier.index') }}" class="btn btn-success">
+                                <a href="{{ route('supplier.index') }}" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
                                     Back
                                 </a>
 
                                 @if ($mode === 'add')
-                                <button type="submit" class="btn btn-success">Save
+                                <button type="submit" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Save
                                     Supplier</button>
                                 @elseif($mode === 'edit')
-                                <button type="submit" class="btn btn-success">Update
+                                <button type="submit" class="btn btn-success" style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">Update
                                     Supplier</button>
                                 @endif
                             </div>

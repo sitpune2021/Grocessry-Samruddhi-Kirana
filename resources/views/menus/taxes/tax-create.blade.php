@@ -275,7 +275,8 @@
 
                         <a
                             href="{{ route('taxes.index') }}"
-                            class="btn btn-success tax-back-btn">
+                            class="btn btn-success tax-back-btn"
+                            style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
 
                             Back
 
@@ -286,7 +287,8 @@
 
                             <button
                                 type="submit"
-                                class="btn btn-success tax-submit-btn">
+                                class="btn btn-success tax-submit-btn"
+                                style="background: #198754; border: 1px solid #198754; color: #ffffff !important;">
 
                                 {{ $mode === 'edit' ? 'Update Tax' : 'Save Tax' }}
 
