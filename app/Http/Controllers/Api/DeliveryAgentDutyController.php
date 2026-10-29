@@ -10,7 +10,7 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Validator;
 
 class DeliveryAgentDutyController extends Controller
 {
@@ -424,7 +424,6 @@ public function deliveryOtp(Request $request, $orderId, $type)
 }
 
 
-
 public function verifyDeliveryOtp(Request $request, $orderId)
 {
     try {
@@ -528,7 +527,6 @@ public function verifyDeliveryOtp(Request $request, $orderId)
         ], 500);
     }
 }
-
 
 
     public function getCurrentTask(Request $request)
